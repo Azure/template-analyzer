@@ -5,9 +5,15 @@ VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Core", "Armory.Core\Armory.Core.csproj", "{CD77F1AD-C474-49A1-8702-9F8178BF58DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Armory.TemplateProcessor", "Armory.TemplateProcessor\Armory.TemplateProcessor.csproj", "{32F26724-E6E3-4BB0-9DC1-2BD13052CC02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.TemplateProcessor", "Armory.TemplateProcessor\Armory.TemplateProcessor.csproj", "{32F26724-E6E3-4BB0-9DC1-2BD13052CC02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Armory.Cli", "Armory.Cli\Armory.Cli.csproj", "{EE24178E-E708-4FE4-AFFB-2753E541A410}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Cli", "Armory.Cli\Armory.Cli.csproj", "{EE24178E-E708-4FE4-AFFB-2753E541A410}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Types", "Armory.Types\Armory.Types.csproj", "{2F314143-F763-4340-BD98-E693401CEF39}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.JsonRuleEngine", "Armory.JsonRuleEngine\Armory.JsonRuleEngine.csproj", "{7443045B-40C9-406D-9CBC-6A68697AAF85}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.JsonRuleEngine.UnitTests", "Armory.JsonRuleEngine.UnitTests\Armory.JsonRuleEngine.UnitTests.csproj", "{5A8177F6-41EB-4A8D-96A0-3E4B897DF832}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +33,18 @@ Global
 		{EE24178E-E708-4FE4-AFFB-2753E541A410}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE24178E-E708-4FE4-AFFB-2753E541A410}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE24178E-E708-4FE4-AFFB-2753E541A410}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F314143-F763-4340-BD98-E693401CEF39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F314143-F763-4340-BD98-E693401CEF39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F314143-F763-4340-BD98-E693401CEF39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F314143-F763-4340-BD98-E693401CEF39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7443045B-40C9-406D-9CBC-6A68697AAF85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7443045B-40C9-406D-9CBC-6A68697AAF85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7443045B-40C9-406D-9CBC-6A68697AAF85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7443045B-40C9-406D-9CBC-6A68697AAF85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A8177F6-41EB-4A8D-96A0-3E4B897DF832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A8177F6-41EB-4A8D-96A0-3E4B897DF832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A8177F6-41EB-4A8D-96A0-3E4B897DF832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A8177F6-41EB-4A8D-96A0-3E4B897DF832}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
