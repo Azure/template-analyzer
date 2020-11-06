@@ -24,4 +24,5 @@ steps:
   displayName: 'Run tests'
   inputs:
     command: 'test'
-    projects: '**/*test*.csproj'
+    projects: '**/*Tests.csproj'
+    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
