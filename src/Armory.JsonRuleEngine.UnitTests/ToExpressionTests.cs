@@ -10,7 +10,15 @@ using Newtonsoft.Json;
 namespace Armory.JsonRuleEngine.UnitTests
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class OperatorSpecificValidatorAttribute : Attribute { }
+    public class OperatorSpecificValidatorAttribute : Attribute
+    {
+        public Type Operator { get; set; }
+
+        public OperatorSpecificValidatorAttribute(Type @operator)
+        {
+            this.Operator = @operator;
+        }
+    }
 
     [TestClass]
     public class ToExpressionTests
@@ -29,8 +37,8 @@ namespace Armory.JsonRuleEngine.UnitTests
             // Run operator-specific validation
             MethodInfo operatorSpecificValidator = GetType()
                 .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-                .Where(method => method.GetCustomAttribute<OperatorSpecificValidatorAttribute>() != null)
-                .FirstOrDefault(method => method.GetParameters().ToList().Exists(p => p.ParameterType == operatorType));
+                .Where(method => method.GetCustomAttribute<OperatorSpecificValidatorAttribute>()?.Operator == operatorType)
+                .FirstOrDefault();
 
             Assert.IsNotNull(operatorSpecificValidator, $"Unable to find a validation method for LeafExpressionOperator {operatorType}");
             operatorSpecificValidator.Invoke(this, new[] { leafOperator, operatorValue });
@@ -59,14 +67,14 @@ namespace Armory.JsonRuleEngine.UnitTests
             return leafExpression.Operator;
         }
 
-        [OperatorSpecificValidator]
+        [OperatorSpecificValidator(typeof(HasValueOperator))]
         private static void HasValueValidation(HasValueOperator hasValueOperator, bool operatorValue)
         {
             Assert.AreEqual(operatorValue, hasValueOperator.EffectiveValue);
             Assert.IsFalse(hasValueOperator.IsNegative);
         }
 
-        [OperatorSpecificValidator]
+        [OperatorSpecificValidator(typeof(ExistsOperator))]
         private static void ExistsValidation(ExistsOperator existsOperator, bool operatorValue)
         {
             Assert.AreEqual(operatorValue, existsOperator.EffectiveValue);
