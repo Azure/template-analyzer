@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.ResourceManager.Deployments.Core.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Text.RegularExpressions;
 
 namespace Armory.TemplateProcessor.UnitTests
@@ -577,6 +580,58 @@ namespace Armory.TemplateProcessor.UnitTests
         private string NormalizeString(string stringToNormalize)
         {
             return Regex.Replace(stringToNormalize, @"\s", "");
+        }
+    
+        [TestMethod]
+        public void PopulateMetadata_ValidJsonAsInput_ReturnMetadataDictionary()
+        {
+            string metadata = @"{
+                ""subscription"": {
+                    ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
+                    ""subscriptionId"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
+                    ""tenantId"": ""00000000-0000-0000-0000-000000000001""
+                },
+                ""resourceGroup"": {
+                    ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/metadataTestresourcegroupname"",
+                    ""location"": ""westus2"",
+                    ""name"": ""metadataTestresourcegroupname""
+                },
+                ""deployment"": {
+                    ""name"": ""deploymentname"",
+                    ""type"": ""deploymenttype"",
+                    ""location"": ""westus2"",
+                    ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/metadataTestresourcegroupname"",
+                    ""properties"": {
+                        ""templateLink"": {
+                            ""uri"": ""https://deploymenturi"",
+                            ""contentVersion"": ""0.0"",
+                            ""metadata"": {
+                                ""metadata"": ""deploymentmetadata""
+                            }
+                        }
+                    }
+                },
+                ""tenantId"": ""00000000-0000-0000-0000-000000000001""
+            }";
+
+            InsensitiveDictionary<JToken> metadataObj = PlaceholderInputGenerator.PopulateDeploymentMetadata(metadata);
+
+            Assert.AreEqual("/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/metadataTestresourcegroupname", metadataObj["resourceGroup"]["id"].Value<string>());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void PopulateMetadata_NonValidJsonAsInput_ExceptionThrown()
+        {
+            string metadataWithMissingColon = @"{
+                ""subscription"" {
+                    ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
+                    ""subscriptionId"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
+                    ""tenantId"": ""00000000-0000-0000-0000-000000000001""
+                }
+            }";
+
+            PlaceholderInputGenerator.PopulateDeploymentMetadata(metadataWithMissingColon);
         }
     }
 }

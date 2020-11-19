@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 using Armory.Utilities;
+using Azure.ResourceManager.Deployments.Core.Collections;
 using Azure.ResourceManager.Deployments.Core.Entities;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
@@ -13,7 +15,7 @@ namespace Armory.TemplateProcessor
         /// <summary>
         /// Generates placeholder parameters when no default value is specified in the ARM Template.
         /// </summary>
-        /// <param name="armTemplate">The ARM Template to generate parameters for.</param>
+        /// <param name="armTemplate">The ARM Template to generate parameters for <c>JSON</c>.</param>
         /// <returns>The Json string of the placeholder parameter values.</returns>
         internal static string GenerateParameters(string armTemplate)
         {
@@ -89,6 +91,86 @@ namespace Armory.TemplateProcessor
             }
 
             return JObject.FromObject(new { parameters = jsonParameters }).ToString();
+        }
+
+        /// <summary>
+        /// Returns the deployment metadata with placeholder data. 
+        /// Use this if you do not rely on the deployment metadata.
+        /// </summary>
+        /// <returns>A dictionary with mock metadata.</returns>
+        private static InsensitiveDictionary<JToken> GeneratePlaceholderDeploymentMetadata()
+        {
+            var deployment = JObject.Parse(@"
+            {
+                ""name"": ""deploymentname"",
+                ""type"": ""deploymenttype"",
+                ""location"": ""westus2"",
+                ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"",
+                ""properties"": {
+                    ""templateLink"": {
+                        ""uri"": ""https://deploymenturi"",
+                        ""contentVersion"": ""0.0"",
+                        ""metadata"": {
+                            ""metadata"": ""deploymentmetadata""
+                        }
+                    }
+                }
+            }");
+
+            var providers = new JArray
+            {
+                new JObject
+                {
+                    new JProperty("namespace", "Microsoft.TestNamespace"),
+                    new JProperty("testProperty", "testValue")
+                }
+            };
+
+            var metadata = new InsensitiveDictionary<JToken>
+            {
+                { "subscription", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
+                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                { "resourceGroup", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
+                    new JProperty("location", "westus2"),
+                    new JProperty("name", "resource-group")) },
+                { "deployment", deployment },
+                { "tenantId", "00000000-0000-0000-0000-000000000000" },
+                { "providers", providers }
+            };
+
+            return metadata;
+        }
+
+        /// <summary>
+        /// Populates the deployment metadata data object.
+        /// </summary>
+        /// <param name="metadata">The deployment metadata <c>JSON</c>.</param>
+        /// <returns>A dictionary with the metadata.</returns>
+        internal static InsensitiveDictionary<JToken> PopulateDeploymentMetadata(string metadata)
+        {
+            try
+            {
+                var metadataAsJObject = JObject.Parse(metadata);
+                InsensitiveDictionary<JToken> metadataDictionary = new InsensitiveDictionary<JToken>();
+
+                foreach (var property in metadataAsJObject.Properties())
+                {
+                    metadataDictionary.Add(property.Name, property.Value.ToObject<JToken>());
+                }
+
+                return metadataDictionary;
+            }
+            catch (JsonReaderException ex)
+            {
+                throw new Exception($"Error parsing metadata: {ex}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error populating metadata: {ex}");
+            }
         }
     }
 }
