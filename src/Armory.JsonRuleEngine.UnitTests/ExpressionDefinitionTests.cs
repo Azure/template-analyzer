@@ -21,12 +21,12 @@ namespace Armory.JsonRuleEngine.UnitTests
     }
 
     [TestClass]
-    public class ToExpressionTests
+    public class ExpressionDefinitionTests
     {
         [DataTestMethod]
-        [DataRow("hasValue", false, typeof(HasValueOperator))]
-        [DataRow("exists", true, typeof(ExistsOperator))]
-        public void ToExpressionTests_ValidOperator_ReturnsLeafExpressionWithCorrectOperator(string operatorProperty, object operatorValue, Type operatorType)
+        [DataRow("hasValue", false, typeof(HasValueOperator), DisplayName = "HasValue: false")]
+        [DataRow("exists", true, typeof(ExistsOperator), DisplayName = "Exists: true")]
+        public void ToExpression_LeafWithValidOperator_ReturnsLeafExpressionWithCorrectOperator(string operatorProperty, object operatorValue, Type operatorType)
         {
             // Generate JSON, parse, and validate parsed LeafExpression
             var leafOperator = ParseJsonValidateAndReturnOperator(operatorProperty, operatorValue);
@@ -44,6 +44,59 @@ namespace Armory.JsonRuleEngine.UnitTests
             operatorSpecificValidator.Invoke(this, new[] { leafOperator, operatorValue });
         }
 
+        [DataTestMethod]
+        [DataRow("hasValue", "string", DisplayName = "HasValue: \"string\"")]
+        [DataRow("exists", new int[0], DisplayName = "Exists: []")]
+        [ExpectedException(typeof(JsonReaderException))]
+        public void ToExpression_LeafWithInvalidOperator_ThrowsParsingException(string operatorProperty, object operatorValue)
+        {
+            ParseJsonValidateAndReturnOperator(operatorProperty, operatorValue);
+        }
+
+        [TestMethod]
+        [DataRow(DisplayName = "No operators")]
+        [DataRow("hasValue", true, "exists", true, DisplayName = "HasValue and Exists")]
+        [ExpectedException(typeof(JsonException))]
+        public void ToExpression_LeafWithInvalidOperatorCount_ThrowsParsingException(params object[] operators)
+        {
+            var leafDefinition = "{\"resourceType\": \"resource\", \"path\": \"path\"";
+
+            if (operators.Length % 2 != 0)
+            {
+                Assert.Fail("Must provide an operator value for each operator property.");
+            }
+
+            int index = 0;
+            foreach (var op in operators)
+            {
+                if (index++ % 2 == 0)
+                {
+                    if (!(op is string))
+                    {
+                        Assert.Fail("Operator property (first of each pair) must be a string");
+                    }
+                    leafDefinition = leafDefinition + $", \"{op}\": ";
+                }
+                else
+                {
+                    var jsonValue = JsonConvert.SerializeObject(op);
+                    leafDefinition = leafDefinition + jsonValue;
+                }
+            }
+
+            leafDefinition = leafDefinition + "}";
+
+            try
+            {
+                JsonConvert.DeserializeObject<ExpressionDefinition>(leafDefinition);
+            }
+            catch (Exception e)
+            {
+                Assert.IsTrue(e.Message.IndexOf(operators.Length > 0 ? "too many" : "invalid", StringComparison.OrdinalIgnoreCase) >= 0);
+                throw;
+            }
+        }
+
         private LeafExpressionOperator ParseJsonValidateAndReturnOperator(string operatorProperty, object operatorValue)
         {
             var jsonValue = JsonConvert.SerializeObject(operatorValue);
@@ -56,9 +109,9 @@ namespace Armory.JsonRuleEngine.UnitTests
                 TestResourceType,
                 TestPath,
                 operatorProperty,
-                operatorValue is string ? $"\"{jsonValue}\"" : jsonValue));
+                jsonValue));
 
-            var leafExpression = leafDefinition.ToExpression() as LeafExpression;
+            var leafExpression = leafDefinition.ToExpression(new RuleDefinition()) as LeafExpression;
             Assert.IsNotNull(leafExpression);
             Assert.AreEqual(TestPath, leafExpression.Path);
             Assert.AreEqual(TestResourceType, leafExpression.ResourceType);
