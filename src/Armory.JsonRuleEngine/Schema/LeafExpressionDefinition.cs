@@ -81,38 +81,6 @@ namespace Armory.JsonRuleEngine
             {
                 leafOperator = new HasValueOperator(HasValue.Value, isNegative: false);
             }
-            else if (this.Is != null)
-            {
-                // TODO: new EqualsOperator
-            }
-            else if (this.NotEquals != null)
-            {
-                // TODO: new NotEqualsOperator
-            }
-            else if (this.Regex != null)
-            {
-                // TODO: new RegexOperator
-            }
-            else if (this.In != null)
-            {
-                // TODO: new InOperator
-            }
-            else if (this.Less != null)
-            {
-                // TODO: new LessOperator
-            }
-            else if (this.LessOrEqual != null)
-            {
-                // TODO: new GreaterOperator(negated)
-            }
-            else if (this.Greater != null)
-            {
-                // TODO: new GreaterOperator
-            }
-            else if (this.GreaterOrEqual != null)
-            {
-                // TODO: new LessOperator(negated)
-            }
 
             if (leafOperator != null)
             {

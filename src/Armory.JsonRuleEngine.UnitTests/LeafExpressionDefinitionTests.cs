@@ -4,8 +4,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Armory.JsonRuleEngine.UnitTests
 {
@@ -21,7 +21,7 @@ namespace Armory.JsonRuleEngine.UnitTests
     }
 
     [TestClass]
-    public class ExpressionDefinitionTests
+    public class LeafExpressionDefinitionTests
     {
         [DataTestMethod]
         [DataRow("hasValue", false, typeof(HasValueOperator), DisplayName = "HasValue: false")]
@@ -42,59 +42,6 @@ namespace Armory.JsonRuleEngine.UnitTests
 
             Assert.IsNotNull(operatorSpecificValidator, $"Unable to find a validation method for LeafExpressionOperator {operatorType}");
             operatorSpecificValidator.Invoke(this, new[] { leafOperator, operatorValue });
-        }
-
-        [DataTestMethod]
-        [DataRow("hasValue", "string", DisplayName = "HasValue: \"string\"")]
-        [DataRow("exists", new int[0], DisplayName = "Exists: []")]
-        [ExpectedException(typeof(JsonReaderException))]
-        public void ToExpression_LeafWithInvalidOperator_ThrowsParsingException(string operatorProperty, object operatorValue)
-        {
-            ParseJsonValidateAndReturnOperator(operatorProperty, operatorValue);
-        }
-
-        [TestMethod]
-        [DataRow(DisplayName = "No operators")]
-        [DataRow("hasValue", true, "exists", true, DisplayName = "HasValue and Exists")]
-        [ExpectedException(typeof(JsonException))]
-        public void ToExpression_LeafWithInvalidOperatorCount_ThrowsParsingException(params object[] operators)
-        {
-            var leafDefinition = "{\"resourceType\": \"resource\", \"path\": \"path\"";
-
-            if (operators.Length % 2 != 0)
-            {
-                Assert.Fail("Must provide an operator value for each operator property.");
-            }
-
-            int index = 0;
-            foreach (var op in operators)
-            {
-                if (index++ % 2 == 0)
-                {
-                    if (!(op is string))
-                    {
-                        Assert.Fail("Operator property (first of each pair) must be a string");
-                    }
-                    leafDefinition = leafDefinition + $", \"{op}\": ";
-                }
-                else
-                {
-                    var jsonValue = JsonConvert.SerializeObject(op);
-                    leafDefinition = leafDefinition + jsonValue;
-                }
-            }
-
-            leafDefinition = leafDefinition + "}";
-
-            try
-            {
-                JsonConvert.DeserializeObject<ExpressionDefinition>(leafDefinition);
-            }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e.Message.IndexOf(operators.Length > 0 ? "too many" : "invalid", StringComparison.OrdinalIgnoreCase) >= 0);
-                throw;
-            }
         }
 
         private LeafExpressionOperator ParseJsonValidateAndReturnOperator(string operatorProperty, object operatorValue)
