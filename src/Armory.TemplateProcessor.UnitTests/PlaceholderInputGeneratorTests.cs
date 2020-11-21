@@ -12,529 +12,34 @@ namespace Armory.TemplateProcessor.UnitTests
     [TestClass]
     public class PlaceholderInputGeneratorTests
     {
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValue_SetValueToDefaultString()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
+        const string DefaultStringParameterValue = @"""defaultString0""";
+        const string DefaultStringParameterValueWithMaxLength = @"""defaultSt0""";
+        const string DefaultObjectParameterValue = @"{ ""property1"": ""value1"" }";
 
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultString0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_SecureStringParameterMissingDefaultValue_SetValueToDefaultString()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""secureString""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultString0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndHasMinLength_SetValueToDefaultStringWithMinLength()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""minLength"": 20
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultStringaaaaaa0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndHasMaxLength_SetValueToDefaultStringWithMaxLength()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""maxLength"": 10
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultSt0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndHasMinLessThanMaxLength_SetValueToDefaultStringWithMaxLength()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""minLength"": 10,
-                        ""maxLength"": 13
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultStrin0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndHasMinEqualToMaxLength_SetValueToDefaultStringWithMaxLength()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""minLength"": 10,
-                        ""maxLength"": 10
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultSt0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        // The Input Generator will not take care of this error. Instead, it will pass some value to the
+        [DataTestMethod]
+        [DataRow(@"""type"": ""string""", DefaultStringParameterValue, DisplayName = "Type: string, defaultString0 returned")]
+        [DataRow(@"""type"": ""secureString""", DefaultStringParameterValue, DisplayName = "Type: secureString, defaultString0 returned")]
+        [DataRow(@"""type"": ""string"", ""minLength"": 20", @"""defaultStringaaaaaa0""", DisplayName = "Type: string, MinLength defined, defaultStringaaaaaa0 returned")]
+        [DataRow(@"""type"": ""string"", ""maxLength"": 10", DefaultStringParameterValueWithMaxLength, DisplayName = "Type: string, MaxLength defined, defaultSt0 returned")]
+        [DataRow(@"""type"": ""string"", ""minLength"": 10, ""maxLength"": 13", @"""defaultStrin0""", DisplayName = "Type: string, MinLength < MaxLength, defaultStrin0 returned")]
+        [DataRow(@"""type"": ""string"", ""minLength"": 10, ""maxLength"": 10", DefaultStringParameterValueWithMaxLength, DisplayName = "Type: string, MinLength == MaxLength, defaultSt0 returned")]
+        [DataRow(@"""type"": ""string"", ""allowedValues"": [ ""AllowedValue0"", ""AllowedValue1"" ]", @"""AllowedValue0""", DisplayName = "Type: string, AllowedValues: array with values, AllowedValue0 returned")]
+        [DataRow(@"""type"": ""string"", ""allowedValues"": [ ]", DefaultStringParameterValue, DisplayName = "Type: string, AllowedValues: empty array, defaultString0 returned")]
+        [DataRow(@"""type"": ""int""", "1", DisplayName = "Type: int, 1 returned")]
+        [DataRow(@"""type"": ""bool""", "true", DisplayName = "Type: bool, true returned")]
+        [DataRow(@"""type"": ""array""", @"[ ""item1"", ""item2"" ]", DisplayName = "Type: array, default array is returned")]
+        [DataRow(@"""type"": ""object""", DefaultObjectParameterValue, DisplayName = "Type: object, default object is returned")]
+        [DataRow(@"""type"": ""secureObject""", DefaultObjectParameterValue, DisplayName = "Type: secureObject, default object is returned")]
+        // The Input Generator will not take care of these errors. Instead, it will pass some value to the
         // Deployments Template Parsing library which is responsible for throwing the appropriate detailed error.
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndHasMinGreaterThanMaxLength_SetValueToDefaultStringWithMaxLength()
+        [DataRow(@"""type"": ""string"", ""minLength"": 14, ""maxLength"": 10", DefaultStringParameterValueWithMaxLength, DisplayName = "Type: string, MinLength > MaxLength, empty parameter object returned")]
+        [DataRow(@"""type"": ""secure""", null, DisplayName = "Type: invalid type, empty parameter object returned")]
+        [DataRow(@"""type"": ""notSpecified""", null, DisplayName = "Type: notSupported, empty parameter object returned")]
+        [DataRow(@"""missingTypeParameter1"": { }", null, DisplayName = "Type: not specified, empty parameter object returned")]
+        public void GenerateParameters_SingleParameterMissingDefaultValue_ExpectedValueIsReturned(string parameterMetadata, string expectedParameterValue)
         {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""minLength"": 10,
-                        ""maxLength"": 6
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defau0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndHasAllowedValues_SetValueToFirstAllowedValue()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""allowedValues"": [
-                            ""AllowedValue0"",
-                            ""AllowedValue1""
-                        ]
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""AllowedValue0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_StringParameterMissingDefaultValueAndEmptyAllowedValues_SetValueToDefaultString()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""allowedValues"": [ ]
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": ""defaultString0""
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_IntParameterMissingDefaultValue_SetValueTo1()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""int""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": 1
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_BoolParameterMissingDefaultValue_SetValueToTrue()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""bool""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": true
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_ArrayParameterMissingDefaultValue_SetValueToDefaultArray()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""array""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": [
-                            ""item1"",
-                            ""item2""
-                        ]
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_ObjectParameterMissingDefaultValue_SetValueToDefaultObject()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""object""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": {
-                            ""property1"": ""value1""
-                        }
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        [TestMethod]
-        public void GenerateParameters_SecureObjectParameterMissingDefaultValue_SetValueToDefaultObject()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingDefaultParameter1"": {
-                        ""type"": ""secureObject""
-                    },
-                    ""hasDefaultParameter1"": {
-                        ""type"": ""string"",
-                        ""defaultValue"": ""defaultValue""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": {                  
-                    ""missingDefaultParameter1"": {  
-                        ""value"": {
-                            ""property1"": ""value1""
-                        }
-                    }
-                }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        // The Input Generator will not take care of this error. Instead, it will pass no value to the
-        // Deployments Template Parsing library which is responsible for throwing the appropriate detailed error.
-        [TestMethod]
-        public void GenerateParameters_InvalidTypeParameter_NoValueSet()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""invalidTypeParameter1"": {
-                        ""type"": ""secure""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": { }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        // The Input Generator will not take care of this error. Instead, it will pass no value to the
-        // Deployments Template Parsing library which is responsible for throwing the appropriate detailed error.
-        [TestMethod]
-        public void GenerateParameters_ParameterTypeIsUndefined_NoValueSet()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""notSpecifiedTypeParameter1"": {
-                        ""type"": ""notSpecified""
-                    }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": { }
-            }";
-
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
-
-            Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
-        }
-
-        // The Input Generator will not take care of this error. Instead, it will pass no value to the
-        // Deployments Template Parsing library which is responsible for throwing the appropriate detailed error.
-        [TestMethod]
-        public void GenerateParameters_ParameterTypeIsNotSpecified_NoValueSet()
-        {
-            string armTemplate = @"{
-                ""parameters"": {
-                    ""missingTypeParameter1"": { }
-                },
-                ""variables"": {},
-                ""resources"": [],
-                ""outputs"": {}
-            }";
-
-            string expectedParameters = @"{  
-                ""parameters"": { }
-            }";
+            string armTemplate = GenerateTemplate(parameterMetadata);
+            string expectedParameters = expectedParameterValue == null ? @"{""parameters"": { } }" : GenerateExpectedParameters(expectedParameterValue);
 
             string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
 
@@ -582,6 +87,35 @@ namespace Armory.TemplateProcessor.UnitTests
             return Regex.Replace(stringToNormalize, @"\s", "");
         }
     
+        private string GenerateTemplate(string parameterMetadata)
+        {
+            return string.Format(@"{{
+                ""parameters"": {{
+                    ""missingDefaultParameter1"": {{
+                        {0}
+                    }},
+                    ""hasDefaultParameter1"": {{
+                        ""type"": ""string"",
+                        ""defaultValue"": ""defaultValue""
+                    }}
+                }},
+                ""variables"": {{}},
+                ""resources"": [],
+                ""outputs"": {{}}
+            }}", parameterMetadata);
+        }
+
+        private string GenerateExpectedParameters(string parameterValue)
+        {
+            return string.Format(@"{{
+                ""parameters"": {{
+                    ""missingDefaultParameter1"": {{
+                        ""value"": {0}
+                    }}
+                }}
+            }}", parameterValue);
+        }
+
         [TestMethod]
         public void PopulateMetadata_ValidJsonAsInput_ReturnMetadataDictionary()
         {
@@ -623,13 +157,7 @@ namespace Armory.TemplateProcessor.UnitTests
         [ExpectedException(typeof(Exception))]
         public void PopulateMetadata_NonValidJsonAsInput_ExceptionThrown()
         {
-            string metadataWithMissingColon = @"{
-                ""subscription"" {
-                    ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
-                    ""subscriptionId"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
-                    ""tenantId"": ""00000000-0000-0000-0000-000000000001""
-                }
-            }";
+            string metadataWithMissingColon = @"{ } }";
 
             PlaceholderInputGenerator.PopulateDeploymentMetadata(metadataWithMissingColon);
         }
