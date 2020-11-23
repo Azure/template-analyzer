@@ -143,34 +143,5 @@ namespace Armory.TemplateProcessor
 
             return metadata;
         }
-
-        /// <summary>
-        /// Populates the deployment metadata data object.
-        /// </summary>
-        /// <param name="metadata">The deployment metadata <c>JSON</c>.</param>
-        /// <returns>A dictionary with the metadata.</returns>
-        internal static InsensitiveDictionary<JToken> PopulateDeploymentMetadata(string metadata)
-        {
-            try
-            {
-                var metadataAsJObject = JObject.Parse(metadata);
-                InsensitiveDictionary<JToken> metadataDictionary = new InsensitiveDictionary<JToken>();
-
-                foreach (var property in metadataAsJObject.Properties())
-                {
-                    metadataDictionary.Add(property.Name, property.Value.ToObject<JToken>());
-                }
-
-                return metadataDictionary;
-            }
-            catch (JsonReaderException ex)
-            {
-                throw new Exception($"Error parsing metadata: {ex}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error populating metadata: {ex}");
-            }
-        }
     }
 }
