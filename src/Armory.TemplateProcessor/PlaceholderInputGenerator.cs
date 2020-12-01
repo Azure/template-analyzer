@@ -17,7 +17,7 @@ namespace Armory.TemplateProcessor
         /// </summary>
         /// <param name="armTemplate">The ARM Template to generate parameters for <c>JSON</c>.</param>
         /// <returns>The Json string of the placeholder parameter values.</returns>
-        internal static string GenerateParameters(string armTemplate)
+        internal static string GeneratePlaceholderParameters(string armTemplate)
         {
             JObject jsonTemplate = JObject.Parse(armTemplate);
 
@@ -98,7 +98,7 @@ namespace Armory.TemplateProcessor
         /// Use this if you do not rely on the deployment metadata.
         /// </summary>
         /// <returns>A dictionary with mock metadata.</returns>
-        private static InsensitiveDictionary<JToken> GeneratePlaceholderDeploymentMetadata()
+        internal static InsensitiveDictionary<JToken> GeneratePlaceholderDeploymentMetadata()
         {
             var deployment = JObject.Parse(@"
             {

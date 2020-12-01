@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Azure.ResourceManager.Deployments.Core.Collections;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
-using System;
 using System.Text.RegularExpressions;
 
 namespace Armory.TemplateProcessor.UnitTests
@@ -41,7 +38,7 @@ namespace Armory.TemplateProcessor.UnitTests
             string armTemplate = GenerateTemplate(parameterMetadata);
             string expectedParameters = expectedParameterValue == null ? @"{""parameters"": { } }" : GenerateExpectedParameters(expectedParameterValue);
 
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
+            string generatedParameters = PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate);
 
             Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
         }
@@ -74,7 +71,7 @@ namespace Armory.TemplateProcessor.UnitTests
                 }
             }";
 
-            string generatedParameters = PlaceholderInputGenerator.GenerateParameters(armTemplate);
+            string generatedParameters = PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate);
 
             Assert.AreEqual(NormalizeString(expectedParameters), NormalizeString(generatedParameters));
         }
