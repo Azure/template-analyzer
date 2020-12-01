@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 using Armory.Utilities;
-using Azure.ResourceManager.Deployments.Core.Collections;
-using Azure.ResourceManager.Deployments.Core.Extensions;
-using Azure.ResourceManager.Deployments.Expression.Engines;
-using Azure.ResourceManager.Deployments.Templates.Configuration;
-using Azure.ResourceManager.Deployments.Templates.Engines;
-using Azure.ResourceManager.Deployments.Templates.Expressions;
-using Azure.ResourceManager.Deployments.Templates.Extensions;
-using Azure.ResourceManager.Deployments.Templates.Schema;
+using Azure.Deployments.Core.Collections;
+using Azure.Deployments.Core.Extensions;
+using Azure.Deployments.Expression.Engines;
+using Azure.Deployments.Templates.Configuration;
+using Azure.Deployments.Templates.Engines;
+using Azure.Deployments.Templates.Expressions;
+using Azure.Deployments.Templates.Extensions;
+using Azure.Deployments.Templates.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

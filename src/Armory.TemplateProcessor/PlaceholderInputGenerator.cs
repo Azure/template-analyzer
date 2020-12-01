@@ -2,9 +2,8 @@
 // Licensed under the MIT License.
 
 using Armory.Utilities;
-using Azure.ResourceManager.Deployments.Core.Collections;
-using Azure.ResourceManager.Deployments.Core.Entities;
-using Newtonsoft.Json;
+using Azure.Deployments.Core.Collections;
+using Azure.Deployments.Core.Entities;
 using Newtonsoft.Json.Linq;
 using System;
 
