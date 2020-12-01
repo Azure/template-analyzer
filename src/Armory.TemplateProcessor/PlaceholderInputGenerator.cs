@@ -1,14 +1,17 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using Armory.Utilities;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Entities;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace Armory.TemplateProcessor
 {
+    /// <summary>
+    /// Generates placeholder values for required inputs to process templates
+    /// </summary>
     internal class PlaceholderInputGenerator
     {
         /// <summary>

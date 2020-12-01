@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using Armory.Utilities;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
@@ -8,7 +9,6 @@ using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Schema;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace Armory.TemplateProcessor.UnitTests
 {

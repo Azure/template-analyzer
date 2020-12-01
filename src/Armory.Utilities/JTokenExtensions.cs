@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 
 namespace Armory.Utilities
 {
+    /// <summary>
+    /// This class is used to simplify accessing values in JTokens.
+    /// </summary>
     public static class JTokenExtensions
     {
         private static readonly Regex jArrayRegex = new Regex(@"^(?<property>\w+)\[(?<index>\d+)\]$", RegexOptions.Compiled);

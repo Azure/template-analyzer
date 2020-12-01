@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Armory.Utilities;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
@@ -12,19 +15,26 @@ using Azure.Deployments.Templates.Extensions;
 using Azure.Deployments.Templates.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Armory.TemplateProcessor
 {
+    /// <summary>
+    /// Contains functionality to process all language expressions in ARM templates. 
+    /// Generates placeholder values when parameter values are not provided.
+    /// </summary>
     public class ArmTemplateProcessor
     {
         private readonly string _armTemplate;
         private readonly string _apiVersion;
         private readonly bool _dropResourceCopies;
 
-        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2019-05-01", bool dropResourceCopies = false)
+        /// <summary>
+        ///  Constructor for the ARM Template Processing library
+        /// </summary>
+        /// <param name="armTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
+        /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
+        /// <param name="dropResourceCopies">Whether copies of resources (when using the copy element in the ARM Template) should be dropped after processing.</param>
+        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", bool dropResourceCopies = false)
         {
             _armTemplate = armTemplate;
             _apiVersion = apiVersion;
@@ -43,7 +53,7 @@ namespace Armory.TemplateProcessor
         /// <summary>
         /// Processes the ARM template with provided parameters and placeholder deployment metadata.
         /// </summary>
-        /// <param name="parameters">The input parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
+        /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
         /// <returns>The processed template as a Template object.</returns>
         public Template ProcessTemplate(string parameters)
         {
@@ -53,7 +63,7 @@ namespace Armory.TemplateProcessor
         /// <summary>
         /// Processes the ARM template with provided parameters and deployment metadata.
         /// </summary>
-        /// <param name="parameters">The input parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
+        /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
         /// <param name="metadata">The deployment metadata <c>JSON</c>.</param>
         /// <returns>The processed template as a Template object.</returns>
         public Template ProcessTemplate(string parameters, string metadata)
@@ -64,6 +74,12 @@ namespace Armory.TemplateProcessor
             return ParseAndValidateTemplate(parametersDictionary, metadataDictionary);
         }
 
+        /// <summary>
+        /// Parses and validates the template.
+        /// </summary>
+        /// <param name="parameters">The template parameters</param>
+        /// <param name="metadata">The deployment metadata</param>
+        /// <returns>The processed template as a Template object.</returns>
         internal Template ParseAndValidateTemplate(InsensitiveDictionary<JToken> parameters, InsensitiveDictionary<JToken> metadata)
         {
             Template template = new Template();
@@ -211,6 +227,13 @@ namespace Armory.TemplateProcessor
             return helper;
         }
 
+        /// <summary>
+        /// Moves the original resource copied into it's original location to preserve references.
+        /// Also, drops resource copies if the flag is set in the constructor.
+        /// </summary>
+        /// <param name="template">The template</param>
+        /// <param name="copyNameMap">Mapping of the copy name, the original name of the resource, and index of resource in resource list.</param>
+        /// <returns>An array of the Template Resources after they have been reordered.</returns>
         private TemplateResource[] ReorderResourceCopies(Template template, Dictionary<string, (string, int)> copyNameMap)
         {
             // Set OriginalName back on resources that were copied and reorder the resources.
@@ -253,6 +276,11 @@ namespace Armory.TemplateProcessor
             return updatedOrder.ToArray();
         }
 
+        /// <summary>
+        /// Set the original name property for each resource before processing language expressions in the template.
+        /// This is used to help map to the original resource after processing.
+        /// </summary>
+        /// <param name="template">The template</param>
         private void SetOriginalResourceNames(Template template)
         {
             foreach (var resource in template.Resources)
