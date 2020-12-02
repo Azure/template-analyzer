@@ -27,6 +27,7 @@ steps:
     command: 'restore'
     projects: '**/*.csproj'
     feedsToUse: 'select'
+    vstsFeed: $(Internal_Nuget)
     externalEndpoint: 'Internal'
 
 - task: DotNetCoreCLI@2
