@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using Armory.Utilities;
+using Newtonsoft.Json.Linq;
 
 namespace Armory.JsonRuleEngine
 {
@@ -41,7 +42,7 @@ namespace Armory.JsonRuleEngine
 
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                resolvedTokens = InsensitiveToken(jsonPath);
+                resolvedTokens = new List<JToken> { this.currentScope.InsensitiveToken(jsonPath) };
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
@@ -53,21 +54,6 @@ namespace Armory.JsonRuleEngine
         }
 
         public JToken JToken => this.currentScope;
-
-        private IEnumerable<JToken> InsensitiveToken(string path)
-        {
-            var properties = path.Split('.');
-            var lastToken = currentScope;
-            foreach (var property in properties)
-            {
-                lastToken = lastToken[property];
-                if (lastToken == null)
-                {
-                    break;
-                }
-            }
-            yield return lastToken;
-        }
     }
 
     /// <summary>
