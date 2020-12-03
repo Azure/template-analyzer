@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.TemplateProcessor", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Cli", "Armory.Cli\Armory.Cli.csproj", "{EE24178E-E708-4FE4-AFFB-2753E541A410}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Armory.Utilities", "Armory.Utilities\Armory.Utilities.csproj", "{5C210CCB-965E-472B-943D-61455CDB2CD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Utilities", "Armory.Utilities\Armory.Utilities.csproj", "{5C210CCB-965E-472B-943D-61455CDB2CD8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Armory.Utilities.UnitTests", "Armory.Utilities.UnitTests\Armory.Utilities.UnitTests.csproj", "{D1B6881E-C914-441B-834E-B5C4FB4446D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Utilities.UnitTests", "Armory.Utilities.UnitTests\Armory.Utilities.UnitTests.csproj", "{D1B6881E-C914-441B-834E-B5C4FB4446D8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{44123AF8-5D5B-4C69-B1CB-BB8C7868E010}"
 EndProject
@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.JsonRuleEngine", "Ar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.JsonRuleEngine.UnitTests", "Armory.JsonRuleEngine.UnitTests\Armory.JsonRuleEngine.UnitTests.csproj", "{5A8177F6-41EB-4A8D-96A0-3E4B897DF832}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Armory.JsonRuleEngine.FunctionalTests", "Armory.JsonRuleEngine.FunctionalTests\Armory.JsonRuleEngine.FunctionalTests.csproj", "{21F7F957-72E5-4B4D-9141-AB3222218AED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.JsonRuleEngine.FunctionalTests", "Armory.JsonRuleEngine.FunctionalTests\Armory.JsonRuleEngine.FunctionalTests.csproj", "{21F7F957-72E5-4B4D-9141-AB3222218AED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonRuleEngine", "JsonRuleEngine", "{34C003AF-0AE6-45A7-B57D-FB1A3C8913A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,6 +74,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5C210CCB-965E-472B-943D-61455CDB2CD8} = {44123AF8-5D5B-4C69-B1CB-BB8C7868E010}
 		{D1B6881E-C914-441B-834E-B5C4FB4446D8} = {44123AF8-5D5B-4C69-B1CB-BB8C7868E010}
+		{7443045B-40C9-406D-9CBC-6A68697AAF85} = {34C003AF-0AE6-45A7-B57D-FB1A3C8913A6}
+		{5A8177F6-41EB-4A8D-96A0-3E4B897DF832} = {34C003AF-0AE6-45A7-B57D-FB1A3C8913A6}
+		{21F7F957-72E5-4B4D-9141-AB3222218AED} = {34C003AF-0AE6-45A7-B57D-FB1A3C8913A6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C716DF78-13EF-44A1-8E2E-CFF3746128CE}
