@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Armory.Types\Armory.Types.csproj" />
+    <ProjectReference Include="..\Armory.Utilities\Armory.Utilities.csproj" />
   </ItemGroup>
 
 </Project>
