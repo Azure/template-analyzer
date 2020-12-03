@@ -2,86 +2,56 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Linq;
-using System.Reflection;
-using Newtonsoft.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 
 namespace Armory.JsonRuleEngine.UnitTests
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class OperatorSpecificValidatorAttribute : Attribute
-    {
-        public Type Operator { get; set; }
-
-        public OperatorSpecificValidatorAttribute(Type @operator)
-        {
-            this.Operator = @operator;
-        }
-    }
-
     [TestClass]
     public class LeafExpressionDefinitionTests
     {
         [DataTestMethod]
-        [DataRow("hasValue", false, typeof(HasValueOperator), DisplayName = "HasValue: false")]
-        [DataRow("exists", true, typeof(ExistsOperator), DisplayName = "Exists: true")]
-        public void ToExpression_LeafWithValidOperator_ReturnsLeafExpressionWithCorrectOperator(string operatorProperty, object operatorValue, Type operatorType)
+        [DataRow(true, DisplayName = "Value is true")]
+        [DataRow(false, DisplayName = "Value is false")]
+        public void ToExpression_HasValueOperator_ReturnsLeafExpressionWithHasValue(bool operatorValue)
         {
-            // Generate JSON, parse, and validate parsed LeafExpression
-            var leafOperator = ParseJsonValidateAndReturnOperator(operatorProperty, operatorValue);
+            var leafExpression = GenerateLeafExpression(leaf => leaf.HasValue = operatorValue);
 
-            // Verify operator in parsed leaf expression is expected type
-            Assert.IsTrue(leafOperator.GetType() == operatorType);
-
-            // Run operator-specific validation
-            MethodInfo operatorSpecificValidator = GetType()
-                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
-                .Where(method => method.GetCustomAttribute<OperatorSpecificValidatorAttribute>()?.Operator == operatorType)
-                .FirstOrDefault();
-
-            Assert.IsNotNull(operatorSpecificValidator, $"Unable to find a validation method for LeafExpressionOperator {operatorType}");
-            operatorSpecificValidator.Invoke(this, new[] { leafOperator, operatorValue });
+            var leafOperator = leafExpression.Operator as HasValueOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.AreEqual(operatorValue, leafOperator.EffectiveValue);
+            Assert.IsFalse(leafOperator.IsNegative);
         }
 
-        private LeafExpressionOperator ParseJsonValidateAndReturnOperator(string operatorProperty, object operatorValue)
+        [DataTestMethod]
+        [DataRow(true, DisplayName = "Value is true")]
+        [DataRow(false, DisplayName = "Value is false")]
+        public void ToExpression_ExistsOperator_ReturnsLeafExpressionWithExists(bool operatorValue)
         {
-            var jsonValue = JsonConvert.SerializeObject(operatorValue);
-            var leafDefinition = JsonConvert.DeserializeObject<ExpressionDefinition>(string.Format(@"
-                {{
-                    ""resourceType"": ""{0}"",
-                    ""path"": ""{1}"",
-                    ""{2}"": {3}
-                }}",
-                TestResourceType,
-                TestPath,
-                operatorProperty,
-                jsonValue));
+            var leafExpression = GenerateLeafExpression(leaf => leaf.Exists = operatorValue);
 
-            var leafExpression = leafDefinition.ToExpression() as LeafExpression;
-            Assert.IsNotNull(leafExpression);
-            Assert.AreEqual(TestPath, leafExpression.Path);
-            Assert.AreEqual(TestResourceType, leafExpression.ResourceType);
-            Assert.IsNotNull(leafExpression.Operator);
-
-            return leafExpression.Operator;
+            var leafOperator = leafExpression.Operator as ExistsOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.AreEqual(operatorValue, leafOperator.EffectiveValue);
+            Assert.IsFalse(leafOperator.IsNegative);
         }
 
-        [OperatorSpecificValidator(typeof(HasValueOperator))]
-        private static void HasValueValidation(HasValueOperator hasValueOperator, bool operatorValue)
+        private LeafExpression GenerateLeafExpression(Action<LeafExpressionDefinition> propertySetter)
         {
-            Assert.AreEqual(operatorValue, hasValueOperator.EffectiveValue);
-            Assert.IsFalse(hasValueOperator.IsNegative);
-        }
+            var leaf = new LeafExpressionDefinition
+            {
+                Path = "json.path",
+                ResourceType = "Namespace/ResourceType"
+            };
+            propertySetter(leaf);
+            
+            var expression = leaf.ToExpression() as LeafExpression;
+            Assert.AreEqual("json.path", expression.Path);
+            Assert.AreEqual("Namespace/ResourceType", expression.ResourceType);
 
-        [OperatorSpecificValidator(typeof(ExistsOperator))]
-        private static void ExistsValidation(ExistsOperator existsOperator, bool operatorValue)
-        {
-            Assert.AreEqual(operatorValue, existsOperator.EffectiveValue);
-            Assert.IsFalse(existsOperator.IsNegative);
+            return expression;
         }
-
-        private const string TestResourceType = "Namespace/ResourceType";
-        private const string TestPath = "json.path";
     }
 }

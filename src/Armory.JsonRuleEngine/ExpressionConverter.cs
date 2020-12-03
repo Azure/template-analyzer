@@ -55,8 +55,8 @@ namespace Armory.JsonRuleEngine
             }
 
             throw new JsonException(leafPropertyCount > 1 ?
-                $"Too many evaluators specified in evaluation.  Only one is allowed.  Original JSON: {jsonObject}" :
-                $"Invalid evaluation in JSON: {jsonObject}");
+                $"Too many expressions specified in evaluation.  Only one is allowed.  Original JSON: {jsonObject}" :
+                $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  Original JSON: {jsonObject}");
         }
 
         /// <summary>
