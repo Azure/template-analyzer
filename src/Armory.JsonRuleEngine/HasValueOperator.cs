@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Newtonsoft.Json.Linq;
+
 namespace Armory.JsonRuleEngine
 {
     internal class HasValueOperator : LeafExpressionOperator
@@ -17,6 +19,22 @@ namespace Armory.JsonRuleEngine
             (this.SpecifiedValue, this.IsNegative) = (specifiedValue, isNegative);
 
             this.EffectiveValue = specifiedValue;
+        }
+
+        public override bool EvaluateExpression(JToken tokenToEvaluate)
+        {
+            if (tokenToEvaluate == null || tokenToEvaluate.Type == JTokenType.Null)
+            {
+                return !EffectiveValue;
+            }
+
+            if (tokenToEvaluate.Type == JTokenType.String
+                && tokenToEvaluate.Value<string>().Length == 0)
+            {
+                return !EffectiveValue;
+            }
+
+            return EffectiveValue;
         }
     }
 }

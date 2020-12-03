@@ -69,7 +69,7 @@ namespace Armory.JsonRuleEngine
         [JsonProperty]
         public JToken GreaterOrEqual { get; set; }
 
-        public override Expression ToExpression()
+        public override Expression ToExpression(RuleDefinition rootRule)
         {
             LeafExpressionOperator leafOperator = null;
 
@@ -84,7 +84,7 @@ namespace Armory.JsonRuleEngine
 
             if (leafOperator != null)
             {
-                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
+                return new LeafExpression(rootRule, this.ResourceType, this.Path, leafOperator);
             }
 
             throw new NotImplementedException();

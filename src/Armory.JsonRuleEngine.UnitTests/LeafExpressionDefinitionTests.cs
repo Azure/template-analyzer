@@ -47,7 +47,7 @@ namespace Armory.JsonRuleEngine.UnitTests
             };
             propertySetter(leaf);
             
-            var expression = leaf.ToExpression() as LeafExpression;
+            var expression = leaf.ToExpression(new RuleDefinition()) as LeafExpression;
             Assert.AreEqual("json.path", expression.Path);
             Assert.AreEqual("Namespace/ResourceType", expression.ResourceType);
 
