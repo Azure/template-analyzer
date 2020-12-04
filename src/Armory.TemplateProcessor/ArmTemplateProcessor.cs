@@ -24,9 +24,9 @@ namespace Armory.TemplateProcessor
     /// </summary>
     public class ArmTemplateProcessor
     {
-        private readonly string _armTemplate;
-        private readonly string _apiVersion;
-        private readonly bool _dropResourceCopies;
+        private readonly string armTemplate;
+        private readonly string apiVersion;
+        private readonly bool dropResourceCopies;
 
         /// <summary>
         ///  Constructor for the ARM Template Processing library
@@ -36,9 +36,9 @@ namespace Armory.TemplateProcessor
         /// <param name="dropResourceCopies">Whether copies of resources (when using the copy element in the ARM Template) should be dropped after processing.</param>
         public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", bool dropResourceCopies = false)
         {
-            _armTemplate = armTemplate;
-            _apiVersion = apiVersion;
-            _dropResourceCopies = dropResourceCopies;
+            this.armTemplate = armTemplate;
+            this.apiVersion = apiVersion;
+            this.dropResourceCopies = dropResourceCopies;
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Armory.TemplateProcessor
         /// <returns>The processed template as a Template object.</returns>
         public Template ProcessTemplate(string parameters, string metadata)
         {
-            InsensitiveDictionary<JToken> parametersDictionary = PopulateParameters(string.IsNullOrEmpty(parameters) ? PlaceholderInputGenerator.GeneratePlaceholderParameters(_armTemplate) : parameters);
+            InsensitiveDictionary<JToken> parametersDictionary = PopulateParameters(string.IsNullOrEmpty(parameters) ? PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate) : parameters);
             InsensitiveDictionary<JToken> metadataDictionary = string.IsNullOrEmpty(metadata) ? PlaceholderInputGenerator.GeneratePlaceholderDeploymentMetadata() : PopulateDeploymentMetadata(metadata);
 
             return ParseAndValidateTemplate(parametersDictionary, metadataDictionary);
@@ -85,9 +85,9 @@ namespace Armory.TemplateProcessor
             Template template = new Template();
             Dictionary<string, (string, int)> copyNameMap = new Dictionary<string, (string, int)>();
 
-            template = TemplateEngine.ParseTemplate(_armTemplate);
+            template = TemplateEngine.ParseTemplate(armTemplate);
 
-            TemplateEngine.ValidateTemplate(template, _apiVersion, TemplateDeploymentScope.NotSpecified);
+            TemplateEngine.ValidateTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
             TemplateEngine.ParameterizeTemplate(
                 inputParameters: parameters,
@@ -110,7 +110,7 @@ namespace Armory.TemplateProcessor
 
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions(template, _apiVersion);
+                TemplateEngine.ProcessTemplateLanguageExpressions(template, apiVersion);
             }
             catch
             {
@@ -119,7 +119,7 @@ namespace Armory.TemplateProcessor
 
             template.Resources = ReorderResourceCopies(template, copyNameMap);
 
-            TemplateEngine.ValidateProcessedTemplate(template, _apiVersion, TemplateDeploymentScope.NotSpecified);
+            TemplateEngine.ValidateProcessedTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
             template = ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(template);
 
@@ -139,26 +139,21 @@ namespace Armory.TemplateProcessor
             {
                 var resource = template.Resources[i];
 
-                bool performedWorkaround = false;
-                do
+                try
                 {
-                    performedWorkaround = false;
-                    try
+                    if (resource.Properties != null)
                     {
-                        if (resource.Properties != null)
-                        {
-                            evaluationHelper.OnGetCopyContext = () => resource.CopyContext;
-                            resource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
-                                root: resource.Properties.Value,
-                                evaluationContext: evaluationHelper.EvaluationContext);
-                        }
+                        evaluationHelper.OnGetCopyContext = () => resource.CopyContext;
+                        resource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
+                            root: resource.Properties.Value,
+                            evaluationContext: evaluationHelper.EvaluationContext);
                     }
-                    catch
-                    {
-                        // Do not throw if there was an issue with evaluating language expressions
-                        continue;
-                    }
-                } while (performedWorkaround);
+                }
+                catch
+                {
+                    // Do not throw if there was an issue with evaluating language expressions
+                    continue;
+                }
             }
 
             if ((template.Outputs?.Count ?? 0) > 0)
@@ -259,7 +254,7 @@ namespace Armory.TemplateProcessor
                         {
                             updatedOrder.Insert(originalValues.Item2, resource);
                         }
-                        else if (!_dropResourceCopies)
+                        else if (!dropResourceCopies)
                         {
                             updatedOrder.Add(resource);
                         }
