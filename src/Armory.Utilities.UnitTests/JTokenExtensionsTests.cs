@@ -25,7 +25,6 @@ namespace Armory.Utilities.UnitTests
             JObject jsonObject = null;
 
             JToken valueAtPath = jsonObject.InsensitiveToken("someProperty", InsensitivePathNotFoundBehavior.LastValid);
-            
             Assert.IsNull(valueAtPath);
         }
 
