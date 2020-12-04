@@ -1,7 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Armory.TemplateProcessor.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Deployments.Core" Version="1.0.112" />
+    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.112" />
+    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.112" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Armory.Utilities\Armory.Utilities.csproj" />
+  </ItemGroup>
 
 </Project>
