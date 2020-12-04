@@ -22,14 +22,6 @@ variables:
 
 steps:
 - task: DotNetCoreCLI@2
-  displayName: 'Package Restore'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-    feedsToUse: 'select'
-    externalEndpoint: 'Internal'
-
-- task: DotNetCoreCLI@2
   displayName: 'Build'
   inputs:
     command: 'build'
