@@ -51,7 +51,7 @@ namespace Armory.TemplateProcessor.UnitTests
                 ""subscription"": {
                     ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
                     ""subscriptionId"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
-                    ""tenantId"": ""00000000-0000-0000-0000-000000000001""
+                    ""tenantId"": ""00000000-0000-0000-0000-000000000000""
                 },
                 ""resourceGroup"": {
                     ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/metadataTestresourcegroupname"",
@@ -73,7 +73,7 @@ namespace Armory.TemplateProcessor.UnitTests
                         }
                     }
                 },
-                ""tenantId"": ""00000000-0000-0000-0000-000000000001""
+                ""tenantId"": ""00000000-0000-0000-0000-000000000000""
             }";
 
             InsensitiveDictionary<JToken> metadataObj = _armTemplateProcessor.PopulateDeploymentMetadata(metadata);
