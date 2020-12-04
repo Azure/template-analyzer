@@ -28,7 +28,7 @@ namespace Armory.JsonRuleEngine
         /// <summary>
         /// Executes this <c>Expression</c> against a template.
         /// </summary>
-        /// <param name="template">The template to evaluate</param>
+        /// <param name="jsonScope">The template to evaluate</param>
         public abstract IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope);
     }
 }
