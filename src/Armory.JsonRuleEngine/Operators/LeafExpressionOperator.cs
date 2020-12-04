@@ -5,6 +5,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Armory.JsonRuleEngine
 {
+    /// <summary>
+    /// The base class for a concrete implementation of an operator in a JSON rule expression
+    /// </summary>
     internal abstract class LeafExpressionOperator
     {
         /// <summary>
