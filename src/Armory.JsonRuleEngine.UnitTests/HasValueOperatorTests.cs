@@ -15,7 +15,7 @@ namespace Armory.JsonRuleEngine.UnitTests
         [DataRow(true, DisplayName = "Property value is a boolean")]
         [DataRow(1, DisplayName = "Property value is an integer")]
         [DataRow(0.1, DisplayName = "Property value is a float")]
-        [DataRow(new object[] { }, DisplayName = "Property value is an object")]
+        [DataRow(new object[] { }, DisplayName = "Property value is an array")]
         public void EvaluateExpression_PropertyHasValue_HasValueIsTrue(object jTokenValue)
         {
             var jToken = ToJToken(jTokenValue);
@@ -30,8 +30,22 @@ namespace Armory.JsonRuleEngine.UnitTests
         }
 
         [TestMethod]
-        [DataRow("", DisplayName = "Property value is null")]
-        [DataRow(null, DisplayName = "Property value is an empty string")]
+        public void EvaluateExpression_PropertyIsObject_HasValueIsTrue()
+        {
+            var jToken = ToJToken(new { });
+
+            // {"HasValue": true} is true
+            var hasValueOperator = new HasValueOperator(true, isNegative: false);
+            Assert.IsTrue(hasValueOperator.EvaluateExpression(jToken));
+
+            // {"HasValue": false} is false
+            hasValueOperator = new HasValueOperator(false, isNegative: false);
+            Assert.IsFalse(hasValueOperator.EvaluateExpression(jToken));
+        }
+
+        [TestMethod]
+        [DataRow("", DisplayName = "Property value is an empty string")]
+        [DataRow(null, DisplayName = "Property value is null")]
         public void EvaluateExpression_PropertyHasNullOrEmptyValue_HasValueIsFalse(object jTokenValue)
         {
             var jToken = ToJToken(jTokenValue);
@@ -55,6 +69,12 @@ namespace Armory.JsonRuleEngine.UnitTests
             // {"HasValue": false} is true
             hasValueOperator = new HasValueOperator(false, isNegative: false);
             Assert.IsTrue(hasValueOperator.EvaluateExpression(null));
+        }
+
+        [TestMethod]
+        public void GetName_ReturnsCorrectName()
+        {
+            Assert.AreEqual("HasValue", new HasValueOperator(true, false).Name);
         }
 
         // Creates JSON with 'value' as the value of a key, parses it, then selects that key.

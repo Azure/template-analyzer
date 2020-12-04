@@ -38,6 +38,13 @@ namespace Armory.JsonRuleEngine.UnitTests
             Assert.IsFalse(leafOperator.IsNegative);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(NotImplementedException))]
+        public void ToExpression_NoOperators_ThrowsException()
+        {
+            new LeafExpressionDefinition().ToExpression(new RuleDefinition());
+        }
+
         private LeafExpression GenerateLeafExpression(Action<LeafExpressionDefinition> propertySetter)
         {
             var leaf = new LeafExpressionDefinition

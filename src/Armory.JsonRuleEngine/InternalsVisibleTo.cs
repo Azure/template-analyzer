@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Armory.JsonRuleEngine.UnitTests")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Armory.JsonRuleEngine.FunctionalTests")]
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Armory.JsonRuleEngine.UnitTests")]
+[assembly: InternalsVisibleTo("Armory.JsonRuleEngine.FunctionalTests")]
+
+// For Moq testing library
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

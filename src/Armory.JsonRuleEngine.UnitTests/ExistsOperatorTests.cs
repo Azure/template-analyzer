@@ -16,11 +16,25 @@ namespace Armory.JsonRuleEngine.UnitTests
         [DataRow(true, DisplayName = "Property value is a boolean")]
         [DataRow(1, DisplayName = "Property value is an integer")]
         [DataRow(0.1, DisplayName = "Property value is a float")]
-        [DataRow(new object[] { }, DisplayName = "Property value is an object")]
+        [DataRow(new object[] { }, DisplayName = "Property value is an array")]
         [DataRow(null, DisplayName = "Property value is null")]
         public void EvaluateExpression_PropertyExists_ExistsExpressionIsTrue(object jTokenValue)
         {
             var jToken = ToJToken(jTokenValue);
+
+            // {"Exists": true} is true
+            var existsOperator = new ExistsOperator(true, isNegative: false);
+            Assert.IsTrue(existsOperator.EvaluateExpression(jToken));
+
+            // {"Exists": false} is false
+            existsOperator = new ExistsOperator(false, isNegative: false);
+            Assert.IsFalse(existsOperator.EvaluateExpression(jToken));
+        }
+
+        [TestMethod]
+        public void EvaluateExpression_PropertyIsObject_ExistsExpressionIsTrue()
+        {
+            var jToken = ToJToken(new { });
 
             // {"Exists": true} is true
             var existsOperator = new ExistsOperator(true, isNegative: false);
@@ -41,6 +55,12 @@ namespace Armory.JsonRuleEngine.UnitTests
             // {"Exists": false} is true for null JToken
             existsOperator = new ExistsOperator(false, isNegative: false);
             Assert.IsTrue(existsOperator.EvaluateExpression(null));
+        }
+
+        [TestMethod]
+        public void GetName_ReturnsCorrectName()
+        {
+            Assert.AreEqual("Exists", new ExistsOperator(true, false).Name);
         }
 
         // Creates JSON with 'value' as the value of a key, parses it, then selects that key.
