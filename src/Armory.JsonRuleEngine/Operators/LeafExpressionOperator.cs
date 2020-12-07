@@ -5,6 +5,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Armory.JsonRuleEngine
 {
+    /// <summary>
+    /// The base class for a concrete implementation of an operator in a JSON rule expression
+    /// </summary>
     internal abstract class LeafExpressionOperator
     {
         /// <summary>
@@ -18,8 +21,15 @@ namespace Armory.JsonRuleEngine
         public bool IsNegative { get; set; }
 
         /// <summary>
-        /// Gets or sets the value specified in the original JSON
+        /// Gets or sets the expected value specified in the rule
         /// </summary>
         public JToken SpecifiedValue { get; set; }
+
+        /// <summary>
+        /// Evaluates the specified JToken using the defined operation of this <c>Operator</c>.
+        /// </summary>
+        /// <param name="tokenToEvaluate">The JToken to evaluate</param>
+        /// <returns></returns>
+        public abstract bool EvaluateExpression(JToken tokenToEvaluate);
     }
 }

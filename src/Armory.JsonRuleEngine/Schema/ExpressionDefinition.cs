@@ -5,21 +5,29 @@ using Newtonsoft.Json;
 
 namespace Armory.JsonRuleEngine
 {
+    /// <summary>
+    /// The base class for all Expression schemas in JSON rules.
+    /// </summary>
     [JsonConverter(typeof(ExpressionConverter))]
     internal abstract class ExpressionDefinition
     {
         /// <summary>
-        /// Gets or sets the Path property
+        /// Gets or sets the Path property.
         /// </summary>
         [JsonProperty]
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the ResourceType property
+        /// Gets or sets the ResourceType property.
         /// </summary>
         [JsonProperty]
         public string ResourceType { get; set; }
 
-        public abstract Expression ToExpression();
+        /// <summary>
+        /// Creates an <c>Expression</c> that can evaluate a template.
+        /// </summary>
+        /// <param name="rootRule">The JSON rule this expression is part of.</param>
+        /// <returns>The <c>Expression</c>.</returns>
+        public abstract Expression ToExpression(RuleDefinition rootRule);
     }
 }

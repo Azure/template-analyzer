@@ -38,6 +38,13 @@ namespace Armory.JsonRuleEngine.UnitTests
             Assert.IsFalse(leafOperator.IsNegative);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(NotImplementedException))]
+        public void ToExpression_NoOperators_ThrowsException()
+        {
+            new LeafExpressionDefinition().ToExpression(new RuleDefinition());
+        }
+
         private LeafExpression GenerateLeafExpression(Action<LeafExpressionDefinition> propertySetter)
         {
             var leaf = new LeafExpressionDefinition
@@ -47,7 +54,7 @@ namespace Armory.JsonRuleEngine.UnitTests
             };
             propertySetter(leaf);
             
-            var expression = leaf.ToExpression() as LeafExpression;
+            var expression = leaf.ToExpression(new RuleDefinition()) as LeafExpression;
             Assert.AreEqual("json.path", expression.Path);
             Assert.AreEqual("Namespace/ResourceType", expression.ResourceType);
 

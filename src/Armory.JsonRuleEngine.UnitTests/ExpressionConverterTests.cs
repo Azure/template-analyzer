@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Armory.JsonRuleEngine.UnitTests
 {
@@ -126,6 +127,23 @@ namespace Armory.JsonRuleEngine.UnitTests
                 Assert.IsTrue(e.Message.IndexOf(operators.Length > 0 ? "too many" : "invalid", StringComparison.OrdinalIgnoreCase) >= 0);
                 throw;
             }
+        }
+
+        [TestMethod]
+        public void ReadJson_NullTokenType_ReturnsNull()
+        {
+            var nullTokenReader = JObject.Parse("{\"Key\": null}").CreateReader();
+
+            nullTokenReader.Read(); // Read start of object
+            nullTokenReader.Read(); // Read Key
+            nullTokenReader.Read(); // Read value (null)
+
+            Assert.IsNull(
+                new ExpressionConverter().ReadJson(
+                    nullTokenReader,
+                    typeof(ExpressionDefinition),
+                    null,
+                    JsonSerializer.CreateDefault()));
         }
 
         [TestMethod]

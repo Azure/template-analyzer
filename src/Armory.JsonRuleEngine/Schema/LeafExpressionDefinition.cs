@@ -7,6 +7,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Armory.JsonRuleEngine
 {
+    /// <summary>
+    /// The schema for leaf expressions in JSON rules.
+    /// </summary>
     internal class LeafExpressionDefinition : ExpressionDefinition
     {
         /// <summary>
@@ -69,7 +72,12 @@ namespace Armory.JsonRuleEngine
         [JsonProperty]
         public JToken GreaterOrEqual { get; set; }
 
-        public override Expression ToExpression()
+        /// <summary>
+        /// Creates a <c>LeafExpression</c> capable of evaluating JSON using the operator specified in the JSON rule.
+        /// </summary>
+        /// <param name="rootRule">The JSON rule this leaf expression is part of.</param>
+        /// <returns>The LeafExpression.</returns>
+        public override Expression ToExpression(RuleDefinition rootRule)
         {
             LeafExpressionOperator leafOperator = null;
 
@@ -84,7 +92,7 @@ namespace Armory.JsonRuleEngine
 
             if (leafOperator != null)
             {
-                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
+                return new LeafExpression(rootRule, this.ResourceType, this.Path, leafOperator);
             }
 
             throw new NotImplementedException();

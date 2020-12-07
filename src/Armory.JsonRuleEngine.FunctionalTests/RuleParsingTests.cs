@@ -58,7 +58,7 @@ namespace Armory.JsonRuleEngine.FunctionalTests
                 operatorProperty,
                 jsonValue));
 
-            var leafExpression = leafDefinition.ToExpression() as LeafExpression;
+            var leafExpression = leafDefinition.ToExpression(new RuleDefinition()) as LeafExpression;
             Assert.IsNotNull(leafExpression);
             Assert.AreEqual(TestPath, leafExpression.Path);
             Assert.AreEqual(TestResourceType, leafExpression.ResourceType);
