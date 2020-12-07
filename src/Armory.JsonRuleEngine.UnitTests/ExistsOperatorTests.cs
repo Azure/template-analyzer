@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace Armory.JsonRuleEngine.UnitTests
 {
     [TestClass]
-    public class ExistsTests
+    public class ExistsOperatorTests
     {
         [TestMethod]
         [DataRow("value", DisplayName = "Property value is a non-empty string")]
