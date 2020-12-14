@@ -15,7 +15,7 @@ namespace Armory.JsonRuleEngine
     {
         private readonly JToken currentScope;
         private readonly string currentPath;
-        private readonly Dictionary<string, IEnumerable<JToken>> resolvedPaths;
+        private readonly Dictionary<string, IEnumerable<FieldContent>> resolvedPaths;
 
         /// <summary>
         /// Creates an instance of JsonPathResolver, used to resolve Json paths from a JToken.
@@ -23,12 +23,12 @@ namespace Armory.JsonRuleEngine
         /// <param name="jToken">The starting JToken.</param>
         /// <param name="path">The path to the specified JToken.</param>
         public JsonPathResolver(JToken jToken, string path)
-            : this(jToken, path, new Dictionary<string, IEnumerable<JToken>>(StringComparer.OrdinalIgnoreCase))
+            : this(jToken, path, new Dictionary<string, IEnumerable<FieldContent>>(StringComparer.OrdinalIgnoreCase))
         {
-            this.resolvedPaths[this.currentPath] = new List<JToken> { this.currentScope };
+            this.resolvedPaths[this.currentPath] = new List<FieldContent> { new FieldContent { Value = this.currentScope } };
         }
 
-        private JsonPathResolver(JToken jToken, string path, Dictionary<string, IEnumerable<JToken>> resolvedPaths)
+        private JsonPathResolver(JToken jToken, string path, Dictionary<string, IEnumerable<FieldContent>> resolvedPaths)
         {
             (this.currentScope, this.currentPath, this.resolvedPaths) = (jToken, path, resolvedPaths);
         }
@@ -44,14 +44,14 @@ namespace Armory.JsonRuleEngine
 
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                resolvedTokens = new List<JToken> { this.currentScope.InsensitiveToken(jsonPath) };
+                resolvedTokens = new List<FieldContent> { new FieldContent { Value = this.currentScope.InsensitiveToken(jsonPath) } };
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
             foreach (var token in resolvedTokens)
             {
                 // If token is not null, defer to it's path, since the path looked up could include wildcards.
-                yield return new JsonPathResolver(token, token?.Path ?? fullPath, this.resolvedPaths);
+                yield return new JsonPathResolver(token.Value, token?.Value?.Path ?? fullPath, this.resolvedPaths);
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Armory.Utilities;
 using Newtonsoft.Json.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -12,6 +13,9 @@ namespace Armory.JsonRuleEngine.UnitTests
     [TestClass]
     public class LeafExpressionTests
     {
+        private const string singleField = "{ \"property\": \"value\" }";
+        private const string singleResource = @"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/type"", ""properties"": { ""some"": { ""path"": ""value"" } } } ] }";
+
         [DataTestMethod]
         [DataRow(null, null, DisplayName = "No resource type or path")]
         [DataRow(null, "", DisplayName = "No resource type and an empty path")]
@@ -29,10 +33,11 @@ namespace Armory.JsonRuleEngine.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(null, null, true, DisplayName = "No resource type or path, operator evaluates to true")]
-        [DataRow(null, "", false, DisplayName = "No resource type, empty path, operator evaluates to false")]
-        [DataRow(null, "some.path", true, DisplayName = "No resource type, valid path, operator evaluates to true")]
-        public void Evaluate_ValidScope_ReturnsResultsOfOperatorEvaluation(string resourceType, string path, bool evaluationResult)
+        [DataRow(null, null, true, singleField, null, 1, DisplayName = "No resource type or path, operator evaluates to true")]
+        [DataRow(null, "", false, singleField, null, 1, DisplayName = "No resource type, empty path, operator evaluates to false")]
+        [DataRow(null, "some.path", true, singleField, null, 1, DisplayName = "No resource type, valid path, operator evaluates to true")]
+        [DataRow("Microsoft.ResourceProvider/type", "properties.some.path", true, singleResource, "resources[0].properties.some.path", 0, DisplayName = "Resource Type specified with single matching resource, valid path, operator evaluates to true")]
+        public void Evaluate_ValidScope_ReturnsResultsOfOperatorEvaluation(string resourceType, string path, bool evaluationResult, string jtoken, string fullPathForEvaluateExpression, int timesResolveIsCalledOnOriginalObject)
         {
             var ruleDefinition = new RuleDefinition
             {
@@ -42,31 +47,45 @@ namespace Armory.JsonRuleEngine.UnitTests
                 HelpUri = "https://helpUri"
             };
 
-            var jsonToEvaluate = JObject.Parse("{ \"property\": \"value\" }");
-            var mockScope = new Mock<IJsonPathResolver>();
-            mockScope
+            var jsonToEvaluate = JObject.Parse(jtoken);
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
                 .Setup(s => s.JToken)
                 .Returns(jsonToEvaluate);
-            mockScope
+            mockJsonPathResolver
                 .Setup(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))))
-                .Returns(() => new[] { mockScope.Object });
+                .Returns(() => new[] { mockJsonPathResolver.Object });
 
-            var mockOperator = new Mock<LeafExpressionOperator>();
-            mockOperator
-                .Setup(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)))
+            var jTokenExpectedInEvaluateExpression = GetJToken(jsonToEvaluate, fullPathForEvaluateExpression);
+
+            var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>();
+            mockLeafExpressionOperator
+                .Setup(o => o.EvaluateExpression(It.Is<JToken>(token => token == jTokenExpectedInEvaluateExpression)))
                 .Returns(evaluationResult);
 
-            var leafExpression = new LeafExpression(ruleDefinition, resourceType, path, mockOperator.Object);
-            var results = leafExpression.Evaluate(jsonScope: mockScope.Object).ToList();
+            var leafExpression = new LeafExpression(ruleDefinition, resourceType, path, mockLeafExpressionOperator.Object);
+            var results = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object).ToList();
 
-            mockScope.Verify(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))), Times.Once);
-            mockScope.Verify(s => s.JToken, Times.Once);
+            mockJsonPathResolver.Verify(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))), Times.Exactly(timesResolveIsCalledOnOriginalObject));
+            mockJsonPathResolver.Verify(s => s.JToken, Times.Once);
 
-            mockOperator.Verify(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)), Times.Once);
+            mockLeafExpressionOperator.Verify(o => o.EvaluateExpression(It.Is<JToken>(token => token == jTokenExpectedInEvaluateExpression)), Times.Once);
 
             Assert.AreEqual(1, results.Count);
-            Assert.AreEqual(evaluationResult, results[0].Passed);
-            Assert.AreEqual(ruleDefinition, results[0].RuleDefinition);
+            Assert.AreEqual(evaluationResult, results.First().Passed);
+            Assert.AreEqual(ruleDefinition, results.First().RuleDefinition);
+        }
+
+        private JToken GetJToken(JToken jToken, string path)
+        {
+            if (path == null)
+            {
+                return jToken;
+            }
+            else
+            {
+                return jToken.InsensitiveToken(path);
+            }
         }
 
         [TestMethod]
