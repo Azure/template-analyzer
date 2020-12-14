@@ -1,0 +1,13 @@
+[
+  {
+    "name": "ServiceFabric_AAD",
+    "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
+    "recommendation": "",
+    "helpUri": "",
+    "evaluation": {
+      "resourceType": "Microsoft.ServiceFabric/clusters",
+      "path": "properties.azureActiveDirectory.tenantId",
+      "hasValue": true
+    }
+  }
+]

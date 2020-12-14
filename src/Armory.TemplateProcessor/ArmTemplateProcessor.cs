@@ -44,8 +44,8 @@ namespace Armory.TemplateProcessor
         /// <summary>
         /// Processes the ARM template with placeholder parameters and deployment metadata.
         /// </summary>
-        /// <returns>The processed template as a Template object.</returns>
-        public Template ProcessTemplate()
+        /// <returns>The processed template as a <c>JSON</c> object.</returns>
+        public JToken ProcessTemplate()
         {
             return ProcessTemplate(null, null);
         }
@@ -54,8 +54,8 @@ namespace Armory.TemplateProcessor
         /// Processes the ARM template with provided parameters and placeholder deployment metadata.
         /// </summary>
         /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
-        /// <returns>The processed template as a Template object.</returns>
-        public Template ProcessTemplate(string parameters)
+        /// <returns>The processed template as a <c>JSON</c> object.</returns>
+        public JToken ProcessTemplate(string parameters)
         {
             return ProcessTemplate(parameters, null);
         }
@@ -65,13 +65,15 @@ namespace Armory.TemplateProcessor
         /// </summary>
         /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
         /// <param name="metadata">The deployment metadata <c>JSON</c>.</param>
-        /// <returns>The processed template as a Template object.</returns>
-        public Template ProcessTemplate(string parameters, string metadata)
+        /// <returns>The processed template as a <c>JSON</c> object.</returns>
+        public JToken ProcessTemplate(string parameters, string metadata)
         {
             InsensitiveDictionary<JToken> parametersDictionary = PopulateParameters(string.IsNullOrEmpty(parameters) ? PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate) : parameters);
             InsensitiveDictionary<JToken> metadataDictionary = string.IsNullOrEmpty(metadata) ? PlaceholderInputGenerator.GeneratePlaceholderDeploymentMetadata() : PopulateDeploymentMetadata(metadata);
 
-            return ParseAndValidateTemplate(parametersDictionary, metadataDictionary);
+            var template = ParseAndValidateTemplate(parametersDictionary, metadataDictionary);
+
+            return template.ToJToken();
         }
 
         /// <summary>
