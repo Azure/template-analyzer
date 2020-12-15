@@ -93,14 +93,7 @@ namespace Armory.JsonRuleEngine.UnitTests
 
         private JToken GetRelevantJTokenScope(JToken jToken, string path)
         {
-            if (path == null)
-            {
-                return jToken;
-            }
-            else
-            {
-                return jToken.InsensitiveToken(path);
-            }
+            return path == null ? jToken : jToken.InsensitiveToken(path);
         }
 
         [TestMethod]
