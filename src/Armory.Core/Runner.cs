@@ -19,7 +19,7 @@ namespace Armory.Core
         /// </summary>
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-        /// <returns></returns>
+        /// <returns>List of ARMory results</returns>
         public static IEnumerable<IResult> Run(string template, string parameters = null)
         {
             if (template == null)
@@ -27,7 +27,8 @@ namespace Armory.Core
                 throw new ArgumentNullException(template);
             }
 
-            JToken templatejObject = JObject.Parse(template);
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(template);
+            JToken templatejObject = armTemplateProcessor.ProcessTemplate(parameters);
 
             var rules = LoadRules();
             var jsonRuleEngine = new JsonEngine.JsonRuleEngine();
