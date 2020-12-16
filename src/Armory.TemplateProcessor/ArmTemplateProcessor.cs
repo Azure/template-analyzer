@@ -39,6 +39,8 @@ namespace Armory.TemplateProcessor
             this.armTemplate = armTemplate;
             this.apiVersion = apiVersion;
             this.dropResourceCopies = dropResourceCopies;
+
+            DeploymentsInterop.Initialize();
         }
 
         /// <summary>
