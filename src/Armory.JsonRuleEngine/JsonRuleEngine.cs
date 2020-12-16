@@ -19,7 +19,7 @@ namespace Armory.JsonEngine
         /// <param name="templateContext">The template context to evaluate.</param>
         /// <param name="ruleDefinitions">The JSON rules to evaluate the template with.</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IResult> Run(TemplateContext templateContext, string ruleDefinitions)
+        public IEnumerable<IResult> EvaluateRules(TemplateContext templateContext, string ruleDefinitions)
         {
             List<RuleDefinition> rules = JsonConvert.DeserializeObject<List<RuleDefinition>>(ruleDefinitions);
             List<IResult> results = new List<IResult>();

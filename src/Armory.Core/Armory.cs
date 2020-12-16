@@ -12,7 +12,7 @@ namespace Armory.Core
     /// <summary>
     /// This class runs the ARMory logic given the template and parameters passed to it
     /// </summary>
-    public class Runner
+    public class Armory
     {
         /// <summary>
         /// Runs the ARMory logic given the template and parameters passed to it
@@ -20,7 +20,7 @@ namespace Armory.Core
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
         /// <returns>List of ARMory results</returns>
-        public static IEnumerable<IResult> Run(string template, string parameters = null)
+        public static IEnumerable<IResult> EvaluateRulesAgainstTemplate(string template, string parameters = null)
         {
             if (template == null)
             {
@@ -33,7 +33,7 @@ namespace Armory.Core
             var rules = LoadRules();
             var jsonRuleEngine = new JsonEngine.JsonRuleEngine();
 
-            var results = jsonRuleEngine.Run(new TemplateContext { OriginalTemplate = JObject.Parse(template), ExpandedTemplate = templatejObject, IsMainTemplate = true }, rules);
+            var results = jsonRuleEngine.EvaluateRules(new TemplateContext { OriginalTemplate = JObject.Parse(template), ExpandedTemplate = templatejObject, IsMainTemplate = true }, rules);
 
             return results;
         }

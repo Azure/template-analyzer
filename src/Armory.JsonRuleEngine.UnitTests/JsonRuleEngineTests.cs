@@ -77,7 +77,7 @@ namespace Armory.JsonRuleEngine.UnitTests
                 IsMainTemplate = true };
 
             var ruleEngine = new Armory.JsonEngine.JsonRuleEngine();
-            var results = ruleEngine.Run(templateContext, rules);
+            var results = ruleEngine.EvaluateRules(templateContext, rules);
 
             Assert.AreEqual(numberOfExpectedFailedResults + numberOfExpectedPassedResults, results.Count());
             Assert.AreEqual(numberOfExpectedFailedResults, results.Where(result => result.Passed == false).Count());

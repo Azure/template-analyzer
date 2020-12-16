@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Armory.Core.UnitTests
 {
     [TestClass]
-    public class RunnerTests
+    public class ArmoryTests
     {
         [DataTestMethod]
         [DataRow(@"{
@@ -77,9 +77,9 @@ namespace Armory.Core.UnitTests
                   }
                 }
                 ", 0, false, DisplayName = "0 matching Resources with no results")]
-        public void Run_ValidInputValues_ReturnCorrectResults(string template, int expectedResultCount, bool expectedResult)
+        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectResults(string template, int expectedResultCount, bool expectedResult)
         {
-            var results = Runner.Run(template, null);
+            var results = Armory.EvaluateRulesAgainstTemplate(template, null);
 
             Assert.AreEqual(expectedResultCount, results.Count());
 
@@ -89,9 +89,9 @@ namespace Armory.Core.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void Run_TemplateIsNull_ThrowArgumentNullException()
+        public void EvaluateRulesAgainstTemplate_TemplateIsNull_ThrowArgumentNullException()
         {
-            Runner.Run(null, null);
+            Armory.EvaluateRulesAgainstTemplate(null, null);
         }
     }
 }
