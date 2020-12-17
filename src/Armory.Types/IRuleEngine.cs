@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace Armory.Types
 {
+    /// <summary>
+    /// Interface for the ARMory rule engine
+    /// </summary>
     public interface IRuleEngine
     {
         /// <summary>
