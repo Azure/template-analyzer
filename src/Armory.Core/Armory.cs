@@ -70,7 +70,7 @@ namespace Armory.Core
 
         private static string LoadRules()
         {
-            return System.IO.File.ReadAllText("Armory.Rules\\BuiltInRules.json");
+            return System.IO.File.ReadAllText("Armory.Rules/BuiltInRules.json");
         }
     }
 }
