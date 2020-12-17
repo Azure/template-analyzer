@@ -86,10 +86,9 @@ namespace Armory.TemplateProcessor
         /// <returns>The processed template as a Template object.</returns>
         internal Template ParseAndValidateTemplate(InsensitiveDictionary<JToken> parameters, InsensitiveDictionary<JToken> metadata)
         {
-            Template template = new Template();
             Dictionary<string, (string, int)> copyNameMap = new Dictionary<string, (string, int)>();
 
-            template = TemplateEngine.ParseTemplate(armTemplate);
+            Template template = TemplateEngine.ParseTemplate(armTemplate);
 
             TemplateEngine.ValidateTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 

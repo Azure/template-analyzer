@@ -18,7 +18,8 @@ namespace Armory.Core.UnitTests
         {
             string template = GenerateTemplate(resourceProperties, expectedResultCount);
 
-            var results = Armory.EvaluateRulesAgainstTemplate(template, null);
+            Armory armory = new Armory(template);
+            var results = armory.EvaluateRulesAgainstTemplate();
 
             Assert.AreEqual(expectedResultCount, results.Count());
 
@@ -47,7 +48,8 @@ namespace Armory.Core.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void EvaluateRulesAgainstTemplate_TemplateIsNull_ThrowArgumentNullException()
         {
-            Armory.EvaluateRulesAgainstTemplate(null, null);
+            Armory armory = new Armory(null, null);
+            armory.EvaluateRulesAgainstTemplate();
         }
     }
 }
