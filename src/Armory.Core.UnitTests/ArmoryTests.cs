@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Armory.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Armory.Core.UnitTests
@@ -48,7 +49,14 @@ namespace Armory.Core.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void EvaluateRulesAgainstTemplate_TemplateIsNull_ThrowArgumentNullException()
         {
-            Armory armory = new Armory(null, null);
+            new Armory(null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArmoryException))]
+        public void EvaluateRulesAgainstTemplate_TemplateIsInvalid_ThrowArmoryException()
+        {
+            Armory armory = new Armory("{}");
             armory.EvaluateRulesAgainstTemplate();
         }
     }
