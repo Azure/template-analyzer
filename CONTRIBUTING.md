@@ -27,7 +27,7 @@ The ARMory solution is comprised of the following main components:
 Use `dotnet test` to run the full ARMory test suite
 
 ### Contributing Rules
-Review the [Authoring JSON Rules](./ docs/authoring-json-rules.md) section to contribute to the built-in ARMory rules.
+Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to contribute to the built-in ARMory rules.
 
 ### Coding Conventions
 
