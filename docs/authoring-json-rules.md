@@ -1,4 +1,5 @@
 # ARMory JSON Rules
+<a name="note"></a>***Note**: ARMory is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
 ARMory rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as name, description, help information), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
@@ -30,7 +31,7 @@ The evaluation object is comprised of three basic properties.
 }
 ```
 
-Evaluation of ARM templates is performed on the JSON representation of the template.  Therefore, evaluations operate on the JSON properties of the template.  Specifying the template property is done by specifying a JSON path for the `path` key.  This path can contain wildcards ('*') to select multiple paths to evaluate.
+Evaluation of ARM templates is performed on the JSON representation of the template.  Therefore, evaluations operate on the JSON properties of the template.  Specifying the template property is done by specifying a JSON path for the `path` key.  This path can contain wildcards ('*') to select multiple paths to evaluate [[*]](#note).
 
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 
@@ -78,7 +79,7 @@ The examples given with the operators below will be in the context of the follow
 }
 ```
 
-#### Exists
+#### `Exists`
 *Type: Boolean*
 
 Evaluates a JSON path to determine if the specified path exists in the template and compares that result to the value associated with the property in the rule.  Results in `true` if the existence of the path is the same as the expected value in the rule; `false` otherwise.
@@ -92,7 +93,7 @@ Example:
 }
 ```
 
-#### HasValue
+#### `HasValue`
 *Type: Boolean*
 
 Evaluates a JSON path to determine if the specified path has any value in the template other than `null` or empty string and compares that result to the value associated with the property in the rule.  Results in `true` if the value of the path matches the expectation in the rule; `false` otherwise.
@@ -106,7 +107,7 @@ Example:
 }
 ```
 
-#### Equals
+#### `Equals` [[*]](#note)
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 Tests the template value of the `path` to determine if it is equal to the value specified in the rule.
@@ -122,7 +123,7 @@ Example:
 }
 ```
 
-#### NotEquals
+#### `NotEquals` [[*]](#note)
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 The logical inverse of `equals`.  Evaluations on incompatible types results in `true`.
@@ -136,7 +137,7 @@ Example:
 }
 ```
 
-#### Less
+#### `Less` [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than the value in the template; `false` otherwise.
@@ -150,7 +151,7 @@ Example:
 }
 ```
 
-#### LessOrEquals
+#### `LessOrEquals` [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than or equal to the value in the template; `false` otherwise.
@@ -164,7 +165,7 @@ Example:
 }
 ```
 
-#### Greater
+#### `Greater` [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than the value in the template; `false` otherwise.
@@ -178,7 +179,7 @@ Example:
 }
 ```
 
-#### GreaterOrEquals
+#### `GreaterOrEquals` [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than or equal to the value in the template; `false` otherwise.
@@ -192,7 +193,7 @@ Example:
 }
 ```
 
-#### Regex
+#### `Regex` [[*]](#note)
 *Type: string*
 
 Runs the regular expression in the specified value against the value of the `path` in the template.  All regular expressions are case-insensitive.  Evaluates to `true` if the regular expression is a match; `false` otherwise.  If the value in the template is not a string, this evaluates to `false`.
@@ -212,7 +213,7 @@ Example:
 }
 ```
 
-#### In
+#### `In` [[*]](#note)
 *Type: array of basic JSON values (integer, float, string, bool, null)*
 
 Evaluates the value of the `path` in the template using the `equals` operator for each value specified in the array.  If any results in `true`, `in` will evaluate to true; `false` otherwise.  All values in the array must be of the same type.
@@ -231,10 +232,10 @@ Example:
 }
 ```
 
-### Structured Operators
+### Structured Operators [[*]](#note)
 These operators build up a structure of child evaluations, and therefore contain additional operators inside them.  These operators are not required to include a `path`.  If `resourceType` or `path` are specified, that becomes the scope for all evaluations nested inside the operator.  More information on [Scopes](#scopes) can be found below.
 
-#### AnyOf
+#### `AnyOf` [[*]](#note)
 *Type: array of [Evaluation Object](#evaluation-object)s*
 
 Performs a logical 'or' operation on the array of evaluation objects.  Evaluates to `true` if the result of any evaluation in the array is `true`; evaluates to `false` otherwise.
@@ -257,7 +258,7 @@ Example:
 }
 ```
 
-#### AllOf
+#### `AllOf` [[*]](#note)
 *Type: array of [Evaluation Object](#evaluation-object)s*
 
 Performs a logical 'and' operation on the array of evaluation objects.  Evaluates to `true` if the result of all evaluations in the array is `true`; evaluates to `false` otherwise.
@@ -280,7 +281,7 @@ Example:
 }
 ```
 
-#### Not
+#### `Not` [[*]](#note)
 *Type: [Evaluation Object](#evaluation-object)*
 
 Performs a logical 'not' operation on the evaluation object.  Evaluates to `true` if the result of the evaluation in the value of `not` is `false`; evaluates to `false` otherwise.
