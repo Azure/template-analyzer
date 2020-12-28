@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Armory.Cli": {
+      "commandName": "Project",
+      "commandLineArgs": "assess-template -t C:\\Users\\varunsh.REDMOND\\Downloads\\Debug\\deploymentTemplate.json -p C:\\Users\\varunsh.REDMOND\\Downloads\\Debug\\deploymentParameters.json"
+    }
+  }
+}
