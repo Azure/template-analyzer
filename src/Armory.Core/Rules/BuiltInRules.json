@@ -1,0 +1,13 @@
+[
+  {
+    "name": "ServiceFabric_Client_AAD_Auth_Only",
+    "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
+    "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
+    "helpUri": "https://github.com/Azure/armory/docs/built-in-armory-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
+    "evaluation": {
+      "resourceType": "Microsoft.ServiceFabric/clusters",
+      "path": "properties.azureActiveDirectory.tenantId",
+      "hasValue": true
+    }
+  }
+]

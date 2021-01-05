@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Armory.Types;
 using System.Collections.Generic;
+using Armory.JsonRuleEngine;
+using Armory.Types;
+using Newtonsoft.Json;
 
 namespace Armory.JsonEngine
 {
@@ -17,9 +19,17 @@ namespace Armory.JsonEngine
         /// <param name="templateContext">The template context to evaluate.</param>
         /// <param name="ruleDefinitions">The JSON rules to evaluate the template with.</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IResult> Run(TemplateContext templateContext, string ruleDefinitions)
+        public IEnumerable<IResult> EvaluateRules(TemplateContext templateContext, string ruleDefinitions)
         {
-            throw new System.NotImplementedException();
+            List<RuleDefinition> rules = JsonConvert.DeserializeObject<List<RuleDefinition>>(ruleDefinitions);
+            List<IResult> results = new List<IResult>();
+
+            foreach(RuleDefinition rule in rules)
+            {
+                results.AddRange(rule.Evaluation.ToExpression(rule).Evaluate(new JsonPathResolver(templateContext.ExpandedTemplate, templateContext.ExpandedTemplate.Path)));
+            }
+
+            return results;
         }
     }
 }
