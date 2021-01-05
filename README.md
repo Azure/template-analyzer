@@ -6,7 +6,7 @@
 ## What is ARMory?
 [Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. ARMory is an ARM template security validator that scans ARM templates and checks that security best practices are being followed before deployment. 
  
-ARMory provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensure your ARM templates follow best practices. AEMory checks are customizable. You can write your own checks and enforce only the checks that are relevant for your business. 
+ARMory provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensure your ARM templates follow best practices. ARMory checks are customizable. You can write your own checks and enforce only the checks that are relevant for your business. 
  
  
 ## Getting started with ARMory
