@@ -1,5 +1,5 @@
 # Contributing to ARMory
-We welcome community contributions to ARMory. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)  and terms of the [CLA](#contributor-license-agreement-(cla)).
+We welcome community contributions to ARMory. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)  and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
 * If you haven't already, you will need [dotnet core sdk 3.1](https://dotnet.microsoft.com/download) (or later) installed locally to build and run this project.
