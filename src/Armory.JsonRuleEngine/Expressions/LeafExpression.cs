@@ -47,12 +47,35 @@ namespace Armory.JsonRuleEngine
         /// and if the path contains any wildcards.</returns>
         public override IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope)
         {
-            if (jsonScope == null)
+            List<JsonRuleResult> results = new List<JsonRuleResult>();
+
+            if (!string.IsNullOrEmpty(ResourceType))
             {
-                throw new ArgumentNullException(nameof(jsonScope));
+                var resourceResolver = new ResourceResolver(ResourceType, jsonScope.JToken);
+
+                foreach (var resource in resourceResolver.Resources)
+                {
+                    var resolver = new JsonPathResolver(resource, resource.Path);
+
+                    results.AddRange(EvaluateScope(resolver));
+                }
+            }
+            else
+            {
+                results.AddRange(EvaluateScope(jsonScope));
             }
 
-            var leafScope = jsonScope?.Resolve(Path);
+            return results;
+        }
+
+        private IEnumerable<JsonRuleResult> EvaluateScope(IJsonPathResolver jsonPathResolver)
+        {
+            if (jsonPathResolver == null)
+            {
+                throw new ArgumentNullException(nameof(jsonPathResolver));
+            }
+
+            var leafScope = jsonPathResolver?.Resolve(Path);
 
             foreach (var propertyToEvaluate in leafScope)
             {
