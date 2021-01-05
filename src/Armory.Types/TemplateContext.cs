@@ -13,21 +13,21 @@ namespace Armory.Types
         /// <summary>
         /// The original template parsed into JSON
         /// </summary>
-        public JToken OriginalTemplate { get; }
+        public JToken OriginalTemplate { get; set; }
 
         /// <summary>
         /// The template with resolved parameter/variable references and expressions
         /// </summary>
-        public JToken ExpandedTemplate { get; }
+        public JToken ExpandedTemplate { get; set; }
 
         /// <summary>
         /// A unique identifier for the template
         /// </summary>
-        public string TemplateIdentifier { get; }
+        public string TemplateIdentifier { get; set; }
 
         /// <summary>
         /// Whether this template is the top-level template in a deployment or nested within another template
         /// </summary>
-        public bool IsMainTemplate { get; }
+        public bool IsMainTemplate { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace Armory.TemplateProcessor
     /// <summary>
     /// Generates placeholder values for required inputs to process templates
     /// </summary>
-    internal class PlaceholderInputGenerator
+    internal static class PlaceholderInputGenerator
     {
         /// <summary>
         /// Generates placeholder parameters when no default value is specified in the ARM Template.
