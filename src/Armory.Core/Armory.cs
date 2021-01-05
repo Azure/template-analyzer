@@ -32,7 +32,7 @@ namespace Armory.Core
         /// <summary>
         /// Runs the ARMory logic given the template and parameters passed to it
         /// </summary>
-        /// <returns>An enumarable of ARMory results</returns>
+        /// <returns>An enumerable of ARMory results</returns>
         public IEnumerable<IResult> EvaluateRulesAgainstTemplate()
         {
             JToken templatejObject;

@@ -13,7 +13,7 @@ namespace Armory.Core
     internal class ArmoryException : Exception
     {
         /// <summary>
-        /// Default constructor for and ArmoryException
+        /// Default constructor for an ArmoryException
         /// </summary>
         public ArmoryException()
         {
