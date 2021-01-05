@@ -25,14 +25,14 @@ namespace Armory.Core
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
         public Armory(string template, string parameters = null)
         {
-            this.Template = template ?? throw new ArgumentNullException(paramName: template);
+            this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
         }
 
         /// <summary>
         /// Runs the ARMory logic given the template and parameters passed to it
         /// </summary>
-        /// <returns>List of ARMory results</returns>
+        /// <returns>An enumarable of ARMory results</returns>
         public IEnumerable<IResult> EvaluateRulesAgainstTemplate()
         {
             JToken templatejObject;
@@ -52,20 +52,19 @@ namespace Armory.Core
                 throw new ArmoryException("Processed Template cannot be null.");
             }
 
-            IEnumerable<IResult> results;
             try
             {
                 var rules = LoadRules();
                 var jsonRuleEngine = new JsonEngine.JsonRuleEngine();
 
-                results = jsonRuleEngine.EvaluateRules(new TemplateContext { OriginalTemplate = JObject.Parse(Template), ExpandedTemplate = templatejObject, IsMainTemplate = true }, rules);
+                IEnumerable<IResult> results = jsonRuleEngine.EvaluateRules(new TemplateContext { OriginalTemplate = JObject.Parse(Template), ExpandedTemplate = templatejObject, IsMainTemplate = true }, rules);
+
+                return results;
             }
             catch (Exception e)
             {
                 throw new ArmoryException("Error while evaluating rules.", e);
             }
-
-            return results;
         }
 
         private static string LoadRules()

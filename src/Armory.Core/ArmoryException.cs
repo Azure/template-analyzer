@@ -12,19 +12,34 @@ namespace Armory.Core
     [Serializable]
     internal class ArmoryException : Exception
     {
+        /// <summary>
+        /// Default constructor for and ArmoryException
+        /// </summary>
         public ArmoryException()
         {
         }
 
-        public ArmoryException(string message) : base(message)
+        /// <summary>
+        /// Creates a new ArmoryException
+        /// </summary>
+        /// <param name="message">The exception message associated with the exception</param>
+        public ArmoryException(string message) 
+            : base(message)
         {
         }
 
-        public ArmoryException(string message, Exception innerException) : base(message, innerException)
+        /// <summary>
+        /// Creates a new ArmoryException
+        /// </summary>
+        /// <param name="message">The exception message associated with the exception</param>
+        /// <param name="innerException">The inner exception wrapped by the ArmoryException</param>
+        public ArmoryException(string message, Exception innerException) 
+            : base(message, innerException)
         {
         }
 
-        protected ArmoryException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected ArmoryException(SerializationInfo info, StreamingContext context) 
+            : base(info, context)
         {
         }
     }
