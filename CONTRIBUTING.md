@@ -1,5 +1,5 @@
 # Contributing to ARMory
-We welcome community contributions to ARMory. Please note that by participating in this project, you agree to abide by the Code of Conduct  and terms of the CLA 
+We welcome community contributions to ARMory. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)  and terms of the [CLA](#contributor-license-agreement-(cla)).
 
 ## Getting Started
 * If you haven't already, you will need [dotnet core sdk 3.1](https://dotnet.microsoft.com/download) (or later) installed locally to build and run this project.
@@ -12,8 +12,8 @@ We welcome community contributions to ARMory. Please note that by participating 
 ### Components
 The ARMory solution is comprised of the following main components:
 * ARMory CLI (*[src\Armory.Cli](./src/Armory.Cli)*): The command-line tool to execute ARMory. This executable will pass template files to ARMory.Core.
-* ARMory Core (*[src\Armory.Core](./src/Armory.Core)*): The main ARMory library which executes all rules engines against provided templates.
-  * BuiltInRules.json (*[src\Armory.Core\Armory.Rules\BuiltInRules.json](./src/Armory.Core/Armory.Rules/BuiltInRules.json)*): The file with the built-in ARMory rules.
+* ARMory Core (*[src\Armory.Core](./src/Armory.Core)*): The main ARMory library which executes all rule engines against provided templates.
+  * BuiltInRules.json (*[src\Armory.Core\Rules\BuiltInRules.json](./src/Armory.Core/Rules/BuiltInRules.json)*): The file with the built-in ARMory rules.
 * ARMory Template Processor (*[src\Armory.TemplateProcessor](./src/Armory.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
 * ARMory JSON Rule Engine (*[src\Armory.JsonRuleEngine](./src/Armory.JsonRuleEngine)*): The library dedicated to parse and evaluate ARMory JSON rules.
  
