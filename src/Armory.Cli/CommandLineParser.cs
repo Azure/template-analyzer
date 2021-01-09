@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -9,19 +12,24 @@ namespace Armory.Cli
 {
     internal class CommandLineParser
     {
-        private string[] _args;
         RootCommand rootCommand;
 
-        public CommandLineParser(string[] args)
+        /// <summary>
+        /// Constructor for the command line parser. Sets up the command line API. 
+        /// </summary>
+        public CommandLineParser()
         {
-            _args = args;
-
             SetupCommandLineAPI();
         }
 
-        public async Task InvokeCommandLineAPIAsync()
+        /// <summary>
+        /// Invoke the command line API using the provided arguments. 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public async Task InvokeCommandLineAPIAsync(string[] args)
         {
-            await rootCommand.InvokeAsync(_args).ConfigureAwait(false);
+            await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
 
         private RootCommand SetupCommandLineAPI()

@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Threading.Tasks;
 
 namespace Armory.Cli
 {
@@ -6,9 +9,9 @@ namespace Armory.Cli
     {
         static async Task Main(string[] args)
         {
-            CommandLineParser commandLineParser = new CommandLineParser(args);
+            CommandLineParser commandLineParser = new CommandLineParser();
 
-            await commandLineParser.InvokeCommandLineAPIAsync().ConfigureAwait(false);
+            await commandLineParser.InvokeCommandLineAPIAsync(args).ConfigureAwait(false);
         }
 
     }
