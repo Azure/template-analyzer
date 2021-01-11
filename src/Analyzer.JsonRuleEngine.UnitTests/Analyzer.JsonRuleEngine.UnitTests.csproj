@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+
+    <AssemblyName>Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests</AssemblyName>
+
+    <RootNamespace>Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Moq" Version="4.15.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
+    <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
+  </ItemGroup>
+
+</Project>

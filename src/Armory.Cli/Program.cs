@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Armory.Cli
+namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     class Program
     {
