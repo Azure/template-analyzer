@@ -89,6 +89,12 @@ namespace Armory.JsonRuleEngine
             {
                 leafOperator = new HasValueOperator(HasValue.Value, isNegative: false);
             }
+            else if (this.Is != null || this.NotEquals != null)
+            {
+                leafOperator = new EqualsOperator(
+                    specifiedValue: this.Is ?? this.NotEquals, 
+                    isNegative: this.NotEquals != null);
+            }
 
             if (leafOperator != null)
             {
