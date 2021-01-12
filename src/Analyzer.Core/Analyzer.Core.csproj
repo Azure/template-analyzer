@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Microsoft.Azure.Templates.Analyzer</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Templates.Analyzer.Core</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Analyzer.Core.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
+    <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
+    <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Rules\BuiltInRules.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,10 +1,10 @@
-# ARMory JSON Rules
-<a name="note"></a>***Note**: ARMory is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
+# Template BPA JSON Rules
+<a name="note"></a>***Note**: The ARM Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-ARMory rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as name, description, help information), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template BPA rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as name, description, help information), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
 
-## ARMory Rule Object
+## Template BPA Rule Object
 Here are the fields that make up a rule definition.
 ```javascript
 {
