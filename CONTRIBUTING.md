@@ -1,33 +1,33 @@
-# Contributing to ARMory
-We welcome community contributions to ARMory. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)  and terms of the [CLA](#contributor-license-agreement-cla).
+# Contributing to the ARM Template BPA
+We welcome community contributions to the Template BPA. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/)  and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
 * If you haven't already, you will need [dotnet core sdk 3.1](https://dotnet.microsoft.com/download) (or later) installed locally to build and run this project.
 * Fork this repo (see [this forking guide](https://guides.github.com/activities/forking/) for more information).
-* Checkout the repo locally with `git clone git@github.com:{your_username}/armory.git`.
+* Checkout the repo locally with `git clone git@github.com:{your_username}/template-analyzer.git`.
 * Build the .NET solution with `dotnet build`.
  
 ## Developing
  
 ### Components
-The ARMory solution is comprised of the following main components:
-* ARMory CLI (*[src\Armory.Cli](./src/Armory.Cli)*): The command-line tool to execute ARMory. This executable will pass template files to ARMory.Core.
-* ARMory Core (*[src\Armory.Core](./src/Armory.Core)*): The main ARMory library which executes all rule engines against provided templates.
-  * BuiltInRules.json (*[src\Armory.Core\Rules\BuiltInRules.json](./src/Armory.Core/Rules/BuiltInRules.json)*): The file with the built-in ARMory rules.
-* ARMory Template Processor (*[src\Armory.TemplateProcessor](./src/Armory.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
-* ARMory JSON Rule Engine (*[src\Armory.JsonRuleEngine](./src/Armory.JsonRuleEngine)*): The library dedicated to parse and evaluate ARMory JSON rules.
+The Template Analyzer solution is comprised of the following main components:
+* CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute the Template BPA. This executable will pass template files to Analyzer.Core.
+* Core (*[src\Analyzer.Core](./src/Analyzer.Core)*): The main Analyzer library which executes all rule engines against provided templates.
+  * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template BPA rules.
+* Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
+* JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template BPA JSON rules.
  
 ### Code Structure
-1. ARMory CLI (or another calling application) identifies JSON files (template and parameter files) and invokes ARMory.Core.
-2. ARMory Core calls the ARMory Template Processing Library to process the template and (if supplied) the provided parameters. The ARMory Template Processing Library processes all the template functions.
-3. ARMory Core then calls the JSON Rule Engine and evaluates each rule against the template/parameter pairs.
+1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer.Core.
+2. Analyzer Core calls the Template Processing Library to process the template and (if supplied) the provided parameters. The Template Processing Library processes all the template functions.
+3. Analyzer Core then calls the JSON Rule Engine and evaluates each rule against the template/parameter pairs.
 4. JSON Rule Engine evaluates the expressions specified in the `evaluation` section of the rule and generates results to identify the rule violation in the template.
  
 ### Running the tests
-Use `dotnet test` to run the full ARMory test suite
+Use `dotnet test` to run the full Template BPA test suite
 
 ### Contributing Rules
-Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to contribute to the built-in ARMory rules.
+Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to contribute to the built-in Template BPA rules.
 
 ### Coding Conventions
 
@@ -49,11 +49,11 @@ Please follow the below conventions when contributing to this project.
   * **Example**:
     ``` C#
     /// <summary>
-    /// Runs the ARMory logic given the template and parameters passed to it
+    /// Runs the TemplateAnalyzer logic given the template and parameters passed to it
     /// </summary>
     /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
     /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-    /// <returns>List of ARMory results</returns>
+    /// <returns>List of TemplateAnalyzer results</returns>
     public static IEnumerable<IResult> Run(string template, string parameters = null)
     {
         …

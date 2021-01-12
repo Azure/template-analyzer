@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Microsoft.Azure.Templates.Analyzer.JsonRuleEngine</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Templates.Analyzer.JsonRuleEngine</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Analyzer.Utilities.xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
+    <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
+  </ItemGroup>
+
+</Project>
