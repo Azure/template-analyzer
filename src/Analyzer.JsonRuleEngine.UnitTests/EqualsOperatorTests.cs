@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Armory.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
 {
     [TestClass]
     public class EqualsOperatorTests
     {
-        [TestMethod]
+        [DataTestMethod]
         [DataRow("value", DisplayName = "String values are equal")]
         [DataRow(true, DisplayName = "Boolean values are equal")]
         [DataRow(1, DisplayName = "Integer values are equal")]
@@ -26,13 +28,13 @@ namespace Armory.JsonRuleEngine.UnitTests
             Assert.IsTrue(equalsOperator.EvaluateExpression(jToken));
         }
 
-        [TestMethod]
+        [DataTestMethod]
         [DataRow("value", "value2", DisplayName = "String values are not equal")]
         [DataRow(true, false, DisplayName = "Boolean values are not equal")]
         [DataRow(1, 2, DisplayName = "Integer values are not equal")]
         [DataRow(0.1, 0.2, DisplayName = "Float values are not equal")]
-        //[DataRow(new string[] { "value1", "value2" }, new string[] { "value3", "value4" }, DisplayName = "Array values are not equal")]
-        [DataRow(@"{""property"": ""value""}", @"{""property2"": ""value2""}", DisplayName = "Json values are not equal")]
+        [DynamicData(nameof(TestArrays), DynamicDataSourceType.Method, DynamicDataDisplayName = "GetArrayValuesDynamicDataDisplayName")]
+        [DataRow(@"{""property"": ""value11""}", @"{""property2"": ""value12""}", DisplayName = "Json values are not equal")]
         public void EvaluateExpression_PropertyIsNotEqual_EqualsExpressionIsFalse(object expectedValue, object actualValue)
         {
             var expectedValueJToken = ToJToken(expectedValue);
@@ -41,6 +43,19 @@ namespace Armory.JsonRuleEngine.UnitTests
             // {"Equals": jTokenValue} is false
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
             Assert.IsFalse(equalsOperator.EvaluateExpression(actualValueJToken));
+        }
+
+        public static string GetArrayValuesDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
+        {
+            return "Array values are not equal";
+        }
+
+        static IEnumerable<object[]> TestArrays()
+        {
+            return new[] { new[] {
+                new string[] { "value1", "value2" },
+                new string[] { "value3", "value4" } }
+            };
         }
 
         [TestMethod]

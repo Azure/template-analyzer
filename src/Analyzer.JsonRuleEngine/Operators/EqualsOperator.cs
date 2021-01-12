@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 
-namespace Armory.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 {
     internal class EqualsOperator : LeafExpressionOperator
     {
