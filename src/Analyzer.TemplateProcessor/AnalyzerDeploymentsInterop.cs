@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Instrumentation = Azure.Deployments.Core.Instrumentation;
 using System.Globalization;
+using Azure.Deployments.Core.Instrumentation;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 {
-    internal class DeploymentsInterop : Instrumentation.IDeploymentsInterop
+    internal class AnalyzerDeploymentsInterop : IDeploymentsInterop
     {
-        private DeploymentsInterop()
+        private AnalyzerDeploymentsInterop()
         {
 
         }
 
         public static void Initialize()
-            => Instrumentation.DeploymentsInterop.Initialize(new DeploymentsInterop());
+            => DeploymentsInterop.Initialize(new AnalyzerDeploymentsInterop());
 
         public CultureInfo GetLocalizationCultureInfo() => CultureInfo.CurrentCulture;
     }

@@ -6,7 +6,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 {
     /// <summary>
-    /// Describes the result of an TemplateAnalyzer JSON rule against an ARM template.
+    /// Describes the result of a TemplateAnalyzer JSON rule against an ARM template.
     /// </summary>
     internal class JsonRuleResult : IResult
     {

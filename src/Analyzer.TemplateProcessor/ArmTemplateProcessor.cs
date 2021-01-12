@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             this.apiVersion = apiVersion;
             this.dropResourceCopies = dropResourceCopies;
 
-            DeploymentsInterop.Initialize();
+            AnalyzerDeploymentsInterop.Initialize();
         }
 
         /// <summary>

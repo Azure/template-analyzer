@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
                 ExpandedTemplate = JObject.Parse(template), 
                 IsMainTemplate = true };
 
-            var ruleEngine = new Microsoft.Azure.Templates.Analyzer.JsonEngine.JsonRuleEngine();
+            var ruleEngine = new JsonEngine.JsonRuleEngine();
             var results = ruleEngine.EvaluateRules(templateContext, rules);
 
             Assert.AreEqual(numberOfExpectedFailedResults + numberOfExpectedPassedResults, results.Count());

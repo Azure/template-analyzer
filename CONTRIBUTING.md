@@ -10,9 +10,9 @@ We welcome community contributions to the Template BPA. Please note that by part
 ## Developing
  
 ### Components
-The Template BPA solution is comprised of the following main components:
+The Template Analyzer solution is comprised of the following main components:
 * CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute the Template BPA. This executable will pass template files to Analyzer.Core.
-* Core (*[src\Analyzer.Core](./src/Analyzer.Core)*): The main Template BPA library which executes all rule engines against provided templates.
+* Core (*[src\Analyzer.Core](./src/Analyzer.Core)*): The main Analyzer library which executes all rule engines against provided templates.
   * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template BPA rules.
 * Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
 * JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template BPA JSON rules.
