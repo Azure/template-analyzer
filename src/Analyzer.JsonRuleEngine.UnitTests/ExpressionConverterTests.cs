@@ -24,9 +24,9 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
 
         [DataTestMethod]
-        [DataRow("hasValue", true, typeof(HasValueOperator), DisplayName = "{\"HasValue\": true}")]
-        [DataRow("exists", false, typeof(ExistsOperator), DisplayName = "{\"Exists\": false}")]
-        public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, Type operatorType)
+        [DataRow("hasValue", true, DisplayName = "{\"HasValue\": true}")]
+        [DataRow("exists", false, DisplayName = "{\"Exists\": false}")]
+        public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue)
         {
             var @object = ReadJson(string.Format(@"
                 {{
@@ -83,6 +83,20 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
                 }}",
                 operatorProperty,
                 JsonConvert.SerializeObject(operatorValue)));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(JsonSerializationException))]
+        public void ReadJson_LeafWithoutPath_ThrowsParsingException()
+        {
+            ReadJson("{ \"resourceType\": \"resourceType\", \"hasValue\": true }");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(JsonSerializationException))]
+        public void ReadJson_LeafWithNullPath_ThrowsParsingException()
+        {
+            ReadJson("{ \"resourceType\": \"resourceType\", \"path\": null, \"hasValue\": true }");
         }
 
         [TestMethod]

@@ -7,20 +7,28 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 {
     /// <summary>
-    /// A utility interface for resolving a JSON path in a JSON scope
+    /// A utility interface for resolving a JSON path in a JSON scope.
     /// </summary>
     internal interface IJsonPathResolver
     {
         /// <summary>
-        /// Gets the JToken of the resolver's scope
+        /// Gets the JToken of the resolver's scope.
         /// </summary>
         public JToken JToken { get; }
 
         /// <summary>
-        /// Retrieves the JToken(s) of the current scope at the specified path
+        /// Retrieves the JToken(s) of the current scope at the specified path.
         /// </summary>
-        /// <param name="jsonPath">JSON path to follow</param>
-        /// <returns>The JToken(s) at the path</returns>
+        /// <param name="jsonPath">JSON path to follow.</param>
+        /// <returns>The JToken(s) at the path.</returns>
         public IEnumerable<IJsonPathResolver> Resolve(string jsonPath);
+
+        /// <summary>
+        /// Retrieves the JTokens for resources of the specified type
+        /// in a "resources" property array at the current scope.
+        /// </summary>
+        /// <param name="resourceType">The type of resource to find.</param>
+        /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
+        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType);
     }
 }
