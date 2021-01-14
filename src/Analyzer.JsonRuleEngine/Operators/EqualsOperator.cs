@@ -16,6 +16,27 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         }
 
         public override bool EvaluateExpression(JToken tokenToEvaluate)
-            =>  this.IsNegative != JToken.DeepEquals(tokenToEvaluate, this.SpecifiedValue);
+        {
+            var normalizedSpecifiedValue = NormalizeValue(this.SpecifiedValue);
+            var normalizedTokenToEvaluate = NormalizeValue(tokenToEvaluate);
+
+            return this.IsNegative != JToken.DeepEquals(normalizedSpecifiedValue, normalizedTokenToEvaluate);
+        }
+
+        private JToken NormalizeValue(JToken token)
+        {
+            if (token.Type == JTokenType.Integer)
+            {
+                return JToken.FromObject(token.Value<float>());
+            }
+
+            if (token.Type == JTokenType.String)
+            {
+                return JToken.FromObject(token.Value<string>().ToLower());
+            }
+
+            return token;
+        }
+            
     }
 }
