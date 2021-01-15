@@ -46,9 +46,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
                         templateContext.ExpandedTemplate,
                         templateContext.ExpandedTemplate.Path));
 
-                PopulateResults(ruleResults, rule, templateContext);
-
-                results.AddRange(ruleResults);
+                results.AddRange(PopulateResults(ruleResults, rule, templateContext));
             }
 
             return results;
@@ -60,7 +58,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
         /// <param name="results">The results to finish populating.</param>
         /// <param name="rule">The rule the results are for.</param>
         /// <param name="templateContext">The template that was evaluated.</param>
-        private void PopulateResults(IEnumerable<JsonRuleResult> results, RuleDefinition rule, TemplateContext templateContext)
+        /// <returns>The populated results.</returns>
+        private IEnumerable<JsonRuleResult> PopulateResults(IEnumerable<JsonRuleResult> results, RuleDefinition rule, TemplateContext templateContext)
         {
             foreach (var result in results)
             {
@@ -77,7 +76,9 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
 
                 result.RuleDefinition = rule;
                 result.FileIdentifier = templateContext.TemplateIdentifier;
-                result.LineNumber = originalTemplateLineNumber; 
+                result.LineNumber = originalTemplateLineNumber;
+
+                yield return result;
             }
         }
     }
