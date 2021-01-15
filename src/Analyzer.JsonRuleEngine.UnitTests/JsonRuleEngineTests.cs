@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
@@ -76,12 +79,19 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
                 ExpandedTemplate = JObject.Parse(template), 
                 IsMainTemplate = true };
 
-            var ruleEngine = new JsonEngine.JsonRuleEngine();
+            var ruleEngine = new JsonEngine.JsonRuleEngine(new Mock<IJsonLineNumberResolver>().Object);
             var results = ruleEngine.EvaluateRules(templateContext, rules);
 
             Assert.AreEqual(numberOfExpectedFailedResults + numberOfExpectedPassedResults, results.Count());
             Assert.AreEqual(numberOfExpectedFailedResults, results.Where(result => result.Passed == false).Count());
             Assert.AreEqual(numberOfExpectedPassedResults, results.Where(result => result.Passed == true).Count());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Constructor_NullLineNumberResolver_ThrowsException()
+        {
+            new JsonEngine.JsonRuleEngine(null);
         }
     }
 }

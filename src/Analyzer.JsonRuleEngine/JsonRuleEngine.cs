@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.JsonRuleEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
@@ -13,6 +15,18 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
     /// </summary>
     public class JsonRuleEngine : IRuleEngine
     {
+        private readonly IJsonLineNumberResolver lineNumberResolver;
+
+        /// <summary>
+        /// Creates an instance of <c>JsonRuleEngine</c>.
+        /// </summary>
+        /// <param name="lineNumberResolver">An <c>ILineNumberResolver</c> for mapping JSON paths from a
+        /// processed template to the line number of the equivalent location in the original template.</param>
+        public JsonRuleEngine(IJsonLineNumberResolver lineNumberResolver)
+        {
+            this.lineNumberResolver = lineNumberResolver ?? throw new ArgumentNullException(nameof(lineNumberResolver));
+        }
+
         /// <summary>
         /// Evaluates a template using rules defined in JSON.
         /// </summary>
@@ -26,10 +40,45 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
 
             foreach(RuleDefinition rule in rules)
             {
-                results.AddRange(rule.Evaluation.ToExpression(rule).Evaluate(new JsonPathResolver(templateContext.ExpandedTemplate, templateContext.ExpandedTemplate.Path)));
+                var ruleExpression = rule.Evaluation.ToExpression();
+                var ruleResults = ruleExpression.Evaluate(
+                    new JsonPathResolver(
+                        templateContext.ExpandedTemplate,
+                        templateContext.ExpandedTemplate.Path));
+
+                PopulateResults(ruleResults, rule, templateContext);
+
+                results.AddRange(ruleResults);
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Finishes populating the results of evaluation with extra fields for added context.
+        /// </summary>
+        /// <param name="results">The results to finish populating.</param>
+        /// <param name="rule">The rule the results are for.</param>
+        /// <param name="templateContext">The template that was evaluated.</param>
+        private void PopulateResults(IEnumerable<JsonRuleResult> results, RuleDefinition rule, TemplateContext templateContext)
+        {
+            foreach (var result in results)
+            {
+                int originalTemplateLineNumber = 0;
+
+                try
+                {
+                    originalTemplateLineNumber = this.lineNumberResolver.ResolveLineNumberForOriginalTemplate(
+                        result.JsonPath,
+                        templateContext.ExpandedTemplate,
+                        templateContext.OriginalTemplate);
+                }
+                catch (Exception) { }
+
+                result.RuleDefinition = rule;
+                result.FileIdentifier = templateContext.TemplateIdentifier;
+                result.LineNumber = originalTemplateLineNumber; 
+            }
         }
     }
 }

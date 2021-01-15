@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
@@ -12,23 +11,10 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
     internal abstract class Expression
     {
         /// <summary>
-        /// Gets the JSON rule this expression is contained in.
-        /// </summary>
-        protected RuleDefinition Rule { get; private set; }
-
-        /// <summary>
-        /// Creates the expression.
-        /// </summary>
-        /// <param name="rootRule">The rule this expression is contained in.</param>
-        public Expression(RuleDefinition rootRule)
-        {
-            this.Rule = rootRule ?? throw new ArgumentNullException(nameof(rootRule));
-        }
-
-        /// <summary>
         /// Executes this <c>Expression</c> against a template.
         /// </summary>
-        /// <param name="jsonScope">The template to evaluate</param>
+        /// <param name="jsonScope">The specific scope to evaluate.</param>
+        /// <returns>The results of the evaluation.</returns>
         public abstract IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope);
     }
 }

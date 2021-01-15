@@ -75,9 +75,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <summary>
         /// Creates a <c>LeafExpression</c> capable of evaluating JSON using the operator specified in the JSON rule.
         /// </summary>
-        /// <param name="rootRule">The JSON rule this leaf expression is part of.</param>
         /// <returns>The LeafExpression.</returns>
-        public override Expression ToExpression(RuleDefinition rootRule)
+        public override Expression ToExpression()
         {
             LeafExpressionOperator leafOperator = null;
 
@@ -92,7 +91,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
             if (leafOperator != null)
             {
-                return new LeafExpression(rootRule, this.ResourceType, this.Path, leafOperator);
+                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
             }
 
             throw new NotImplementedException();

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using Moq;
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         public void Constructor_ValidParameters_ConstructedCorrectly(string resourceType, string path)
         {
             var mockOperator = new Mock<LeafExpressionOperator>().Object;
-            var leafExpression = new LeafExpression(new RuleDefinition(), resourceType, path, mockOperator);
+            var leafExpression = new LeafExpression(resourceType, path, mockOperator);
 
             Assert.AreEqual(resourceType, leafExpression.ResourceType);
             Assert.AreEqual(path, leafExpression.Path);
@@ -34,16 +35,9 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         public void Evaluate_ValidScope_ReturnsResultsOfOperatorEvaluation(string resourceType, string path, bool expectedEvaluationResult)
         {
             // Arrange
-            var ruleDefinition = new RuleDefinition
-            {
-                Name = "testRule",
-                Description = "test rule",
-                Recommendation = "test recommendation",
-                HelpUri = "https://helpUri"
-            };
-
             // JObject to evaluate, in this test, this is a subset of an ARM template
             var jsonToEvaluate = JObject.Parse("{ \"property\": \"value\" }");
+            var expectedPathEvaluated = "expectedPath";
 
             // Setting up the Mock JsonPathResolvers to return the expected values when JToken and Resolve are called
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
@@ -59,16 +53,21 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             // We can just reuse mockJsonPathResolver in both cases.
             mockJsonPathResolver
                 .Setup(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))))
-                .Returns(() => new[] { mockJsonPathResolver.Object });
+                .Returns(new[] { mockJsonPathResolver.Object });
             mockResourcesResolved
                 .Setup(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))))
-                .Returns(() => new[] { mockJsonPathResolver.Object });
+                .Returns(new[] { mockJsonPathResolver.Object });
+
+            // Setup the mock resolver to return a JSON path
+            mockJsonPathResolver
+                .Setup(s => s.Path)
+                .Returns(expectedPathEvaluated);
 
             // ResolveResourceType for the provided resource type should return a JsonPathResolver.
             // Return the mock specifically for testing the call to ResolveResourceType.
             mockJsonPathResolver
                 .Setup(s => s.ResolveResourceType(It.Is<string>(r => string.Equals(r, resourceType))))
-                .Returns(() => new[] { mockResourcesResolved.Object });
+                .Returns(new[] { mockResourcesResolved.Object });
 
             // EvaluateExpression for the provided scope should return the expected evaluationResult
             var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>();
@@ -76,7 +75,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
                 .Setup(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)))
                 .Returns(expectedEvaluationResult);
 
-            var leafExpression = new LeafExpression(ruleDefinition, resourceType, path, mockLeafExpressionOperator.Object);
+            var leafExpression = new LeafExpression(resourceType, path, mockLeafExpressionOperator.Object);
 
             // Act
             var results = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object).ToList();
@@ -100,35 +99,28 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
 
             Assert.AreEqual(1, results.Count);
             Assert.AreEqual(expectedEvaluationResult, results.First().Passed);
-            Assert.AreEqual(ruleDefinition, results.First().RuleDefinition);
+            Assert.AreEqual(expectedPathEvaluated, results.First().JsonPath);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullPath_ThrowsException()
         {
-            new LeafExpression(new RuleDefinition(), "resourceType", null, new ExistsOperator(true, false));
+            new LeafExpression("resourceType", null, new ExistsOperator(true, false));
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullOperator_ThrowsException()
         {
-            new LeafExpression(new RuleDefinition(), "resourceType", "path", null);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void Constructor_NullRuleDefinition_ThrowsException()
-        {
-            new LeafExpression(null, "resourceType", "path", new ExistsOperator(true, false));
+            new LeafExpression("resourceType", "path", null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            var leafExpression = new LeafExpression(new RuleDefinition(), null, "path", new HasValueOperator(true, false));
+            var leafExpression = new LeafExpression(null, "path", new HasValueOperator(true, false));
             leafExpression.Evaluate(jsonScope: null).ToList();
         }
     }
