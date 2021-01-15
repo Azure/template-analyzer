@@ -107,7 +107,7 @@ Example:
 }
 ```
 
-#### `Equals` [[*]](#note)
+#### `Equals`
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 Tests the template value of the `path` to determine if it is equal to the value specified in the rule.
@@ -123,7 +123,7 @@ Example:
 }
 ```
 
-#### `NotEquals` [[*]](#note)
+#### `NotEquals`
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 The logical inverse of `equals`.  Evaluations on incompatible types results in `true`.
