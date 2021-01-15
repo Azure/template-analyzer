@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         public void EvaluateExpression_PropertyIsEqual_EqualsExpressionIsTrue_NotEqualsExpressionIsFalse(object expectedValue, object actualValue = null)
         {
             var expectedValueJToken = ToJToken(expectedValue);
-            var actualValueJToken = ToJToken(actualValue) ?? expectedValueJToken;
+            var actualValueJToken = ToJToken(actualValue ?? expectedValue);
 
             // {"Equals": jTokenValue} is true
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
@@ -80,6 +80,6 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
 
         // Creates JSON with 'value' as the value of a key, parses it, then selects that key.
         private static JToken ToJToken(object value)
-            => value == null ? null : JToken.Parse($"{{\"Key\": {JsonConvert.SerializeObject(value)} }}")["Key"];
+            => JToken.Parse($"{{\"Key\": {JsonConvert.SerializeObject(value)} }}")["Key"];
     }
 }

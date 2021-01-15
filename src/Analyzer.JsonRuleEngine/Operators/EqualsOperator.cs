@@ -25,18 +25,13 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
         private JToken NormalizeValue(JToken token)
         {
-            if (token.Type == JTokenType.Integer)
+            return token.Type switch
             {
-                return JToken.FromObject(token.Value<float>());
-            }
-
-            if (token.Type == JTokenType.String)
-            {
-                return JToken.FromObject(token.Value<string>().ToLower());
-            }
-
-            return token;
+                JTokenType.Integer => JToken.FromObject(token.Value<float>()),
+                JTokenType.String => JToken.FromObject(token.Value<string>().ToLower()),
+                _ => token,
+            };
         }
-            
+
     }
 }
