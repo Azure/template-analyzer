@@ -8,7 +8,6 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
 {

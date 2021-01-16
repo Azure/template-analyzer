@@ -9,5 +9,16 @@
       "path": "properties.azureActiveDirectory.tenantId",
       "hasValue": true
     }
+  },
+  {
+    "name": "Authorization_RoleDefinition_No_Custom_RBAC",
+    "description": "Use built-in roles instead of custom RBAC roles",
+    "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-armory-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
+    "evaluation": {
+      "resourceType": "Microsoft.Authorization/roleDefinitions",
+      "path": "properties.type",
+      "notEquals": "CustomRole"
+    }
   }
 ]
