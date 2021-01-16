@@ -21,7 +21,9 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         public LeafExpression(RuleDefinition rootRule, string resourceType, string path, LeafExpressionOperator @operator)
             : base(rootRule)
         {
-            (this.ResourceType, this.Path, this.Operator) = (resourceType, path, @operator ?? throw new ArgumentNullException(nameof(@operator)));
+            this.ResourceType = resourceType;
+            this.Path = path ?? throw new ArgumentNullException(nameof(path));
+            this.Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
         }
 
         /// <summary>
@@ -47,43 +49,34 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// and if the path contains any wildcards.</returns>
         public override IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope)
         {
-            List<JsonRuleResult> results = new List<JsonRuleResult>();
+            if (jsonScope == null)
+            {
+                throw new ArgumentNullException(nameof(jsonScope));
+            }
+
+            List<IJsonPathResolver> scopesToEvaluate = new List<IJsonPathResolver>();
 
             if (!string.IsNullOrEmpty(ResourceType))
             {
-                var resourceResolver = new ResourceResolver(ResourceType, jsonScope.JToken);
-
-                foreach (var resource in resourceResolver.Resources)
-                {
-                    var resolver = new JsonPathResolver(resource, resource.Path);
-
-                    results.AddRange(EvaluateScope(resolver));
-                }
+                scopesToEvaluate.AddRange(jsonScope.ResolveResourceType(ResourceType));
             }
             else
             {
-                results.AddRange(EvaluateScope(jsonScope));
+                scopesToEvaluate.Add(jsonScope);
             }
 
-            return results;
-        }
-
-        private IEnumerable<JsonRuleResult> EvaluateScope(IJsonPathResolver jsonPathResolver)
-        {
-            if (jsonPathResolver == null)
+            foreach (var scope in scopesToEvaluate)
             {
-                throw new ArgumentNullException(nameof(jsonPathResolver));
-            }
+                var leafScope = scope?.Resolve(Path);
 
-            var leafScope = jsonPathResolver?.Resolve(Path);
-
-            foreach (var propertyToEvaluate in leafScope)
-            {
-                yield return new JsonRuleResult
+                foreach (var propertyToEvaluate in leafScope)
                 {
-                    RuleDefinition = this.Rule,
-                    Passed = Operator.EvaluateExpression(propertyToEvaluate.JToken)
-                };
+                    yield return new JsonRuleResult
+                    {
+                        RuleDefinition = this.Rule,
+                        Passed = Operator.EvaluateExpression(propertyToEvaluate.JToken)
+                    };
+                }
             }
         }
     }

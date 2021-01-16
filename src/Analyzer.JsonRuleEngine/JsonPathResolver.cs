@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json.Linq;
 
@@ -44,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                resolvedTokens = new List<FieldContent> { new FieldContent { Value = this.currentScope.InsensitiveToken(jsonPath) } };
+                resolvedTokens = new List<FieldContent> { this.currentScope.InsensitiveToken(jsonPath) };
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
@@ -52,6 +53,31 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
             {
                 // If token is not null, defer to it's path, since the path looked up could include wildcards.
                 yield return new JsonPathResolver(token.Value, token?.Value?.Path ?? fullPath, this.resolvedPaths);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the JTokens for resources of the specified type
+        /// in a "resources" property array at the current scope.
+        /// </summary>
+        /// <param name="resourceType">The type of resource to find.</param>
+        /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
+        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType)
+        {
+            string fullPath = currentPath + ".resources[*]";
+            if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
+            {
+                var resourcesProperty = this.currentScope.InsensitiveToken("resources");
+                resolvedTokens = resourcesProperty.Children().Select(r => (FieldContent)r);
+                resolvedPaths[fullPath] = resolvedTokens;
+            }
+
+            foreach (var resource in resolvedTokens)
+            {
+                if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceType, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                }
             }
         }
 
