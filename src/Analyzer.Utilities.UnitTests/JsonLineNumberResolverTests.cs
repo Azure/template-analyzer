@@ -45,7 +45,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 tokenInOriginalTemplate = tokenInOriginalTemplate[pathSegment];
             }
 
-            //var expectedLineNumber = (originalTemplate["resources"][0]["properties"]["somePath"] as IJsonLineInfo).LineNumber;
             var expectedLineNumber = (tokenInOriginalTemplate as IJsonLineInfo).LineNumber;
             Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
         }
