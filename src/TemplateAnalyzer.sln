@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Utilities.UnitTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Types", "Analyzer.Types\Analyzer.Types.csproj", "{B30C1024-BDAC-4368-BB9C-49C51828008C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armory.Cli", "Armory.Cli\Armory.Cli.csproj", "{DA8FD65E-3F5E-49F3-AF68-3BB5C4644234}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Cli", "Analyzer.Cli\Analyzer.Cli.csproj", "{28D75A41-485C-483B-B5DD-C907E880ADC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,10 +79,10 @@ Global
 		{B30C1024-BDAC-4368-BB9C-49C51828008C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B30C1024-BDAC-4368-BB9C-49C51828008C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B30C1024-BDAC-4368-BB9C-49C51828008C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA8FD65E-3F5E-49F3-AF68-3BB5C4644234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA8FD65E-3F5E-49F3-AF68-3BB5C4644234}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA8FD65E-3F5E-49F3-AF68-3BB5C4644234}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA8FD65E-3F5E-49F3-AF68-3BB5C4644234}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D75A41-485C-483B-B5DD-C907E880ADC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D75A41-485C-483B-B5DD-C907E880ADC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D75A41-485C-483B-B5DD-C907E880ADC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D75A41-485C-483B-B5DD-C907E880ADC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
