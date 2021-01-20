@@ -13,18 +13,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// </summary>
     public class JsonLineNumberResolver : IJsonLineNumberResolver
     {
-        private static readonly Regex resourceIndexInPath = new Regex(@"Resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        /// <summary>
-        /// Given a JSON path in an expanded JSON template, find the equivalent line number
-        /// in the original JSON template.
-        /// </summary>
-        /// <param name="pathInExpandedTemplate">The path in the expanded template
-        /// to find the line number of in the original template.</param>
-        /// <param name="expandedTemplateRoot">The root of the expanded template.</param>
-        /// <param name="originalTemplateRoot">The root of the original template.</param>
-        /// <returns>The line number of the equivalent location in the original template,
-        /// or 0 if it can't be determined.</returns>
+        /// <inheritdoc/>
         public int ResolveLineNumberForOriginalTemplate(
             string pathInExpandedTemplate,
             JToken expandedTemplateRoot,
@@ -36,19 +27,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
              * 1. The path in the expanded template exactly matches a path in the original template.
              *     - This path can be used as-is to identify the line number in the original template.
              *     Example:
-             *       expanded: resources[2].properties.enabled
+             *       expanded : resources[2].properties.enabled
              *       original : resources[2].properties.enabled
              *       used path: resources[2].properties.enabled
              * 
              * 2. The path in the expanded template partially matches a path in the original template,
-             *    but extends beyond a valid path, and the first missing property is not a resources[] array.
+             *    but extends beyond a valid path, AND the first _missing_ property is NOT a resources[] array.
              *     - The rule was looking for a property that isn't defined in the original template.
              *       Similar to scenario 1, the line number where the path ends in the original template
              *       can be taken directly.
-             *     Example:
-             *       expanded: parameters.numberOfCopies.minValue
+             *     Examples:
+             *       expanded : parameters.numberOfCopies.minValue
              *       original : parameters.numberOfCopies
              *       used path: parameters.numberOfCopies
+             *       
+             *       expanded : resources[2].dependsOn
+             *       original : resources[2]
+             *       used path: resources[2]
              * 
              * 3. The path in the expanded template begins with the resources[] array and can't match
              *    a valid resource in the original template (i.e. the index is too large).
@@ -57,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
              *       the resource in the original template defining that name, and replace the resources[] index
              *       in the expanded template path with the index of the resource that defines the copy.
              *     Example:
-             *       expanded: resources[9].properties.configuration.encryption
+             *       expanded : resources[9].properties.configuration.encryption
              *       original : -
              *       used path: resources[3].properties.configuration.encryption (if resource 9 is a copy of resource 3)
              * 
@@ -70,7 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
              *       path again.  (Fortunately, JSON templates do not allow copy loops in child resources.
              *       https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-resources#iteration-for-a-child-resource)
              *     Example:
-             *       expanded: resources[5].resources[0].properties.debug
+             *       expanded : resources[5].resources[0].properties.debug
              *       original : resources[5]
              *       used path: resources[7].properties.debug (if resource 7 was copied into resource 5 as a child in pre-processing)
              */

@@ -36,7 +36,6 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
         public IEnumerable<IResult> EvaluateRules(TemplateContext templateContext, string ruleDefinitions)
         {
             List<RuleDefinition> rules = JsonConvert.DeserializeObject<List<RuleDefinition>>(ruleDefinitions);
-            List<IResult> results = new List<IResult>();
 
             foreach(RuleDefinition rule in rules)
             {
@@ -46,40 +45,38 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
                         templateContext.ExpandedTemplate,
                         templateContext.ExpandedTemplate.Path));
 
-                results.AddRange(PopulateResults(ruleResults, rule, templateContext));
+                foreach (var result in ruleResults)
+                {
+                    yield return PopulateResult(result, rule, templateContext);
+                }
             }
-
-            return results;
         }
 
         /// <summary>
-        /// Finishes populating the results of evaluation with extra fields for added context.
+        /// Populates additional fields of an evaluation result for added context.
         /// </summary>
-        /// <param name="results">The results to finish populating.</param>
+        /// <param name="result">The result to populate.</param>
         /// <param name="rule">The rule the results are for.</param>
         /// <param name="templateContext">The template that was evaluated.</param>
-        /// <returns>The populated results.</returns>
-        private IEnumerable<JsonRuleResult> PopulateResults(IEnumerable<JsonRuleResult> results, RuleDefinition rule, TemplateContext templateContext)
+        /// <returns>The populated result.</returns>
+        private JsonRuleResult PopulateResult(JsonRuleResult result, RuleDefinition rule, TemplateContext templateContext)
         {
-            foreach (var result in results)
+            int originalTemplateLineNumber = 0;
+
+            try
             {
-                int originalTemplateLineNumber = 0;
-
-                try
-                {
-                    originalTemplateLineNumber = this.lineNumberResolver.ResolveLineNumberForOriginalTemplate(
-                        result.JsonPath,
-                        templateContext.ExpandedTemplate,
-                        templateContext.OriginalTemplate);
-                }
-                catch (Exception) { }
-
-                result.RuleDefinition = rule;
-                result.FileIdentifier = templateContext.TemplateIdentifier;
-                result.LineNumber = originalTemplateLineNumber;
-
-                yield return result;
+                originalTemplateLineNumber = this.lineNumberResolver.ResolveLineNumberForOriginalTemplate(
+                    result.JsonPath,
+                    templateContext.ExpandedTemplate,
+                    templateContext.OriginalTemplate);
             }
+            catch (Exception) { }
+
+            result.RuleDefinition = rule;
+            result.FileIdentifier = templateContext.TemplateIdentifier;
+            result.LineNumber = originalTemplateLineNumber;
+
+            return result;
         }
     }
 }

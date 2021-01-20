@@ -39,15 +39,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             1, DisplayName = "2 Rules, 1 Passes, 1 Fails")]
         public void Run_ValidInputs_ReeturnsExpectedResults(string[] evaluations, int numberOfExpectedPassedResults)
         {
-            string ruleSkeleton = @"{{
-                ""name"": ""RuleName {0}"",
-                ""description"": ""Rule description {0}"",
-                ""recommendation"": ""Recommendation {0}"",
-                ""helpUri"": ""Uri {0}"",
-                ""evaluation"": {1}
-            }}";
-
             var template =
+                JObject.Parse(
                 @"{
                     ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                     ""resources"": [
@@ -58,31 +51,31 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
                             }
                         }
                     ]
-                }";
+                }");
 
             string expectedFileId = "MyTemplate";
             int expectedLineNumber = 5;
 
-            var rules = CreateRulesFromSkeleton(ruleSkeleton, evaluations);
+            var rules = CreateRulesFromEvaluations(evaluations);
 
 
             TemplateContext templateContext = new TemplateContext { 
-                OriginalTemplate = JObject.Parse(template), 
-                ExpandedTemplate = JObject.Parse(template), 
+                OriginalTemplate = template, 
+                ExpandedTemplate = template, 
                 IsMainTemplate = true,
                 TemplateIdentifier = expectedFileId
             };
 
             // Setup mock line number resolver
-            var lineResolver = new Mock<IJsonLineNumberResolver>();
-            lineResolver.Setup(r =>
+            var mockLineResolver = new Mock<IJsonLineNumberResolver>();
+            mockLineResolver.Setup(r =>
                 r.ResolveLineNumberForOriginalTemplate(
                     It.IsAny<string>(),
                     It.Is<JToken>(templateContext.ExpandedTemplate, EqualityComparer<object>.Default),
                     It.Is<JToken>(templateContext.OriginalTemplate, EqualityComparer<object>.Default)))
                 .Returns(expectedLineNumber);
 
-            var ruleEngine = new JsonEngine.JsonRuleEngine(lineResolver.Object);
+            var ruleEngine = new JsonEngine.JsonRuleEngine(mockLineResolver.Object);
             var results = ruleEngine.EvaluateRules(templateContext, rules).ToList();
 
             Assert.AreEqual(evaluations.Length, results.Count());
@@ -103,8 +96,16 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             new JsonEngine.JsonRuleEngine(null);
         }
 
-        private string CreateRulesFromSkeleton(string ruleSkeleton, string[] evaluations)
+        private string CreateRulesFromEvaluations(string[] evaluations)
         {
+            string ruleSkeleton = @"{{
+                ""name"": ""RuleName {0}"",
+                ""description"": ""Rule description {0}"",
+                ""recommendation"": ""Recommendation {0}"",
+                ""helpUri"": ""Uri {0}"",
+                ""evaluation"": {1}
+            }}";
+
             List<string> rules = new List<string>();
             for (int i = 0; i < evaluations.Length; i++)
             {
