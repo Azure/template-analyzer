@@ -19,14 +19,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             // Index one is for parameter 'path'.
             // Index two (a sub-array) is for parameter 'pathInOrginalTemplate'.
             // Index three is the test display name.  This is just so GenerateDisplayName() can do a lookup and is not used in the test.
-            new object[] { "resources[0].properties.somePath", new object[] { "resources", 0, "properties", "somePath" }, "Scenario 1 - path matches both templates exactly" },
-            new object[] { "parameters.parameter1.maxValue", new object[] { "parameters", "parameter1" }, "Scenario 2 - beginning of path matches original template parameters, but has missing property" },
-            new object[] { "resources[0].anExpandedProperty", new object[] { "resources", 0 }, "Scenario 2 - beginning of path matches original template resources, but has missing property" },
-            new object[] { "resources[2].properties.anotherProperty", new object[] { "resources", 0, "properties", "anotherProperty" }, "Scenario 3 - path is in copied resource" },
-            new object[] { "resources[\"stringIndex\"]", new object[] { "resources" }, "Scenario 3 (edge case) - resources does not use integer index into array" },
-            new object[] { "resources[2].properties.missingProperty", new object[] { "resources", 0, "properties" }, "Scenario 3 & 2 - path is in copied resource and has missing property" },
-            new object[] { "resources[0].resources[0].someProperty", new object[] { }, "Scenario 4 - a resource is copied into another resource from expansion" },
-            new object[] { "resources[2].resources[0].someProperty", new object[] { }, "Scenario 3 & 4 - a resource is copied into another resource copy from expansion" }
+            new object[] { "resources[0].properties.somePath", new object[] { "resources", 0, "properties", "somePath" }, "Path matches original template exactly" },
+            new object[] { "parameters.parameter1.maxValue", new object[] { "parameters", "parameter1" }, "Beginning of path matches original template parameters, but has missing property" },
+            new object[] { "resources[0].anExpandedProperty", new object[] { "resources", 0 }, "Beginning of path matches original template resources array, but has missing property" },
+            new object[] { "resources[2].properties.anotherProperty", new object[] { "resources", 0, "properties", "anotherProperty" }, "Path is in a copied resource" },
+            new object[] { "resources[2].properties.missingProperty", new object[] { "resources", 0, "properties" }, "Path is in a copied resource and has missing property" },
+            new object[] { "resources[0].resources[0].someProperty", new object[] { }, "Path goes to a resource that's been copied into another resource from expansion (not implementd yet)" },
+            new object[] { "resources[2].resources[0].someProperty", new object[] { }, "Path goes to a resource that's been copied into another resource that was also copied in expansion (not implementd yet)" }
         }.AsReadOnly();
 
         public static string GenerateDisplayName(MethodInfo _, object[] data)

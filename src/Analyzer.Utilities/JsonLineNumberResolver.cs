@@ -21,55 +21,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             JToken expandedTemplateRoot,
             JToken originalTemplateRoot)
         {
-            /*
-             * 4 Known scenarios:
-             * 
-             * 1. The path in the expanded template exactly matches a path in the original template.
-             *     - This path can be used as-is to identify the line number in the original template.
-             *     Example:
-             *       expanded : resources[2].properties.enabled
-             *       original : resources[2].properties.enabled
-             *       used path: resources[2].properties.enabled
-             * 
-             * 2. The path in the expanded template partially matches a path in the original template,
-             *    but extends beyond a valid path, AND the first _missing_ property is NOT a resources[] array.
-             *     - The rule was looking for a property that isn't defined in the original template.
-             *       Similar to scenario 1, the line number where the path ends in the original template
-             *       can be taken directly.
-             *     Examples:
-             *       expanded : parameters.numberOfCopies.minValue
-             *       original : parameters.numberOfCopies
-             *       used path: parameters.numberOfCopies
-             *       
-             *       expanded : resources[2].dependsOn
-             *       original : resources[2]
-             *       used path: resources[2]
-             * 
-             * 3. The path in the expanded template begins with the resources[] array and can't match
-             *    a valid resource in the original template (i.e. the index is too large).
-             *     - There must have been copies of resources added to the expanded template from
-             *       a copy loop in a resource.  Get the name of the copy loop, find
-             *       the resource in the original template defining that name, and replace the resources[] index
-             *       in the expanded template path with the index of the resource that defines the copy.
-             *     Example:
-             *       expanded : resources[9].properties.configuration.encryption
-             *       original : -
-             *       used path: resources[3].properties.configuration.encryption (if resource 9 is a copy of resource 3)
-             * 
-             * 4. The path in the expanded template partially matches a path in the original template,
-             *    but extends beyond a valid path, and the first missing property is a resources[] array
-             *    that is within a higher-level resources[] array.
-             *     - This must be a copied resource from post-processing in the TemplateProcessor library.
-             *       The source resource must be identified in the original template, and the path to that
-             *       resource will replace the path that led to the copied resource.  Then, try matching the
-             *       path again.  (Fortunately, JSON templates do not allow copy loops in child resources.
-             *       https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-resources#iteration-for-a-child-resource)
-             *     Example:
-             *       expanded : resources[5].resources[0].properties.debug
-             *       original : resources[5]
-             *       used path: resources[7].properties.debug (if resource 7 was copied into resource 5 as a child in pre-processing)
-             */
-
             if (pathInExpandedTemplate == null || originalTemplateRoot == null)
             {
                 throw new ArgumentNullException(pathInExpandedTemplate == null
@@ -77,36 +28,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     : nameof(originalTemplateRoot));
             }
 
+            // Attempt to find an equivalent JToken in the original template from the expanded template's path directly
             var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
 
-            int? CheckForScenarios1and2()
-            {
-                var originalTemplatePath = tokenFromOriginalTemplate.Path;
-                var unmatchedPathInOriginalTemplate = pathInExpandedTemplate[originalTemplatePath.Length..].TrimStart('.');
-
-                if (originalTemplatePath.Length == pathInExpandedTemplate.Length // Scenario 1
-                    || !unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase)) // Scenario 2
-                {
-                    return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
-                }
-                return null;
-            }
-
-            var scenario1Or2LineNumber = CheckForScenarios1and2();
-            if (scenario1Or2LineNumber != null)
-            {
-                return scenario1Or2LineNumber.Value;
-            }
-
-            // At this point, this could be Scenario 3 and/or Scenario 4 (both could be true).
-            // First see if it's scenario 3.  If it is, update the path and get the new JToken,
-            // then continue to see if Scenario 4 has happened also.
-
-            // The JToken returned from looking up the parsed template path is just
-            // pointing to the top level of the entire original template, meaning
-            // no part of path can be found in the original template. This is Scenario 3.
+            // If the JToken returned from looking up the expanded template path is
+            // just pointing to the root of the original template, then
+            // even the first property could not be found in the original template.
             if (tokenFromOriginalTemplate.Equals(originalTemplateRoot))
             {
+                // See if the path starts with indexing into the template resources[] array
                 var match = resourceIndexInPath.Match(pathInExpandedTemplate);
                 if (match.Success)
                 {
@@ -117,14 +47,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                         throw new ArgumentNullException(nameof(expandedTemplateRoot));
                     }
 
-                    // See if the requested resource is a copied resource
+                    // The first property is a resource, likely with a larger index
+                    // than the number of resources in the original template.
+                    // See if the requested resource is a copied resource.
                     var resourceWithIndex = match.Value;
                     var parsedResource = expandedTemplateRoot.InsensitiveToken($"{resourceWithIndex}.copy.name", InsensitivePathNotFoundBehavior.Null);
                     if (parsedResource != null)
                     {
-                        bool isScenario4 = false;
-
-                        // Find resource with this copy name in the original template
+                        // Find the resource with this copy name in the original template
+                        bool foundResourceCopySource = false;
                         var copyName = parsedResource.Value<string>();
                         foreach (var resource in originalTemplateRoot.InsensitiveToken("resources").Children())
                         {
@@ -132,45 +63,43 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                             if (string.Equals(copyName, thisResourceCopyName))
                             {
                                 // This is the original resource for the expanded copy.
-                                // Use this resource's index and update the path.
+                                // Replace the index in the path with the index of the source copy.
                                 pathInExpandedTemplate = resourceIndexInPath.Replace(pathInExpandedTemplate, resource.Path);
                                 tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
-
-                                // At this point, Scenario 4 could still also be possible.  Check for Scenarios 1 and 2,
-                                // and continue to Scenario 4 if those aren't the case.
-                                scenario1Or2LineNumber = CheckForScenarios1and2();
-                                if (scenario1Or2LineNumber != null)
-                                {
-                                    return scenario1Or2LineNumber.Value;
-                                }
-
-                                // It must be Scenario 4 now - break out and continue below;
-                                isScenario4 = true;
+                                foundResourceCopySource = true;
                                 break;
                             }
                         }
 
-                        if (!isScenario4)
+                        if (!foundResourceCopySource)
                         {
-                            // Unknown issue - why is there an extra resource without an original?
+                            // Unknown issue - there's a copied resource without a matching original copy
                             return 0;
                         }
                     }
                     else
                     {
-                        // Unknown issue - why is there an extra resource without a copy property?
+                        // Unknown issue - there's an extra resource that didn't come from a copy loop
                         return 0;
                     }
                 }
-                else
-                {
-                    // Path must have specified "resources" first, but not used an integer index.
-                    // Simply return the line number of the "resources" property.
-                    return (originalTemplateRoot.InsensitiveToken("resources", InsensitivePathNotFoundBehavior.LastValid) as IJsonLineInfo).LineNumber;
-                }
             }
 
-            // Scenario 4
+            var originalTemplatePath = tokenFromOriginalTemplate.Path;
+            var unmatchedPathInOriginalTemplate = pathInExpandedTemplate[originalTemplatePath.Length..].TrimStart('.');
+
+            // Compare the path of the expanded template with the path of the JToken found in the original template.
+            // If they match, or if the first unmatched property in the original is NOT a resources array,
+            // the line number from the JToken of the original template can be returned directly.
+            if (originalTemplatePath.Length == pathInExpandedTemplate.Length
+                || !unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase))
+            {
+                return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
+            }
+
+            // The first unmatched property must be a resources[] array, likely a subresource
+            // of a top-level resource.  This is possible if resources were copied into other
+            // resources as part of template expansion.
             // TODO
             return 1;
         }
