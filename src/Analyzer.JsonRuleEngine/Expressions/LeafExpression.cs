@@ -14,12 +14,10 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <summary>
         /// Creates a LeafExpression.
         /// </summary>
-        /// <param name="rootRule">The parent <c>RuleDefinition</c>.</param>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
         /// <param name="operator">The operator used to evaluate the resource type and/or path.</param>
-        public LeafExpression(RuleDefinition rootRule, string resourceType, string path, LeafExpressionOperator @operator)
-            : base(rootRule)
+        public LeafExpression(string resourceType, string path, LeafExpressionOperator @operator)
         {
             this.ResourceType = resourceType;
             this.Path = path ?? throw new ArgumentNullException(nameof(path));
@@ -73,8 +71,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
                 {
                     yield return new JsonRuleResult
                     {
-                        RuleDefinition = this.Rule,
-                        Passed = Operator.EvaluateExpression(propertyToEvaluate.JToken)
+                        Passed = Operator.EvaluateExpression(propertyToEvaluate.JToken),
+                        JsonPath = propertyToEvaluate.Path
                     };
                 }
             }

@@ -43,11 +43,16 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <summary>
         /// Gets the identifier of the file this result is for.
         /// </summary>
-        public string FileIdentifier => throw new System.NotImplementedException();
+        public string FileIdentifier { get; internal set; }
 
         /// <summary>
         /// Gets the line number of the file where the rule was evaluated.
         /// </summary>
-        public int LineNumber => throw new System.NotImplementedException();
+        public int LineNumber { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the JSON path to the location in the JSON where the rule was evaluated.
+        /// </summary>
+        internal string JsonPath { get; set; }
     }
 }

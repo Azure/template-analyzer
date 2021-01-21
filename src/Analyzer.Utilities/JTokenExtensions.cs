@@ -50,14 +50,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(propertyNameOrPath))
+            if (propertyNameOrPath == null)
             {
                 switch (behaviorWhenNotFound)
                 {
                     case InsensitivePathNotFoundBehavior.Null:
                         return null;
                     case InsensitivePathNotFoundBehavior.Error:
-                        throw new ArgumentException($"{nameof(propertyNameOrPath)} is null or whitespace.");
+                        throw new ArgumentException($"{nameof(propertyNameOrPath)} is null.");
                     default:
                         break;
                 }

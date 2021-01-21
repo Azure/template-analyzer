@@ -17,6 +17,11 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         public JToken JToken { get; }
 
         /// <summary>
+        /// Gets the JSON path of the resolver's current scope.
+        /// </summary>
+        public string Path { get; }
+
+        /// <summary>
         /// Retrieves the JToken(s) of the current scope at the specified path.
         /// </summary>
         /// <param name="jsonPath">JSON path to follow.</param>

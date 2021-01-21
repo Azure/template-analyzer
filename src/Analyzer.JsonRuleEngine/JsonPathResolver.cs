@@ -26,12 +26,22 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         public JsonPathResolver(JToken jToken, string path)
             : this(jToken, path, new Dictionary<string, IEnumerable<FieldContent>>(StringComparer.OrdinalIgnoreCase))
         {
+            // Check for null here.
+            // A null JToken is allowed when creating a new instance privately,
+            // but it should never be null when first constructed publicly.
+            if (jToken == null)
+            {
+                throw new ArgumentNullException(nameof(jToken));
+            }
+
             this.resolvedPaths[this.currentPath] = new List<FieldContent> { new FieldContent { Value = this.currentScope } };
         }
 
         private JsonPathResolver(JToken jToken, string path, Dictionary<string, IEnumerable<FieldContent>> resolvedPaths)
         {
-            (this.currentScope, this.currentPath, this.resolvedPaths) = (jToken, path, resolvedPaths);
+            this.currentScope = jToken;
+            this.currentPath = path ?? throw new ArgumentNullException(nameof(path));
+            this.resolvedPaths = resolvedPaths ?? throw new ArgumentNullException(nameof(resolvedPaths));
         }
 
         /// <summary>
@@ -81,9 +91,10 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
             }
         }
 
-        /// <summary>
-        /// The JToken in scope of this resolver.
-        /// </summary>
+        /// <inheritdoc/>
         public JToken JToken => this.currentScope;
+
+        /// <inheritdoc/>
+        public string Path => this.currentPath;
     }
 }
