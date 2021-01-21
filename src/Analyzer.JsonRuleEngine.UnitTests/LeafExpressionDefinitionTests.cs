@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         [ExpectedException(typeof(NotImplementedException))]
         public void ToExpression_NoOperators_ThrowsException()
         {
-            new LeafExpressionDefinition().ToExpression(new RuleDefinition());
+            new LeafExpressionDefinition().ToExpression();
         }
 
         private LeafExpression GenerateLeafExpression(Action<LeafExpressionDefinition> propertySetter)
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             };
             propertySetter(leaf);
             
-            var expression = leaf.ToExpression(new RuleDefinition()) as LeafExpression;
+            var expression = leaf.ToExpression() as LeafExpression;
             Assert.AreEqual("json.path", expression.Path);
             Assert.AreEqual("Namespace/ResourceType", expression.ResourceType);
 

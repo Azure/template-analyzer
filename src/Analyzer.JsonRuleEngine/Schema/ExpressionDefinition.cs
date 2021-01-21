@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <summary>
         /// Gets or sets the Path property.
         /// </summary>
-        [JsonProperty]
+        [JsonProperty(Required = Required.Always)]
         public string Path { get; set; }
 
         /// <summary>
@@ -26,8 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <summary>
         /// Creates an <c>Expression</c> that can evaluate a template.
         /// </summary>
-        /// <param name="rootRule">The JSON rule this expression is part of.</param>
         /// <returns>The <c>Expression</c>.</returns>
-        public abstract Expression ToExpression(RuleDefinition rootRule);
+        public abstract Expression ToExpression();
     }
 }

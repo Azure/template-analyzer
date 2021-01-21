@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json.Linq;
 
@@ -25,12 +26,22 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         public JsonPathResolver(JToken jToken, string path)
             : this(jToken, path, new Dictionary<string, IEnumerable<FieldContent>>(StringComparer.OrdinalIgnoreCase))
         {
+            // Check for null here.
+            // A null JToken is allowed when creating a new instance privately,
+            // but it should never be null when first constructed publicly.
+            if (jToken == null)
+            {
+                throw new ArgumentNullException(nameof(jToken));
+            }
+
             this.resolvedPaths[this.currentPath] = new List<FieldContent> { new FieldContent { Value = this.currentScope } };
         }
 
         private JsonPathResolver(JToken jToken, string path, Dictionary<string, IEnumerable<FieldContent>> resolvedPaths)
         {
-            (this.currentScope, this.currentPath, this.resolvedPaths) = (jToken, path, resolvedPaths);
+            this.currentScope = jToken;
+            this.currentPath = path ?? throw new ArgumentNullException(nameof(path));
+            this.resolvedPaths = resolvedPaths ?? throw new ArgumentNullException(nameof(resolvedPaths));
         }
 
         /// <summary>
@@ -44,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                resolvedTokens = new List<FieldContent> { new FieldContent { Value = this.currentScope.InsensitiveToken(jsonPath) } };
+                resolvedTokens = new List<FieldContent> { this.currentScope.InsensitiveToken(jsonPath) };
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
@@ -56,8 +67,34 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         }
 
         /// <summary>
-        /// The JToken in scope of this resolver.
+        /// Retrieves the JTokens for resources of the specified type
+        /// in a "resources" property array at the current scope.
         /// </summary>
+        /// <param name="resourceType">The type of resource to find.</param>
+        /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
+        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType)
+        {
+            string fullPath = currentPath + ".resources[*]";
+            if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
+            {
+                var resourcesProperty = this.currentScope.InsensitiveToken("resources");
+                resolvedTokens = resourcesProperty.Children().Select(r => (FieldContent)r);
+                resolvedPaths[fullPath] = resolvedTokens;
+            }
+
+            foreach (var resource in resolvedTokens)
+            {
+                if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceType, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         public JToken JToken => this.currentScope;
+
+        /// <inheritdoc/>
+        public string Path => this.currentPath;
     }
 }

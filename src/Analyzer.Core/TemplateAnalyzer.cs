@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
@@ -54,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 var rules = LoadRules();
-                var jsonRuleEngine = new JsonEngine.JsonRuleEngine();
+                var jsonRuleEngine = new JsonEngine.JsonRuleEngine(new JsonLineNumberResolver());
 
                 IEnumerable<IResult> results = jsonRuleEngine.EvaluateRules(new TemplateContext { OriginalTemplate = JObject.Parse(Template), ExpandedTemplate = templatejObject, IsMainTemplate = true }, rules);
 
