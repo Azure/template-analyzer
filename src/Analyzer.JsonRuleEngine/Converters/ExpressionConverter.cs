@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 {
     internal class ExpressionConverter : JsonConverter<ExpressionDefinition>
     {

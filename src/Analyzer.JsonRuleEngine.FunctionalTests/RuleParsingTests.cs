@@ -4,10 +4,13 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.FunctionalTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class OperatorSpecificValidatorAttribute : Attribute
