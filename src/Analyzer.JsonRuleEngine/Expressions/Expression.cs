@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.Types;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
     /// <summary>
     /// The base class for all Expressions in JSON rules.

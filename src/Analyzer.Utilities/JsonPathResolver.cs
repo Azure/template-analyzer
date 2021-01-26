@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
     /// An <c>IJsonPathResolver</c> to resolve JSON paths.
     /// </summary>
-    internal class JsonPathResolver : IJsonPathResolver
+    public class JsonPathResolver : IJsonPathResolver
     {
         private readonly JToken currentScope;
         private readonly string currentPath;

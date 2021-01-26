@@ -4,12 +4,12 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.Types
 {
     /// <summary>
-    /// A utility interface for resolving a JSON path in a JSON scope.
+    /// An interface for working with a JSON scope.
     /// </summary>
-    internal interface IJsonPathResolver
+    public interface IJsonPathResolver
     {
         /// <summary>
         /// Gets the JToken of the resolver's scope.

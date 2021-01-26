@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class JsonRuleResultTests
