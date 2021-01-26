@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
-
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 {
     /// <summary>
@@ -14,7 +12,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// Executes this <c>Expression</c> against a template.
         /// </summary>
         /// <param name="jsonScope">The specific scope to evaluate.</param>
-        /// <returns>The results of the evaluation.</returns>
-        public abstract IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope);
+        /// <returns>An <c>Evaluation</c> with the results.</returns>
+        public abstract Evaluation Evaluate(IJsonPathResolver jsonScope);
     }
 }

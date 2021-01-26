@@ -7,22 +7,14 @@ using System.Collections.Generic;
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 {
     /// <summary>
-    /// Represents a leaf expression in a JSON rule.
+    /// Represents a all of expression in a JSON rule.
     /// </summary>
-    internal class LeafExpression : Expression
+    internal class AllOfExpression : Expression
     {
         /// <summary>
-        /// Creates a LeafExpression.
+        /// Gets or sets the expressions to be evaluated.
         /// </summary>
-        /// <param name="resourceType">The resource type this expression evaluates.</param>
-        /// <param name="path">The JSON path being evaluated.</param>
-        /// <param name="operator">The operator used to evaluate the resource type and/or path.</param>
-        public LeafExpression(string resourceType, string path, LeafExpressionOperator @operator)
-        {
-            this.ResourceType = resourceType;
-            this.Path = path ?? throw new ArgumentNullException(nameof(path));
-            this.Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
-        }
+        public Expression[] AllOf { get; private set; }
 
         /// <summary>
         /// Gets the type of resource to evaluate.
@@ -30,17 +22,18 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         public string ResourceType { get; private set; }
 
         /// <summary>
-        /// Gets the JSON path to evaluate.
+        /// Creates an <see cref="AllOfExpression"/>.
         /// </summary>
-        public string Path { get; private set; }
+        /// <param name="expressions">List of expressions to perform a logical AND against.</param>
+        /// <param name="resoureType">The resource type this expression evaluates.</param>
+        public AllOfExpression(Expression[] expressions, string resoureType = null)
+        {
+            this.AllOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
+            this.ResourceType = resoureType;
+        }
 
         /// <summary>
-        /// Gets the leaf operator evaluating the resource type and/or path of this expression.
-        /// </summary>
-        public LeafExpressionOperator Operator { get; private set; }
-
-        /// <summary>
-        /// Evaluates this leaf expression's resource type and/or path, starting at the specified json scope, with the contained <c>LeafExpressionOperator</c>.
+        /// Evaluates all expressions provided and aggregates them in a final <see cref="Evaluation"/>.
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
         /// <returns>An <see cref="Evaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
@@ -68,21 +61,15 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
             foreach (var scope in scopesToEvaluate)
             {
-                var leafScope = scope?.Resolve(Path);
-
-                foreach (var propertyToEvaluate in leafScope)
+                foreach (var expression in AllOf)
                 {
-                    bool passed = Operator.EvaluateExpression(propertyToEvaluate.JToken);
-                    if (!passed && evaluationPassed)
+                    var evaluation = expression.Evaluate(scope);
+                    if (!evaluation.Passed && evaluationPassed)
                     {
                         evaluationPassed = false;
                     }
 
-                    jsonRuleResults.Add(new JsonRuleResult
-                    {
-                        Passed = passed,
-                        JsonPath = propertyToEvaluate.Path
-                    });
+                    jsonRuleResults.AddRange(evaluation.Results);
                 }
             }
 

@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
                 var ruleResults = ruleExpression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,
-                        templateContext.ExpandedTemplate.Path));
+                        templateContext.ExpandedTemplate.Path)).Results;
 
                 foreach (var result in ruleResults)
                 {

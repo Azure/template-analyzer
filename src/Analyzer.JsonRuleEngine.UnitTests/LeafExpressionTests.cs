@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using Moq;
@@ -78,7 +77,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             var leafExpression = new LeafExpression(resourceType, path, mockLeafExpressionOperator.Object);
 
             // Act
-            var results = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object).ToList();
+            var evaluation = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object);
+            var results = evaluation.Results.ToList();
 
             // Assert
             // Verify actions on resolvers.
@@ -96,6 +96,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             mockResourcesResolved.Verify(s => s.JToken, Times.Never);
 
             mockLeafExpressionOperator.Verify(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)), Times.Once);
+
+            Assert.AreEqual(expectedEvaluationResult, evaluation.Passed);
 
             Assert.AreEqual(1, results.Count);
             Assert.AreEqual(expectedEvaluationResult, results.First().Passed);
@@ -121,7 +123,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         public void Evaluate_NullScope_ThrowsException()
         {
             var leafExpression = new LeafExpression(null, "path", new HasValueOperator(true, false));
-            leafExpression.Evaluate(jsonScope: null).ToList();
+            leafExpression.Evaluate(jsonScope: null);
         }
     }
 }
