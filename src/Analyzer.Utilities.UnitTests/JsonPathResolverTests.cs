@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Templates.Analyzer.Utilities
+namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 {
     [TestClass]
     public class JsonPathResolverTests
