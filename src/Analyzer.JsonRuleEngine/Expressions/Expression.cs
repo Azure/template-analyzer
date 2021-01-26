@@ -23,14 +23,21 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         public string Path { get; private set; }
 
         /// <summary>
+        /// Gets the Where condition of this expression.
+        /// </summary>
+        internal Expression Where { get; private set; }
+
+        /// <summary>
         /// Initialization for the base Expression.
         /// </summary>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
-        internal Expression(string resourceType, string path)
+        /// <param name="where">The Where condition of this expression.</param>
+        internal Expression(string resourceType, string path, Expression where)
         {
             this.ResourceType = resourceType;
             this.Path = path;
+            this.Where = where;
         }
 
         /// <summary>
@@ -63,7 +70,19 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
                 foreach (var propertyToEvaluate in expandedScopes)
                 {
-                    yield return EvaluateInternal(propertyToEvaluate);
+                    if (Where != null)
+                    {
+                        // Needs to return list of Evaluations
+                        // that each contain the scope they evaluated.
+                        Where.Evaluate(propertyToEvaluate);
+
+                        // foreach scopeWherePassed:
+                        // yield return EvaluateInternal(scopeWherePassed);
+                    }
+                    else
+                    {
+                        yield return EvaluateInternal(propertyToEvaluate);
+                    }
                 }
             }
         }

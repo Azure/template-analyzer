@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 
             if (leafOperator != null)
             {
-                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
+                return new LeafExpression(this.ResourceType, this.Path, this.Where?.ToExpression(), leafOperator);
             }
 
             throw new NotImplementedException();

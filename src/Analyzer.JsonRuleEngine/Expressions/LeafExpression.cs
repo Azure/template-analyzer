@@ -15,9 +15,10 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// </summary>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
+        /// <param name="where">The Where condition of this expression.</param>
         /// <param name="operator">The operator used to evaluate the resource type and/or path.</param>
-        public LeafExpression(string resourceType, string path, LeafExpressionOperator @operator)
-            : base(resourceType, path ?? throw new ArgumentNullException(nameof(path)))
+        public LeafExpression(string resourceType, string path, Expression where, LeafExpressionOperator @operator)
+            : base(resourceType, path ?? throw new ArgumentNullException(nameof(path)), where)
         {
             this.Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
         }
