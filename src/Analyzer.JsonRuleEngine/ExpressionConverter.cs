@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         private static readonly HashSet<string> LeafExpressionJsonPropertyNames =
             typeof(LeafExpressionDefinition)
             .GetProperties(BindingFlags.Public| BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(property => !property.GetMethod.IsVirtual)
             .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
             .Where(property => property.Attribute != null)
             .Select(property => property.Attribute.PropertyName ?? property.Name)
@@ -54,9 +55,12 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
                 return CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
             }
 
-            throw new JsonException(leafPropertyCount > 1 ?
-                $"Too many expressions specified in evaluation.  Only one is allowed.  Original JSON: {jsonObject}" :
-                $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  Original JSON: {jsonObject}");
+            var lineInfo = jsonObject as IJsonLineInfo;
+            var parsingErrorDetails = $"Path '{jsonObject.Path}', line {lineInfo.LineNumber}, position {lineInfo.LinePosition}.";
+
+            throw new JsonSerializationException(leafPropertyCount > 1 ?
+                $"Too many expressions specified in evaluation.  Only one is allowed.  {parsingErrorDetails}" :
+                $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  {parsingErrorDetails}");
         }
 
         /// <summary>

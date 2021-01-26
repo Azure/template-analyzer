@@ -12,6 +12,10 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
     /// </summary>
     internal class LeafExpressionDefinition : ExpressionDefinition
     {
+        /// <inheritdoc/>
+        [JsonProperty(Required = Required.Always)]
+        public override string Path { get; set; }
+
         /// <summary>
         /// Gets or sets the Exists property
         /// </summary>

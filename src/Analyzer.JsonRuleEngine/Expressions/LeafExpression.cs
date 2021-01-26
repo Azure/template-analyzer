@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
 {
@@ -18,21 +17,10 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <param name="path">The JSON path being evaluated.</param>
         /// <param name="operator">The operator used to evaluate the resource type and/or path.</param>
         public LeafExpression(string resourceType, string path, LeafExpressionOperator @operator)
+            : base(resourceType, path ?? throw new ArgumentNullException(nameof(path)))
         {
-            this.ResourceType = resourceType;
-            this.Path = path ?? throw new ArgumentNullException(nameof(path));
             this.Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
         }
-
-        /// <summary>
-        /// Gets the type of resource to evaluate.
-        /// </summary>
-        public string ResourceType { get; private set; }
-
-        /// <summary>
-        /// Gets the JSON path to evaluate.
-        /// </summary>
-        public string Path { get; private set; }
 
         /// <summary>
         /// Gets the leaf operator evaluating the resource type and/or path of this expression.
@@ -45,37 +33,13 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <param name="jsonScope">The json to evaluate.</param>
         /// <returns>Zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
         /// and if the path contains any wildcards.</returns>
-        public override IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope)
+        protected override JsonRuleResult EvaluateInternal(IJsonPathResolver jsonScope)
         {
-            if (jsonScope == null)
+            return new JsonRuleResult
             {
-                throw new ArgumentNullException(nameof(jsonScope));
-            }
-
-            List<IJsonPathResolver> scopesToEvaluate = new List<IJsonPathResolver>();
-
-            if (!string.IsNullOrEmpty(ResourceType))
-            {
-                scopesToEvaluate.AddRange(jsonScope.ResolveResourceType(ResourceType));
-            }
-            else
-            {
-                scopesToEvaluate.Add(jsonScope);
-            }
-
-            foreach (var scope in scopesToEvaluate)
-            {
-                var leafScope = scope?.Resolve(Path);
-
-                foreach (var propertyToEvaluate in leafScope)
-                {
-                    yield return new JsonRuleResult
-                    {
-                        Passed = Operator.EvaluateExpression(propertyToEvaluate.JToken),
-                        JsonPath = propertyToEvaluate.Path
-                    };
-                }
-            }
+                Passed = Operator.EvaluateExpression(jsonScope.JToken),
+                JsonPath = jsonScope.Path
+            };
         }
     }
 }

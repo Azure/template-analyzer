@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         private static readonly Dictionary<string, PropertyInfo> leafExpressionJsonProperties =
             typeof(LeafExpressionDefinition)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(property => !property.GetMethod.IsVirtual)
             .Select(property => (Property: property, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
             .Where(property => property.Attribute != null)
             .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
@@ -101,7 +102,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         [TestMethod]
         [DataRow(DisplayName = "No operators")]
         [DataRow("hasValue", true, "exists", true, DisplayName = "HasValue and Exists")]
-        [ExpectedException(typeof(JsonException))]
+        [ExpectedException(typeof(JsonSerializationException))]
         public void ReadJson_LeafWithInvalidOperatorCount_ThrowsParsingException(params object[] operators)
         {
             var leafDefinition = "{\"resourceType\": \"resource\", \"path\": \"path\"";

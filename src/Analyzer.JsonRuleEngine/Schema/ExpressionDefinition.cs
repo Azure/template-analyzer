@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
         /// <summary>
         /// Gets or sets the Path property.
         /// </summary>
-        [JsonProperty(Required = Required.Always)]
-        public string Path { get; set; }
+        [JsonProperty]
+        public virtual string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the ResourceType property.
