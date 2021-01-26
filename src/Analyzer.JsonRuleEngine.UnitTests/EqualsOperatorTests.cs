@@ -3,11 +3,12 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class EqualsOperatorTests

@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
 {
     /// <summary>
     /// The base class for a concrete implementation of an operator in a JSON rule expression

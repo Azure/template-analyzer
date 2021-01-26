@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -55,9 +56,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 var rules = LoadRules();
-                var jsonRuleEngine = new JsonEngine.JsonRuleEngine(new JsonLineNumberResolver());
+                var jsonRuleEngine = new JsonRuleEngine(new JsonLineNumberResolver());
 
-                IEnumerable<IResult> results = jsonRuleEngine.EvaluateRules(new TemplateContext { OriginalTemplate = JObject.Parse(Template), ExpandedTemplate = templatejObject, IsMainTemplate = true }, rules);
+                IEnumerable<IResult> results = jsonRuleEngine.EvaluateRules(
+                    new TemplateContext {
+                        OriginalTemplate = JObject.Parse(Template),
+                        ExpandedTemplate = templatejObject,
+                        IsMainTemplate = true },
+                    rules);
 
                 return results;
             }

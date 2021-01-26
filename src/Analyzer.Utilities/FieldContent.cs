@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
     /// The content and properties of a given JToken field.

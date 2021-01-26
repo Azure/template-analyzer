@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 using System;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
+using Microsoft.Azure.Templates.Analyzer.Types;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
     /// <summary>
     /// Represents a leaf expression in a JSON rule.

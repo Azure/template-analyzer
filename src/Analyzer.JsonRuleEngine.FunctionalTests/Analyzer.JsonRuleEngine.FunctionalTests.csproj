@@ -5,9 +5,9 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyName>Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.FunctionalTests</AssemblyName>
+    <AssemblyName>Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests</AssemblyName>
 
-    <RootNamespace>Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.FunctionalTests</RootNamespace>
+    <RootNamespace>Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

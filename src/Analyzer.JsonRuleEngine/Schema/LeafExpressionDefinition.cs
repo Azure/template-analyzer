@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 using System;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 {
     /// <summary>
     /// The schema for leaf expressions in JSON rules.

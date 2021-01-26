@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
     /// <summary>
     /// Describes the result of a TemplateAnalyzer JSON rule against an ARM template.

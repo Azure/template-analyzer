@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 {
     /// <summary>
     /// The base class for all Expression schemas in JSON rules.

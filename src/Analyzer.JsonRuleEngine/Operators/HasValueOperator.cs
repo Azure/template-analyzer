@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
 {
     /// <summary>
     /// An operator that evaluates the "hasValue" JSON expression.
