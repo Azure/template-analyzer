@@ -3,9 +3,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.Schema
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 {
     /// <summary>
     /// The schema for allOf expressions in JSON rules.

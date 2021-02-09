@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.Schema;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
