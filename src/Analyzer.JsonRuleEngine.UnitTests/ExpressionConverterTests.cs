@@ -85,20 +85,6 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(JsonSerializationException))]
-        public void ReadJson_LeafWithoutPath_ThrowsParsingException()
-        {
-            ReadJson("{ \"resourceType\": \"resourceType\", \"hasValue\": true }");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(JsonSerializationException))]
-        public void ReadJson_LeafWithNullPath_ThrowsParsingException()
-        {
-            ReadJson("{ \"resourceType\": \"resourceType\", \"path\": null, \"hasValue\": true }");
-        }
-
-        [TestMethod]
         [DataRow(DisplayName = "No operators")]
         [DataRow("hasValue", true, "exists", true, DisplayName = "HasValue and Exists")]
         [ExpectedException(typeof(JsonException))]
