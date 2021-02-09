@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Templates.Analyzer.JsonRuleEngine;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonEngine
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
     /// <summary>
     /// Evaluation engine for rules authored in JSON

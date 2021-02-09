@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class JsonRuleEngineTests
@@ -75,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
                     It.Is<JToken>(templateContext.OriginalTemplate, EqualityComparer<object>.Default)))
                 .Returns(expectedLineNumber);
 
-            var ruleEngine = new JsonEngine.JsonRuleEngine(mockLineResolver.Object);
+            var ruleEngine = new JsonRuleEngine(mockLineResolver.Object);
             var results = ruleEngine.EvaluateRules(templateContext, rules).ToList();
 
             Assert.AreEqual(evaluations.Length, results.Count());
@@ -93,7 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullLineNumberResolver_ThrowsException()
         {
-            new JsonEngine.JsonRuleEngine(null);
+            new JsonRuleEngine(null);
         }
 
         private string CreateRulesFromEvaluations(string[] evaluations)

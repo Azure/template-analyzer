@@ -2,14 +2,16 @@
 // Licensed under the MIT License.
 
 using System;
-using Newtonsoft.Json;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class ExpressionConverterTests
