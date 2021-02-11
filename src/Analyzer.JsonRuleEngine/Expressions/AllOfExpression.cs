@@ -8,7 +8,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
     /// <summary>
-    /// Represents a all of expression in a JSON rule.
+    /// Represents an allOf expression in a JSON rule.
     /// </summary>
     internal class AllOfExpression : Expression
     {
