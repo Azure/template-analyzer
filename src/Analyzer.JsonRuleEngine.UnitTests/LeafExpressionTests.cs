@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             Assert.AreEqual(1, results.Count);
             Assert.AreEqual(expectedEvaluationResult, results.First().Passed);
-            Assert.AreEqual(expectedPathEvaluated, results.First().JsonPath);
+            Assert.AreEqual(expectedPathEvaluated, (results.First() as JsonRuleResult).JsonPath);
         }
 
         [TestMethod]

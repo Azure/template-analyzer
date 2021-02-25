@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Azure.Deployments.Templates.Export;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
@@ -21,7 +22,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         [DataRow(true, false, DisplayName = "AllOf evaluates to false (true && false)")]
         [DataRow(false, false, DisplayName = "AllOf evaluates to false (false && false)")]
         [DataRow(false, false, "ResourceProvider/resource", DisplayName = "AllOf - scoped to resourceType - evaluates to false (false && false)")]
-        public void Evaluate_TwoLeafExpressions_ExpectedResultIsReturned(bool evaluation1, bool evaluation2, string resourceType = null)
+        [DataRow(false, false, "ResourceProvider/resource", "some.path", DisplayName = "AllOf - scoped to resourceType and path - evaluates to false (false && false)")]
+        public void Evaluate_TwoLeafExpressions_ExpectedResultIsReturned(bool evaluation1, bool evaluation2, string resourceType = null, string path = null)
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
@@ -59,15 +61,15 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
 
             mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
-                .Returns(new Evaluation(evaluation1, results1));
+                .Returns(new JsonRuleEvaluation(evaluation1, results1));
 
             mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
-                .Returns(new Evaluation(evaluation2, results2));
+                .Returns(new JsonRuleEvaluation(evaluation2, results2));
 
             var expressionArray = new Expression[] { mockLeafExpression2.Object, mockLeafExpression1.Object };
 
-            var allOfExpression = new AllOfExpression(expressionArray, resourceType);
+            var allOfExpression = new AllOfExpression(expressionArray, resourceType: resourceType, path: path);
 
             // Act
             var allOfEvaluation = allOfExpression.Evaluate(mockJsonPathResolver.Object);
@@ -75,7 +77,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             // Assert
             bool expectedAllOfEvaluation = evaluation1 && evaluation2;
             Assert.AreEqual(expectedAllOfEvaluation, allOfEvaluation.Passed);
-            Assert.AreEqual(2, allOfEvaluation.Results.Count());
+            Assert.IsFalse((allOfEvaluation as IEvaluation).HasResults());
+
             int expectedTrue = 0;
             int expectedFalse = 0;
 
@@ -89,8 +92,16 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             else
                 expectedFalse++;
 
-            Assert.AreEqual(expectedTrue, allOfEvaluation.GetResultsEvaluatedTrue().Count());
-            Assert.AreEqual(expectedFalse, allOfEvaluation.GetResultsEvaluatedFalse().Count());
+            Assert.AreEqual(expectedTrue, allOfEvaluation.GetEvaluationsEvaluatedTrue().Count());
+            Assert.AreEqual(expectedFalse, allOfEvaluation.GetEvaluationsEvaluatedFalse().Count());
+
+            foreach (var evaluation in allOfEvaluation.Evaluations)
+            {
+                // Assert all leaf expressions have results and no evaluations
+                Assert.IsTrue(evaluation.HasResults());
+                Assert.IsTrue(evaluation.Evaluations == null);
+                Assert.AreEqual(1, evaluation.Results.Count());
+            }
         }
 
         [TestMethod]

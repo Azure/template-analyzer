@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
     internal class AllOfExpression : Expression
     {
         /// <summary>
-        /// Gets or sets the expressions to be evaluated.
+        /// Gets the expressions to be evaluated.
         /// </summary>
         public Expression[] AllOf { get; private set; }
 
@@ -23,23 +23,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         public string ResourceType { get; private set; }
 
         /// <summary>
+        /// Gets the JSON path to evaluate.
+        /// </summary>
+        public string Path { get; private set; }
+
+        /// <summary>
         /// Creates an <see cref="AllOfExpression"/>.
         /// </summary>
         /// <param name="expressions">List of expressions to perform a logical AND against.</param>
-        /// <param name="resoureType">The resource type this expression evaluates.</param>
-        public AllOfExpression(Expression[] expressions, string resoureType = null)
+        /// <param name="path">The JSON path being evaluated.</param>
+        /// <param name="resourceType">The resource type this expression evaluates.</param>
+        public AllOfExpression(Expression[] expressions, string path = null, string resourceType = null)
         {
             this.AllOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
-            this.ResourceType = resoureType;
+            this.Path = path;
+            this.ResourceType = resourceType;
         }
 
         /// <summary>
-        /// Evaluates all expressions provided and aggregates them in a final <see cref="Evaluation"/>.
+        /// Evaluates all expressions provided and aggregates them in a final <see cref="JsonRuleEvaluation"/>.
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
-        /// <returns>An <see cref="Evaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
+        /// <returns>An <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
         /// and if the path contains any wildcards.</returns>
-        public override Evaluation Evaluate(IJsonPathResolver jsonScope)
+        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
             if (jsonScope == null)
             {
@@ -57,24 +64,39 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 scopesToEvaluate.Add(jsonScope);
             }
 
-            List<JsonRuleResult> jsonRuleResults = new List<JsonRuleResult>();
+            List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
+
             bool evaluationPassed = true;
 
             foreach (var scope in scopesToEvaluate)
             {
-                foreach (var expression in AllOf)
-                {
-                    var evaluation = expression.Evaluate(scope);
-                    if (!evaluation.Passed && evaluationPassed)
-                    {
-                        evaluationPassed = false;
-                    }
+                List<IJsonPathResolver> innerScope = new List<IJsonPathResolver>();
 
-                    jsonRuleResults.AddRange(evaluation.Results);
+                if (string.IsNullOrEmpty(Path))
+                {
+                    innerScope.Add(scope);
+                }
+                else
+                {
+                    innerScope.AddRange(scope?.Resolve(Path));
+                }
+
+                foreach (var propertyToEvaluate in innerScope)
+                {
+                    foreach (var expression in AllOf)
+                    {
+                        var evaluation = expression.Evaluate(propertyToEvaluate);
+                        if (!evaluation.Passed && evaluationPassed)
+                        {
+                            evaluationPassed = false;
+                        }
+
+                        jsonRuleEvaluations.Add(evaluation);
+                    }
                 }
             }
 
-            return new Evaluation(evaluationPassed, jsonRuleResults);
+            return new JsonRuleEvaluation(evaluationPassed, jsonRuleEvaluations);
         }
     }
 }

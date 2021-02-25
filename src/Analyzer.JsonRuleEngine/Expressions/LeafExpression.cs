@@ -45,9 +45,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Evaluates this leaf expression's resource type and/or path, starting at the specified json scope, with the contained <c>LeafExpressionOperator</c>.
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
-        /// <returns>An <see cref="Evaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
+        /// <returns>An <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
         /// and if the path contains any wildcards.</returns>
-        public override Evaluation Evaluate(IJsonPathResolver jsonScope)
+        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
             if (jsonScope == null)
             {
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 }
             }
 
-            return new Evaluation(evaluationPassed, jsonRuleResults);
+            return new JsonRuleEvaluation(evaluationPassed, jsonRuleResults);
         }
     }
 }

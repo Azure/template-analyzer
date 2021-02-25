@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Azure.Templates.Analyzer.Types;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
@@ -12,39 +11,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
     internal class JsonRuleResult : IResult
     {
         /// <summary>
-        /// Gets or sets the JSON rule this result is for.
-        /// </summary>
-        internal RuleDefinition RuleDefinition { get; set; }
-
-        /// <summary>
-        /// Gets the name of the rule this result is for.
-        /// </summary>
-        public string RuleName => RuleDefinition.Name;
-
-        /// <summary>
-        /// Gets the description of the rule this result is for.
-        /// </summary>
-        public string RuleDescription => RuleDefinition.Description;
-
-        /// <summary>
-        /// Gets the recommendation for addressing this result.
-        /// </summary>
-        public string Recommendation => RuleDefinition.Recommendation;
-
-        /// <summary>
-        /// Gets the Uri where help for this result can be found.
-        /// </summary>
-        public string HelpUri => RuleDefinition.HelpUri;
-
-        /// <summary>
         /// Gets a value indicating whether or not the rule for this result passed.
         /// </summary>
         public bool Passed { get; internal set; }
-
-        /// <summary>
-        /// Gets the identifier of the file this result is for.
-        /// </summary>
-        public string FileIdentifier { get; internal set; }
 
         /// <summary>
         /// Gets the line number of the file where the rule was evaluated.

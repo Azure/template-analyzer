@@ -11,20 +11,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
     public class TemplateAnalyzerTests
     {
         [DataTestMethod]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "Matching Resource with one passing result")]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "Matching Resource with one failing result")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "Matching Resource with one passing evaluation")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "Matching Resource with one failing evaluation")]
         [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.Storage/storageAccounts", 0, false, DisplayName = "0 matching Resources with no results")]
-        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectResults(string resourceProperties, string resourceType, int expectedResultCount, bool expectedResult)
+        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resourceProperties, string resourceType, int expectedEvaluationCount, bool expectedEvaluatioPassed)
         {
             string template = GenerateTemplate(resourceProperties, resourceType);
 
             TemplateAnalyzer templateAnalyzer = new TemplateAnalyzer(template);
-            var results = templateAnalyzer.EvaluateRulesAgainstTemplate();
+            var evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
-            Assert.AreEqual(expectedResultCount, results.Count());
+            Assert.AreEqual(expectedEvaluationCount, evaluations.Count());
 
-            if (expectedResultCount > 0)
-                Assert.AreEqual(expectedResult, results.First().Passed);
+            if (expectedEvaluationCount > 0)
+                Assert.AreEqual(expectedEvaluatioPassed, evaluations.First().Passed);
         }
 
         private string GenerateTemplate(string resourceProperties, string resourceType)

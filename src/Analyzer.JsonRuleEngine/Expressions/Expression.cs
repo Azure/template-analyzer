@@ -15,6 +15,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// </summary>
         /// <param name="jsonScope">The specific scope to evaluate.</param>
         /// <returns>An <c>Evaluation</c> with the results.</returns>
-        public abstract Evaluation Evaluate(IJsonPathResolver jsonScope);
+        public abstract JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope);
     }
 }
