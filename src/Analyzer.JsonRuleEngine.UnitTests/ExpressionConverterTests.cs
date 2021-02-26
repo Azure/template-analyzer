@@ -24,14 +24,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             .Where(property => property.Attribute != null)
             .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
 
-        // Dictionary of property names to PropertyInfo
-        private static readonly Dictionary<string, PropertyInfo> allOfExpressionJsonProperties =
-            typeof(AllOfExpressionDefinition)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-            .Select(property => (Property: property, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
-            .Where(property => property.Attribute != null)
-            .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
-
         [DataTestMethod]
         [DataRow("hasValue", true, DisplayName = "{\"HasValue\": true}")]
         [DataRow("exists", false, DisplayName = "{\"Exists\": false}")]
@@ -124,7 +116,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow("allOf", "string", DisplayName = "\"AllOf\": \"string\"")]
-        [ExpectedException(typeof(JsonSerializationException))]
+        [DynamicData(nameof(EmptyAllOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = "GetAllOfIsEmptyDynamicDataDisplayName")]
+        [ExpectedException(typeof(JsonException))]
         public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
             ReadJson(string.Format(@"
@@ -223,5 +216,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 typeof(ExpressionDefinition),
                 null,
                 JsonSerializer.CreateDefault());
+
+        static IEnumerable<object[]> EmptyAllOfArray()
+        {
+            yield return new object[] { "allOf", new object[0] };
+        }
+
+        public static string GetAllOfIsEmptyDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
+        {
+            return "\"AllOf\": []";
+        }
     }
 }
