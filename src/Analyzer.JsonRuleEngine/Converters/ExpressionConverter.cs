@@ -57,12 +57,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
             var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
 
-            // Add new structuredExpressions here
-            var structuredExpressions = AllOfExpressionJsonPropertyNames;
-
-            // Verify an operator property exists, representing an Expression
-            var expressionJsonPropertyNames = LeafExpressionJsonPropertyNames;
-            expressionJsonPropertyNames.UnionWith(structuredExpressions);
+            var expressionJsonPropertyNames = GetExpressionJsonPropertyNames();
+            var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
 
             ValidateExpressions(jsonObject, structuredExpressions, expressionJsonPropertyNames);
 
@@ -80,6 +76,25 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             {
                 return CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
             }
+        }
+
+        internal HashSet<string> GetExpressionJsonPropertyNames()
+        {
+            var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
+
+            // Verify an operator property exists, representing an Expression
+            var expressionJsonPropertyNames = LeafExpressionJsonPropertyNames;
+            expressionJsonPropertyNames.UnionWith(structuredExpressions);
+
+            return expressionJsonPropertyNames;
+        }
+
+        internal HashSet<string> GetStructuredExpressionJsonPropertyNames()
+        {
+            // Add new structuredExpressions here
+            var structuredExpressions = AllOfExpressionJsonPropertyNames;
+
+            return structuredExpressions;
         }
 
         private void ValidateExpressions(JObject jsonObject, HashSet<string> structuredExpressions, HashSet<string> expressionJsonPropertyNames)

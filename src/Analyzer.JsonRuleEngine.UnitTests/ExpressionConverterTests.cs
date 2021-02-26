@@ -24,9 +24,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             .Where(property => property.Attribute != null)
             .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
 
+        // Dictionary of property names to PropertyInfo
+        private static readonly Dictionary<string, PropertyInfo> allOfExpressionJsonProperties =
+            typeof(AllOfExpressionDefinition)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Select(property => (Property: property, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
+            .Where(property => property.Attribute != null)
+            .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
+
         [DataTestMethod]
         [DataRow("hasValue", true, DisplayName = "{\"HasValue\": true}")]
         [DataRow("exists", false, DisplayName = "{\"Exists\": false}")]
+        [DataRow("equals", "someString", DisplayName = "{\"Equals\": \"someString\"}")]
+        [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue)
         {
             var @object = ReadJson(string.Format(@"
@@ -70,11 +80,52 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             }
         }
 
+        [TestMethod]
+        public void ReadJson_AllOfWithValidExpressions_ReturnsCorrectTypeAndValues()
+        {
+            var @object = ReadJson(@"
+                {
+                    ""resourceType"": ""someResource/resourceType"",
+                    ""path"": ""some.json.path"",
+                    ""allOf"": [ 
+                        { 
+                            ""path"": ""some.other.path"", 
+                            ""hasValue"": true 
+                        }, 
+                        { 
+                            ""path"": ""some.other.path"", 
+                            ""equals"": true 
+                        } 
+                    ]
+                }");
+
+            Assert.AreEqual(typeof(AllOfExpressionDefinition), @object.GetType());
+
+            var expression = @object as AllOfExpressionDefinition;
+            Assert.AreEqual("some.json.path", expression.Path);
+            Assert.AreEqual("someResource/resourceType", expression.ResourceType);
+        }
+
         [DataTestMethod]
-        [DataRow("hasValue", "string", DisplayName = "HasValue: \"string\"")]
-        [DataRow("exists", new int[0], DisplayName = "Exists: []")]
+        [DataRow("hasValue", "string", DisplayName = "\"HasValue\": \"string\"")]
+        [DataRow("exists", new int[0], DisplayName = "\"Exists\": []")]
         [ExpectedException(typeof(JsonReaderException))]
         public void ReadJson_LeafWithInvalidOperator_ThrowsParsingException(string operatorProperty, object operatorValue)
+        {
+            ReadJson(string.Format(@"
+                {{
+                    ""resourceType"": ""resourceType"",
+                    ""path"": ""path"",
+                    ""{0}"": {1}
+                }}",
+                operatorProperty,
+                JsonConvert.SerializeObject(operatorValue)));
+        }
+
+        [DataTestMethod]
+        [DataRow("allOf", "string", DisplayName = "\"AllOf\": \"string\"")]
+        [ExpectedException(typeof(JsonSerializationException))]
+        public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
             ReadJson(string.Format(@"
                 {{
