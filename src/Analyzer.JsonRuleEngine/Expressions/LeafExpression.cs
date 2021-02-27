@@ -75,10 +75,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 foreach (var propertyToEvaluate in leafScope)
                 {
                     bool passed = Operator.EvaluateExpression(propertyToEvaluate.JToken);
-                    if (!passed && evaluationPassed)
-                    {
-                        evaluationPassed = false;
-                    }
+                    evaluationPassed &= passed;
 
                     jsonRuleResults.Add(new JsonRuleResult
                     {

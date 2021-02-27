@@ -48,6 +48,106 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
 
         /// <summary>
+        /// Gets the collections of results evaluated to true from this evaluation.
+        /// </summary>
+        public IEnumerable<IResult> ResultsEvaluatedTrue
+        { 
+            get
+            {
+                if (Results == null)
+                {
+                    return null;
+                }
+
+                if (resultsEvaluatedTrue == null)
+                {
+                    resultsEvaluatedTrue = Results.ToList().FindAll(r => r.Passed);
+                }
+
+                return resultsEvaluatedTrue;
+            }
+            private set 
+            {
+                resultsEvaluatedTrue = value;
+            } 
+        }
+
+        /// <summary>
+        /// Gets the collections of results evaluated to false from this evaluation.
+        /// </summary>
+        public IEnumerable<IResult> ResultsEvaluatedFalse
+        {
+            get
+            {
+                if (Results == null)
+                {
+                    return null;
+                }
+
+                if (resultsEvaluatedFalse == null)
+                {
+                    resultsEvaluatedFalse = Results.ToList().FindAll(r => !r.Passed);
+                }
+
+                return resultsEvaluatedFalse;
+            }
+            private set
+            {
+                resultsEvaluatedFalse = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the collections of evaluations evaluated to true from this evaluation.
+        /// </summary>
+        public IEnumerable<IEvaluation> EvaluationsEvaluatedTrue
+        {
+            get
+            {
+                if (Evaluations == null)
+                {
+                    return null;
+                }
+
+                if (evaluationsEvaluatedTrue == null)
+                {
+                    evaluationsEvaluatedTrue = Evaluations.ToList().FindAll(r => r.Passed);
+                }
+
+                return evaluationsEvaluatedTrue;
+            }
+            private set
+            {
+                evaluationsEvaluatedTrue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the collections of evaluations evaluated to false from this evaluation.
+        /// </summary>
+        public IEnumerable<IEvaluation> EvaluationsEvaluatedFalse
+        {
+            get
+            {
+                if (Evaluations == null)
+                {
+                    return null;
+                }
+
+                if (evaluationsEvaluatedFalse == null)
+                {
+                    evaluationsEvaluatedFalse = Evaluations.ToList().FindAll(r => !r.Passed);
+                }
+
+                return evaluationsEvaluatedFalse;
+            }
+            private set
+            {
+                evaluationsEvaluatedFalse = value;
+            }
+        }
+
+        /// <summary>
         /// Creates an <see cref="JsonRuleEvaluation"/> that represents a structured expression.
         /// </summary>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
@@ -60,81 +160,5 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="results"><see cref="IEnumerable"/> of results.</param>
         public JsonRuleEvaluation(bool passed, IEnumerable<JsonRuleResult> results) => (this.Passed, this.Results) = (passed, results);
-
-        /// <summary>
-        /// Gets all the results that evaluated to true.
-        /// </summary>
-        /// <returns>The results that evaluated to true.</returns>
-        public IEnumerable<IResult> GetResultsEvaluatedTrue()
-        {
-            if (Results == null)
-            {
-                return null;
-            }
-
-            if (resultsEvaluatedTrue == null)
-            {
-               resultsEvaluatedTrue = Results.ToList().FindAll(r => r.Passed);
-            }
-
-            return resultsEvaluatedTrue;
-        }
-
-        /// <summary>
-        /// Gets all the results that evaluated to false.
-        /// </summary>
-        /// <returns>The results that evaluated to false.</returns>
-        public IEnumerable<IResult> GetResultsEvaluatedFalse()
-        {
-            if (Results == null)
-            {
-                return null;
-            }
-
-            if (resultsEvaluatedFalse == null)
-            {
-                resultsEvaluatedFalse = Results.ToList().FindAll(r => !r.Passed);
-            }
-
-            return resultsEvaluatedFalse;
-        }
-
-        /// <summary>
-        /// Gets all the evaluations that evaluated to true.
-        /// </summary>
-        /// <returns>The evaluations that evaluated to true.</returns>
-        public IEnumerable<IEvaluation> GetEvaluationsEvaluatedTrue()
-        {
-            if (Evaluations == null)
-            {
-                return null;
-            }
-
-            if (evaluationsEvaluatedTrue == null)
-            {
-                evaluationsEvaluatedTrue = Evaluations.ToList().FindAll(r => r.Passed);
-            }
-
-            return evaluationsEvaluatedTrue;
-        }
-
-        /// <summary>
-        /// Gets all the evaluations that evaluated to false.
-        /// </summary>
-        /// <returns>The evaluations that evaluated to false.</returns>
-        public IEnumerable<IEvaluation> GetEvaluationsEvaluatedFalse()
-        {
-            if (Evaluations == null)
-            {
-                return null;
-            }
-
-            if (evaluationsEvaluatedFalse == null)
-            {
-                evaluationsEvaluatedFalse = Evaluations.ToList().FindAll(r => !r.Passed);
-            }
-
-            return evaluationsEvaluatedFalse;
-        }
     }
 }

@@ -4,15 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Azure.Deployments.Templates.Export;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class AllOfExpressionTests
@@ -92,8 +90,8 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
             else
                 expectedFalse++;
 
-            Assert.AreEqual(expectedTrue, allOfEvaluation.GetEvaluationsEvaluatedTrue().Count());
-            Assert.AreEqual(expectedFalse, allOfEvaluation.GetEvaluationsEvaluatedFalse().Count());
+            Assert.AreEqual(expectedTrue, allOfEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(expectedFalse, allOfEvaluation.EvaluationsEvaluatedFalse.Count());
 
             foreach (var evaluation in allOfEvaluation.Evaluations)
             {

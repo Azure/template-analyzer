@@ -86,8 +86,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, results);
 
             // Act
-            var resultsEvaluatedTrue = jsonRuleEvaluation.GetResultsEvaluatedTrue();
-            var resultsEvaluatedFalse = jsonRuleEvaluation.GetResultsEvaluatedFalse();
+            var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
+            var resultsEvaluatedFalse = jsonRuleEvaluation.ResultsEvaluatedFalse;
 
             // Assert
             Assert.AreEqual(totalResults, results.Count());
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, new List<JsonRuleEvaluation>());
 
             // Act
-            var resultsEvaluatedTrue = jsonRuleEvaluation.GetResultsEvaluatedTrue();
-            var resultsEvaluatedFalse = jsonRuleEvaluation.GetResultsEvaluatedFalse();
+            var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
+            var resultsEvaluatedFalse = jsonRuleEvaluation.ResultsEvaluatedFalse;
 
             // Assert
             Assert.IsNull(resultsEvaluatedTrue);
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(3, 2, 1, DisplayName = "2/3 evaluations are true, 1/3 evaluations are false")]
         [DataRow(3, 0, 3, DisplayName = "0/3 evaluations are true, 3/3 evaluations are false")]
         [DataRow(0, 0, 0, DisplayName = "No evaluations")]
-        public void GetEvaluationsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfResultsReturned(int totalEvaluations, int expectedTrue, int expectedFalse)
+        public void GetEvaluationsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfEvaluationsReturned(int totalEvaluations, int expectedTrue, int expectedFalse)
         {
             // Arrange
             List<JsonRuleEvaluation> evaluations = new List<JsonRuleEvaluation>();
@@ -133,8 +133,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, evaluations);
 
             // Act
-            var evaluationsEvaluatedTrue = jsonRuleEvaluation.GetEvaluationsEvaluatedTrue();
-            var evaluationsEvaluatedFalse = jsonRuleEvaluation.GetEvaluationsEvaluatedFalse();
+            var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
+            var evaluationsEvaluatedFalse = jsonRuleEvaluation.EvaluationsEvaluatedFalse;
 
             // Assert
             Assert.AreEqual(totalEvaluations, evaluations.Count());
@@ -149,8 +149,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, new List<JsonRuleResult>());
 
             // Act
-            var evaluationsEvaluatedTrue = jsonRuleEvaluation.GetEvaluationsEvaluatedTrue();
-            var evaluationsEvaluatedFalse = jsonRuleEvaluation.GetEvaluationsEvaluatedFalse();
+            var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
+            var evaluationsEvaluatedFalse = jsonRuleEvaluation.EvaluationsEvaluatedFalse;
 
             // Assert
             Assert.IsNull(evaluationsEvaluatedTrue);
