@@ -62,13 +62,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
             ValidateExpressions(jsonObject, structuredExpressions, expressionJsonPropertyNames);
 
+            // See if a property representing a structured expression is present.  If so, parse that structured expression.
             var structuredExpression = objectPropertyNames.FirstOrDefault(property => structuredExpressions.Contains(property));
             if (!string.IsNullOrEmpty(structuredExpression))
             {
                 if (objectPropertyNames.Contains("allOf", StringComparer.OrdinalIgnoreCase))
                 {
-
-
                     return CreateExpressionDefinition<AllOfExpressionDefinition>(jsonObject, serializer);
                 }
 
@@ -106,7 +105,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             var expressionPropertyCount = objectPropertyNames.Count(property => expressionJsonPropertyNames.Contains(property));
             if (expressionPropertyCount == 1)
             {
-                // See if a property representing a structured expression is present.  If so, parse that structured expression.
                 var structuredExpressionJsonPropertyName = objectPropertyNames.FirstOrDefault(property => structuredExpressionJsonPropertyNames.Contains(property));
                 if (!string.IsNullOrEmpty(structuredExpressionJsonPropertyName))
                 {
