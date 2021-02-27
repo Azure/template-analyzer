@@ -9,7 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class AllOfExpressionDefinitionTests
@@ -21,30 +21,35 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         public void ToExpression_ValidExpressions_ReturnsArrayOfExpectedExpressions(int numberOfExpressionDefinitions)
         {
             // Arrange
-            var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
-            var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
-            var mockLeafExpression = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path",  mockLeafExpressionOperator});
-            mockLeafExpressionDefinition
-                .Setup(s => s.ToExpression())
-                .Returns(mockLeafExpression.Object);
+            var mockLeafExpressionDefinitions = GenerateAllOfExpressionDefinition(numberOfExpressionDefinitions).ToArray();
+            var mockLeafExpressionDefinitionsObject = mockLeafExpressionDefinitions.Select(s => s.Object).ToArray();
 
             var allOfExpressionDefinition = new AllOfExpressionDefinition
             {
                 Path = "json.path",
-                AllOf = GenerateAllOfExpressionDefinition(numberOfExpressionDefinitions, mockLeafExpressionDefinition.Object).ToArray()
+                AllOf = mockLeafExpressionDefinitionsObject
             };
 
             // Act
             var allOfExpression = allOfExpressionDefinition.ToExpression() as AllOfExpression;
 
             // Assert
-            mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Exactly(numberOfExpressionDefinitions));
+            foreach (var mockLeafExpressionDefinition in mockLeafExpressionDefinitions)
+            {
+                mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
+            }
 
             Assert.AreEqual(numberOfExpressionDefinitions, allOfExpression.AllOf.Length);
+
+            // Assert the expressions are equal to the mock objects
             if (numberOfExpressionDefinitions > 0)
             {
-                var firstExpression = allOfExpression.AllOf.First() as LeafExpression;
-                Assert.AreEqual("some.path", firstExpression.Path);
+                for (int i = 0; i < allOfExpression.AllOf.Length; i++)
+                {
+                    var leafExpression = allOfExpression.AllOf[i] as LeafExpression;
+
+                    Assert.AreEqual(mockLeafExpressionDefinitionsObject[i].ToExpression(), leafExpression);
+                }
             }
         }
 
@@ -52,41 +57,50 @@ namespace Microsoft.Azure.Templates.Analyzer.JsonRuleEngine.UnitTests
         public void ToExpression_NestedAllOf_ReturnsArrayOfExpectedExpressions()
         {
             // Arrange
-            var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
-            var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
-            var mockLeafExpression = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockLeafExpressionOperator });
-            mockLeafExpressionDefinition
-                .Setup(s => s.ToExpression())
-                .Returns(mockLeafExpression.Object);
+            var mockLeafExpressionDefinitions = GenerateAllOfExpressionDefinition(2).ToArray();
+            var mockLeafExpressionDefinitionsObject = mockLeafExpressionDefinitions.Select(s => s.Object).ToArray();
+            var singleMockLeafExpressionDefinition = GenerateAllOfExpressionDefinition(1).First();
 
             var nestedAllOfExpressionDefinition = new AllOfExpressionDefinition
             {
                 Path = "json.path",
-                AllOf = GenerateAllOfExpressionDefinition(2, mockLeafExpressionDefinition.Object).ToArray()
+                AllOf = mockLeafExpressionDefinitionsObject
             };
 
             var allOfExpressionDefinition = new AllOfExpressionDefinition
             {
                 Path = "json.path",
-                AllOf = new ExpressionDefinition[] {nestedAllOfExpressionDefinition, mockLeafExpressionDefinition.Object }
+                AllOf = new ExpressionDefinition[] {nestedAllOfExpressionDefinition, singleMockLeafExpressionDefinition.Object }
             };
 
             // Act
             var allOfExpression = allOfExpressionDefinition.ToExpression() as AllOfExpression;
 
             // Assert
-            mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Exactly(3));
+            foreach (var mockLeafExpressionDefinition in mockLeafExpressionDefinitions)
+            {
+                mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
+            }
+
+            singleMockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
 
             Assert.AreEqual(2, allOfExpression.AllOf.Length);
             Assert.IsInstanceOfType(allOfExpression.AllOf.First(), typeof(AllOfExpression));
             Assert.IsInstanceOfType(allOfExpression.AllOf.Last(), typeof(LeafExpression));
         }
 
-        private IEnumerable<ExpressionDefinition> GenerateAllOfExpressionDefinition(int numberOfExpressionDefinitions, LeafExpressionDefinition leafExpressionDefinition)
+        private IEnumerable<Mock<LeafExpressionDefinition>> GenerateAllOfExpressionDefinition(int numberOfExpressionDefinitions)
         {
             for (int i = 0; i < numberOfExpressionDefinitions; i++)
             {
-                yield return leafExpressionDefinition;
+                var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
+                var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
+                var mockLeafExpression = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockLeafExpressionOperator });
+                mockLeafExpressionDefinition
+                    .Setup(s => s.ToExpression())
+                    .Returns(mockLeafExpression.Object);
+
+                yield return mockLeafExpressionDefinition;
             }
         }
     }
