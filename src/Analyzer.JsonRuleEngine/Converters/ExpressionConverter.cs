@@ -116,12 +116,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
                     {
                         throw new JsonException($"No leaf expressions were specified in the {structuredExpressionJsonPropertyName} expression");
                     }
-
-                    // Iterate over all expressions in structured expression and validate it
-                    foreach (var expression in jsonObject.InsensitiveToken(structuredExpressionJsonPropertyName))
-                    {
-                        ValidateExpressions((JObject)expression, structuredExpressionJsonPropertyNames, expressionJsonPropertyNames);
-                    }
                 }
 
                 return;
