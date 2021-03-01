@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataTestMethod]
         [DataRow(true, true, DisplayName = "AllOf evaluates to true (true && true)")]
         [DataRow(true, false, DisplayName = "AllOf evaluates to false (true && false)")]
+        [DataRow(false, true, DisplayName = "AllOf evaluates to false (false && true)")]
         [DataRow(false, false, DisplayName = "AllOf evaluates to false (false && false)")]
         [DataRow(false, false, "ResourceProvider/resource", DisplayName = "AllOf - scoped to resourceType - evaluates to false (false && false)")]
         [DataRow(false, false, "ResourceProvider/resource", "some.path", DisplayName = "AllOf - scoped to resourceType and path - evaluates to false (false && false)")]
@@ -57,15 +58,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var results1 = new JsonRuleResult[] { jsonRuleResult1 };
             var results2 = new JsonRuleResult[] { jsonRuleResult2 };
 
-            mockLeafExpression2
+            mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
                 .Returns(new JsonRuleEvaluation(evaluation1, results1));
 
-            mockLeafExpression1
+            mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
                 .Returns(new JsonRuleEvaluation(evaluation2, results2));
 
-            var expressionArray = new Expression[] { mockLeafExpression2.Object, mockLeafExpression1.Object };
+            var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
             var allOfExpression = new AllOfExpression(expressionArray, resourceType: resourceType, path: path);
 

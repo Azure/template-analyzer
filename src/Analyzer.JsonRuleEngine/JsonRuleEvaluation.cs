@@ -12,6 +12,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
     /// <inheritdoc/>
     internal class JsonRuleEvaluation : IEvaluation
     {
+        private IEnumerable<IResult> resultsEvaluatedTrue;
+        private IEnumerable<IResult> resultsEvaluatedFalse;
+
+        private IEnumerable<IEvaluation> evaluationsEvaluatedTrue;
+        private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
+
+        private List<IEvaluation> cachedEvaluations;
+        private List<IResult> cachedResults;
+
         /// <summary>
         /// Gets or sets the JSON rule this evaluation is for.
         /// </summary>
@@ -41,11 +50,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <inheritdoc/>
         public IEnumerable<IEvaluation> Evaluations { get; set; }
 
-        private IEnumerable<IResult> resultsEvaluatedTrue;
-        private IEnumerable<IResult> resultsEvaluatedFalse;
+        private List<IResult> GetCachedResults()
+        {
+            return cachedResults ??= Results?.ToList();
+        }
 
-        private IEnumerable<IEvaluation> evaluationsEvaluatedTrue;
-        private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
+        private List<IEvaluation> GetCachedEvaluationss()
+        {
+            return cachedEvaluations ??= Evaluations?.ToList();
+        }
 
         /// <summary>
         /// Gets the collections of results evaluated to true from this evaluation.
@@ -59,12 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                     return null;
                 }
 
-                if (resultsEvaluatedTrue == null)
-                {
-                    resultsEvaluatedTrue = Results.ToList().FindAll(r => r.Passed);
-                }
-
-                return resultsEvaluatedTrue;
+                return resultsEvaluatedTrue ??= GetCachedResults().FindAll(r => r.Passed);
             }
             private set 
             {
@@ -84,12 +92,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                     return null;
                 }
 
-                if (resultsEvaluatedFalse == null)
-                {
-                    resultsEvaluatedFalse = Results.ToList().FindAll(r => !r.Passed);
-                }
-
-                return resultsEvaluatedFalse;
+                return resultsEvaluatedFalse ??= GetCachedResults().FindAll(r => !r.Passed);
             }
             private set
             {
@@ -109,12 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                     return null;
                 }
 
-                if (evaluationsEvaluatedTrue == null)
-                {
-                    evaluationsEvaluatedTrue = Evaluations.ToList().FindAll(r => r.Passed);
-                }
-
-                return evaluationsEvaluatedTrue;
+                return evaluationsEvaluatedTrue ??= GetCachedEvaluationss().FindAll(r => r.Passed);
             }
             private set
             {
@@ -134,12 +132,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                     return null;
                 }
 
-                if (evaluationsEvaluatedFalse == null)
-                {
-                    evaluationsEvaluatedFalse = Evaluations.ToList().FindAll(r => !r.Passed);
-                }
-
-                return evaluationsEvaluatedFalse;
+                return evaluationsEvaluatedFalse ??= GetCachedEvaluationss().FindAll(r => !r.Passed);
             }
             private set
             {
