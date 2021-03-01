@@ -86,10 +86,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     foreach (var expression in AllOf)
                     {
                         var evaluation = expression.Evaluate(propertyToEvaluate);
-                        if (!evaluation.Passed && evaluationPassed)
-                        {
-                            evaluationPassed = false;
-                        }
+                        
+                        evaluationPassed &= evaluation.Passed;
 
                         jsonRuleEvaluations.Add(evaluation);
                     }
