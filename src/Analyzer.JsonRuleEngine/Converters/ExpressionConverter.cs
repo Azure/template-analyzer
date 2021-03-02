@@ -83,7 +83,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
         {
             var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
 
-            // Verify an operator property exists, representing an Expression
             var expressionJsonPropertyNames = LeafExpressionJsonPropertyNames;
             expressionJsonPropertyNames.UnionWith(structuredExpressions);
 
@@ -102,6 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
         {
             var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
 
+            // Verify an operator property exists, representing an Expression
             var expressionPropertyCount = objectPropertyNames.Count(property => expressionJsonPropertyNames.Contains(property));
             if (expressionPropertyCount == 1)
             {

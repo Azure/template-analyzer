@@ -67,17 +67,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         { 
             get
             {
-                if (Results == null)
+                var results = GetCachedResults();
+
+                if (results == null)
                 {
                     return null;
                 }
 
-                return resultsEvaluatedTrue ??= GetCachedResults().FindAll(r => r.Passed);
+                return resultsEvaluatedTrue ??= results.FindAll(r => r.Passed);
             }
-            private set 
-            {
-                resultsEvaluatedTrue = value;
-            } 
         }
 
         /// <summary>
@@ -87,16 +85,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             get
             {
-                if (Results == null)
+                var results = GetCachedResults();
+
+                if (results == null)
                 {
                     return null;
                 }
 
-                return resultsEvaluatedFalse ??= GetCachedResults().FindAll(r => !r.Passed);
-            }
-            private set
-            {
-                resultsEvaluatedFalse = value;
+                return resultsEvaluatedFalse ??= results.FindAll(r => !r.Passed);
             }
         }
 
@@ -107,16 +103,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             get
             {
-                if (Evaluations == null)
+                var evaluations = GetCachedEvaluationss();
+
+                if (evaluations == null)
                 {
                     return null;
                 }
 
-                return evaluationsEvaluatedTrue ??= GetCachedEvaluationss().FindAll(r => r.Passed);
-            }
-            private set
-            {
-                evaluationsEvaluatedTrue = value;
+                return evaluationsEvaluatedTrue ??= evaluations.FindAll(r => r.Passed);
             }
         }
 
@@ -127,16 +121,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             get
             {
-                if (Evaluations == null)
+                var evaluations = GetCachedEvaluationss();
+
+                if (evaluations == null)
                 {
                     return null;
                 }
 
-                return evaluationsEvaluatedFalse ??= GetCachedEvaluationss().FindAll(r => !r.Passed);
-            }
-            private set
-            {
-                evaluationsEvaluatedFalse = value;
+                return evaluationsEvaluatedFalse ??= evaluations.FindAll(r => !r.Passed);
             }
         }
 

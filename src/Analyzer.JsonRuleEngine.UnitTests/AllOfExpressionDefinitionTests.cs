@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
     public class AllOfExpressionDefinitionTests
     {
         [DataTestMethod]
-        [DataRow(0, DisplayName = "0 expressions defined in AllOf - this error is caught in ExpressionConverter")]
         [DataRow(1, DisplayName = "1 expression defined in AllOf")]
         [DataRow(5, DisplayName = "5 expressions defined in AllOf")]
         public void ToExpression_ValidExpressions_ReturnsArrayOfExpectedExpressions(int numberOfExpressionDefinitions)

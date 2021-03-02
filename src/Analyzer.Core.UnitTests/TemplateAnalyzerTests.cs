@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "Matching Resource with one passing evaluation")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "Matching Resource with one failing evaluation")]
         [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.Storage/storageAccounts", 0, false, DisplayName = "0 matching Resources with no results")]
-        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resourceProperties, string resourceType, int expectedEvaluationCount, bool expectedEvaluatioPassed)
+        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resourceProperties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed)
         {
             string template = GenerateTemplate(resourceProperties, resourceType);
 
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             Assert.AreEqual(expectedEvaluationCount, evaluations.Count());
 
             if (expectedEvaluationCount > 0)
-                Assert.AreEqual(expectedEvaluatioPassed, evaluations.First().Passed);
+                Assert.AreEqual(expectedEvaluationPassed, evaluations.First().Passed);
         }
 
         private string GenerateTemplate(string resourceProperties, string resourceType)

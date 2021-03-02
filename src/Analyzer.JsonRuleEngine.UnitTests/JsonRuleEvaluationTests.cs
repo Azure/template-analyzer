@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
-using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
@@ -64,13 +61,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(3, 3, 0, DisplayName = "3/3 results are true, 0/3 results are false")]
-        [DataRow(3, 2, 1, DisplayName = "2/3 results are true, 1/3 results are false")]
-        [DataRow(3, 0, 3, DisplayName = "0/3 results are true, 3/3 results are false")]
-        [DataRow(0, 0, 0, DisplayName = "No results")]
-        public void GetResultsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfResultsReturned(int totalResults, int expectedTrue, int expectedFalse)
+        [DataRow(3, 3, DisplayName = "3/3 results are true")]
+        [DataRow(3, 2, DisplayName = "2/3 results are true")]
+        [DataRow(3, 0, DisplayName = "0/3 results are true")]
+        [DataRow(0, 0, DisplayName = "No results")]
+        public void GetResultsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfResultsReturned(int totalResults, int expectedTrue)
         {
             // Arrange
+            int expectedFalse = totalResults - expectedTrue;
+
             List<JsonRuleResult> results = new List<JsonRuleResult>();
 
             for (int i = 0; i < expectedTrue; i++)
@@ -111,13 +110,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(3, 3, 0, DisplayName = "3/3 evaluations are true, 0/3 evaluations are false")]
-        [DataRow(3, 2, 1, DisplayName = "2/3 evaluations are true, 1/3 evaluations are false")]
-        [DataRow(3, 0, 3, DisplayName = "0/3 evaluations are true, 3/3 evaluations are false")]
-        [DataRow(0, 0, 0, DisplayName = "No evaluations")]
-        public void GetEvaluationsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfEvaluationsReturned(int totalEvaluations, int expectedTrue, int expectedFalse)
+        [DataRow(3, 3, DisplayName = "3/3 evaluations are true")]
+        [DataRow(3, 2, DisplayName = "2/3 evaluations are true")]
+        [DataRow(3, 0, DisplayName = "0/3 evaluations are true")]
+        [DataRow(0, 0, DisplayName = "No evaluations")]
+        public void GetEvaluationsEvaluatedTrueFalse_ThreeEvaluations_ExpectedNumberOfEvaluationsReturned(int totalEvaluations, int expectedTrue)
         {
             // Arrange
+            int expectedFalse = totalEvaluations - expectedTrue;
+
             List<JsonRuleEvaluation> evaluations = new List<JsonRuleEvaluation>();
 
             for (int i = 0; i < expectedTrue; i++)
