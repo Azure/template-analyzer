@@ -36,7 +36,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // even the first property could not be found in the original template.
             if (tokenFromOriginalTemplate.Equals(originalTemplateRoot))
             {
-                // See if the path starts with indexing into the template resources[] array
+                return 0;
+            }
+
+            // If the JToken returned from looking up the expanded template path is
+            // pointing to the resources array of the original template, then it's likely
+            // the expanded template path used an index too large for the original template.
+            if (tokenFromOriginalTemplate.Equals(originalTemplateRoot.InsensitiveToken("resources")))
+            {
+                // Verify the path starts with indexing into the template resources[] array
                 var match = resourceIndexInPath.Match(pathInExpandedTemplate);
                 if (match.Success)
                 {
