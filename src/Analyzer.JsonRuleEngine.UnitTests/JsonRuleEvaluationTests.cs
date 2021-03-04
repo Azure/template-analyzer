@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "testRule",
-                new JsonRuleEvaluation(true, results: null)
+                new JsonRuleEvaluation(null, true, results: null)
                 {
                     RuleDefinition = new RuleDefinition { Name = "testRule" }
                 }
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "test rule",
-                new JsonRuleEvaluation(true, results: null)
+                new JsonRuleEvaluation(null, true, results: null)
                 {
                     RuleDefinition = new RuleDefinition { Description = "test rule" }
                 }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "test recommendation",
-                new JsonRuleEvaluation(true, results: null)
+                new JsonRuleEvaluation(null, true, results: null)
                 {
                     RuleDefinition = new RuleDefinition { Recommendation = "test recommendation" }
                 }
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "https://helpUri",
-                new JsonRuleEvaluation(true, results: null)
+                new JsonRuleEvaluation(null, true, results: null)
                 {
                     RuleDefinition = new RuleDefinition { HelpUri = "https://helpUri" }
                 }
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 results.Add(new JsonRuleResult { Passed = false });
             }
 
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, results);
+            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, results);
 
             // Act
             var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void GetResultsEvaluatedTrueFalse_ResultsIsNull_ReturnNull()
         {
             // Arrange
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, new List<JsonRuleEvaluation>());
+            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, new List<JsonRuleEvaluation>());
 
             // Act
             var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
@@ -123,15 +123,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             for (int i = 0; i < expectedTrue; i++)
             {
-                evaluations.Add(new JsonRuleEvaluation(true, results: null));
+                evaluations.Add(new JsonRuleEvaluation(null, true, results: null));
             }
 
             for (int i = 0; i < expectedFalse; i++)
             {
-                evaluations.Add(new JsonRuleEvaluation(false, results: null));
+                evaluations.Add(new JsonRuleEvaluation(null, false, results: null));
             }
 
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, evaluations);
+            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, evaluations);
 
             // Act
             var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void GetEvaluationsEvaluatedTrueFalse_EvaluationsIsNull_ReturnNull()
         {
             // Arrange
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(true, new List<JsonRuleResult>());
+            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, new List<JsonRuleResult>());
 
             // Act
             var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;

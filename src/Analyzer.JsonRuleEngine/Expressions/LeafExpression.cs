@@ -80,12 +80,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     jsonRuleResults.Add(new JsonRuleResult
                     {
                         Passed = passed,
-                        JsonPath = propertyToEvaluate.Path
+                        JsonPath = propertyToEvaluate.Path,
+                        Expression = this
                     });
                 }
             }
 
-            return new JsonRuleEvaluation(evaluationPassed, jsonRuleResults);
+            return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleResults);
         }
     }
 }

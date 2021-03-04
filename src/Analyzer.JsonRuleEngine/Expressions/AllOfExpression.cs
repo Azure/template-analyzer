@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 }
             }
 
-            return new JsonRuleEvaluation(evaluationPassed, jsonRuleEvaluations);
+            return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
         }
     }
 }

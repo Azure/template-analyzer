@@ -60,11 +60,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
-                .Returns(new JsonRuleEvaluation(evaluation1, results1));
+                .Returns(new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, results1));
 
             mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
-                .Returns(new JsonRuleEvaluation(evaluation2, results2));
+                .Returns(new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, results2));
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 

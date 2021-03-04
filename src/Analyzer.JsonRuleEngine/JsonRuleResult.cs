@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
@@ -24,5 +25,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// Gets or sets the JSON path to the location in the JSON where the rule was evaluated.
         /// </summary>
         internal string JsonPath { get; set; }
+
+        /// <summary>
+        /// Gets the expression associated with this result
+        /// </summary>
+        internal Expression Expression { get; set; }
     }
 }

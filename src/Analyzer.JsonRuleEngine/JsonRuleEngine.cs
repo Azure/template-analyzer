@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -40,24 +41,54 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
             foreach(RuleDefinition rule in rules)
             {
-                var ruleExpression = rule.Evaluation.ToExpression();
-                var evaluation = ruleExpression.Evaluate(
+                var ruleExpression = rule.ExpressionDefinition.ToExpression();
+                JsonRuleEvaluation evaluation = ruleExpression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,
                         templateContext.ExpandedTemplate.Path));
 
-                // If there are no matching cases of the rule, do not create an evaluation
-                if (!(evaluation as IEvaluation).HasResults())
-                {
-                    continue;
-                }
+                 evaluation.RuleDefinition = rule;
+                 evaluation.FileIdentifier = templateContext.TemplateIdentifier;
 
-                evaluation.RuleDefinition = rule;
-                evaluation.FileIdentifier = templateContext.TemplateIdentifier;
-                evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
+                // If there are no matching cases of the rule, do not create an evaluation
+                if (rule.ExpressionDefinition is LeafExpressionDefinition)
+                {
+                    if (evaluation.Results.Count() == 0)
+                    {
+                        continue;
+                    }
+                    
+                    evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
+                }
+                else
+                {
+                    if (evaluation.Evaluations.Count() == 0)
+                    {
+                        continue;
+                    }
+
+                    evaluation.Evaluations = evaluation.Evaluations.Select(eval => PopulateEvaluations(eval as JsonRuleEvaluation, templateContext));
+                }
 
                 yield return evaluation;
             }
+        }
+
+        private JsonRuleEvaluation PopulateEvaluations(JsonRuleEvaluation evaluation, TemplateContext templateContext)
+        {
+            if (evaluation.Expression is LeafExpression)
+            {
+                evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
+            }
+            else
+            {
+                foreach (var evaluationResult in evaluation.Evaluations)
+                {
+                    evaluation.Evaluations = evaluation.Evaluations.Select(eval => PopulateEvaluations(eval as JsonRuleEvaluation, templateContext));
+                }
+            }
+
+            return evaluation;
         }
 
         /// <summary>
