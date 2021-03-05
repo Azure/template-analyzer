@@ -188,16 +188,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             Assert.AreEqual(1, evaluationResults.Count());
             Assert.AreEqual(1, evaluationResults.Count(evaluation => evaluation.Passed));
-            for (int i = 0; i < 1; i++)
-            {
-                var evaluation = evaluationResults[i];
-                Assert.AreEqual($"RuleName {i}", evaluation.RuleName);
-                Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
-                Assert.IsNull(evaluation.Results);
+            var evaluation = evaluationResults[0];
+            Assert.AreEqual($"RuleName 0", evaluation.RuleName);
+            Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
-                AssertEvaluationsAndResultsAreAsExpected(evaluation, expectedLineNumber);
-            }
+            Assert.IsNull(evaluation.Results);
+
+            AssertEvaluationsAndResultsAreAsExpected(evaluation, expectedLineNumber);
         }
 
         private void AssertEvaluationsAndResultsAreAsExpected(IEvaluation evaluation, int expectedLineNumber)
