@@ -45,9 +45,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Evaluates this leaf expression's resource type and/or path, starting at the specified json scope, with the contained <c>LeafExpressionOperator</c>.
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
-        /// <returns>Zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
+        /// <returns>A <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
         /// and if the path contains any wildcards.</returns>
-        public override IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope)
+        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
             if (jsonScope == null)
             {
@@ -65,19 +65,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 scopesToEvaluate.Add(jsonScope);
             }
 
+            List<JsonRuleResult> jsonRuleResults = new List<JsonRuleResult>();
+            bool evaluationPassed = true;
+
             foreach (var scope in scopesToEvaluate)
             {
                 var leafScope = scope?.Resolve(Path);
 
                 foreach (var propertyToEvaluate in leafScope)
                 {
-                    yield return new JsonRuleResult
+                    bool passed = Operator.EvaluateExpression(propertyToEvaluate.JToken);
+                    evaluationPassed &= passed;
+
+                    jsonRuleResults.Add(new JsonRuleResult
                     {
-                        Passed = Operator.EvaluateExpression(propertyToEvaluate.JToken),
-                        JsonPath = propertyToEvaluate.Path
-                    };
+                        Passed = passed,
+                        JsonPath = propertyToEvaluate.Path,
+                        Expression = this
+                    });
                 }
             }
+
+            return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleResults);
         }
     }
 }

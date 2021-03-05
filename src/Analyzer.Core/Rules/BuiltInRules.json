@@ -14,11 +14,41 @@
     "name": "Authorization_RoleDefinition_No_Custom_RBAC",
     "description": "Use built-in roles instead of custom RBAC roles",
     "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-armory-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
     "evaluation": {
       "resourceType": "Microsoft.Authorization/roleDefinitions",
       "path": "properties.type",
       "notEquals": "CustomRole"
+    }
+  },
+  {
+    "name": "AutomationAccounts_Variables_Encrypted",
+    "description": "Automation account variables should be encrypted",
+    "recommendation": "Enable encryption of Automation account variable assets when storing sensitive data",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#automation-account-variables-should-be-encrypted",
+    "evaluation": {
+      "resourceType": "Microsoft.Automation/automationAccounts/variables",
+      "path": "properties.isEncrypted",
+      "equals": true
+    }
+  },
+  {
+    "name": "Kubernetes_Must_Use_RBAC",
+    "description": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
+    "recommendation": "Enable RBAC in Kubernetes clusters",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#role-based-access-control-rbac-should-be-used-on-kubernetes-services",
+    "evaluation": {
+      "resourceType": "Microsoft.ContainerService/managedClusters",
+      "allOf": [
+        {
+          "path": "properties.enableRBAC",
+          "hasValue": true
+        },
+        {
+          "path": "properties.enableRBAC",
+          "equals": true
+        }
+      ]
     }
   }
 ]
