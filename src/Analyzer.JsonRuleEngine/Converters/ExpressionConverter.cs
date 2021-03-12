@@ -38,6 +38,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
+        /// The property names that can be specified for AnyOfExpressions
+        /// </summary>
+        private static readonly HashSet<string> AnyOfExpressionJsonPropertyNames =
+            typeof(AnyOfExpressionDefinition)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
+            .Where(property => property.Attribute != null)
+            .Select(property => property.Attribute.PropertyName ?? property.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Parses an ExpressionDefinition from a JsonReader
         /// </summary>
         /// <param name="reader">The JsonReader</param>
@@ -70,6 +81,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
                 {
                     return CreateExpressionDefinition<AllOfExpressionDefinition>(jsonObject, serializer);
                 }
+                else if (objectPropertyNames.Contains("anyOf", StringComparer.OrdinalIgnoreCase))
+                {
+                    return CreateExpressionDefinition<AnyOfExpressionDefinition>(jsonObject, serializer);
+                }
 
                 throw new JsonException($"Expression is not supported. One of the following fields is not supported: {string.Join(", ", objectPropertyNames.ToArray())}");
             }
@@ -93,6 +108,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
         {
             // Add new structuredExpressions here
             var structuredExpressions = AllOfExpressionJsonPropertyNames;
+            structuredExpressions.UnionWith(AnyOfExpressionJsonPropertyNames);
 
             return structuredExpressions;
         }

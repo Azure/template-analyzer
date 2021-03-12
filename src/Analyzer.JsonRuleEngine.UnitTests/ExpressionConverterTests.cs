@@ -72,30 +72,46 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             }
         }
 
-        [TestMethod]
-        public void ReadJson_AllOfWithValidExpressions_ReturnsCorrectTypeAndValues()
+        [DataTestMethod]
+        [DataRow("allOf", typeof(AllOfExpressionDefinition), DisplayName = "AllOf Expression")]
+        [DataRow("anyOf", typeof(AnyOfExpressionDefinition), DisplayName = "AnyOf Expression")]
+        public void ReadJson_ValidStructuredExpression_ReturnsCorrectTypeAndValues(string expressionName, Type expressionDefinitionType)
         {
-            var @object = ReadJson(@"
-                {
+            var @object = ReadJson(string.Format(@"
+                {{
                     ""resourceType"": ""someResource/resourceType"",
                     ""path"": ""some.json.path"",
-                    ""allOf"": [ 
-                        { 
+                    ""{0}"": [ 
+                        {{
                             ""path"": ""some.other.path"", 
                             ""hasValue"": true 
-                        }, 
-                        { 
+                        }}, 
+                        {{
                             ""path"": ""some.other.path"", 
                             ""equals"": true 
-                        } 
+                        }}
                     ]
-                }");
+                }}", expressionName));
 
-            Assert.AreEqual(typeof(AllOfExpressionDefinition), @object.GetType());
+            Assert.AreEqual(expressionDefinitionType, @object.GetType());
 
-            var expression = @object as AllOfExpressionDefinition;
-            Assert.AreEqual("some.json.path", expression.Path);
-            Assert.AreEqual("someResource/resourceType", expression.ResourceType);
+            ExpressionDefinition expressionDefinition;
+
+            switch (@object)
+            {
+                case AllOfExpressionDefinition allOfExpressionDefinition:
+                    expressionDefinition = allOfExpressionDefinition;
+                    break;
+                case AnyOfExpressionDefinition anyOfExpressionDefinition:
+                    expressionDefinition = anyOfExpressionDefinition;
+                    break;
+                default:
+                    expressionDefinition = null;
+                    break;
+            }
+
+            Assert.AreEqual("some.json.path", expressionDefinition.Path);
+            Assert.AreEqual("someResource/resourceType", expressionDefinition.ResourceType);
         }
 
         [DataTestMethod]
@@ -116,7 +132,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow("allOf", "string", DisplayName = "\"AllOf\": \"string\"")]
+        [DataRow("anyOf", "string", DisplayName = "\"AnyOf\": \"string\"")]
         [DynamicData(nameof(EmptyAllOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = "GetAllOfIsEmptyDynamicDataDisplayName")]
+        [DynamicData(nameof(EmptyAnyOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = "GetAnyOfIsEmptyDynamicDataDisplayName")]
         [ExpectedException(typeof(JsonException))]
         public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
@@ -225,6 +243,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public static string GetAllOfIsEmptyDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
         {
             return "\"AllOf\": []";
+        }
+
+        static IEnumerable<object[]> EmptyAnyOfArray()
+        {
+            yield return new object[] { "anyOf", new object[0] };
+        }
+
+        public static string GetAnyOfIsEmptyDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
+        {
+            return "\"AnyOf\": []";
         }
     }
 }
