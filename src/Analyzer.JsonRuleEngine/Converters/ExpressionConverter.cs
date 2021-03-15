@@ -27,28 +27,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// The property names that can be specified for AllOfExpressions
-        /// </summary>
-        private static readonly HashSet<string> AllOfExpressionJsonPropertyNames =
-            typeof(AllOfExpressionDefinition)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-            .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
-            .Where(property => property.Attribute != null)
-            .Select(property => property.Attribute.PropertyName ?? property.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// The property names that can be specified for AnyOfExpressions
-        /// </summary>
-        private static readonly HashSet<string> AnyOfExpressionJsonPropertyNames =
-            typeof(AnyOfExpressionDefinition)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-            .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
-            .Where(property => property.Attribute != null)
-            .Select(property => property.Attribute.PropertyName ?? property.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
         /// Parses an ExpressionDefinition from a JsonReader
         /// </summary>
         /// <param name="reader">The JsonReader</param>
@@ -107,8 +85,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
         internal HashSet<string> GetStructuredExpressionJsonPropertyNames()
         {
             // Add new structuredExpressions here
-            var structuredExpressions = AllOfExpressionJsonPropertyNames;
-            structuredExpressions.UnionWith(AnyOfExpressionJsonPropertyNames);
+            var structuredExpressions = new HashSet<string>
+            {
+                "allOf",
+                "anyOf"
+            };
 
             return structuredExpressions;
         }
