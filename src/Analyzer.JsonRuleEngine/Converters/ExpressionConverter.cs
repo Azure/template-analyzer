@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -21,6 +22,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             typeof(LeafExpressionDefinition)
             .GetProperties(BindingFlags.Public| BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(property => !property.GetMethod.IsVirtual)
+            .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
+            .Where(property => property.Attribute != null)
+            .Select(property => property.Attribute.PropertyName ?? property.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// The property names that can be specified for AllOfExpressions
+        /// </summary>
+        private static readonly HashSet<string> AllOfExpressionJsonPropertyNames =
+            typeof(AllOfExpressionDefinition)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
             .Where(property => property.Attribute != null)
             .Select(property => property.Attribute.PropertyName ?? property.Name)
@@ -46,14 +58,68 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
             var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
 
-            // See if a property representing a structured expression is present.  If so, parse that structured expression.
-            // TODO: Parse structured expressions
+            var expressionJsonPropertyNames = GetExpressionJsonPropertyNames();
+            var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
 
-            // Verify an operator property exists, representing a LeafExpression
-            var leafPropertyCount = objectPropertyNames.Count(property => LeafExpressionJsonPropertyNames.Contains(property));
-            if (leafPropertyCount == 1)
+            ValidateExpressions(jsonObject, structuredExpressions, expressionJsonPropertyNames);
+
+            // See if a property representing a structured expression is present.  If so, parse that structured expression.
+            var structuredExpression = objectPropertyNames.FirstOrDefault(property => structuredExpressions.Contains(property));
+            if (!string.IsNullOrEmpty(structuredExpression))
+            {
+                if (objectPropertyNames.Contains("allOf", StringComparer.OrdinalIgnoreCase))
+                {
+                    return CreateExpressionDefinition<AllOfExpressionDefinition>(jsonObject, serializer);
+                }
+
+                throw new JsonException($"Expression is not supported. One of the following fields is not supported: {string.Join(", ", objectPropertyNames.ToArray())}");
+            }
+            else
             {
                 return CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
+            }
+        }
+
+        internal HashSet<string> GetExpressionJsonPropertyNames()
+        {
+            var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
+
+            var expressionJsonPropertyNames = LeafExpressionJsonPropertyNames;
+            expressionJsonPropertyNames.UnionWith(structuredExpressions);
+
+            return expressionJsonPropertyNames;
+        }
+
+        internal HashSet<string> GetStructuredExpressionJsonPropertyNames()
+        {
+            // Add new structuredExpressions here
+            var structuredExpressions = AllOfExpressionJsonPropertyNames;
+
+            return structuredExpressions;
+        }
+
+        private void ValidateExpressions(JObject jsonObject, HashSet<string> structuredExpressionJsonPropertyNames, HashSet<string> expressionJsonPropertyNames)
+        {
+            var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
+
+            // Verify an operator property exists, representing an Expression
+            var expressionPropertyCount = objectPropertyNames.Count(property => expressionJsonPropertyNames.Contains(property));
+            if (expressionPropertyCount == 1)
+            {
+                var structuredExpressionJsonPropertyName = objectPropertyNames.FirstOrDefault(property => structuredExpressionJsonPropertyNames.Contains(property));
+                if (!string.IsNullOrEmpty(structuredExpressionJsonPropertyName))
+                {
+                    // If there are no leaf expressions defined in 
+                    // the structured expression, throw an error
+                    var structuredExpression = jsonObject.InsensitiveToken(structuredExpressionJsonPropertyName);
+
+                    if (structuredExpression.Count() == 0)
+                    {
+                        throw new JsonException($"No leaf expressions were specified in the {structuredExpressionJsonPropertyName} expression");
+                    }
+                }
+
+                return;
             }
 
             var lineInfo = jsonObject as IJsonLineInfo;

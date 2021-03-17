@@ -107,7 +107,7 @@ Example:
 }
 ```
 
-#### `Equals` [[*]](#note)
+#### `Equals`
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 Tests the template value of the `path` to determine if it is equal to the value specified in the rule.
@@ -123,7 +123,7 @@ Example:
 }
 ```
 
-#### `NotEquals` [[*]](#note)
+#### `NotEquals`
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 The logical inverse of `equals`.  Evaluations on incompatible types results in `true`.
@@ -232,7 +232,7 @@ Example:
 }
 ```
 
-### Structured Operators [[*]](#note)
+### Structured Operators
 These operators build up a structure of child evaluations, and therefore contain additional operators inside them.  These operators are not required to include a `path`.  If `resourceType` or `path` are specified, that becomes the scope for all evaluations nested inside the operator.  More information on [Scopes](#scopes) can be found below.
 
 #### `AnyOf` [[*]](#note)
@@ -258,7 +258,7 @@ Example:
 }
 ```
 
-#### `AllOf` [[*]](#note)
+#### `AllOf`
 *Type: array of [Evaluation Object](#evaluation-object)s*
 
 Performs a logical 'and' operation on the array of evaluation objects.  Evaluates to `true` if the result of all evaluations in the array is `true`; evaluates to `false` otherwise.

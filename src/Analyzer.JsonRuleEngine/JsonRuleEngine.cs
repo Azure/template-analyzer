@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -33,33 +35,69 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="templateContext">The template context to evaluate.</param>
         /// <param name="ruleDefinitions">The JSON rules to evaluate the template with.</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IResult> EvaluateRules(TemplateContext templateContext, string ruleDefinitions)
+        public IEnumerable<IEvaluation> EvaluateRules(TemplateContext templateContext, string ruleDefinitions)
         {
             List<RuleDefinition> rules = JsonConvert.DeserializeObject<List<RuleDefinition>>(ruleDefinitions);
 
             foreach(RuleDefinition rule in rules)
             {
-                var ruleExpression = rule.Evaluation.ToExpression();
-                var ruleResults = ruleExpression.Evaluate(
+                var ruleExpression = rule.ExpressionDefinition.ToExpression();
+                JsonRuleEvaluation evaluation = ruleExpression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,
                         templateContext.ExpandedTemplate.Path));
 
-                foreach (var result in ruleResults)
+                 evaluation.RuleDefinition = rule;
+                 evaluation.FileIdentifier = templateContext.TemplateIdentifier;
+
+                // If there are no matching cases of the rule, do not create an evaluation
+                if (rule.ExpressionDefinition is LeafExpressionDefinition)
                 {
-                    yield return PopulateResult(result, rule, templateContext);
+                    if (evaluation.Results.Count() == 0)
+                    {
+                        continue;
+                    }
+                    
+                    evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
+                }
+                else
+                {
+                    if (evaluation.Evaluations.Count() == 0)
+                    {
+                        continue;
+                    }
+
+                    evaluation.Evaluations = evaluation.Evaluations.Select(eval => PopulateEvaluations(eval as JsonRuleEvaluation, templateContext));
+                }
+
+                yield return evaluation;
+            }
+        }
+
+        private JsonRuleEvaluation PopulateEvaluations(JsonRuleEvaluation evaluation, TemplateContext templateContext)
+        {
+            if (evaluation.Expression is LeafExpression)
+            {
+                evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
+            }
+            else
+            {
+                foreach (var evaluationResult in evaluation.Evaluations)
+                {
+                    evaluation.Evaluations = evaluation.Evaluations.Select(eval => PopulateEvaluations(eval as JsonRuleEvaluation, templateContext));
                 }
             }
+
+            return evaluation;
         }
 
         /// <summary>
         /// Populates additional fields of an evaluation result for added context.
         /// </summary>
         /// <param name="result">The result to populate.</param>
-        /// <param name="rule">The rule the results are for.</param>
         /// <param name="templateContext">The template that was evaluated.</param>
         /// <returns>The populated result.</returns>
-        private JsonRuleResult PopulateResult(JsonRuleResult result, RuleDefinition rule, TemplateContext templateContext)
+        private JsonRuleResult PopulateResult(JsonRuleResult result, TemplateContext templateContext)
         {
             int originalTemplateLineNumber = 0;
 
@@ -71,9 +109,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                     templateContext.OriginalTemplate);
             }
             catch (Exception) { }
-
-            result.RuleDefinition = rule;
-            result.FileIdentifier = templateContext.TemplateIdentifier;
+            
             result.LineNumber = originalTemplateLineNumber;
 
             return result;

@@ -80,7 +80,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var leafExpression = new LeafExpression(resourceType, path, null, mockLeafExpressionOperator.Object);
 
             // Act
-            var results = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object).ToList();
+            var evaluation = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object);
+            var results = evaluation.Results.ToList();
 
             // Assert
             // Verify actions on resolvers.
@@ -99,9 +100,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             mockLeafExpressionOperator.Verify(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)), Times.Once);
 
+            Assert.AreEqual(expectedEvaluationResult, evaluation.Passed);
+
             Assert.AreEqual(1, results.Count);
             Assert.AreEqual(expectedEvaluationResult, results.First().Passed);
-            Assert.AreEqual(expectedPathEvaluated, results.First().JsonPath);
+            Assert.AreEqual(expectedPathEvaluated, (results.First() as JsonRuleResult).JsonPath);
         }
 
         [TestMethod]

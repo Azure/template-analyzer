@@ -45,8 +45,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Executes this <c>Expression</c> against a template.
         /// </summary>
         /// <param name="jsonScope">The specific scope to evaluate.</param>
-        /// <returns>The results of the evaluation.</returns>
-        public IEnumerable<JsonRuleResult> Evaluate(IJsonPathResolver jsonScope)
+        /// <returns>An <c>Evaluation</c> with the results.</returns>
+        public abstract JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
             if (jsonScope == null)
             {
