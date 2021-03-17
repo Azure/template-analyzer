@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             var lineInfo = jsonObject as IJsonLineInfo;
             var parsingErrorDetails = $"Path '{jsonObject.Path}', line {lineInfo.LineNumber}, position {lineInfo.LinePosition}.";
 
-            throw new JsonSerializationException(leafPropertyCount > 1 ?
+            throw new JsonSerializationException(expressionPropertyCount > 1 ?
                 $"Too many expressions specified in evaluation.  Only one is allowed.  {parsingErrorDetails}" :
                 $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  {parsingErrorDetails}");
         }

@@ -33,16 +33,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <summary>
         /// Evaluates this leaf expression's resource type and/or path, starting at the specified json scope, with the contained <c>LeafExpressionOperator</c>.
         /// </summary>
-        /// <param name="jsonScope">The json to evaluate.</param>
-        /// <returns>Zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
-        /// and if the path contains any wildcards.</returns>
-        protected override JsonRuleResult EvaluateInternal(IJsonPathResolver jsonScope)
+        /// <param name="jsonScope">The json path to evaluate.</param>
+        /// <returns>A <see cref="JsonRuleResult"/> with the result of the evaluation.</returns>
+        protected override (JsonRuleEvaluation evaluation, JsonRuleResult result) EvaluateInternal(IJsonPathResolver jsonScope)
         {
-            return new JsonRuleResult
-            {
-                Passed = Operator.EvaluateExpression(jsonScope.JToken),
-                JsonPath = jsonScope.Path
-            };
+            return (
+                null,
+                new JsonRuleResult
+                {
+                    Passed = Operator.EvaluateExpression(jsonScope.JToken),
+                    JsonPath = jsonScope.Path
+                }
+            );
         }
     }
 }

@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void Evaluate_NullScope_ThrowsException()
         {
             var leafExpression = new LeafExpression(null, "path", null, new HasValueOperator(true, false));
-            leafExpression.Evaluate(jsonScope: null).ToList();
+            leafExpression.Evaluate(jsonScope: null);
         }
     }
 }
