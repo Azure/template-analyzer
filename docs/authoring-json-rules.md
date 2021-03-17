@@ -31,7 +31,7 @@ The evaluation object is comprised of three basic properties.
 }
 ```
 
-Evaluation of ARM templates is performed on the JSON representation of the template.  Therefore, evaluations operate on the JSON properties of the template.  Specifying the template property is done by specifying a JSON path for the `path` key.  This path can contain wildcards ('*') to select multiple paths to evaluate [[*]](#note).
+Evaluation of ARM templates is performed on the JSON representation of the template.  Therefore, evaluations operate on the JSON properties of the template.  Specifying the template property is done by specifying a JSON path for the `path` key.  This path can contain wildcards ('\*') to select multiple paths to evaluate.  The '\*' wildcard character must replace the entire name of a property (such as 'propery.\*' or 'property.\*.otherProperty') or as the index in an array selection ('property[\*]').  Wildcards for partial property names (e.g. 'property.\*id') are NOT supported.
 
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 
