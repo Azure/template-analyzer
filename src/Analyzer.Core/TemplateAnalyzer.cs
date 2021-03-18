@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 var rules = LoadRules();
-                var jsonRuleEngine = new JsonRuleEngine(new JsonLineNumberResolver());
+                var jsonRuleEngine = new JsonRuleEngine(context => new JsonLineNumberResolver(context));
 
                 IEnumerable<IEvaluation> evaluations = jsonRuleEngine.EvaluateRules(
                     new TemplateContext {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
         private IEnumerable<IEvaluation> evaluationsEvaluatedTrue;
         private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
+
+        private IEnumerable<IEvaluation> evaluations;
+        private IEnumerable<IResult> results;
 
         private List<IEvaluation> cachedEvaluations;
         private List<IResult> cachedResults;
@@ -45,25 +49,29 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <inheritdoc/>
         public bool Passed { get; internal set; }
 
-        /// <inheritdoc/>
-        public IEnumerable<IResult> Results { get; set; }
-
-        /// <inheritdoc/>
-        public IEnumerable<IEvaluation> Evaluations { get; set; }
-
         /// <summary>
         /// Gets the expression associated with this evaluation
         /// </summary>
         internal Expression Expression { get; set; }
 
-        private List<IResult> GetCachedResults()
+        public IEnumerable<IResult> Results
         {
-            return cachedResults ??= Results?.ToList();
+            get => cachedResults ??= results.ToList();
         }
 
-        private List<IEvaluation> GetCachedEvaluationss()
+        public IEnumerable<IEvaluation> Evaluations
         {
-            return cachedEvaluations ??= Evaluations?.ToList();
+            get => cachedEvaluations ??= evaluations.ToList();
+        }
+
+        /// <summary>
+        /// Whether or not there are any results associated with this <c>Evaluation</c>.
+        /// </summary>
+        /// <returns>True if there are any results in this <c>Evaluation</c> or a sub-<c>Evaluation</c>.
+        /// False otherwise.</returns>
+        public bool HasResults
+        {
+            get => Results.Any() || Evaluations.Any(e => e.HasResults);
         }
 
         /// <summary>
@@ -71,17 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         public IEnumerable<IResult> ResultsEvaluatedTrue
         { 
-            get
-            {
-                var results = GetCachedResults();
-
-                if (results == null)
-                {
-                    return null;
-                }
-
-                return resultsEvaluatedTrue ??= results.FindAll(r => r.Passed);
-            }
+            get => resultsEvaluatedTrue ??= Results.ToList().FindAll(r => r.Passed);
         }
 
         /// <summary>
@@ -89,17 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         public IEnumerable<IResult> ResultsEvaluatedFalse
         {
-            get
-            {
-                var results = GetCachedResults();
-
-                if (results == null)
-                {
-                    return null;
-                }
-
-                return resultsEvaluatedFalse ??= results.FindAll(r => !r.Passed);
-            }
+            get => resultsEvaluatedFalse ??= Results.ToList().FindAll(r => !r.Passed);
         }
 
         /// <summary>
@@ -109,14 +97,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             get
             {
-                var evaluations = GetCachedEvaluationss();
-
-                if (evaluations == null)
+                if (Evaluations == null)
                 {
                     return null;
                 }
 
-                return evaluationsEvaluatedTrue ??= evaluations.FindAll(r => r.Passed);
+                return evaluationsEvaluatedTrue ??= Evaluations.ToList().FindAll(r => r.Passed);
             }
         }
 
@@ -127,14 +113,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             get
             {
-                var evaluations = GetCachedEvaluationss();
-
-                if (evaluations == null)
+                if (Evaluations == null)
                 {
                     return null;
                 }
 
-                return evaluationsEvaluatedFalse ??= evaluations.FindAll(r => !r.Passed);
+                return evaluationsEvaluatedFalse ??= Evaluations.ToList().FindAll(r => !r.Passed);
             }
         }
 
@@ -144,7 +128,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="evaluations"><see cref="IEnumerable"/> of evaluations.</param>
-        public JsonRuleEvaluation(Expression expression, bool passed, IEnumerable<JsonRuleEvaluation> evaluations) => (this.Expression, this.Passed, this.Evaluations) = (expression, passed, evaluations);
+        public JsonRuleEvaluation(Expression expression, bool passed, IEnumerable<JsonRuleEvaluation> evaluations)
+        {
+            this.evaluations = evaluations ?? throw new ArgumentNullException(nameof(evaluations));
+            (this.Expression, this.Passed, this.results) = (expression, passed, Enumerable.Empty<IResult>());
+        }
 
         /// <summary>
         /// Creates an <see cref="JsonRuleEvaluation"/> that represents a leaf expression.
@@ -152,6 +140,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="results"><see cref="IEnumerable"/> of results.</param>
-        public JsonRuleEvaluation(Expression expression, bool passed, IEnumerable<JsonRuleResult> results) => (this.Expression, this.Passed, this.Results) = (expression, passed, results);
+        public JsonRuleEvaluation(Expression expression, bool passed, IEnumerable<JsonRuleResult> results)
+        {
+            this.results = results ?? throw new ArgumentNullException(nameof(results));
+            (this.Expression, this.Passed, this.evaluations) = (expression, passed, Enumerable.Empty<IEvaluation>());
+        }
     }
 }

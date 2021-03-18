@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -22,15 +22,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates a <see cref="AllOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
+        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
+        /// pass to the created <c>Expression</c>.</param>
         /// <returns>The AllOfExpression.</returns>
-        public override Expression ToExpression() => new AllOfExpression(ToAllOfExpression().ToArray(), resourceType: this.ResourceType, path: this.Path);
-
-        private IEnumerable<Expression> ToAllOfExpression()
-        {
-            foreach (var expressionDefinition in this.AllOf)
-            {
-                yield return expressionDefinition?.ToExpression();
-            }
-        }
+        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
+            => new AllOfExpression(jsonLineNumberResolver, this.AllOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);
     }
 }

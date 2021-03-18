@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -28,7 +29,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates an <c>Expression</c> that can evaluate a template.
         /// </summary>
+        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
+        /// pass to the created <c>Expression</c>.</param>
         /// <returns>The <c>Expression</c>.</returns>
-        public abstract Expression ToExpression();
+        public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver);
     }
 }

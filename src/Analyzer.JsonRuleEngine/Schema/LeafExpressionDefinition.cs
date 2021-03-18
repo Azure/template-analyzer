@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -81,8 +82,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates a <c>LeafExpression</c> capable of evaluating JSON using the operator specified in the JSON rule.
         /// </summary>
+        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
+        /// pass to the created <c>Expression</c>.</param>
         /// <returns>The LeafExpression.</returns>
-        public override Expression ToExpression()
+        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
         {
             LeafExpressionOperator leafOperator = null;
 
@@ -103,7 +106,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 
             if (leafOperator != null)
             {
-                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
+                return new LeafExpression(jsonLineNumberResolver, leafOperator, this.ResourceType, this.Path);
             }
 
             throw new NotImplementedException();

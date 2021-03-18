@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -26,13 +27,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
 
             // This AllOf will have 2 expressions
             var mockOperator1 = new Mock<LeafExpressionOperator>().Object;
             var mockOperator2 = new Mock<LeafExpressionOperator>().Object;
 
-            var mockLeafExpression1 = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockOperator1 });
-            var mockLeafExpression2 = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockOperator2 });
+            var mockLeafExpression1 = new Mock<LeafExpression>(mockLineResolver, mockOperator1, "ResourceProvider/resource", "some.path");
+            var mockLeafExpression2 = new Mock<LeafExpression>(mockLineResolver, mockOperator2, "ResourceProvider/resource", "some.path");
 
             var jsonRuleResult1 = new JsonRuleResult
             {
@@ -68,7 +70,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
-            var allOfExpression = new AllOfExpression(expressionArray, resourceType: resourceType, path: path);
+            var allOfExpression = new AllOfExpression(null, expressionArray, resourceType: resourceType, path: path);
 
             // Act
             var allOfEvaluation = allOfExpression.Evaluate(mockJsonPathResolver.Object);
@@ -76,20 +78,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Assert
             bool expectedAllOfEvaluation = evaluation1 && evaluation2;
             Assert.AreEqual(expectedAllOfEvaluation, allOfEvaluation.Passed);
-            Assert.IsFalse((allOfEvaluation as IEvaluation).HasResults());
+            Assert.IsTrue(allOfEvaluation.HasResults);
 
-            int expectedTrue = 0;
-            int expectedFalse = 0;
-
-            if (evaluation1)
-                expectedTrue++;
-            else
-                expectedFalse++;
-
-            if (evaluation2)
-                expectedTrue++;
-            else
-                expectedFalse++;
+            int expectedTrue = new[] { evaluation1, evaluation2 }.Count(e => e);
+            int expectedFalse = 2 - expectedTrue;
 
             Assert.AreEqual(expectedTrue, allOfEvaluation.EvaluationsEvaluatedTrue.Count());
             Assert.AreEqual(expectedFalse, allOfEvaluation.EvaluationsEvaluatedFalse.Count());
@@ -97,8 +89,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             foreach (var evaluation in allOfEvaluation.Evaluations)
             {
                 // Assert all leaf expressions have results and no evaluations
-                Assert.IsTrue(evaluation.HasResults());
-                Assert.IsTrue(evaluation.Evaluations == null);
+                Assert.IsTrue(evaluation.HasResults);
+                Assert.AreEqual(0, evaluation.Evaluations.Count());
                 Assert.AreEqual(1, evaluation.Results.Count());
             }
         }
@@ -107,14 +99,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            new AllOfExpression(new Expression[] { }, null, null).Evaluate(jsonScope: null);
+            new AllOfExpression(new Mock<ILineNumberResolver>().Object, new Expression[0], null, null).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new AllOfExpression(null, null, null);
+            new AllOfExpression(new Mock<ILineNumberResolver>().Object, null, null, null);
         }
     }
 }

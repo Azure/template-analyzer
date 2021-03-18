@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -14,6 +15,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
     [TestClass]
     public class AllOfExpressionDefinitionTests
     {
+        private ILineNumberResolver mockResolver = new Mock<ILineNumberResolver>().Object;
+
         [DataTestMethod]
         [DataRow(1, DisplayName = "1 expression defined in AllOf")]
         [DataRow(5, DisplayName = "5 expressions defined in AllOf")]
@@ -30,12 +33,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Act
-            var allOfExpression = allOfExpressionDefinition.ToExpression() as AllOfExpression;
+            var allOfExpression = allOfExpressionDefinition.ToExpression(mockResolver) as AllOfExpression;
 
             // Assert
             foreach (var mockLeafExpressionDefinition in mockLeafExpressionDefinitions)
             {
-                mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
+                mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver), Times.Once);
             }
 
             Assert.AreEqual(numberOfExpressionDefinitions, allOfExpression.AllOf.Length);
@@ -47,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 {
                     var leafExpression = allOfExpression.AllOf[i] as LeafExpression;
 
-                    Assert.AreEqual(mockLeafExpressionDefinitionsObject[i].ToExpression(), leafExpression);
+                    Assert.AreEqual(mockLeafExpressionDefinitionsObject[i].ToExpression(mockResolver), leafExpression);
                 }
             }
         }
@@ -73,15 +76,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Act
-            var allOfExpression = allOfExpressionDefinition.ToExpression() as AllOfExpression;
+            var allOfExpression = allOfExpressionDefinition.ToExpression(mockResolver) as AllOfExpression;
 
             // Assert
             foreach (var mockLeafExpressionDefinition in mockLeafExpressionDefinitions)
             {
-                mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
+                mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver), Times.Once);
             }
 
-            singleMockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
+            singleMockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver), Times.Once);
 
             Assert.AreEqual(2, allOfExpression.AllOf.Length);
             Assert.IsInstanceOfType(allOfExpression.AllOf.First(), typeof(AllOfExpression));
@@ -94,9 +97,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             {
                 var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
                 var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
-                var mockLeafExpression = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockLeafExpressionOperator });
+                var mockLineResolver = new Mock<ILineNumberResolver>().Object;
+                var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockLeafExpressionOperator, "ResourceProvider/resource", "some.path");
                 mockLeafExpressionDefinition
-                    .Setup(s => s.ToExpression())
+                    .Setup(s => s.ToExpression(mockResolver))
                     .Returns(mockLeafExpression.Object);
 
                 yield return mockLeafExpressionDefinition;

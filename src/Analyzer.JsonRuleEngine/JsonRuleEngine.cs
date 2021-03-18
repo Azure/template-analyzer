@@ -17,16 +17,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
     /// </summary>
     public class JsonRuleEngine : IRuleEngine
     {
-        private readonly IJsonLineNumberResolver lineNumberResolver;
+        /// <summary>
+        /// Delegate for building an <c>IJsonLineNumberResolver</c>
+        /// </summary>
+        /// <param name="context">The <c>TemplateContext</c> being evaluated.</param>
+        /// <returns>An <c>IJsonLineNumberResolver</c> to resolve line numbers for the given template context.</returns>
+        public delegate ILineNumberResolver BuildIJsonLineNumberResolver(TemplateContext context);
+
+        private readonly BuildIJsonLineNumberResolver BuildLineNumberResolver;
 
         /// <summary>
         /// Creates an instance of <c>JsonRuleEngine</c>.
         /// </summary>
-        /// <param name="lineNumberResolver">An <c>ILineNumberResolver</c> for mapping JSON paths from a
+        /// <param name="jsonLineNumberResolverBuilder">A builder to create an <c>ILineNumberResolver</c> for mapping JSON paths from a
         /// processed template to the line number of the equivalent location in the original template.</param>
-        public JsonRuleEngine(IJsonLineNumberResolver lineNumberResolver)
+        public JsonRuleEngine(BuildIJsonLineNumberResolver jsonLineNumberResolverBuilder)
         {
-            this.lineNumberResolver = lineNumberResolver ?? throw new ArgumentNullException(nameof(lineNumberResolver));
+            this.BuildLineNumberResolver = jsonLineNumberResolverBuilder ?? throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
         }
 
         /// <summary>
@@ -41,7 +48,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
             foreach(RuleDefinition rule in rules)
             {
-                var ruleExpression = rule.ExpressionDefinition.ToExpression();
+                var ruleExpression = rule.ExpressionDefinition.ToExpression(BuildLineNumberResolver(templateContext));
                 JsonRuleEvaluation evaluation = ruleExpression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,
@@ -51,68 +58,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                  evaluation.FileIdentifier = templateContext.TemplateIdentifier;
 
                 // If there are no matching cases of the rule, do not create an evaluation
-                if (rule.ExpressionDefinition is LeafExpressionDefinition)
+                if (!evaluation.HasResults)
                 {
-                    if (evaluation.Results.Count() == 0)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
                     
-                    evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
-                }
-                else
-                {
-                    if (evaluation.Evaluations.Count() == 0)
-                    {
-                        continue;
-                    }
-
-                    evaluation.Evaluations = evaluation.Evaluations.Select(eval => PopulateEvaluations(eval as JsonRuleEvaluation, templateContext));
-                }
-
                 yield return evaluation;
             }
-        }
-
-        private JsonRuleEvaluation PopulateEvaluations(JsonRuleEvaluation evaluation, TemplateContext templateContext)
-        {
-            if (evaluation.Expression is LeafExpression)
-            {
-                evaluation.Results = evaluation.Results.Select(result => PopulateResult(result as JsonRuleResult, templateContext));
-            }
-            else
-            {
-                foreach (var evaluationResult in evaluation.Evaluations)
-                {
-                    evaluation.Evaluations = evaluation.Evaluations.Select(eval => PopulateEvaluations(eval as JsonRuleEvaluation, templateContext));
-                }
-            }
-
-            return evaluation;
-        }
-
-        /// <summary>
-        /// Populates additional fields of an evaluation result for added context.
-        /// </summary>
-        /// <param name="result">The result to populate.</param>
-        /// <param name="templateContext">The template that was evaluated.</param>
-        /// <returns>The populated result.</returns>
-        private JsonRuleResult PopulateResult(JsonRuleResult result, TemplateContext templateContext)
-        {
-            int originalTemplateLineNumber = 0;
-
-            try
-            {
-                originalTemplateLineNumber = this.lineNumberResolver.ResolveLineNumberForOriginalTemplate(
-                    result.JsonPath,
-                    templateContext.ExpandedTemplate,
-                    templateContext.OriginalTemplate);
-            }
-            catch (Exception) { }
-            
-            result.LineNumber = originalTemplateLineNumber;
-
-            return result;
         }
     }
 }

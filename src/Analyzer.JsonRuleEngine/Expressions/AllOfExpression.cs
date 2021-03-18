@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
@@ -20,10 +21,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <summary>
         /// Creates an <see cref="AllOfExpression"/>.
         /// </summary>
+        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
+        /// map JSON paths in evaluation results to the line number in the JSON evaluated.</param>
         /// <param name="expressions">List of expressions to perform a logical AND against.</param>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
-        public AllOfExpression(Expression[] expressions, string resourceType, string path)
+        public AllOfExpression(ILineNumberResolver jsonLineNumberResolver, Expression[] expressions, string resourceType, string path)
             : base(resourceType, path)
         {
             this.AllOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
@@ -34,21 +37,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
         /// <returns>A <see cref="JsonRuleEvaluation"/> with the results of the evaluation.</returns>
-        protected override (JsonRuleEvaluation evaluation, JsonRuleResult result) EvaluateInternal(IJsonPathResolver jsonScope)
+        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
-            List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-            bool evaluationPassed = true;
+            return EvaluateInternal(
+                jsonScope,
+                getEvaluation: scope =>
+                {
+                    List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
+                    bool evaluationPassed = true;
 
-            foreach (var expression in AllOf)
-            {
-                var evaluation = expression.Evaluate(jsonScope);
-                        
-                evaluationPassed &= evaluation.Passed;
+                    foreach (var expression in AllOf)
+                    {
+                        var evaluation = expression.Evaluate(scope);
+                        evaluationPassed &= evaluation.Passed;
+                        jsonRuleEvaluations.Add(evaluation);
+                    }
 
-                jsonRuleEvaluations.Add(evaluation);
-            }
-
-            return (new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations), null);
+                    return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
+                });
         }
     }
 }

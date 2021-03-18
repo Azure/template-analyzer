@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
@@ -30,31 +31,49 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="path">The JSON path being evaluated.</param>
         internal Expression(string resourceType, string path)
         {
-            this.ResourceType = resourceType;
-            this.Path = path;
+            (this.ResourceType, this.Path) = (resourceType, path);
         }
 
-        /// <summary>
-        /// Performs implementation-specific evaluation against the JSON scope.
-        /// </summary>
-        /// <param name="jsonScope">The specific scope to evaluate.</param>
-        /// <returns>The results of the evaluation, which can be either a <c>JsonRuleEvaluation</c> or a <c>JsonRuleResult</c>,
-        /// but must not be both. Child classes implementing this method must always return the same type
-        /// (<c>JsonRuleEvaluation</c> or a <c>JsonRuleResult</c>) for every invocation.</returns>
-        protected abstract (JsonRuleEvaluation evaluation, JsonRuleResult result) EvaluateInternal(IJsonPathResolver jsonScope);
 
         /// <summary>
         /// Executes this <c>Expression</c> against a template.
         /// </summary>
         /// <param name="jsonScope">The specific scope to evaluate.</param>
         /// <returns>An <c>Evaluation</c> with the results.</returns>
-        public JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
+        public abstract JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope);
+
+        /// <summary>
+        /// Performs tasks common across <see cref="Expression"/> implementations, such as
+        /// determining all paths to run against.  Either <paramref name="getEvaluation"/>
+        /// or <paramref name="getResult"/> must be non-null, but not both.
+        /// </summary>
+        /// <param name="jsonScope">The scope being evaluated.</param>
+        /// <param name="getEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
+        /// generates a <see cref="JsonRuleEvaluation"/> for the specified <paramref name="jsonScope"/>.  If this is
+        /// specified, <paramref name="getResult"/> must be null.</param>
+        /// <param name="getResult">A delegate for logic specific to the child <see cref="Expression"/>, which
+        /// generates a <see cref="JsonRuleResult"/> for the specified <paramref name="jsonScope"/>.  If this is
+        /// specified, <paramref name="getEvaluation"/> must be null.</param>
+        /// <returns>The results of the evaluation.</returns>
+        protected JsonRuleEvaluation EvaluateInternal(
+            IJsonPathResolver jsonScope,
+            Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation = null,
+            Func<IJsonPathResolver, JsonRuleResult> getResult = null)
         {
             if (jsonScope == null)
             {
                 throw new ArgumentNullException(nameof(jsonScope));
             }
+            if (getEvaluation == null && getResult == null)
+            {
+                throw new ArgumentNullException($"{nameof(getEvaluation)} and {nameof(getResult)}");
+            }
+            if (getEvaluation != null && getResult != null)
+            {
+                throw new ArgumentException($"Only one of {nameof(getEvaluation)} and {nameof(getResult)} can be specified.");
+            }
 
+            // Select resources of given type, if specified
             IEnumerable<IJsonPathResolver> scopesToEvaluate;
             if (!string.IsNullOrEmpty(ResourceType))
             {
@@ -71,21 +90,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 
             foreach (var initialScope in scopesToEvaluate)
             {
+                // Expand with path if specified
                 IEnumerable<IJsonPathResolver> expandedScopes = Path == null ?
                     new[] { initialScope }.AsEnumerable() :
                     initialScope?.Resolve(Path);
 
                 foreach (var propertyToEvaluate in expandedScopes)
                 {
-                    (var evaluation, var result) = EvaluateInternal(propertyToEvaluate);
-                    if (evaluation != null)
+                    // Expression implementation will generate Evaluation or Result
+                    if (getEvaluation != null)
                     {
+                        var evaluation = getEvaluation(propertyToEvaluate);
                         evaluationPassed &= evaluation.Passed;
                         evaluation.Expression = this;
                         jsonRuleEvaluations.Add(evaluation);
                     }
                     else
                     {
+                        var result = getResult(propertyToEvaluate);
                         evaluationPassed &= result.Passed;
                         result.Expression = this;
                         jsonRuleResults.Add(result);
@@ -93,9 +115,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 }
             }
 
-            return jsonRuleEvaluations.Count > 0
-                ? new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations)
-                : new JsonRuleEvaluation(this, evaluationPassed, jsonRuleResults);
+            // Return Evaluation that wraps the Expression's results.
+            // If Expression resulted in a single Evaluation, return that directly.
+            return getResult != null
+                ? new JsonRuleEvaluation(this, evaluationPassed, jsonRuleResults)
+                : jsonRuleEvaluations.Count == 1
+                    ? jsonRuleEvaluations.First()
+                    : new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
         }
     }
 }
