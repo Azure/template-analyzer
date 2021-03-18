@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
-            var allOfExpression = new AllOfExpression(null, expressionArray, resourceType: resourceType, path: path);
+            var allOfExpression = new AllOfExpression(expressionArray, resourceType: resourceType, path: path);
 
             // Act
             var allOfEvaluation = allOfExpression.Evaluate(mockJsonPathResolver.Object);
@@ -99,14 +99,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            new AllOfExpression(new Mock<ILineNumberResolver>().Object, new Expression[0], null, null).Evaluate(jsonScope: null);
+            new AllOfExpression(new Expression[0], null, null).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new AllOfExpression(new Mock<ILineNumberResolver>().Object, null, null, null);
+            new AllOfExpression(null, null, null);
         }
     }
 }

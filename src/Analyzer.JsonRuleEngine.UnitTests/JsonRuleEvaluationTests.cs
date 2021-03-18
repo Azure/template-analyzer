@@ -160,6 +160,101 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void Evaluations_IterateEvaluationsMultipleTimes_IterationIsCached()
+        {
+            int iterationCounter = 0;
+
+            IEnumerable<JsonRuleEvaluation> GenerateEvaluationEnumerable()
+            {
+                iterationCounter++;
+                yield return new JsonRuleEvaluation(null, true, new JsonRuleEvaluation[0]);
+            }
+
+            var testEvaluation = new JsonRuleEvaluation(null, true, GenerateEvaluationEnumerable());
+
+            // Call each method that would iterate Evaluations, making sure the original Enumerable
+            // is only ever iterated a single time.
+            _ = testEvaluation.Evaluations;
+            _ = testEvaluation.EvaluationsEvaluatedFalse;
+            _ = testEvaluation.EvaluationsEvaluatedTrue;
+            _ = testEvaluation.HasResults;
+            _ = testEvaluation.Evaluations;
+            Assert.AreEqual(1, iterationCounter);
+        }
+
+        [TestMethod]
+        public void Results_IterateResultsMultipleTimes_IterationIsCached()
+        {
+            int iterationCounter = 0;
+
+            IEnumerable<JsonRuleResult> GenerateResultEnumerable()
+            {
+                iterationCounter++;
+                yield return new JsonRuleResult();
+            }
+
+            var testEvaluation = new JsonRuleEvaluation(null, true, GenerateResultEnumerable());
+
+            // Call each method that would iterate Evaluations, making sure the original Enumerable
+            // is only ever iterated a single time.
+            _ = testEvaluation.Results;
+            _ = testEvaluation.ResultsEvaluatedFalse;
+            _ = testEvaluation.ResultsEvaluatedTrue;
+            _ = testEvaluation.HasResults;
+            _ = testEvaluation.Results;
+            Assert.AreEqual(1, iterationCounter);
+        }
+
+        [TestMethod]
+        public void HasResults_NestedEvaluationsWithResults_ReturnsTrue()
+        {
+            var evaluationWithNestedResults = new JsonRuleEvaluation(
+                null,
+                true,
+                new[]
+                {
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        new []
+                        {
+                            new JsonRuleResult(),
+                            new JsonRuleResult()
+                        }),
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        new []
+                        {
+                            new JsonRuleResult()
+                        })
+                });
+
+            Assert.IsTrue(evaluationWithNestedResults.HasResults);
+        }
+
+        [TestMethod]
+        public void HasResults_NestedEvaluationsWithNoResults_ReturnsFalse()
+        {
+            var evaluationWithNestedResults = new JsonRuleEvaluation(
+                null,
+                true,
+                new[]
+                {
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        new JsonRuleEvaluation[0]),
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        new JsonRuleEvaluation[0])
+                });
+
+            Assert.IsFalse(evaluationWithNestedResults.HasResults);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullResults_ThrowsException()
         {

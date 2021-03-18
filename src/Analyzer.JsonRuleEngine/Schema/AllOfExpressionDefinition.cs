@@ -26,6 +26,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// pass to the created <c>Expression</c>.</param>
         /// <returns>The AllOfExpression.</returns>
         public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
-            => new AllOfExpression(jsonLineNumberResolver, this.AllOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);
+            => new AllOfExpression(this.AllOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);
     }
 }

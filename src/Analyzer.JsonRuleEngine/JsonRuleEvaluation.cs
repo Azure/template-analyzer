@@ -95,15 +95,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         public IEnumerable<IEvaluation> EvaluationsEvaluatedTrue
         {
-            get
-            {
-                if (Evaluations == null)
-                {
-                    return null;
-                }
-
-                return evaluationsEvaluatedTrue ??= Evaluations.ToList().FindAll(r => r.Passed);
-            }
+            get => evaluationsEvaluatedTrue ??= Evaluations.ToList().FindAll(r => r.Passed);
         }
 
         /// <summary>
@@ -111,15 +103,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         public IEnumerable<IEvaluation> EvaluationsEvaluatedFalse
         {
-            get
-            {
-                if (Evaluations == null)
-                {
-                    return null;
-                }
-
-                return evaluationsEvaluatedFalse ??= Evaluations.ToList().FindAll(r => !r.Passed);
-            }
+            get => evaluationsEvaluatedFalse ??= Evaluations.ToList().FindAll(r => !r.Passed);
         }
 
         /// <summary>

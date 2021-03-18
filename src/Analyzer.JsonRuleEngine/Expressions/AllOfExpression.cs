@@ -21,12 +21,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <summary>
         /// Creates an <see cref="AllOfExpression"/>.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
-        /// map JSON paths in evaluation results to the line number in the JSON evaluated.</param>
         /// <param name="expressions">List of expressions to perform a logical AND against.</param>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
-        public AllOfExpression(ILineNumberResolver jsonLineNumberResolver, Expression[] expressions, string resourceType, string path)
+        public AllOfExpression(Expression[] expressions, string resourceType, string path)
             : base(resourceType, path)
         {
             this.AllOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
