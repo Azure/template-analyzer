@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void Constructor_ValidParameters_ConstructedCorrectly(string resourceType, string path)
         {
             var mockOperator = new Mock<LeafExpressionOperator>().Object;
-            var leafExpression = new LeafExpression(resourceType, path, null, mockOperator);
+            var leafExpression = new LeafExpression(resourceType, path, mockOperator);
 
             Assert.AreEqual(resourceType, leafExpression.ResourceType);
             Assert.AreEqual(path, leafExpression.Path);
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)))
                 .Returns(expectedEvaluationResult);
 
-            var leafExpression = new LeafExpression(resourceType, path, null, mockLeafExpressionOperator.Object);
+            var leafExpression = new LeafExpression(resourceType, path, mockLeafExpressionOperator.Object);
 
             // Act
             var evaluation = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object);
@@ -111,21 +111,21 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullPath_ThrowsException()
         {
-            new LeafExpression("resourceType", null, null, new ExistsOperator(true, false));
+            new LeafExpression("resourceType", null, new ExistsOperator(true, false));
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullOperator_ThrowsException()
         {
-            new LeafExpression("resourceType", "path", null, null);
+            new LeafExpression("resourceType", "path", null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            var leafExpression = new LeafExpression(null, "path", null, new HasValueOperator(true, false));
+            var leafExpression = new LeafExpression(null, "path", new HasValueOperator(true, false));
             leafExpression.Evaluate(jsonScope: null);
         }
     }

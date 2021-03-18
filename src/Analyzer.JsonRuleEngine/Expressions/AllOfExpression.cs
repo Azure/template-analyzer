@@ -23,9 +23,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="expressions">List of expressions to perform a logical AND against.</param>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
-        /// <param name="where">The Where condition of this expression.</param>
-        public AllOfExpression(Expression[] expressions, string resourceType, string path, Expression where)
-            : base(resourceType, path, where)
+        public AllOfExpression(Expression[] expressions, string resourceType, string path)
+            : base(resourceType, path)
         {
             this.AllOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
         }

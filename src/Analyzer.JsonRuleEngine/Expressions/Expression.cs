@@ -24,21 +24,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         public string Path { get; private set; }
 
         /// <summary>
-        /// Gets the Where condition of this expression.
-        /// </summary>
-        internal Expression Where { get; private set; }
-
-        /// <summary>
         /// Initialization for the base Expression.
         /// </summary>
         /// <param name="resourceType">The resource type this expression evaluates.</param>
         /// <param name="path">The JSON path being evaluated.</param>
-        /// <param name="where">The Where condition of this expression.</param>
-        internal Expression(string resourceType, string path, Expression where)
+        internal Expression(string resourceType, string path)
         {
             this.ResourceType = resourceType;
             this.Path = path;
-            this.Where = where;
         }
 
         /// <summary>
@@ -84,30 +77,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 
                 foreach (var propertyToEvaluate in expandedScopes)
                 {
-                    if (Where != null)
+                    (var evaluation, var result) = EvaluateInternal(propertyToEvaluate);
+                    if (evaluation != null)
                     {
-                        // Needs to return list of Evaluations
-                        // that each contain the scope they evaluated.
-                        Where.Evaluate(propertyToEvaluate);
-
-                        // foreach scopeWherePassed:
-                        // yield return EvaluateInternal(scopeWherePassed);
+                        evaluationPassed &= evaluation.Passed;
+                        evaluation.Expression = this;
+                        jsonRuleEvaluations.Add(evaluation);
                     }
                     else
                     {
-                        (var evaluation, var result) = EvaluateInternal(propertyToEvaluate);
-                        if (evaluation != null)
-                        {
-                            evaluationPassed &= evaluation.Passed;
-                            evaluation.Expression = this;
-                            jsonRuleEvaluations.Add(evaluation);
-                        }
-                        else
-                        {
-                            evaluationPassed &= result.Passed;
-                            result.Expression = this;
-                            jsonRuleResults.Add(result);
-                        }
+                        evaluationPassed &= result.Passed;
+                        result.Expression = this;
+                        jsonRuleResults.Add(result);
                     }
                 }
             }

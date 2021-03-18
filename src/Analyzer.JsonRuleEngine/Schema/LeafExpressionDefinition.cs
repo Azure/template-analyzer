@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 
             if (leafOperator != null)
             {
-                return new LeafExpression(this.ResourceType, this.Path, this.Where?.ToExpression(), leafOperator);
+                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
             }
 
             throw new NotImplementedException();

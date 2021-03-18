@@ -26,12 +26,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public string ResourceType { get; set; }
 
         /// <summary>
-        ///  Gets or sets the Where property.
-        /// </summary>
-        [JsonProperty]
-        public ExpressionDefinition Where { get; set; }
-
-        /// <summary>
         /// Creates an <c>Expression</c> that can evaluate a template.
         /// </summary>
         /// <returns>The <c>Expression</c>.</returns>

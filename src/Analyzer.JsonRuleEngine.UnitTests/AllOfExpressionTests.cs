@@ -107,15 +107,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            var allOfExpression = new AllOfExpression(new Expression[] { });
-            allOfExpression.Evaluate(jsonScope: null);
+            new AllOfExpression(new Expression[] { }, null, null).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new AllOfExpression(null);
+            new AllOfExpression(null, null, null);
         }
     }
 }

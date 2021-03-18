@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// Creates a <see cref="AllOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
         /// <returns>The AllOfExpression.</returns>
-        public override Expression ToExpression() => new AllOfExpression(ToAllOfExpression().ToArray(), resourceType: this.ResourceType, path: this.Path, where: this.Where?.ToExpression());
+        public override Expression ToExpression() => new AllOfExpression(ToAllOfExpression().ToArray(), resourceType: this.ResourceType, path: this.Path);
 
         private IEnumerable<Expression> ToAllOfExpression()
         {
