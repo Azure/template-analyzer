@@ -17,16 +17,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataTestMethod]
         [DataRow(1, DisplayName = "1 expression defined in AnyOf")]
         [DataRow(5, DisplayName = "5 expressions defined in AnyOf")]
-        public void ToExpression_ValidExpressions_ReturnsArrayOfExpectedExpressions(int numberOfExpressionDefinitions, bool hasNullExpression = false)
+        public void ToExpression_ValidExpressions_ReturnsArrayOfExpectedExpressions(int numberOfExpressionDefinitions)
         {
             // Arrange
             var mockLeafExpressionDefinitions = GenerateAnyOfExpressionDefinition(numberOfExpressionDefinitions).ToArray();
             var mockLeafExpressionDefinitionsObject = mockLeafExpressionDefinitions.Select(s => s.Object).ToList();
-            
-            if (hasNullExpression)
-            {
-                mockLeafExpressionDefinitionsObject.Add(null);
-            }
 
             AnyOfExpressionDefinition anyOfExpressionDefinition = new AnyOfExpressionDefinition
             {
@@ -43,28 +38,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 mockLeafExpressionDefinition.Verify(s => s.ToExpression(), Times.Once);
             }
 
-            if (hasNullExpression)
-            {
-                Assert.IsTrue(anyOfExpression.AnyOf.Any(e => e == null));
-                Assert.AreEqual(numberOfExpressionDefinitions + 1, anyOfExpression.AnyOf.Length);
-            }
-            else
-            {
-                Assert.AreEqual(numberOfExpressionDefinitions, anyOfExpression.AnyOf.Length);
-            }
+            Assert.AreEqual(numberOfExpressionDefinitions, anyOfExpression.AnyOf.Length);
 
             // Assert the expressions are equal to the mock objects
-            if (numberOfExpressionDefinitions > 0)
+            for (int i = 0; i < anyOfExpression.AnyOf.Length; i++)
             {
-                for (int i = 0; i < anyOfExpression.AnyOf.Length; i++)
+                if (!(anyOfExpression.AnyOf[i] is LeafExpression leafExpression))
                 {
-                    if (!(anyOfExpression.AnyOf[i] is LeafExpression leafExpression))
-                    {
-                        continue;
-                    }
-
-                    Assert.AreEqual(mockLeafExpressionDefinitionsObject[i].ToExpression(), leafExpression);
+                    continue;
                 }
+
+                Assert.AreEqual(mockLeafExpressionDefinitionsObject[i].ToExpression(), leafExpression);
             }
         }
 

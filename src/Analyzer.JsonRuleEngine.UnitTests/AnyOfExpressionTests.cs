@@ -60,11 +60,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
-                .Returns(new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation2, results1));
+                .Returns(new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, results1));
 
             mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
-                .Returns(new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation1, results2));
+                .Returns(new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, results2));
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
@@ -79,18 +79,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(2, anyOfEvaluation.Evaluations.Count());
             Assert.IsFalse((anyOfEvaluation as IEvaluation).HasResults());
 
-            int expectedTrue = 0;
-            int expectedFalse = 0;
-
-            if (evaluation1)
-                expectedTrue++;
-            else
-                expectedFalse++;
-
-            if (evaluation2)
-                expectedTrue++;
-            else
-                expectedFalse++;
+            int expectedTrue = new[] { evaluation1, evaluation2 }.Count(e => e);
+            int expectedFalse = 2 - expectedTrue;
 
             Assert.AreEqual(expectedTrue, anyOfEvaluation.EvaluationsEvaluatedTrue.Count());
             Assert.AreEqual(expectedFalse, anyOfEvaluation.EvaluationsEvaluatedFalse.Count());

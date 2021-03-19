@@ -31,14 +31,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue)
         {
-            var @object = ReadJson(string.Format(@"
+            var @object = ReadJson($@"
                 {{
                     ""resourceType"": ""someResource/resourceType"",
                     ""path"": ""some.json.path"",
-                    ""{0}"": {1}
-                }}",
-                operatorProperty,
-                JsonConvert.SerializeObject(operatorValue)));
+                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
+                }}");
 
             Assert.AreEqual(typeof(LeafExpressionDefinition), @object.GetType());
 
@@ -77,11 +75,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("anyOf", typeof(AnyOfExpressionDefinition), DisplayName = "AnyOf Expression")]
         public void ReadJson_ValidStructuredExpression_ReturnsCorrectTypeAndValues(string expressionName, Type expressionDefinitionType)
         {
-            var @object = ReadJson(string.Format(@"
+            var @object = ReadJson($@"
                 {{
                     ""resourceType"": ""someResource/resourceType"",
                     ""path"": ""some.json.path"",
-                    ""{0}"": [ 
+                    ""{expressionName}"": [ 
                         {{
                             ""path"": ""some.other.path"", 
                             ""hasValue"": true 
@@ -91,24 +89,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                             ""equals"": true 
                         }}
                     ]
-                }}", expressionName));
+                }}");
 
             Assert.AreEqual(expressionDefinitionType, @object.GetType());
 
-            ExpressionDefinition expressionDefinition;
-
-            switch (@object)
-            {
-                case AllOfExpressionDefinition allOfExpressionDefinition:
-                    expressionDefinition = allOfExpressionDefinition;
-                    break;
-                case AnyOfExpressionDefinition anyOfExpressionDefinition:
-                    expressionDefinition = anyOfExpressionDefinition;
-                    break;
-                default:
-                    expressionDefinition = null;
-                    break;
-            }
+            ExpressionDefinition expressionDefinition = @object as ExpressionDefinition;
 
             Assert.AreEqual("some.json.path", expressionDefinition.Path);
             Assert.AreEqual("someResource/resourceType", expressionDefinition.ResourceType);
@@ -120,32 +105,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(JsonReaderException))]
         public void ReadJson_LeafWithInvalidOperator_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
-            ReadJson(string.Format(@"
+            ReadJson($@"
                 {{
                     ""resourceType"": ""resourceType"",
                     ""path"": ""path"",
-                    ""{0}"": {1}
-                }}",
-                operatorProperty,
-                JsonConvert.SerializeObject(operatorValue)));
+                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
+                }}");
         }
 
         [DataTestMethod]
         [DataRow("allOf", "string", DisplayName = "\"AllOf\": \"string\"")]
         [DataRow("anyOf", "string", DisplayName = "\"AnyOf\": \"string\"")]
-        [DynamicData(nameof(EmptyAllOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = "GetAllOfIsEmptyDynamicDataDisplayName")]
-        [DynamicData(nameof(EmptyAnyOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = "GetAnyOfIsEmptyDynamicDataDisplayName")]
-        [ExpectedException(typeof(JsonException))]
+        [DynamicData(nameof(EmptyAllOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAllOfIsEmptyDynamicDataDisplayName))]
+        [DynamicData(nameof(EmptyAnyOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAnyOfIsEmptyDynamicDataDisplayName))]
+        [DynamicData(nameof(AllOfArrayWithNull), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAllOfHasNullItemDynamicDataDisplayName))]
+        [DynamicData(nameof(AnyOfArrayWithNull), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAnyOfHasNullItemDynamicDataDisplayName))]
+        [ExpectedException(typeof(JsonException), AllowDerivedTypes = true)]
         public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
-            ReadJson(string.Format(@"
+            ReadJson($@"
                 {{
                     ""resourceType"": ""resourceType"",
                     ""path"": ""path"",
-                    ""{0}"": {1}
-                }}",
-                operatorProperty,
-                JsonConvert.SerializeObject(operatorValue)));
+                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
+                }}");
         }
 
         [TestMethod]
@@ -253,6 +236,26 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public static string GetAnyOfIsEmptyDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
         {
             return "\"AnyOf\": []";
+        }
+
+        static IEnumerable<object[]> AllOfArrayWithNull()
+        {
+            yield return new object[] { "allOf", new object[1] { null } };
+        }
+
+        public static string GetAllOfHasNullItemDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
+        {
+            return "\"AllOf\": [ null ]";
+        }
+
+        static IEnumerable<object[]> AnyOfArrayWithNull()
+        {
+            yield return new object[] { "anyOf", new object[1] { null } };
+        }
+
+        public static string GetAnyOfHasNullItemDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
+        {
+            return "\"AnyOf\": [ null ]";
         }
     }
 }

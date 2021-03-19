@@ -78,18 +78,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(expectedAllOfEvaluation, allOfEvaluation.Passed);
             Assert.IsFalse((allOfEvaluation as IEvaluation).HasResults());
 
-            int expectedTrue = 0;
-            int expectedFalse = 0;
-
-            if (evaluation1)
-                expectedTrue++;
-            else
-                expectedFalse++;
-
-            if (evaluation2)
-                expectedTrue++;
-            else
-                expectedFalse++;
+            int expectedTrue = new[] { evaluation1, evaluation2 }.Count(e => e);
+            int expectedFalse = 2 - expectedTrue;
 
             Assert.AreEqual(expectedTrue, allOfEvaluation.EvaluationsEvaluatedTrue.Count());
             Assert.AreEqual(expectedFalse, allOfEvaluation.EvaluationsEvaluatedFalse.Count());

@@ -41,10 +41,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         }
 
         /// <summary>
-        /// Evaluates all expression provided and aggregates them in a final <see cref="JsonRuleEvaluation"/>
+        /// Evaluates all expressions provided and aggregates them in a final <see cref="JsonRuleEvaluation"/>
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
-        /// <returns>An <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
+        /// <returns>A <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
         /// and if the path contains any wildcards.</returns>
         public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     {
                         var evaluation = expression.Evaluate(propertyToEvaluate);
 
-                        evaluationPassed = evaluationPassed || evaluation.Passed;
+                        evaluationPassed |= evaluation.Passed;
 
                         jsonRuleEvaluations.Add(evaluation);
                     }
