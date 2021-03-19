@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Newtonsoft.Json;
@@ -20,16 +19,26 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public ExpressionDefinition[] AnyOf { get; set; }
 
         /// <summary>
-        /// Creates a <see cref="AnyOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
+        /// Creates an <see cref="AnyOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
         /// <returns>The AnyOfExpression.</returns>
-        public override Expression ToExpression() => new AnyOfExpression(ToAnyOfExpression().ToArray(), path: this.Path, resourceType: this.ResourceType);
+        public override Expression ToExpression() => new AnyOfExpression(this.AnyOf.Select(e => e?.ToExpression()).ToArray(), path: this.Path, resourceType: this.ResourceType);
 
-        private IEnumerable<Expression> ToAnyOfExpression()
+        /// <summary>
+        /// Validates the AnyOfExpressionDefinition for valid syntax
+        /// </summary>
+        internal override void Validate()
         {
-            foreach (var expressionDefinition in this.AnyOf)
+            if (!(this.AnyOf?.Count() > 0))
             {
-                yield return expressionDefinition?.ToExpression();
+                throw new JsonException("No expressions were specified in the anyOf expression");
+            }
+
+            int nullCount = this.AnyOf.Count(e => e == null);
+
+            if (nullCount > 0)
+            {
+                throw new JsonException($"Null expressions are not valid. {nullCount} expressions are null in anyOf expression");
             }
         }
     }

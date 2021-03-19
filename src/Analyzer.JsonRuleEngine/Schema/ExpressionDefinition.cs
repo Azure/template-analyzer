@@ -30,5 +30,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// </summary>
         /// <returns>The <c>Expression</c>.</returns>
         public abstract Expression ToExpression();
+
+        /// <summary>
+        /// Validates the ExpressionDefinition for valid syntax
+        /// </summary>
+        internal abstract void Validate();
     }
 }
