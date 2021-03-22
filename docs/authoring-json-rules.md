@@ -235,7 +235,7 @@ Example:
 ### Structured Operators
 These operators build up a structure of child evaluations, and therefore contain additional operators inside them.  These operators are not required to include a `path`.  If `resourceType` or `path` are specified, that becomes the scope for all evaluations nested inside the operator.  More information on [Scopes](#scopes) can be found below.
 
-#### `AnyOf` [[*]](#note)
+#### `AnyOf`
 *Type: array of [Evaluation Object](#evaluation-object)s*
 
 Performs a logical 'or' operation on the array of evaluation objects.  Evaluates to `true` if the result of any evaluation in the array is `true`; evaluates to `false` otherwise.

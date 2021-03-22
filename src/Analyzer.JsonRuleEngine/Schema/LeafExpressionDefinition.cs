@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Newtonsoft.Json;
@@ -103,6 +105,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             }
 
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Validates the LeafExpressionDefinition for valid syntax
+        /// </summary>
+        internal override void Validate()
+        {
+            // Validation for LeafExpression occurs in ExpressionConverter
         }
     }
 }

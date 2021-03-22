@@ -1,16 +1,5 @@
 [
   {
-    "name": "ServiceFabric_Client_AAD_Auth_Only",
-    "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
-    "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
-    "evaluation": {
-      "resourceType": "Microsoft.ServiceFabric/clusters",
-      "path": "properties.azureActiveDirectory.tenantId",
-      "hasValue": true
-    }
-  },
-  {
     "name": "Authorization_RoleDefinition_No_Custom_RBAC",
     "description": "Use built-in roles instead of custom RBAC roles",
     "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
@@ -33,6 +22,25 @@
     }
   },
   {
+    "name": "Kubernetes_Must_Restrict_Network_Access",
+    "description": "Authorized IP ranges should be defined on Kubernetes Services",
+    "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#authorized-ip-ranges-should-be-defined-on-kubernetes-services",
+    "evaluation": {
+      "resourceType": "Microsoft.ContainerService/managedClusters",
+      "anyOf": [
+        {
+          "path": "properties.apiServerAccessProfile.authorizedIPRanges",
+          "exists": true
+        },
+        {
+          "path": "properties.apiServerAccessProfile.enablePrivateCluster",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
     "name": "Kubernetes_Must_Use_RBAC",
     "description": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
     "recommendation": "Enable RBAC in Kubernetes clusters",
@@ -49,6 +57,17 @@
           "equals": true
         }
       ]
+    }
+  },
+  {
+    "name": "ServiceFabric_Client_AAD_Auth_Only",
+    "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
+    "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
+    "evaluation": {
+      "resourceType": "Microsoft.ServiceFabric/clusters",
+      "path": "properties.azureActiveDirectory.tenantId",
+      "hasValue": true
     }
   }
 ]
