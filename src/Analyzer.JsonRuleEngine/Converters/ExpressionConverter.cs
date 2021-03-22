@@ -71,8 +71,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
                     return leafExpressionDefinition;
                 }
-
-                throw new JsonException($"Expression is not supported. One of the following fields is not supported: {string.Join(", ", objectPropertyNames.ToArray())}");
             }
 
             throw new JsonException(expressionPropertyCount > 1 ? 

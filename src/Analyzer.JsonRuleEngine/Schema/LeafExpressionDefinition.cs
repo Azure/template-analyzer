@@ -112,20 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// </summary>
         internal override void Validate()
         {
-            PropertyInfo[] leafExpressionOperators = typeof(LeafExpressionDefinition)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-
-            int numberOfOperatorsWithValues = leafExpressionOperators.Where(property => property.GetValue(this) != null).Count();
-
-            if (numberOfOperatorsWithValues > 1)
-            {
-                throw new JsonException("Too many operators specified in leaf evaluation. Only one is allowed.");
-            }
-
-            if (numberOfOperatorsWithValues == 0)
-            {
-                throw new JsonException("Invalid evaluation in JSON.No expressions are specified(must specify exactly one).");
-            }
+            // Validation for LeafExpression occurs in ExpressionConverter
         }
     }
 }
