@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -18,18 +16,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
     public class JsonRuleEngine : IRuleEngine
     {
         /// <summary>
-        /// Delegate for building an <c>IJsonLineNumberResolver</c>
+        /// Delegate for building an <see cref="ILineNumberResolver"/>
         /// </summary>
-        /// <param name="context">The <c>TemplateContext</c> being evaluated.</param>
-        /// <returns>An <c>IJsonLineNumberResolver</c> to resolve line numbers for the given template context.</returns>
+        /// <param name="context">The <see cref="TemplateContext"/> being evaluated.</param>
+        /// <returns>An <see cref="ILineNumberResolver"/> to resolve line numbers for the given template context.</returns>
         public delegate ILineNumberResolver BuildIJsonLineNumberResolver(TemplateContext context);
 
         private readonly BuildIJsonLineNumberResolver BuildLineNumberResolver;
 
         /// <summary>
-        /// Creates an instance of <c>JsonRuleEngine</c>.
+        /// Creates an instance of <see cref="JsonRuleEngine"/>.
         /// </summary>
-        /// <param name="jsonLineNumberResolverBuilder">A builder to create an <c>ILineNumberResolver</c> for mapping JSON paths from a
+        /// <param name="jsonLineNumberResolverBuilder">A builder to create an <see cref="ILineNumberResolver"/> for mapping JSON paths from a
         /// processed template to the line number of the equivalent location in the original template.</param>
         public JsonRuleEngine(BuildIJsonLineNumberResolver jsonLineNumberResolverBuilder)
         {

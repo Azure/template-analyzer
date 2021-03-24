@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.Types;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
@@ -37,22 +36,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <returns>A <see cref="JsonRuleEvaluation"/> with the results of the evaluation.</returns>
         public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
         {
-            return EvaluateInternal(
-                jsonScope,
-                getEvaluation: scope =>
+            return EvaluateInternal(jsonScope, scope =>
+            {
+                List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
+                bool evaluationPassed = true;
+
+                foreach (var expression in AllOf)
                 {
-                    List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-                    bool evaluationPassed = true;
+                    var evaluation = expression.Evaluate(scope);
+                    evaluationPassed &= evaluation.Passed;
+                    jsonRuleEvaluations.Add(evaluation);
+                }
 
-                    foreach (var expression in AllOf)
-                    {
-                        var evaluation = expression.Evaluate(scope);
-                        evaluationPassed &= evaluation.Passed;
-                        jsonRuleEvaluations.Add(evaluation);
-                    }
-
-                    return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
-                });
+                return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
+            });
         }
     }
 }

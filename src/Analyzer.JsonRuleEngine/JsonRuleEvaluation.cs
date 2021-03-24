@@ -65,9 +65,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
-        /// Whether or not there are any results associated with this <c>Evaluation</c>.
+        /// Whether or not there are any results associated with this <see cref="JsonRuleEvaluation"/>.
         /// </summary>
-        /// <returns>True if there are any results in this <c>Evaluation</c> or a sub-<c>Evaluation</c>.
+        /// <returns>True if there are any results in this <see cref="JsonRuleEvaluation"/> or a sub-<see cref="JsonRuleEvaluation"/>.
         /// False otherwise.</returns>
         public bool HasResults
         {

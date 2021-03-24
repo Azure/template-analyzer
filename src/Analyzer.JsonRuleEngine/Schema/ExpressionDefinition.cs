@@ -27,11 +27,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public string ResourceType { get; set; }
 
         /// <summary>
-        /// Creates an <c>Expression</c> that can evaluate a template.
+        /// Creates an <see cref="Expression"/> that can evaluate a template.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
-        /// pass to the created <c>Expression</c>.</param>
-        /// <returns>The <c>Expression</c>.</returns>
+        /// <param name="jsonLineNumberResolver">An <see cref=" ILineNumberResolver"/> to
+        /// pass to the created <see cref="Expression"/>.</param>
+        /// <returns>The <see cref="Expression"/>.</returns>
         public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver);
     }
 }

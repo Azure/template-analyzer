@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <c>ILineNumberResolver</c> used for resolving line numbers from an expanded JSON template to the original JSON template.
+    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
     /// </summary>
     public class JsonLineNumberResolver : ILineNumberResolver
     {
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         private readonly TemplateContext templateContext;
 
         /// <summary>
-        /// Create a new instance with the given <c>TemplateContext</c>.
+        /// Create a new instance with the given <see cref="TemplateContext"/>.
         /// </summary>
         /// <param name="templateContext">The template context to map JSON paths against.</param>
         public JsonLineNumberResolver(TemplateContext templateContext)

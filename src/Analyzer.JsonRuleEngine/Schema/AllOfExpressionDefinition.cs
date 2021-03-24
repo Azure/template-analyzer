@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates a <see cref="AllOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
-        /// pass to the created <c>Expression</c>.</param>
+        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// pass to the created <see cref="Expression"/>.</param>
         /// <returns>The AllOfExpression.</returns>
         public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
             => new AllOfExpression(this.AllOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);

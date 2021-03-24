@@ -80,10 +80,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public JToken GreaterOrEqual { get; set; }
 
         /// <summary>
-        /// Creates a <c>LeafExpression</c> capable of evaluating JSON using the operator specified in the JSON rule.
+        /// Creates a <see cref=" LeafExpression"/> capable of evaluating JSON using the operator specified in the JSON rule.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <c>IJsonLineNumberResolver</c> to
-        /// pass to the created <c>Expression</c>.</param>
+        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// pass to the created <see cref="Expression"/>.</param>
         /// <returns>The LeafExpression.</returns>
         public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
         {
