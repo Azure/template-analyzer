@@ -33,5 +33,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// pass to the created <see cref="Expression"/>.</param>
         /// <returns>The <see cref="Expression"/>.</returns>
         public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver);
+
+        /// <summary>
+        /// Validates the ExpressionDefinition for valid syntax
+        /// </summary>
+        internal abstract void Validate();
     }
 }

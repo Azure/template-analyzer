@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         }
                     ]
                 }
-            }]", DisplayName = "Single structured expression")]
+            }]", DisplayName = "Single allOf expression")]
         [DataRow(@"[{
                 ""name"": ""RuleName 0"",
                 ""description"": ""Rule description"",
@@ -152,7 +152,26 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         }
                     ]
                 }
-            }]", DisplayName = "Nested structured expression")]
+            }]", DisplayName = "Nested allOf expression")]
+        [DataRow(@"[{
+                ""name"": ""RuleName 0"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""evaluation"": {
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""anyOf"": [
+                        {
+                            ""path"": ""properties.somePath"",
+                            ""equals"": ""someValue""
+                        },
+                        {
+                            ""path"": ""properties.someOtherPath"",
+                            ""equals"": ""someOtherValue2""
+                        }
+                    ]
+                }
+            }]", DisplayName = "Single anyOf expression")]
         public void EvaluateRules_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
         {
             // Arrange
@@ -164,7 +183,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         {
                             ""type"": ""Microsoft.ResourceProvider/resource0"",
                             ""properties"": {
-                                ""somePath"": ""someValue""
+                                ""somePath"": ""someValue"",
+                                ""someOtherPath"": ""someOtherValue""
                             }
                         }
                     ]
