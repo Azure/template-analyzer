@@ -27,5 +27,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <returns>The AllOfExpression.</returns>
         public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
             => new AllOfExpression(this.AllOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);
+
+        /// <summary>
+        /// Validates the <see cref="AllOfExpressionDefinition"/> for valid syntax
+        /// </summary>
+        internal override void Validate()
+        {
+            if (!(this.AllOf?.Count() > 0))
+            {
+                throw new JsonException("No expressions were specified in the allOf expression");
+            }
+
+            int nullCount = this.AllOf.Count(e => e == null);
+
+            if (nullCount > 0)
+            {
+                throw new JsonException($"Null expressions are not valid. {nullCount} expressions are null in allOf expression");
+            }
+        }
     }
 }

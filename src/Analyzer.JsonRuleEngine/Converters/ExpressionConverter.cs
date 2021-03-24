@@ -17,14 +17,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
         /// <summary>
         /// The property names that can be specified for LeafExpressions
         /// </summary>
-        private static readonly HashSet<string> LeafExpressionJsonPropertyNames =
+        private static readonly HashSet<string> ExpressionJsonPropertyNames =
             typeof(LeafExpressionDefinition)
-            .GetProperties(BindingFlags.Public| BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(property => !property.GetMethod.IsVirtual)
             .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
             .Where(property => property.Attribute != null)
             .Select(property => property.Attribute.PropertyName ?? property.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        static ExpressionConverter()
+        {
+            // Add names of structured expressions
+            ExpressionJsonPropertyNames.UnionWith(new HashSet<string>
+            {
+                "allOf",
+                "anyOf"
+            });
+        }
 
         /// <summary>
         /// Parses an ExpressionDefinition from a JsonReader
@@ -46,10 +56,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
             var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
 
-            var expressionJsonPropertyNames = GetExpressionJsonPropertyNames();
-            var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
-
-            var expressionPropertyCount = objectPropertyNames.Count(property => expressionJsonPropertyNames.Contains(property));
+            var expressionPropertyCount = objectPropertyNames.Count(property => ExpressionJsonPropertyNames.Contains(property));
             if (expressionPropertyCount == 1)
             {
                 if (objectPropertyNames.Contains("allOf", StringComparer.OrdinalIgnoreCase)) 
@@ -66,12 +73,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
                     return anyOfExpressionDefinition;
                 }
-                else
-                {
-                    var leafExpressionDefinition = CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
-
-                    return leafExpressionDefinition;
-                }
+                
+                return CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
             }
 
             var lineInfo = jsonObject as IJsonLineInfo;
@@ -80,28 +83,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             throw new JsonSerializationException(expressionPropertyCount > 1 ?
                 $"Too many expressions specified in evaluation.  Only one is allowed.  {parsingErrorDetails}" :
                 $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  {parsingErrorDetails}");
-        }
-
-        internal HashSet<string> GetExpressionJsonPropertyNames()
-        {
-            var structuredExpressions = GetStructuredExpressionJsonPropertyNames();
-
-            var expressionJsonPropertyNames = LeafExpressionJsonPropertyNames;
-            expressionJsonPropertyNames.UnionWith(structuredExpressions);
-
-            return expressionJsonPropertyNames;
-        }
-
-        internal HashSet<string> GetStructuredExpressionJsonPropertyNames()
-        {
-            // Add new structuredExpressions here
-            var structuredExpressions = new HashSet<string>
-            {
-                "allOf",
-                "anyOf"
-            };
-
-            return structuredExpressions;
         }
 
         /// <summary>

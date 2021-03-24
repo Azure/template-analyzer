@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -21,11 +22,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates an <see cref="AnyOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
+        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// pass to the created <see cref="Expression"/>.</param>
         /// <returns>The AnyOfExpression.</returns>
-        public override Expression ToExpression() => new AnyOfExpression(this.AnyOf.Select(e => e?.ToExpression()).ToArray(), path: this.Path, resourceType: this.ResourceType);
+        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver) =>
+            new AnyOfExpression(this.AnyOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);
 
         /// <summary>
-        /// Validates the AnyOfExpressionDefinition for valid syntax
+        /// Validates the <see cref="AnyOfExpressionDefinition"/> for valid syntax
         /// </summary>
         internal override void Validate()
         {
