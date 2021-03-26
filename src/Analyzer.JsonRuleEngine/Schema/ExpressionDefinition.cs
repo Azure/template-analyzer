@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// Gets or sets the Path property.
         /// </summary>
         [JsonProperty]
-        public string Path { get; set; }
+        public virtual string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the ResourceType property.
@@ -26,10 +27,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public string ResourceType { get; set; }
 
         /// <summary>
-        /// Creates an <c>Expression</c> that can evaluate a template.
+        /// Creates an <see cref="Expression"/> that can evaluate a template.
         /// </summary>
-        /// <returns>The <c>Expression</c>.</returns>
-        public abstract Expression ToExpression();
+        /// <param name="jsonLineNumberResolver">An <see cref=" ILineNumberResolver"/> to
+        /// pass to the created <see cref="Expression"/>.</param>
+        /// <returns>The <see cref="Expression"/>.</returns>
+        public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver);
 
         /// <summary>
         /// Validates the ExpressionDefinition for valid syntax

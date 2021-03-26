@@ -69,15 +69,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Setup mock line number resolver
-            var mockLineResolver = new Mock<IJsonLineNumberResolver>();
+            var mockLineResolver = new Mock<ILineNumberResolver>();
             mockLineResolver.Setup(r =>
-                r.ResolveLineNumberForOriginalTemplate(
-                    It.IsAny<string>(),
-                    It.Is<JToken>(templateContext.ExpandedTemplate, EqualityComparer<object>.Default),
-                    It.Is<JToken>(templateContext.OriginalTemplate, EqualityComparer<object>.Default)))
+                r.ResolveLineNumber(
+                    It.IsAny<string>()))
                 .Returns(expectedLineNumber);
 
-            var ruleEngine = new JsonRuleEngine(mockLineResolver.Object);
+            var ruleEngine = new JsonRuleEngine(t =>
+            {
+                // Verify the test context was passed
+                if (t == templateContext)
+                {
+                    return mockLineResolver.Object;
+                }
+                Assert.Fail("Expected template context was not passed to LineNumberResolver.");
+                return null;
+            });
 
             // Act
             var evaluationResults = ruleEngine.EvaluateRules(templateContext, rules).ToList();
@@ -195,15 +202,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Setup mock line number resolver
-            var mockLineResolver = new Mock<IJsonLineNumberResolver>();
+            var mockLineResolver = new Mock<ILineNumberResolver>();
             mockLineResolver.Setup(r =>
-                r.ResolveLineNumberForOriginalTemplate(
-                    It.IsAny<string>(),
-                    It.Is<JToken>(templateContext.ExpandedTemplate, EqualityComparer<object>.Default),
-                    It.Is<JToken>(templateContext.OriginalTemplate, EqualityComparer<object>.Default)))
+                r.ResolveLineNumber(
+                    It.IsAny<string>()))
                 .Returns(expectedLineNumber);
 
-            var ruleEngine = new JsonRuleEngine(mockLineResolver.Object);
+            var ruleEngine = new JsonRuleEngine(t =>
+            {
+                // Verify the test context was passed
+                if (t == templateContext)
+                {
+                    return mockLineResolver.Object;
+                }
+                Assert.Fail("Expected template context was not passed to LineNumberResolver.");
+                return null;
+            });
+
             var evaluationResults = ruleEngine.EvaluateRules(templateContext, rules).ToList();
 
             Assert.AreEqual(1, evaluationResults.Count());
@@ -213,7 +228,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual($"RuleName 0", evaluation.RuleName);
             Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
-            Assert.IsNull(evaluation.Results);
+            Assert.AreEqual(0, evaluation.Results.Count());
 
             AssertEvaluationsAndResultsAreAsExpected(evaluation, expectedLineNumber);
         }

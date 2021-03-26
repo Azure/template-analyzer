@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -26,13 +27,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
 
             // This AnyOf will have 2 expressions
             var mockOperator1 = new Mock<LeafExpressionOperator>().Object;
             var mockOperator2 = new Mock<LeafExpressionOperator>().Object;
 
-            var mockLeafExpression1 = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockOperator1 });
-            var mockLeafExpression2 = new Mock<LeafExpression>(new object[] { "ResourceProvider/resource", "some.path", mockOperator2 });
+            var mockLeafExpression1 = new Mock<LeafExpression>(mockLineResolver, mockOperator1, "ResourceProvider/resource", "some.path");
+            var mockLeafExpression2 = new Mock<LeafExpression>(mockLineResolver, mockOperator2, "ResourceProvider/resource", "some.path");
 
             var jsonRuleResult1 = new JsonRuleResult
             {
@@ -77,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             bool expectedAnyOfEvaluation = evaluation1 || evaluation2;
             Assert.AreEqual(expectedAnyOfEvaluation, anyOfEvaluation.Passed);
             Assert.AreEqual(2, anyOfEvaluation.Evaluations.Count());
-            Assert.IsFalse((anyOfEvaluation as IEvaluation).HasResults());
+            Assert.IsTrue(anyOfEvaluation.HasResults);
 
             int expectedTrue = new[] { evaluation1, evaluation2 }.Count(e => e);
             int expectedFalse = 2 - expectedTrue;
@@ -90,15 +92,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            var anyOfExpression = new AnyOfExpression(new Expression[] { });
-            anyOfExpression.Evaluate(jsonScope: null);
+            new AnyOfExpression(new Expression[0], null, null).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new AnyOfExpression(null);
+            new AnyOfExpression(null, null, null);
         }
     }
 }
