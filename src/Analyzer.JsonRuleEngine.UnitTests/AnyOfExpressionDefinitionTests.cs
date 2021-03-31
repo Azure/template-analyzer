@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
                 var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
                 var mockLineResolver = new Mock<ILineNumberResolver>().Object;
-                var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockLeafExpressionOperator, "ResourceProvider/resource", "some.path");
+                var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockLeafExpressionOperator, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
                 mockLeafExpressionDefinition
                     .Setup(s => s.ToExpression(mockResolver))
                     .Returns(mockLeafExpression.Object);

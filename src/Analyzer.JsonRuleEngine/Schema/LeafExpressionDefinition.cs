@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 
             if (leafOperator != null)
             {
-                return new LeafExpression(jsonLineNumberResolver, leafOperator, this.ResourceType, this.Path);
+                return new LeafExpression(jsonLineNumberResolver, leafOperator, GetCommonProperties(jsonLineNumberResolver));
             }
 
             throw new NotImplementedException();
