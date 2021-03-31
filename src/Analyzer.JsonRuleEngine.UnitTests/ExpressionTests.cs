@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
@@ -31,61 +32,108 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             }
         }
 
-        [DataTestMethod]
-        [DataRow(null, "some.path", false, true, false, DisplayName = "No resource type, a path, 1/3 paths evaluated")]
-        public void Evaluate_WhereCondition_CorrectPathsEvaluated(string resourceType, string path, params bool[] resultsForWhereCondition)
+        [TestMethod]
+        public void Evaluate_WhereConditionFalse_PathNotEvaluated()
         {
-            // An array to track what paths were evaluated
-            bool[] actualEvaluations = new bool[resultsForWhereCondition.Length];
+            var mockPathResolver = new Mock<IJsonPathResolver>();
+            mockPathResolver
+                .Setup(r => r.Resolve(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+            mockPathResolver
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
 
-            int numPathsEvaluated = 0;
-
-            var mockPathResolvers_subLevel = GenerateMockPathResolvers(resultsForWhereCondition.Length);
-
-            var mockPathResolver_topLevel = new Mock<IJsonPathResolver>();
-            mockPathResolver_topLevel
-                .Setup(r => r.Resolve(It.Is<string>(p => string.Equals(p, path))))
-                .Returns(mockPathResolvers_subLevel);
+            bool whereConditionWasEvaluated = false;
 
             // Create a mock expression for the Where condition.
-            // It will return an Evaluation for each boolean in resultsForWhereCondition, with
-            // the corresponding boolean value for its Passed property.
-            var mockExpression_Where = new MockExpression(new ExpressionCommonProperties(), pathResolver =>
+            // It will return an Evaluation that has results, but Passed is false.
+            var whereExpression = new MockExpression(new ExpressionCommonProperties(), pathResolver =>
             {
-                int resultsIndex = mockPathResolvers_subLevel.IndexOf(pathResolver);
-                return new JsonRuleEvaluation(null, resultsForWhereCondition[resultsIndex], new[] { new JsonRuleResult() });
+                whereConditionWasEvaluated = true;
+                return new JsonRuleEvaluation(null, passed: false, results: new[] { new JsonRuleResult() });
             });
 
-            // A top level expression that contains a Where condition.
-            // It will track which paths (IJsonPathResolver) where evaluated,
-            // which should be only the ones corresponding to true in resultsForWhereCondition.
-            var mockExpression = new MockExpression(new ExpressionCommonProperties { ResourceType = resourceType, Path = path, Where = mockExpression_Where }, pathResolver =>
+            // A top level mocked expression that contains a Where condition.
+            var mockExpression = new MockExpression(new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path", Where = whereExpression }, pathResolver =>
             {
-                // The path at this index was evaluated
-                int resultsIndex = mockPathResolvers_subLevel.IndexOf(pathResolver);
-                actualEvaluations[resultsIndex] = true;
-                numPathsEvaluated++;
-
-                return new JsonRuleEvaluation(null, true, new JsonRuleResult[0]);
+                // This expression should not evaluate anything because the Where condition does not pass
+                Assert.Fail("Top-level expression was evaluated even though the Where condition did not pass.");
+                return null;
             });
 
-            mockExpression.Evaluate(mockPathResolver_topLevel.Object);
+            mockExpression.Evaluate(mockPathResolver.Object);
 
-            Assert.AreEqual(resultsForWhereCondition.Count(r => r), numPathsEvaluated);
-            for (int i = 0; i < resultsForWhereCondition.Length; i++)
-            {
-                Assert.AreEqual(resultsForWhereCondition[i], actualEvaluations[i]);
-            }
+            Assert.IsTrue(whereConditionWasEvaluated);
         }
 
-        private List<IJsonPathResolver> GenerateMockPathResolvers(int count)
+        [TestMethod]
+        public void Evaluate_WhereConditionTrueWithNoResults_PathNotEvaluated()
         {
-            var resolvers = new List<IJsonPathResolver>();
-            for (int i = 0; i < count; i++)
+            var mockPathResolver = new Mock<IJsonPathResolver>();
+            mockPathResolver
+                .Setup(r => r.Resolve(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+            mockPathResolver
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+
+            bool whereConditionWasEvaluated = false;
+
+            // Create a mock expression for the Where condition.
+            // It will return an Evaluation that Passed, but contains no results (i.e. no paths were evaluated).
+            var whereExpression = new MockExpression(new ExpressionCommonProperties(), pathResolver =>
             {
-                resolvers.Add(new Mock<IJsonPathResolver>().Object);
-            }
-            return resolvers;
+                whereConditionWasEvaluated = true;
+                return new JsonRuleEvaluation(null, passed: true, results: new JsonRuleResult[0]);
+            });
+
+            // A top level mocked expression that contains a Where condition.
+            var mockExpression = new MockExpression(new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path", Where = whereExpression }, pathResolver =>
+            {
+                // This expression should not evaluate anything because the Where condition does not have any results.
+                Assert.Fail("Top-level expression was evaluated even though the Where condition contains no results.");
+                return null;
+            });
+
+            mockExpression.Evaluate(mockPathResolver.Object);
+
+            Assert.IsTrue(whereConditionWasEvaluated);
+        }
+
+        [TestMethod]
+        public void Evaluate_WhereConditionTrue_PathIsEvaluated()
+        {
+            var mockPathResolver = new Mock<IJsonPathResolver>();
+            mockPathResolver
+                .Setup(r => r.Resolve(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+            mockPathResolver
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+
+            bool whereConditionWasEvaluated = false;
+            bool topLevelExpressionWasEvaluated = false;
+
+            // Create a mock expression for the Where condition.
+            // It will return an Evaluation that Passed, but contains no results (i.e. no paths were evaluated).
+            var whereExpression = new MockExpression(new ExpressionCommonProperties(), pathResolver =>
+            {
+                whereConditionWasEvaluated = true;
+                return new JsonRuleEvaluation(null, passed: true, results: new[] { new JsonRuleResult() });
+            });
+
+            // A top level mocked expression that contains a Where condition.
+            var mockExpression = new MockExpression(new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path", Where = whereExpression }, pathResolver =>
+            {
+                // Track whether this was evaluated or not.
+                topLevelExpressionWasEvaluated = true;
+                return new JsonRuleEvaluation(null, passed: true, results: new JsonRuleResult[0]);
+            });
+
+            mockExpression.Evaluate(mockPathResolver.Object);
+
+            Assert.IsTrue(whereConditionWasEvaluated);
+            Assert.IsTrue(topLevelExpressionWasEvaluated);
         }
     }
 }
