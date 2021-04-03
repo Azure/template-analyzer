@@ -27,15 +27,33 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow("hasValue", true, DisplayName = "{\"HasValue\": true}")]
+        [DataRow("hasValue", false, "hasValue", true, DisplayName = "{\"HasValue\": false}, Where: {\"HasValue\": true}")]
         [DataRow("exists", false, DisplayName = "{\"Exists\": false}")]
         [DataRow("equals", "someString", DisplayName = "{\"Equals\": \"someString\"}")]
+        [DataRow("equals", "someString", "exists", true, DisplayName = "{\"Equals\": \"someString\"}, Where: {\"Exists\": true}")]
         [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
-        public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue)
+        public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, params object[] whereCondition)
         {
+            // If whereCondition is populated, add a Where condition into JSON to parse.
+            string optionalWhereBlock = string.Empty;
+            if (whereCondition.Length > 0)
+            {
+                if (whereCondition.Length != 2)
+                    Assert.Fail($"{nameof(whereCondition)} must contain (only) the operator and value.");
+
+                optionalWhereBlock = $@"
+                    ""where"": {{
+                        ""resourceType"": ""whereResource/resourceType"",
+                        ""path"": ""some.json.path.where"",
+                        ""{whereCondition[0]}"": {JsonConvert.SerializeObject(whereCondition[1])}
+                    }},";
+            }
+
             var @object = ReadJson($@"
                 {{
                     ""resourceType"": ""someResource/resourceType"",
                     ""path"": ""some.json.path"",
+                    {optionalWhereBlock}
                     ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
                 }}");
 
@@ -45,42 +63,63 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual("some.json.path", expression.Path);
             Assert.AreEqual("someResource/resourceType", expression.ResourceType);
 
-            // Iterate through possible expressions and ensure only the specified one has a value
-            foreach (var expressionProperty in leafExpressionJsonProperties)
+            void ValidateLeafExpression(LeafExpressionDefinition leaf, string property, object value)
             {
-                var parsedValue = expressionProperty.Value.GetValue(expression);
-                if (expressionProperty.Key.Equals(operatorProperty, StringComparison.OrdinalIgnoreCase))
+                // Iterate through possible expressions and ensure only the specified one has a value
+                foreach (var expressionProperty in leafExpressionJsonProperties)
                 {
-                    if (expressionProperty.Value.PropertyType == typeof(bool?))
+                    var parsedValue = expressionProperty.Value.GetValue(leaf);
+                    if (expressionProperty.Key.Equals(property, StringComparison.OrdinalIgnoreCase))
                     {
-                        Assert.AreEqual(operatorValue, (bool)parsedValue);
-                    }
-                    else if (expressionProperty.Value.PropertyType == typeof(string))
-                    {
-                        Assert.AreEqual(operatorValue, (string)parsedValue);
+                        if (expressionProperty.Value.PropertyType == typeof(bool?))
+                        {
+                            Assert.AreEqual(value, (bool)parsedValue);
+                        }
+                        else if (expressionProperty.Value.PropertyType == typeof(string))
+                        {
+                            Assert.AreEqual(value, (string)parsedValue);
+                        }
+                        else
+                        {
+                            Assert.AreEqual(new JValue(value), parsedValue);
+                        }
                     }
                     else
                     {
-                        Assert.AreEqual(new JValue(operatorValue), parsedValue);
+                        Assert.IsNull(parsedValue);
                     }
                 }
-                else
-                {
-                    Assert.IsNull(parsedValue);
-                }
+            }
+
+            ValidateLeafExpression(expression, operatorProperty, operatorValue);
+
+            if (whereCondition.Length > 0)
+            {
+                Assert.IsNotNull(expression.Where);
+                Assert.IsTrue(expression.Where is LeafExpressionDefinition);
+                Assert.AreEqual("whereResource/resourceType", expression.Where.ResourceType);
+                Assert.AreEqual("some.json.path.where", expression.Where.Path);
+                ValidateLeafExpression(expression.Where as LeafExpressionDefinition, (string)whereCondition[0], whereCondition[1]);
+            }
+            else
+            {
+                Assert.IsNull(expression.Where);
             }
         }
 
         [DataTestMethod]
         [DataRow("allOf", typeof(AllOfExpressionDefinition), DisplayName = "AllOf Expression")]
         [DataRow("anyOf", typeof(AnyOfExpressionDefinition), DisplayName = "AnyOf Expression")]
-        public void ReadJson_ValidStructuredExpression_ReturnsCorrectTypeAndValues(string expressionName, Type expressionDefinitionType)
+        [DataRow("allOf", typeof(AllOfExpressionDefinition), "anyOf", typeof(AnyOfExpressionDefinition), DisplayName = "AllOf Expression with Where condition")]
+        [DataRow("anyOf", typeof(AnyOfExpressionDefinition), "allOf", typeof(AllOfExpressionDefinition), DisplayName = "AnyOf Expression with Where condition")]
+        public void ReadJson_ValidStructuredExpression_ReturnsCorrectTypeAndValues(string expressionName, Type expressionDefinitionType, params object[] whereCondition)
         {
-            var @object = ReadJson($@"
+            var expressionTemplate = $@"
                 {{
                     ""resourceType"": ""someResource/resourceType"",
                     ""path"": ""some.json.path"",
-                    ""{expressionName}"": [ 
+                    $$where$$
+                    ""$$expression$$"": [ 
                         {{
                             ""path"": ""some.other.path"", 
                             ""hasValue"": true 
@@ -90,7 +129,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                             ""equals"": true 
                         }}
                     ]
-                }}");
+                }}";
+
+            string optionalWhereBlock = string.Empty;
+            if (whereCondition.Length > 0)
+            {
+                if (whereCondition.Length != 2 || !(whereCondition[0] is string && whereCondition[1] is Type))
+                    Assert.Fail($"{nameof(whereCondition)} must contain (only) the operator name and type.");
+
+                optionalWhereBlock = "\"where\": "
+                    + expressionTemplate
+                        .Replace("$$where$$", "")
+                        .Replace("$$expression$$", (string)whereCondition[0])
+                        .Replace("someResource", "whereResource")
+                        .Replace("some.json.path", "some.where.path")
+                    + ",";
+            }
+
+            var @object = ReadJson(expressionTemplate.Replace("$$where$$", optionalWhereBlock).Replace("$$expression$$", expressionName));
 
             Assert.AreEqual(expressionDefinitionType, @object.GetType());
 
@@ -98,6 +154,41 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             Assert.AreEqual("some.json.path", expressionDefinition.Path);
             Assert.AreEqual("someResource/resourceType", expressionDefinition.ResourceType);
+
+            var expressionArray = expressionDefinition
+                .GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .First(p => p.PropertyType == typeof(ExpressionDefinition[]));
+
+            var subExpressions = (ExpressionDefinition[])expressionArray.GetValue(expressionDefinition);
+            Assert.AreEqual(2, subExpressions.Length);
+            foreach (var e in subExpressions)
+            {
+                Assert.AreEqual(typeof(LeafExpressionDefinition), e.GetType());
+            }
+
+            if (whereCondition.Length > 0)
+            {
+                Assert.IsNotNull(expressionDefinition.Where);
+                Assert.AreEqual((Type)whereCondition[1], expressionDefinition.Where.GetType());
+                Assert.AreEqual("whereResource/resourceType", expressionDefinition.Where.ResourceType);
+                Assert.AreEqual("some.where.path", expressionDefinition.Where.Path);
+
+                expressionArray = expressionDefinition.Where
+                    .GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .First(p => p.PropertyType == typeof(ExpressionDefinition[]));
+                subExpressions = (ExpressionDefinition[])expressionArray.GetValue(expressionDefinition.Where);
+                Assert.AreEqual(2, subExpressions.Length);
+                foreach (var e in subExpressions)
+                {
+                    Assert.AreEqual(typeof(LeafExpressionDefinition), e.GetType());
+                }
+            }
+            else
+            {
+                Assert.IsNull(expressionDefinition.Where);
+            }
         }
 
         [DataTestMethod]
@@ -117,18 +208,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataTestMethod]
         [DataRow("allOf", "string", DisplayName = "\"AllOf\": \"string\"")]
         [DataRow("anyOf", "string", DisplayName = "\"AnyOf\": \"string\"")]
-        [DynamicData(nameof(EmptyAllOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAllOfIsEmptyDynamicDataDisplayName))]
-        [DynamicData(nameof(EmptyAnyOfArray), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAnyOfIsEmptyDynamicDataDisplayName))]
-        [DynamicData(nameof(AllOfArrayWithNull), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAllOfHasNullItemDynamicDataDisplayName))]
-        [DynamicData(nameof(AnyOfArrayWithNull), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetAnyOfHasNullItemDynamicDataDisplayName))]
+        [DataRow("allOf", null, DisplayName = "\"AllOf\": null")]
+        [DataRow("anyOf", null, DisplayName = "\"AnyOf\": null")]
+        [DataRow("allOf", "UseArray", DisplayName = "\"AllOf\": []")]
+        [DataRow("anyOf", "UseArray", DisplayName = "\"AnyOf\": []")]
+        [DataRow("allOf", "UseArray", null, DisplayName = "\"AllOf\": [ null ]")]
+        [DataRow("anyOf", "UseArray", null, DisplayName = "\"AnyOf\": [ null ]")]
         [ExpectedException(typeof(JsonException), AllowDerivedTypes = true)]
-        public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorValue)
+        public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorSingleValue, params object[] operatorArrayValue)
         {
             ReadJson($@"
                 {{
                     ""resourceType"": ""resourceType"",
                     ""path"": ""path"",
-                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
+                    ""{operatorProperty}"": {JsonConvert.SerializeObject("UseArray".Equals(operatorSingleValue) ? operatorArrayValue : operatorSingleValue)}
                 }}");
         }
 
@@ -218,45 +311,5 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 typeof(ExpressionDefinition),
                 null,
                 JsonSerializer.CreateDefault());
-
-        static IEnumerable<object[]> EmptyAllOfArray()
-        {
-            yield return new object[] { "allOf", new object[0] };
-        }
-
-        public static string GetAllOfIsEmptyDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
-        {
-            return "\"AllOf\": []";
-        }
-
-        static IEnumerable<object[]> EmptyAnyOfArray()
-        {
-            yield return new object[] { "anyOf", new object[0] };
-        }
-
-        public static string GetAnyOfIsEmptyDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
-        {
-            return "\"AnyOf\": []";
-        }
-
-        static IEnumerable<object[]> AllOfArrayWithNull()
-        {
-            yield return new object[] { "allOf", new object[1] { null } };
-        }
-
-        public static string GetAllOfHasNullItemDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
-        {
-            return "\"AllOf\": [ null ]";
-        }
-
-        static IEnumerable<object[]> AnyOfArrayWithNull()
-        {
-            yield return new object[] { "anyOf", new object[1] { null } };
-        }
-
-        public static string GetAnyOfHasNullItemDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
-        {
-            return "\"AnyOf\": [ null ]";
-        }
     }
 }
