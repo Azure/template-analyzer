@@ -22,12 +22,15 @@ Here are the fields that make up a rule definition.
 - The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository.
 
 ## Evaluation Object
-The evaluation object is comprised of three basic properties.
+The evaluation object is comprised of the following basic properties.
 ```javascript
 {
     "path": "JSON path to property to evaluate in template",
     "resourceType": "(optional) The Azure resource type this evaluation applies to",
-    <operator>: // One of several kinds of operators, defined below
+    "where": {
+        // Evaluation Object
+    }
+    "<operator>": // One of several kinds of operators, defined below
 }
 ```
 
@@ -36,6 +39,8 @@ Evaluation of ARM templates is performed on the JSON representation of the templ
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 
 The behavior of the `resourceType` property is to find a property called "resources" in the current scope that is an array of objects, look for a "type" property in each of the objects, and keep only the resources where the value of "type" matches the string in `resourceType`.  See [Scopes](#scopes) for more information on scopes.
+
+Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 
 ## Operators
 There are two kinds of operators: [value operators](#value-operators) and [structured operators](#structured-operators).  Value operators evaluate a single value, whereas structured operators are used to nest and combine multiple evaluations, each containing their own operator.
@@ -79,7 +84,7 @@ The examples given with the operators below will be in the context of the follow
 }
 ```
 
-#### `Exists`
+#### Exists
 *Type: Boolean*
 
 Evaluates a JSON path to determine if the specified path exists in the template and compares that result to the value associated with the property in the rule.  Results in `true` if the existence of the path is the same as the expected value in the rule; `false` otherwise.
@@ -93,7 +98,7 @@ Example:
 }
 ```
 
-#### `HasValue`
+#### HasValue
 *Type: Boolean*
 
 Evaluates a JSON path to determine if the specified path has any value in the template other than `null` or empty string and compares that result to the value associated with the property in the rule.  Results in `true` if the value of the path matches the expectation in the rule; `false` otherwise.
@@ -107,7 +112,7 @@ Example:
 }
 ```
 
-#### `Equals`
+#### Equals
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 Tests the template value of the `path` to determine if it is equal to the value specified in the rule.
@@ -123,7 +128,7 @@ Example:
 }
 ```
 
-#### `NotEquals`
+#### NotEquals
 *Type: Any basic JSON value (integer, float, string, bool, null)*
 
 The logical inverse of `equals`.  Evaluations on incompatible types results in `true`.
@@ -137,7 +142,7 @@ Example:
 }
 ```
 
-#### `Less` [[*]](#note)
+#### Less [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than the value in the template; `false` otherwise.
@@ -151,7 +156,7 @@ Example:
 }
 ```
 
-#### `LessOrEquals` [[*]](#note)
+#### LessOrEquals [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than or equal to the value in the template; `false` otherwise.
@@ -165,7 +170,7 @@ Example:
 }
 ```
 
-#### `Greater` [[*]](#note)
+#### Greater [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than the value in the template; `false` otherwise.
@@ -179,7 +184,7 @@ Example:
 }
 ```
 
-#### `GreaterOrEquals` [[*]](#note)
+#### GreaterOrEquals [[*]](#note)
 *Type: number (integer, float)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than or equal to the value in the template; `false` otherwise.
@@ -193,7 +198,7 @@ Example:
 }
 ```
 
-#### `Regex` [[*]](#note)
+#### Regex [[*]](#note)
 *Type: string*
 
 Runs the regular expression in the specified value against the value of the `path` in the template.  All regular expressions are case-insensitive.  Evaluates to `true` if the regular expression is a match; `false` otherwise.  If the value in the template is not a string, this evaluates to `false`.
@@ -213,7 +218,7 @@ Example:
 }
 ```
 
-#### `In` [[*]](#note)
+#### In [[*]](#note)
 *Type: array of basic JSON values (integer, float, string, bool, null)*
 
 Evaluates the value of the `path` in the template using the `equals` operator for each value specified in the array.  If any results in `true`, `in` will evaluate to true; `false` otherwise.  All values in the array must be of the same type.
@@ -235,7 +240,7 @@ Example:
 ### Structured Operators
 These operators build up a structure of child evaluations, and therefore contain additional operators inside them.  These operators are not required to include a `path`.  If `resourceType` or `path` are specified, that becomes the scope for all evaluations nested inside the operator.  More information on [Scopes](#scopes) can be found below.
 
-#### `AnyOf`
+#### AnyOf
 *Type: array of [Evaluation Object](#evaluation-object)s*
 
 Performs a logical 'or' operation on the array of evaluation objects.  Evaluates to `true` if the result of any evaluation in the array is `true`; evaluates to `false` otherwise.
@@ -258,7 +263,7 @@ Example:
 }
 ```
 
-#### `AllOf`
+#### AllOf
 *Type: array of [Evaluation Object](#evaluation-object)s*
 
 Performs a logical 'and' operation on the array of evaluation objects.  Evaluates to `true` if the result of all evaluations in the array is `true`; evaluates to `false` otherwise.
@@ -281,7 +286,7 @@ Example:
 }
 ```
 
-#### `Not` [[*]](#note)
+#### Not [[*]](#note)
 *Type: [Evaluation Object](#evaluation-object)*
 
 Performs a logical 'not' operation on the evaluation object.  Evaluates to `true` if the result of the evaluation in the value of `not` is `false`; evaluates to `false` otherwise.
@@ -299,21 +304,85 @@ Example:
 }
 ```
 
+#### Evaluate [[*]](#note)
+*Type: [Evaluation Object](#evaluation-object)*
+
+Wraps another single `Evaluation` object.  The result of the operator is exactly the result of the `Evaluation` it contains.
+
+This operator is most commonly useful in combination with `where` ([see below](#where-conditions)), where `resourceType` or `path` may need to be narrowed multiple times.
+
+Example:
+```javascript
+{
+    "evaluate": {
+        "resourceType": "Microsoft.Compute/virtualMachines",
+        "path": "properties.osProfile.adminPassword",
+        "hasValue": false // Evaluates to `true`
+    } // Evaluates to the same as the inner evaluation (`true`)
+}
+```
+
 ## Scopes
 Each Evaluation object has a path scope which is inherited by child Evaluations.  If a `path` and/or `resourceType` is specified in a Structured Evaluation object, the `path` and `resourceType` of each child Evaluation start at the path determined in the parent.  Therefore, each `path` continues from the `path` specified in the parent.
 For example, here's a simple illustration:
 ```javascript
 {
-    "resourceType": "Microsoft.Web/sites",
+    "resourceType": "Microsoft.Compute/virtualMachines",
     "allOf": [
         {
-            "path": "kind",
-            "regex": "api$"
+            "path": "properties.osProfile.adminPassword",
+            "hasValue": false
         }
     ]
 }
 ```
  
-The full path used by the 'regex' Evaluator would be "resources[*].kind" (limited to resources where "type" equals "Microsoft.Web/sites").
+The full path used by the 'regex' Evaluator would be "resources[*].properties.osProfile.adminPassword" (limited to resources where "type" equals "Microsoft.Compute/virtualMachines").
  
-First, `resourceType` is used to select resources within the "resources[]" array.  Then, only those resources with the given type are considered.  Further, the `path` specified with `regex` continues from the path in the parent scope, appending ".kind" to the resources selection.
+First, `resourceType` is used to select resources within the "resources[]" array.  Then, only those resources with the given type are considered.  Further, the `path` specified with `hasValue` continues from the path in the parent scope, appending ".properties.osProfile.adminPassword" to the resources selection.
+
+### Where Conditions
+Rule authors may wish to define a rule that is dependent on other properties.  For example, there may be desire for a rule of the form: "If a property in a resource equals some value, then assert another property is a certain value."
+
+Conditions like this can be defined using the `where` property, which has a value of type `Evaluation` (similar to [Structured Operators](#structured-operators)).
+
+In the `Evaluation` object in which `where` is defined, `resourceType` and `path` are evaluated first, and then the resulting scopes are evaluated by `where`.  Since `where` is an `Evaluation` object, the scope can be further narrowed by specifying `resourceType` or `path` inside it.
+
+Multiple scopes may be evaluated by `where` as a result of:
+- multiple resources matching the `resourceType` specification
+- wildcards being present in `path` and matching multiple paths in the template JSON
+
+For each scope evaluated by `where`, only the scopes in which `where` evaluates to `true` are evaluated by the operator that is a sibling of `where`; if the `where` evaluates to `false` for a given scope, evaluation of the operator will be skipped for that scope.
+
+Examples:
+``` javascript
+{
+    "resourceType": "Microsoft.Compute/virtualMachines",
+    "where": {
+        "path": "apiVersion",
+        "regex": "^2019-.*"
+    }
+    "evaluate": {
+        "path": "properties.osProfile.computerName",
+        "hasValue": true
+    }
+}
+```
+In the simple example above, the evaluation in the `evaluate` operator would be skipped, because there is no resource of type "Microsoft.Compute/virtualMachines" where apiVersion starts with 2019.  The entire example would therefore not return any result.
+
+``` javascript
+{
+    "resourceType": "Microsoft.Compute/virtualMachines",
+    "where": {
+        "path": "name",
+        "equals": "myVmResource"
+    }
+    "evaluate": {
+        "path": "properties.osProfile.computerName",
+        "hasValue": true
+    }
+}
+```
+In contrast to the first example, the `evaluate` operator in the example above would be evaluated, because the resource of type "Microsoft.Compute/virtualMachines" defines its "name" property to be "myVmResource".
+
+In both examples above, it is important to note that `"path": "properties.osProfile.computerName"` is specified *inside* the `evaluate` operator - if it was specified outside the operator (at the same level as `where`), it would be used in the scope evaluated by `where`, making `"path": "name"` (inside `where`) inaccessible.
