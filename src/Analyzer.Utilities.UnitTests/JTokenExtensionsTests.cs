@@ -55,16 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         }
                     ]
                 },
-                ""topLevel3"": {
-                    ""whitespaceNodes"": {
-                        """": {
-                            ""end"": 1
-                        },
-                        ""   "": {
-                            ""end"": 2
-                        }
-                    }
-                }
+                ""topLevel3"": { }
             }");
 
         /// <summary>
@@ -86,8 +77,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             new object[] { "topLevel1.subLevel1.intArray[3]", false, new object[] { "topLevel1", "subLevel1", "intArray" }, "Indexing out of bounds into array" },
             new object[] { "topLevel1.subLevel2[2]", false, new object[] { "topLevel1", "subLevel2" }, "Indexing node that isn't an array" },
             new object[] { "topLevel2.subLevel1.objArray", true, new object[] { "topLevel2", "subLevel1", "objArray" }, "Not specifying an index for an array" },
-            new object[] { "topLevel3.whitespaceNodes..end", true, new object[] { "topLevel3", "whitespaceNodes", "", "end" }, "Selecting empty node name" },
-            new object[] { "topLevel3.whitespaceNodes.   .end", true, new object[] { "topLevel3", "whitespaceNodes", "   ", "end" }, "Selecting whitespace node name" },
         }.AsReadOnly();
 
         // Just returns the element in the last index of the array from DirectPathTestScenarios
@@ -215,6 +204,76 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             testJObject.InsensitiveToken(null, (InsensitivePathNotFoundBehavior)99);
         }
 
+        [DataTestMethod]
+        [DynamicData(nameof(DirectPathTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void InsensitiveTokens_VariousPathsWithLastValidBehavior_ReturnsCorrectToken(string path, bool _, object[] pathToExpectedToken, string __)
+        {
+            // This test is logically identical to InsensitiveToken_VariousPathsWithLastValidBehavior_ReturnsCorrectToken,
+            // but the test calls InsensitiveTokens instead of InsensitiveToken.
+            var actualToken = testJObject.InsensitiveTokens(path, InsensitivePathNotFoundBehavior.LastValid).First();
+
+            JToken expectedToken = testJObject;
+            foreach (var node in pathToExpectedToken)
+            {
+                expectedToken = expectedToken[node];
+            }
+
+            Assert.AreEqual(expectedToken, actualToken.jtoken);
+            Assert.AreEqual(path, actualToken.path, ignoreCase: true);
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(DirectPathTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void InsensitiveTokens_VariousPathsWithNullBehavior_ReturnsCorrectToken(string path, bool isPathFullyResolved, object[] pathToExpectedToken, string _)
+        {
+            // This test is logically identical to InsensitiveToken_VariousPathsWithNullBehavior_ReturnsCorrectToken,
+            // but the test calls InsensitiveTokens instead of InsensitiveToken.
+            var actualToken = testJObject.InsensitiveTokens(path, InsensitivePathNotFoundBehavior.Null).First();
+
+            JToken expectedToken = null;
+            if (isPathFullyResolved)
+            {
+                expectedToken = testJObject;
+                foreach (var node in pathToExpectedToken)
+                {
+                    expectedToken = expectedToken[node];
+                }
+            }
+
+            Assert.AreEqual(expectedToken, actualToken.jtoken);
+            Assert.AreEqual(expectedToken?.Path, actualToken.path);
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(DirectPathTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void InsensitiveTokens_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows(string path, bool isPathFullyResolved, object[] pathToExpectedToken, string __)
+        {
+            // This test is logically identical to InsensitiveToken_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows,
+            // but the test calls InsensitiveTokens instead of InsensitiveToken.
+            try
+            {
+                var actualToken = testJObject.InsensitiveTokens(path, InsensitivePathNotFoundBehavior.Error).First();
+
+                // If no exception is thrown, verify one wasn't expected.
+                Assert.IsTrue(isPathFullyResolved);
+
+                JToken expectedToken = testJObject;
+                foreach (var node in pathToExpectedToken)
+                {
+                    expectedToken = expectedToken[node];
+                }
+
+                // Verify token returned.
+                Assert.AreEqual(expectedToken, actualToken.jtoken);
+                Assert.AreEqual(expectedToken.Path, actualToken.path);
+            }
+            catch
+            {
+                // Exception thrown - verify it is expected.
+                Assert.IsFalse(isPathFullyResolved);
+            }
+        }
+
         /// <summary>
         /// Test data for tests that verify paths with wildcards, where potentially multiple tokens could be returned.
         /// Index 1: The path to test.
@@ -298,7 +357,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(WildcardTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void InsensitiveToken_WildcardPathWithNullBehavior_CorrectChildrenReturned(string path, List<object[]> expectedTokenPaths, string _)
+        public void InsensitiveTokens_WildcardPathWithNullBehavior_CorrectChildrenReturned(string path, List<object[]> expectedTokenPaths, string _)
         {
             var tokens = testJObject.InsensitiveTokens(path).ToList();
 
@@ -332,7 +391,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(WildcardTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void InsensitiveToken_WildcardPathWithLastValidBehavior_CorrectChildrenReturned(string path, List<object[]> expectedTokenPaths, string _)
+        public void InsensitiveTokens_WildcardPathWithLastValidBehavior_CorrectChildrenReturned(string path, List<object[]> expectedTokenPaths, string _)
         {
             var tokens = testJObject.InsensitiveTokens(path, InsensitivePathNotFoundBehavior.LastValid).ToList();
 
@@ -373,7 +432,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(WildcardTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void InsensitiveToken_WildcardPathWithErrorBehavior_CorrectChildrenReturnedOrExceptionIsThrown(string path, List<object[]> expectedTokenPaths, string _)
+        public void InsensitiveTokens_WildcardPathWithErrorBehavior_CorrectChildrenReturnedOrExceptionIsThrown(string path, List<object[]> expectedTokenPaths, string _)
         {
             // See if there are any branches in the JSON where a token won't be found.
             // expectedTokenPaths will have one element which is an empty array if so.

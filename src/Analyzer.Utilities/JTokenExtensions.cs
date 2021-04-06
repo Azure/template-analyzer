@@ -18,15 +18,37 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         private static readonly Regex jArrayRegex = new Regex(@"^(?<property>\w+)\[(?<index>\d+|\*)\]$", RegexOptions.Compiled);
 
         /// <summary>
-        /// Helper class for InsensitiveTokens() method
+        /// Helper class for InsensitiveTokens() method.
+        /// Instances of this class are added to a queue, and as items
+        /// are dequeued, the next element in the path is searched for
+        /// in the context of the item.
         /// </summary>
         private class InsensitiveTokenContext
         {
+            /// <summary>
+            /// The current token found in this context.
+            /// </summary>
             public JToken Token;
+
+            /// <summary>
+            /// The path segments resolved so far up to <see cref="Token"/>.
+            /// </summary>
             public List<string> ResolvedPath = new List<string>();
+
+            /// <summary>
+            /// The next index of the path segments to look for.
+            /// (The path segments are in <see cref="InsensitiveTokens(JToken, string, InsensitivePathNotFoundBehavior)"/>.
+            /// </summary>
             public int NextPathIndex;
+
+            /// <summary>
+            /// The path that leads to <see cref="Token"/>.
+            /// </summary>
             public string PathToStartingToken;
 
+            /// <summary>
+            /// Creates the tuple to be returned by <see cref="InsensitiveTokens(JToken, string, InsensitivePathNotFoundBehavior)"/>.
+            /// </summary>
             public (JToken token, string path) TokenAndPath =>
                 (
                     Token,
@@ -90,13 +112,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="token">The JToken to search from.</param>
         /// <param name="path">The JSON path to search for.</param>
         /// <param name="behaviorWhenNotFound">Behavior if path is not fully resolved.
-        /// For wildcards in the path resulting in potentially multiple JTokens found,
-        /// this will apply to each tuple returned individually.</param>
+        /// If wildcards are in the path, resulting in potentially multiple JTokens found,
+        /// this will apply to each tuple returned individually (null JTokens are not returned).</param>
         /// <returns>
         /// A Tuple of (JToken, path), for each JToken found at the requested path.
         /// Many tokens could be returned if wildcards are present in the path.
         /// If the path cannot be completely resolved, the value of jtoken is
-        /// determined by <paramref name="behaviorWhenNotFound"/>.
+        /// determined by <paramref name="behaviorWhenNotFound"/>.  If there are no wildcards
+        /// in the path, <paramref name="behaviorWhenNotFound"/> is <see cref="InsensitivePathNotFoundBehavior.Null"/>,
+        /// and the path was not resolved, a single (null, null) is returned.
         /// In cases where <paramref name="behaviorWhenNotFound"/> is not Error,
         /// the path will be equal to the requested path, with any resolved wildcards
         /// replaced with their property name.
@@ -139,9 +163,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
             string pathToParent = token.Path;
             string[] properties = path.Split('.');
+            bool pathContainsWildcard = path.Contains('*');
 
             var jtokensToSearchFrom = new Queue<InsensitiveTokenContext>();
             jtokensToSearchFrom.Enqueue(new InsensitiveTokenContext { Token = token, NextPathIndex = 0, PathToStartingToken = pathToParent });
+
+            bool fullPathFound = false;
 
             while (jtokensToSearchFrom.Count > 0)
             {
@@ -151,6 +178,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 {
                     // Reached the end of the path.  Return current JToken.
                     yield return tokenContext.TokenAndPath;
+                    fullPathFound = true;
                     continue;
                 }
 
@@ -252,6 +280,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                             break;
                     };
                 }
+            }
+
+            // Return null if full, non-wildcard path is not found
+            // and behaviorWhenNotFound is Null
+            if (behaviorWhenNotFound == InsensitivePathNotFoundBehavior.Null
+                && !(pathContainsWildcard || fullPathFound))
+            {
+                yield return (null, null);
             }
         }
 
