@@ -63,6 +63,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual("some.json.path", expression.Path);
             Assert.AreEqual("someResource/resourceType", expression.ResourceType);
 
+            // Local function to validate properties of leaf expression
             void ValidateLeafExpression(LeafExpressionDefinition leaf, string property, object value)
             {
                 // Iterate through possible expressions and ensure only the specified one has a value
@@ -131,12 +132,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     ]
                 }}";
 
+            // If test should use a 'where' condition, create the expression to put in it
             string optionalWhereBlock = string.Empty;
             if (whereCondition.Length > 0)
             {
                 if (whereCondition.Length != 2 || !(whereCondition[0] is string && whereCondition[1] is Type))
                     Assert.Fail($"{nameof(whereCondition)} must contain (only) the operator name and type.");
 
+                // Replace values to make it valid and unique from the outer expression
                 optionalWhereBlock = "\"where\": "
                     + expressionTemplate
                         .Replace("$$where$$", "")
@@ -146,44 +149,42 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     + ",";
             }
 
+            // Parse expression
             var @object = ReadJson(expressionTemplate.Replace("$$where$$", optionalWhereBlock).Replace("$$expression$$", expressionName));
 
-            Assert.AreEqual(expressionDefinitionType, @object.GetType());
-
-            ExpressionDefinition expressionDefinition = @object as ExpressionDefinition;
-
-            Assert.AreEqual("some.json.path", expressionDefinition.Path);
-            Assert.AreEqual("someResource/resourceType", expressionDefinition.ResourceType);
-
-            var expressionArray = expressionDefinition
-                .GetType()
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .First(p => p.PropertyType == typeof(ExpressionDefinition[]));
-
-            var subExpressions = (ExpressionDefinition[])expressionArray.GetValue(expressionDefinition);
-            Assert.AreEqual(2, subExpressions.Length);
-            foreach (var e in subExpressions)
+            // Local function to validate expression and potential inner 'where' expression
+            void ValidateExpression(ExpressionDefinition expression, Type expectedSpecificType, string expectedResourceType, string expectedPath)
             {
-                Assert.AreEqual(typeof(LeafExpressionDefinition), e.GetType());
-            }
+                // Validate specific type and string properties
+                Assert.AreEqual(expectedSpecificType, expression.GetType());
+                Assert.AreEqual(expectedResourceType, expression.ResourceType);
+                Assert.AreEqual(expectedPath, expression.Path);
 
-            if (whereCondition.Length > 0)
-            {
-                Assert.IsNotNull(expressionDefinition.Where);
-                Assert.AreEqual((Type)whereCondition[1], expressionDefinition.Where.GetType());
-                Assert.AreEqual("whereResource/resourceType", expressionDefinition.Where.ResourceType);
-                Assert.AreEqual("some.where.path", expressionDefinition.Where.Path);
-
-                expressionArray = expressionDefinition.Where
+                var expressionArray = expression
                     .GetType()
                     .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .First(p => p.PropertyType == typeof(ExpressionDefinition[]));
-                subExpressions = (ExpressionDefinition[])expressionArray.GetValue(expressionDefinition.Where);
+
+                // Validate expressions within the structured operator
+                var subExpressions = (ExpressionDefinition[])expressionArray.GetValue(expression);
                 Assert.AreEqual(2, subExpressions.Length);
                 foreach (var e in subExpressions)
                 {
                     Assert.AreEqual(typeof(LeafExpressionDefinition), e.GetType());
                 }
+            }
+
+            Assert.AreEqual(expressionDefinitionType, @object.GetType());
+
+            // Validate top-level expression
+            ExpressionDefinition expressionDefinition = @object as ExpressionDefinition;
+            ValidateExpression(expressionDefinition, expressionDefinitionType, "someResource/resourceType", "some.json.path");
+
+            // Validate where condition, if specified
+            if (whereCondition.Length > 0)
+            {
+                Assert.IsNotNull(expressionDefinition.Where);
+                ValidateExpression(expressionDefinition.Where, (Type)whereCondition[1], "whereResource/resourceType", "some.where.path");
             }
             else
             {
