@@ -6,6 +6,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 {
@@ -65,6 +66,69 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 // Verify correct property was resolved and resolver returns correct path
                 Assert.AreEqual(path, results[0].JToken.Path, ignoreCase: true);
                 Assert.AreEqual(path, results[0].Path, ignoreCase: true);
+            }
+        }
+
+        // Combinations of wildcards are tested more extensively in JTokenExtensionsTests.cs
+        [DataTestMethod]
+        [DataRow("*", 3, DisplayName = "Just a wildcard")]
+        [DataRow("OneChildLevel.*", 2, DisplayName = "Wildcard child")]
+        [DataRow("*.child", 2, DisplayName = "Wildcard parent")]
+        [DataRow("TwoChildLevels.child[*]", 3, DisplayName = "Wildcard array index")]
+        [DataRow("NoChildren.*", 0, DisplayName = "Wildcard matching nothing")]
+        public void Resolve_JsonContainsWildcardPath_ReturnsResolverWithCorrectJtokensAndPath(string path, int expectedCount)
+        {
+            JToken jtoken = JObject.Parse(
+                @"{
+                    ""NoChildren"": true,
+                    ""OneChildLevel"": {
+                        ""Child"": ""aValue"",
+                        ""Child2"": 2
+                    },
+                    ""TwoChildLevels"": {
+                        ""Child"": [ 0, 1, 2 ],
+                        ""Child2"": {
+                            ""LastProp"": true
+                        }
+                    },
+                }");
+
+            var resolver = new JsonPathResolver(jtoken, jtoken.Path);
+
+            var arrayRegex = new Regex(@"(?<property>\w+)\[(\d|\*)\]");
+
+            // Do twice to verify internal cache correctness
+            for (int i = 0; i < 2; i++)
+            {
+                var results = resolver.Resolve(path).ToList();
+
+                Assert.AreEqual(expectedCount, results.Count);
+
+                foreach (var resolved in results)
+                {
+                    // Verify path on each segment
+                    var expectedPath = path.Split('.');
+                    var actualPath = resolved.JToken.Path.Split('.');
+                    Assert.AreEqual(expectedPath.Length, actualPath.Length);
+                    for (int j = 0; j < expectedPath.Length; j++)
+                    {
+                        var expectedSegment = expectedPath[j];
+                        var actualSegment = actualPath[j];
+                        var arrayMatch = arrayRegex.Match(expectedSegment);
+
+                        if (arrayMatch.Success)
+                        {
+                            Assert.AreEqual(arrayMatch.Groups["property"].Value, arrayRegex.Match(actualSegment).Groups["property"].Value, ignoreCase: true);
+                        }
+                        else
+                        {
+                            Assert.IsTrue(expectedSegment.Equals("*") || expectedSegment.Equals(actualPath[j], StringComparison.OrdinalIgnoreCase));
+                        }
+                    }
+
+                    // Verify returned path matches JToken path
+                    Assert.AreEqual(resolved.JToken.Path, resolved.Path, ignoreCase: true);
+                }
             }
         }
 
