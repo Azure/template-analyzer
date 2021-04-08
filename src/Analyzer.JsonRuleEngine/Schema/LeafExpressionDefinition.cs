@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -108,7 +106,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 
             if (leafOperator != null)
             {
-                return new LeafExpression(jsonLineNumberResolver, leafOperator, this.ResourceType, this.Path);
+                return new LeafExpression(jsonLineNumberResolver, leafOperator, GetCommonProperties(jsonLineNumberResolver));
             }
 
             throw new NotImplementedException();

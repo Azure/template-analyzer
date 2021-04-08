@@ -24,13 +24,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         public string Path { get; private set; }
 
         /// <summary>
+        /// Gets the Where condition of this <see cref="Expression"/>.
+        /// </summary>
+        public Expression Where { get; private set; }
+
+        /// <summary>
         /// Initialization for the base Expression.
         /// </summary>
-        /// <param name="resourceType">The resource type this expression evaluates.</param>
-        /// <param name="path">The JSON path being evaluated.</param>
-        internal Expression(string resourceType, string path)
+        /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
+        internal Expression(ExpressionCommonProperties commonProperties)
         {
-            (this.ResourceType, this.Path) = (resourceType, path);
+            (this.ResourceType, this.Path, this.Where) = (commonProperties.ResourceType, commonProperties.Path, commonProperties.Where);
         }
 
 
@@ -109,23 +113,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 
                 foreach (var propertyToEvaluate in expandedScopes)
                 {
-                    // Expression implementation will generate Evaluation or Result.
-                    // evaluationPassed is &&'d with the Passed outcome to combine
-                    // the evaluations of all relevant paths (which can come from
-                    // matching resource types and/or wildcards in Path).
-                    if (getEvaluation != null)
+                    // Evaluate this path if either (a) there is no Where condition to evaluate, or (b) the Where expression passed for this path.
+                    var whereEvaluation = Where?.Evaluate(propertyToEvaluate);
+                    if (whereEvaluation == null || (whereEvaluation.Passed && whereEvaluation.HasResults))
                     {
-                        var evaluation = getEvaluation(propertyToEvaluate);
-                        evaluationPassed &= evaluation.Passed;
-                        evaluation.Expression = this;
-                        jsonRuleEvaluations.Add(evaluation);
-                    }
-                    else
-                    {
-                        var result = getResult(propertyToEvaluate);
-                        evaluationPassed &= result.Passed;
-                        result.Expression = this;
-                        jsonRuleResults.Add(result);
+                        // Expression implementation will generate Evaluation or Result.
+                        // evaluationPassed is &&'d with the Passed outcome to combine
+                        // the evaluations of all relevant paths (which can come from
+                        // matching resource types and/or wildcards in Path).
+                        if (getEvaluation != null)
+                        {
+                            var evaluation = getEvaluation(propertyToEvaluate);
+                            evaluationPassed &= evaluation.Passed;
+                            evaluation.Expression = this;
+                            jsonRuleEvaluations.Add(evaluation);
+                        }
+                        else
+                        {
+                            var result = getResult(propertyToEvaluate);
+                            evaluationPassed &= result.Passed;
+                            result.Expression = this;
+                            jsonRuleResults.Add(result);
+                        } 
                     }
                 }
             }

@@ -21,10 +21,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Creates an <see cref="AnyOfExpression"/>.
         /// </summary>
         /// <param name="expressions">List of expressions to perform a logical OR against.</param>
-        /// <param name="path">The JSON path being evaluated.</param>
-        /// <param name="resourceType">The resource type this expression evaluates.</param>
-        public AnyOfExpression(Expression[] expressions, string resourceType, string path)
-            : base(resourceType, path)
+        /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
+        public AnyOfExpression(Expression[] expressions, ExpressionCommonProperties commonProperties)
+            : base(commonProperties)
         {
             this.AnyOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
         }

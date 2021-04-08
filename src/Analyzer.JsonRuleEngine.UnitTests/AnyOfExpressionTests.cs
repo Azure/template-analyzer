@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockOperator1 = new Mock<LeafExpressionOperator>().Object;
             var mockOperator2 = new Mock<LeafExpressionOperator>().Object;
 
-            var mockLeafExpression1 = new Mock<LeafExpression>(mockLineResolver, mockOperator1, "ResourceProvider/resource", "some.path");
-            var mockLeafExpression2 = new Mock<LeafExpression>(mockLineResolver, mockOperator2, "ResourceProvider/resource", "some.path");
+            var mockLeafExpression1 = new Mock<LeafExpression>(mockLineResolver, mockOperator1, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
+            var mockLeafExpression2 = new Mock<LeafExpression>(mockLineResolver, mockOperator2, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
 
             var jsonRuleResult1 = new JsonRuleResult
             {
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
-            var anyOfExpression = new AnyOfExpression(expressionArray, resourceType: resourceType, path: path);
+            var anyOfExpression = new AnyOfExpression(expressionArray, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
             var anyOfEvaluation = anyOfExpression.Evaluate(mockJsonPathResolver.Object);
@@ -92,14 +92,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            new AnyOfExpression(new Expression[0], null, null).Evaluate(jsonScope: null);
+            new AnyOfExpression(new Expression[0], new ExpressionCommonProperties()).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new AnyOfExpression(null, null, null);
+            new AnyOfExpression(null, new ExpressionCommonProperties());
         }
     }
 }

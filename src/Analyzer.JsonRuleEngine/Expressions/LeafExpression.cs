@@ -21,13 +21,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
         /// map JSON paths in evaluation results to the line number in the JSON evaluated.</param>
         /// <param name="operator">The operator used to evaluate the resource type and/or path.</param>
-        /// <param name="resourceType">The resource type this expression evaluates.</param>
-        /// <param name="path">The JSON path being evaluated.</param>
-        public LeafExpression(ILineNumberResolver jsonLineNumberResolver, LeafExpressionOperator @operator, string resourceType, string path)
-            : base(resourceType, path ?? throw new ArgumentNullException(nameof(path)))
+        /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.
+        /// <see cref="ExpressionCommonProperties.Path"/> must not be null.</param>
+        public LeafExpression(ILineNumberResolver jsonLineNumberResolver, LeafExpressionOperator @operator, ExpressionCommonProperties commonProperties)
+            : base(commonProperties)
         {
             this.jsonLineNumberResolver = jsonLineNumberResolver ?? throw new ArgumentNullException(nameof(jsonLineNumberResolver));
             this.Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
+
+            if (commonProperties.Path == null) throw new ArgumentException("Path property must not be null.", nameof(commonProperties));
         }
 
         /// <summary>

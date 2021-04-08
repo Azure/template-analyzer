@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             var mockLineResolver = new Mock<ILineNumberResolver>().Object;
             var mockOperator = new Mock<LeafExpressionOperator>().Object;
-            var leafExpression = new LeafExpression(mockLineResolver, mockOperator, resourceType, path);
+            var leafExpression = new LeafExpression(mockLineResolver, mockOperator, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             Assert.AreEqual(resourceType, leafExpression.ResourceType);
             Assert.AreEqual(path, leafExpression.Path);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.ResolveLineNumber(It.Is<string>(p => p == expectedPathEvaluated)))
                 .Returns(lineNumber);
 
-            var leafExpression = new LeafExpression(mockLineResolver.Object, mockLeafExpressionOperator.Object, resourceType, path);
+            var leafExpression = new LeafExpression(mockLineResolver.Object, mockLeafExpressionOperator.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
             var evaluation = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object);
@@ -119,24 +119,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [ExpectedException(typeof(ArgumentException))]
         public void Constructor_NullPath_ThrowsException()
         {
-            new LeafExpression(new Mock<ILineNumberResolver>().Object, new ExistsOperator(true, false), "resourceType", null);
+            new LeafExpression(new Mock<ILineNumberResolver>().Object, new ExistsOperator(true, false), new ExpressionCommonProperties { ResourceType = "resourceType" });
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullOperator_ThrowsException()
         {
-            new LeafExpression(new Mock<ILineNumberResolver>().Object, null, "resourceType", "path");
+            new LeafExpression(new Mock<ILineNumberResolver>().Object, null, new ExpressionCommonProperties { ResourceType = "resourceType", Path = "path" });
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            var leafExpression = new LeafExpression(new Mock<ILineNumberResolver>().Object, new HasValueOperator(true, false), null, "path");
+            var leafExpression = new LeafExpression(new Mock<ILineNumberResolver>().Object, new HasValueOperator(true, false), new ExpressionCommonProperties { Path = "path" });
             leafExpression.Evaluate(jsonScope: null);
         }
 
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullLineResolver_ThrowsException()
         {
-            new LeafExpression(null, new Mock<LeafExpressionOperator>().Object, "resourceType", "path");
+            new LeafExpression(null, new Mock<LeafExpressionOperator>().Object, new ExpressionCommonProperties { ResourceType = "resourceType", Path = "path" });
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// pass to the created <see cref="Expression"/>.</param>
         /// <returns>The AnyOfExpression.</returns>
         public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver) =>
-            new AnyOfExpression(this.AnyOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), resourceType: this.ResourceType, path: this.Path);
+            new AnyOfExpression(this.AnyOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), GetCommonProperties(jsonLineNumberResolver));
 
         /// <summary>
         /// Validates the <see cref="AnyOfExpressionDefinition"/> for valid syntax
