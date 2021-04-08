@@ -17,13 +17,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
         /// <summary>
         /// The property names that can be specified for LeafExpressions
         /// </summary>
-        private static readonly HashSet<string> LeafExpressionJsonPropertyNames =
+        private static readonly HashSet<string> ExpressionJsonPropertyNames =
             typeof(LeafExpressionDefinition)
-            .GetProperties(BindingFlags.Public| BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(property => !property.GetMethod.IsVirtual)
             .Select(property => (property.Name, Attribute: property.GetCustomAttribute<JsonPropertyAttribute>()))
             .Where(property => property.Attribute != null)
             .Select(property => property.Attribute.PropertyName ?? property.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        static ExpressionConverter()
+        {
+            // Add names of structured expressions
+            ExpressionJsonPropertyNames.UnionWith(new HashSet<string>
+            {
+                "allOf",
+                "anyOf"
+            });
+        }
 
         /// <summary>
         /// Parses an ExpressionDefinition from a JsonReader
@@ -45,19 +56,33 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
             var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
 
-            // See if a property representing a structured expression is present.  If so, parse that structured expression.
-            // TODO: Parse structured expressions
-
-            // Verify an operator property exists, representing a LeafExpression
-            var leafPropertyCount = objectPropertyNames.Count(property => LeafExpressionJsonPropertyNames.Contains(property));
-            if (leafPropertyCount == 1)
+            var expressionPropertyCount = objectPropertyNames.Count(property => ExpressionJsonPropertyNames.Contains(property));
+            if (expressionPropertyCount == 1)
             {
+                if (objectPropertyNames.Contains("allOf", StringComparer.OrdinalIgnoreCase)) 
+                {
+                    var allOfExpressionDefinition = CreateExpressionDefinition<AllOfExpressionDefinition>(jsonObject, serializer);
+                    allOfExpressionDefinition.Validate();
+
+                    return allOfExpressionDefinition;
+                }
+                else if (objectPropertyNames.Contains("anyOf", StringComparer.OrdinalIgnoreCase))
+                {
+                    var anyOfExpressionDefinition = CreateExpressionDefinition<AnyOfExpressionDefinition>(jsonObject, serializer);
+                    anyOfExpressionDefinition.Validate();
+
+                    return anyOfExpressionDefinition;
+                }
+                
                 return CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
             }
 
-            throw new JsonException(leafPropertyCount > 1 ?
-                $"Too many expressions specified in evaluation.  Only one is allowed.  Original JSON: {jsonObject}" :
-                $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  Original JSON: {jsonObject}");
+            var lineInfo = jsonObject as IJsonLineInfo;
+            var parsingErrorDetails = $"Path '{jsonObject.Path}', line {lineInfo.LineNumber}, position {lineInfo.LinePosition}.";
+
+            throw new JsonSerializationException(expressionPropertyCount > 1 ?
+                $"Too many expressions specified in evaluation.  Only one is allowed.  {parsingErrorDetails}" :
+                $"Invalid evaluation in JSON.  No expressions are specified (must specify exactly one).  {parsingErrorDetails}");
         }
 
         /// <summary>

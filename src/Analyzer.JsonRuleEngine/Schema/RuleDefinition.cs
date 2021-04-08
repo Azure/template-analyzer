@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Gets or sets the expression details of the rule.
         /// </summary>
-        [JsonProperty]
-        public ExpressionDefinition Evaluation { get; set; }
+        [JsonProperty(PropertyName = "evaluation")]
+        public ExpressionDefinition ExpressionDefinition { get; set; }
     }
 }

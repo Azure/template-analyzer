@@ -76,11 +76,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 try
                 {
                     Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
-                    IEnumerable<Types.IResult> results = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                    IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
-                    foreach (var result in results)
+                    foreach (var evaluation in evaluations)
                     {
-                        Console.WriteLine($"{result.RuleName}: {result.RuleDescription}, Result: {result.Passed.ToString()}");
+                        Console.WriteLine($"{evaluation.RuleName}: {evaluation.RuleDescription}, Result: {evaluation.Passed.ToString()}");
                     }
                 }
                 catch (Exception exp)

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         /// <param name="templateContext">The template context to evaluate.</param>
         /// <param name="ruleDefinitions">The rules to evaluate the template with.</param>
-        /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IResult> EvaluateRules(TemplateContext templateContext, string ruleDefinitions);
+        /// <returns>The evaluations of the rules against the template.</returns>
+        public IEnumerable<IEvaluation> EvaluateRules(TemplateContext templateContext, string ruleDefinitions);
     }
 }

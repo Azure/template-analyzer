@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,9 +14,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
     [TestClass]
     public class JsonLineNumberResolverTests
     {
-        #region Test Template
+        #region Test Template Context
 
-        private readonly JToken originalTemplate = JObject.Parse(
+        private readonly TemplateContext templateContext = new TemplateContext
+        {
+            OriginalTemplate = JObject.Parse(
             @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                 ""parameters"": {
@@ -43,9 +46,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         }
                     }
                 ]
-            }");
+            }"),
 
-        private readonly JToken expandedTemplate = JObject.Parse(
+            ExpandedTemplate = JObject.Parse(
             @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                 ""parameters"": {
@@ -95,13 +98,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         ""type"": ""Microsoft.ResourceProvider/ExtraResourceInExpandedTemplate"",
                     }
                 ]
-            }");
+            }")
+        };
 
         #endregion
 
         public static IReadOnlyList<object[]> TestScenarios { get; } = new List<object[]>
         {
-            // Test data for test ResolveLineNumberForOriginalTemplate_ReturnsCorrectLineNumber.
+            // Test data for test ResolveLineNumber_ReturnsCorrectLineNumber.
             // Index one is for parameter 'path'.
             // Index two (a sub-array) is for parameter 'pathInOrginalTemplate'.
             // Index three is the test display name.  This is just so GetDisplayName() can do a lookup and is not used in the test.
@@ -119,17 +123,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(TestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void ResolveLineNumberForOriginalTemplate_ReturnsCorrectLineNumber(string path, object[] pathInOrginalTemplate, string _)
+        public void ResolveLineNumber_ReturnsCorrectLineNumber(string path, object[] pathInOrginalTemplate, string _)
         {
             // Resolve line number
-            var resolvedLineNumber = new JsonLineNumberResolver()
-                .ResolveLineNumberForOriginalTemplate(
-                    path,
-                    expandedTemplate,
-                    originalTemplate);
+            var resolvedLineNumber = new JsonLineNumberResolver(templateContext)
+                .ResolveLineNumber(path);
 
             // Get expected line number
-            var tokenInOriginalTemplate = originalTemplate;
+            var tokenInOriginalTemplate = templateContext.OriginalTemplate;
             foreach (var pathSegment in pathInOrginalTemplate)
             {
                 tokenInOriginalTemplate = tokenInOriginalTemplate[pathSegment];
@@ -143,58 +144,65 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
         [DataRow("resources[4].type", DisplayName = "Extra resource")]
         [DataRow("resources[3].type", DisplayName = "Extra copied resource with missing source copy loop")]
-        public void ResolveLineNumberForOriginalTemplate_UnableToFindEquivalentLocationInOriginal_Returns0(string path)
+        public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns0(string path)
         {
             Assert.AreEqual(
                 0,
-                new JsonLineNumberResolver()
-                    .ResolveLineNumberForOriginalTemplate(
-                        path,
-                        expandedTemplate,
-                        originalTemplate));
+                new JsonLineNumberResolver(templateContext)
+                .ResolveLineNumber(path));
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumberForOriginalTemplate_PathIsNull_ThrowsException()
+        public void ResolveLineNumber_PathIsNull_ThrowsException()
         {
-            new JsonLineNumberResolver()
-                .ResolveLineNumberForOriginalTemplate(
-                    null,
-                    expandedTemplate,
-                    originalTemplate);
+            new JsonLineNumberResolver(templateContext)
+                .ResolveLineNumber(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumberForOriginalTemplate_OriginalTemplateIsNull_ThrowsException()
+        public void ResolveLineNumber_OriginalTemplateIsNull_ThrowsException()
         {
-            new JsonLineNumberResolver()
-                .ResolveLineNumberForOriginalTemplate(
-                    "path",
-                    expandedTemplate,
-                    null);
+            new JsonLineNumberResolver(
+                new TemplateContext
+                {
+                    OriginalTemplate = null,
+                    ExpandedTemplate = templateContext.ExpandedTemplate
+                })
+                .ResolveLineNumber("path");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumberForOriginalTemplate_ExpandedTemplateIsNullAndPathContainsResourcesArray_ThrowsException()
+        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathContainsResourcesArray_ThrowsException()
         {
-            new JsonLineNumberResolver()
-                .ResolveLineNumberForOriginalTemplate(
-                    "resources[2]",
-                    null,
-                    originalTemplate);
+            new JsonLineNumberResolver(
+                new TemplateContext
+                {
+                    OriginalTemplate = templateContext.OriginalTemplate,
+                    ExpandedTemplate = null
+                })
+                .ResolveLineNumber("resources[2]");
         }
 
         [TestMethod]
-        public void ResolveLineNumberForOriginalTemplate_ExpandedTemplateIsNullAndPathDoesNotContainResourcesArray_ReturnsLineNumber()
+        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathDoesNotContainResourcesArray_ReturnsLineNumber()
         {
-            new JsonLineNumberResolver()
-                .ResolveLineNumberForOriginalTemplate(
-                    "parameters.missingParameter",
-                    null,
-                    originalTemplate);
+            new JsonLineNumberResolver(
+                new TemplateContext
+                {
+                    OriginalTemplate = templateContext.OriginalTemplate,
+                    ExpandedTemplate = null
+                })
+                .ResolveLineNumber("parameters.missingParameter");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Constructor_NullTemplateContext_ThrowsException()
+        {
+            new JsonLineNumberResolver(null);
         }
     }
 }

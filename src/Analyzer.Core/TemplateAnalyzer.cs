@@ -31,10 +31,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
-        /// Runs the TemplateAnalyzer logic given the template and parameters passed to it
+        /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
-        /// <returns>An enumerable of TemplateAnalyzer results</returns>
-        public IEnumerable<IResult> EvaluateRulesAgainstTemplate()
+        /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
+        public IEnumerable<IEvaluation> EvaluateRulesAgainstTemplate()
         {
             JToken templatejObject;
 
@@ -56,16 +56,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 var rules = LoadRules();
-                var jsonRuleEngine = new JsonRuleEngine(new JsonLineNumberResolver());
+                var jsonRuleEngine = new JsonRuleEngine(context => new JsonLineNumberResolver(context));
 
-                IEnumerable<IResult> results = jsonRuleEngine.EvaluateRules(
+                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.EvaluateRules(
                     new TemplateContext {
                         OriginalTemplate = JObject.Parse(Template),
                         ExpandedTemplate = templatejObject,
                         IsMainTemplate = true },
                     rules);
 
-                return results;
+                return evaluations;
             }
             catch (Exception e)
             {

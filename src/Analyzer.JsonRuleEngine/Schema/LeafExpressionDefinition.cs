@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,6 +15,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
     /// </summary>
     internal class LeafExpressionDefinition : ExpressionDefinition
     {
+        /// <inheritdoc/>
+        [JsonProperty(Required = Required.Always)]
+        public override string Path { get; set; }
+
         /// <summary>
         /// Gets or sets the Exists property
         /// </summary>
@@ -75,10 +80,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public JToken GreaterOrEqual { get; set; }
 
         /// <summary>
-        /// Creates a <c>LeafExpression</c> capable of evaluating JSON using the operator specified in the JSON rule.
+        /// Creates a <see cref=" LeafExpression"/> capable of evaluating JSON using the operator specified in the JSON rule.
         /// </summary>
+        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// pass to the created <see cref="Expression"/>.</param>
         /// <returns>The LeafExpression.</returns>
-        public override Expression ToExpression()
+        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
         {
             LeafExpressionOperator leafOperator = null;
 
@@ -99,10 +106,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 
             if (leafOperator != null)
             {
-                return new LeafExpression(this.ResourceType, this.Path, leafOperator);
+                return new LeafExpression(jsonLineNumberResolver, leafOperator, GetCommonProperties(jsonLineNumberResolver));
             }
 
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Validates the LeafExpressionDefinition for valid syntax
+        /// </summary>
+        internal override void Validate()
+        {
+            // Validation for LeafExpression occurs in ExpressionConverter
         }
     }
 }
