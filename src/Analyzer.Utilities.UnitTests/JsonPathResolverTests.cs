@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -210,6 +211,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         public void Constructor_NullPath_ThrowsException()
         {
             new JsonPathResolver(new JObject(), null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void PrivateConstructor_NullResolvedPaths_ThrowsException()
+        {
+            var privateConstructor =
+                typeof(JsonPathResolver)
+                .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .First();
+
+            try
+            {
+                privateConstructor.Invoke(new object[] { new JObject(), "path", null });
+            }
+            catch (TargetInvocationException e)
+            {
+                // When the constructor throws the exception, a TargetInvocationException exception
+                // is thrown (since invocation was via reflection) that wraps the inner exception.
+                throw e.InnerException;
+            }
         }
     }
 }
