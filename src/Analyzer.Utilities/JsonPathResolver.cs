@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                resolvedTokens = this.currentScope.InsensitiveTokens(jsonPath).Select(t => (FieldContent)t.jtoken);
+                resolvedTokens = this.currentScope.InsensitiveTokens(jsonPath).Select(t => (FieldContent)t).ToList();
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
                 var resources = this.currentScope.InsensitiveTokens("resources[*]");
-                resolvedTokens = resources.Select(r => (FieldContent)r.jtoken);
+                resolvedTokens = resources.Select(r => (FieldContent)r).ToList();
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 

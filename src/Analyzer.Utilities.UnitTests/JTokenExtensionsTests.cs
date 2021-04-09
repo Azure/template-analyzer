@@ -55,7 +55,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         }
                     ]
                 },
-                ""topLevel3"": { }
+                ""topLevel3"": {
+                    ""whitespaceNodes"": {
+                        """": {
+                            ""end"": 1
+                        },
+                        ""   "": {
+                            ""end"": 2
+                        },
+                        "" padding "": {
+                            ""end"": 3
+                        }
+                    }
+                }
             }");
 
         /// <summary>
@@ -77,6 +89,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             new object[] { "topLevel1.subLevel1.intArray[3]", false, new object[] { "topLevel1", "subLevel1", "intArray" }, "Indexing out of bounds into array" },
             new object[] { "topLevel1.subLevel2[2]", false, new object[] { "topLevel1", "subLevel2" }, "Indexing node that isn't an array" },
             new object[] { "topLevel2.subLevel1.objArray", true, new object[] { "topLevel2", "subLevel1", "objArray" }, "Not specifying an index for an array" },
+            new object[] { "topLevel3.whitespaceNodes..end", true, new object[] { "topLevel3", "whitespaceNodes", "", "end" }, "Selecting empty node name" },
+            new object[] { "topLevel3.whitespaceNodes.   .end", true, new object[] { "topLevel3", "whitespaceNodes", "   ", "end" }, "Selecting whitespace node name" },
+            new object[] { "topLevel3.whitespaceNodes. padding .end", true, new object[] { "topLevel3", "whitespaceNodes", " padding ", "end" }, "Selecting node name with whitespace padding" },
         }.AsReadOnly();
 
         // Just returns the element in the last index of the array from DirectPathTestScenarios
@@ -218,8 +233,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 expectedToken = expectedToken[node];
             }
 
-            Assert.AreEqual(expectedToken, actualToken.jtoken);
-            Assert.AreEqual(path, actualToken.path, ignoreCase: true);
+            Assert.AreEqual(expectedToken, actualToken);
         }
 
         [DataTestMethod]
@@ -228,7 +242,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         {
             // This test is logically identical to InsensitiveToken_VariousPathsWithNullBehavior_ReturnsCorrectToken,
             // but the test calls InsensitiveTokens instead of InsensitiveToken.
-            var actualToken = testJObject.InsensitiveTokens(path, InsensitivePathNotFoundBehavior.Null).First();
+            // Default behavior if not specified is InsensitivePathNotFoundBehavior.Null
+            var actualToken = testJObject.InsensitiveTokens(path).First();
 
             JToken expectedToken = null;
             if (isPathFullyResolved)
@@ -240,8 +255,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 }
             }
 
-            Assert.AreEqual(expectedToken, actualToken.jtoken);
-            Assert.AreEqual(expectedToken?.Path, actualToken.path);
+            Assert.AreEqual(expectedToken, actualToken);
         }
 
         [DataTestMethod]
@@ -264,14 +278,36 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 }
 
                 // Verify token returned.
-                Assert.AreEqual(expectedToken, actualToken.jtoken);
-                Assert.AreEqual(expectedToken.Path, actualToken.path);
+                Assert.AreEqual(expectedToken, actualToken);
             }
             catch
             {
                 // Exception thrown - verify it is expected.
                 Assert.IsFalse(isPathFullyResolved);
             }
+        }
+
+        [TestMethod]
+        public void InsensitiveTokens_JsonObjectIsNullAndInsensitivePathNotFoundBehaviorIsNullWithNullPath_SingleNullIsReturned()
+        {
+            var tokens = JTokenExtensions.InsensitiveTokens(null, null).ToList();
+            Assert.AreEqual(1, tokens.Count);
+            Assert.IsNull(tokens[0]);
+        }
+
+        [TestMethod]
+        public void InsensitiveTokens_JsonObjectIsNullAndInsensitivePathNotFoundBehaviorIsNullWithNonWildcardPath_SingleNullIsReturned()
+        {
+            var tokens = JTokenExtensions.InsensitiveTokens(null, "path").ToList();
+            Assert.AreEqual(1, tokens.Count);
+            Assert.IsNull(tokens[0]);
+        }
+
+        [TestMethod]
+        public void InsensitiveTokens_JsonObjectIsNullAndInsensitivePathNotFoundBehaviorIsNullWithWildcardPath_EmptyIsReturned()
+        {
+            var tokens = JTokenExtensions.InsensitiveTokens(null, "some.*.path").ToList();
+            Assert.AreEqual(0, tokens.Count);
         }
 
         /// <summary>
@@ -380,9 +416,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 }
                 
                 // Verify token
-                var result = tokens.Find(t => t.jtoken == expectedToken);
-                Assert.AreEqual(expectedToken, result.jtoken);
-                Assert.AreEqual(expectedToken.Path, result.path);
+                var result = tokens.Find(t => t == expectedToken);
+                Assert.AreEqual(expectedToken, result);
             }
 
             // Verify the number of expected token paths matches the number returned.
@@ -400,14 +435,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             // fully resolved tokens. The rest lead to tokens which are expected to not
             // fully match, and are only returned with LastValid behavior.
             int expectedTokenCount = 0;
-            bool expectFullPathMatch = true;
             foreach (var expectedPath in expectedTokenPaths)
             {
                 if (expectedPath.Length == 0)
                 {
                     // The rest of the expected paths after this one
                     // should not match the full requested path. (LastValid behavior)
-                    expectFullPathMatch = false;
                     continue;
                 }
 
@@ -421,9 +454,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 }
                 
                 // Verify token
-                var result = tokens.Find(t => t.jtoken == expectedToken);
-                Assert.AreEqual(expectedToken, result.jtoken);
-                Assert.AreEqual(expectFullPathMatch, expectedToken.Path == result.path);
+                var result = tokens.Find(t => t == expectedToken);
+                Assert.AreEqual(expectedToken, result);
             }
 
             // Verify the number of expected token paths matches the number returned.

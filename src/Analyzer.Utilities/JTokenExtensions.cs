@@ -33,27 +33,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             /// <summary>
             /// The path segments resolved so far up to <see cref="Token"/>.
             /// </summary>
-            public List<string> ResolvedPath = new List<string>();
+            public List<string> ResolvedPath;
 
             /// <summary>
             /// The next index of the path segments to look for.
-            /// (The path segments are in <see cref="InsensitiveTokens(JToken, string, InsensitivePathNotFoundBehavior)"/>.
+            /// (The path segments are looked up in <see cref="InsensitiveTokens(JToken, string, InsensitivePathNotFoundBehavior)"/>.
             /// </summary>
             public int NextPathIndex;
-
-            /// <summary>
-            /// The path that leads to <see cref="Token"/>.
-            /// </summary>
-            public string PathToStartingToken;
-
-            /// <summary>
-            /// Creates the tuple to be returned by <see cref="InsensitiveTokens(JToken, string, InsensitivePathNotFoundBehavior)"/>.
-            /// </summary>
-            public (JToken token, string path) TokenAndPath =>
-                (
-                    Token,
-                    (PathToStartingToken == "" ? "" : PathToStartingToken + ".") + string.Join(".", ResolvedPath)
-                );
         }
 
         /// <summary>
@@ -80,7 +66,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// If not found, behavior is determined by <paramref name="behaviorWhenNotFound"/>.</returns>
         [DebuggerStepThrough]
         public static JToken InsensitiveToken(this JToken token, string propertyNameOrPath, InsensitivePathNotFoundBehavior behaviorWhenNotFound) =>
-            InsensitiveTokens(token, propertyNameOrPath, behaviorWhenNotFound).FirstOrDefault().jtoken;
+            InsensitiveTokens(token, propertyNameOrPath, behaviorWhenNotFound).FirstOrDefault();
 
         /// <summary>
         /// Finds child JTokens at the specified JSON path. Each child in the path
@@ -92,14 +78,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="token">The JToken to search from.</param>
         /// <param name="path">The JSON path to search for.</param>
         /// <returns>
-        /// A Tuple of (JToken, path), for each JToken found at the requested path.
+        /// A JToken for each fully resolved property found for the requested path.
         /// Many tokens could be returned if wildcards are present in the path.
-        /// If the path cannot be completely resolved, jtoken will be null.
-        /// In all cases, the path will be equal to the requested path, with any
-        /// resolved wildcards replaced with their property name.
+        /// If the path cannot be completely resolved, null will be returned.
         /// </returns>
         [DebuggerStepThrough]
-        public static IEnumerable<(JToken jtoken, string path)> InsensitiveTokens(this JToken token, string path) =>
+        public static IEnumerable<JToken> InsensitiveTokens(this JToken token, string path) =>
             InsensitiveTokens(token, path, InsensitivePathNotFoundBehavior.Null);
 
         /// <summary>
@@ -112,26 +96,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="token">The JToken to search from.</param>
         /// <param name="path">The JSON path to search for.</param>
         /// <param name="behaviorWhenNotFound">Behavior if path is not fully resolved.
-        /// If wildcards are in the path, resulting in potentially multiple JTokens found,
-        /// this will apply to each tuple returned individually (null JTokens are not returned).</param>
+        /// If <see cref="InsensitivePathNotFoundBehavior.Null"/> is specified, and the
+        /// path contains wildcards, only JTokens which fully match the specified path
+        /// are returned; all other path 'branches' are discarded.</param>
         /// <returns>
-        /// A Tuple of (JToken, path), for each JToken found at the requested path.
+        /// A JToken for each fully resolved property found for the requested path.
         /// Many tokens could be returned if wildcards are present in the path.
-        /// If the path cannot be completely resolved, the value of jtoken is
+        /// If the path cannot be completely resolved, the JToken returned will be
         /// determined by <paramref name="behaviorWhenNotFound"/>.  If there are no wildcards
-        /// in the path, <paramref name="behaviorWhenNotFound"/> is <see cref="InsensitivePathNotFoundBehavior.Null"/>,
-        /// and the path was not resolved, a single (null, null) is returned.
-        /// In cases where <paramref name="behaviorWhenNotFound"/> is not Error,
-        /// the path will be equal to the requested path, with any resolved wildcards
-        /// replaced with their property name.
+        /// in the path, and <paramref name="behaviorWhenNotFound"/> is <see cref="InsensitivePathNotFoundBehavior.Null"/>,
+        /// and the path was not resolved, a single null is returned.
         /// </returns>
-        public static IEnumerable<(JToken jtoken, string path)> InsensitiveTokens(this JToken token, string path, InsensitivePathNotFoundBehavior behaviorWhenNotFound)
+        public static IEnumerable<JToken> InsensitiveTokens(this JToken token, string path, InsensitivePathNotFoundBehavior behaviorWhenNotFound)
         {
             // Verify a valid behavior is passed
             if (!Enum.IsDefined(typeof(InsensitivePathNotFoundBehavior), behaviorWhenNotFound))
             {
                 throw new ArgumentException("Value passed is not defined.", nameof(behaviorWhenNotFound));
             }
+
+            bool pathContainsWildcard = path != null && path.Contains('*');
 
             if (token == null)
             {
@@ -140,9 +124,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     case InsensitivePathNotFoundBehavior.Error:
                         throw new ArgumentNullException(nameof(token));
                     case InsensitivePathNotFoundBehavior.LastValid:
-                        yield return (null, path);
+                        // return null here, since there is no other 'last valid' object to return
+                        yield return null;
                         yield break;
                     case InsensitivePathNotFoundBehavior.Null:
+                        // Return a single null if there are no wildcards.  Otherwise, don't return anything.
+                        if (!pathContainsWildcard) yield return null;
                         yield break;
                 };
             }
@@ -154,19 +141,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     case InsensitivePathNotFoundBehavior.Error:
                         throw new ArgumentException($"{nameof(path)} is null.");
                     case InsensitivePathNotFoundBehavior.LastValid:
-                        yield return (token, path);
+                        yield return token;
                         yield break;
                     case InsensitivePathNotFoundBehavior.Null:
+                        // Since path is null, there are no wildcards, so return a single null.
+                        yield return null;
                         yield break;
                 };
             }
 
-            string pathToParent = token.Path;
             string[] properties = path.Split('.');
-            bool pathContainsWildcard = path.Contains('*');
 
             var jtokensToSearchFrom = new Queue<InsensitiveTokenContext>();
-            jtokensToSearchFrom.Enqueue(new InsensitiveTokenContext { Token = token, NextPathIndex = 0, PathToStartingToken = pathToParent });
+            jtokensToSearchFrom.Enqueue(new InsensitiveTokenContext { Token = token, ResolvedPath = new List<string>(), NextPathIndex = 0 });
 
             bool fullPathFound = false;
 
@@ -177,7 +164,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 if (tokenContext.NextPathIndex == properties.Length)
                 {
                     // Reached the end of the path.  Return current JToken.
-                    yield return tokenContext.TokenAndPath;
+                    yield return tokenContext.Token;
                     fullPathFound = true;
                     continue;
                 }
@@ -267,17 +254,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                 if (!foundChild)
                 {
-                    // Concatenate the remaining unresolved path to the current resolved path
-                    var tokenAndPath = tokenContext.TokenAndPath;
-                    tokenAndPath.path = string.Join(".", new[] { tokenAndPath.path }.Concat(properties[Math.Min(properties.Length, tokenContext.NextPathIndex)..]));
-
                     switch (behaviorWhenNotFound)
                     {
                         case InsensitivePathNotFoundBehavior.Error:
                             throw new Exception($"JSON path was unresolved at {string.Join(".", tokenContext.ResolvedPath)}", lastException);
                         case InsensitivePathNotFoundBehavior.LastValid:
-                            yield return tokenAndPath;
+                            yield return tokenContext.Token;
                             break;
+
+                        // Paths not fully resolved are ignored for InsensitivePathNotFoundBehavior.Null.
+                        // If the path doesn't contain wildcards, a single null may be returned below.
                     };
                 }
             }
@@ -287,7 +273,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             if (behaviorWhenNotFound == InsensitivePathNotFoundBehavior.Null
                 && !(pathContainsWildcard || fullPathFound))
             {
-                yield return (null, null);
+                yield return null;
             }
         }
 
@@ -341,8 +327,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 {
                     Token = childToken,
                     NextPathIndex = parentContext.NextPathIndex + 1,
-                    ResolvedPath = pathToChild,
-                    PathToStartingToken = parentContext.PathToStartingToken
+                    ResolvedPath = pathToChild
                 });
         }
     }
