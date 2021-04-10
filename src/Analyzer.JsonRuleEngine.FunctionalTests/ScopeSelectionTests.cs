@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests
