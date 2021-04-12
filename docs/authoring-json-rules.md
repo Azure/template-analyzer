@@ -198,7 +198,7 @@ Example:
 }
 ```
 
-#### **Regex [[*]](#note)**
+#### **Regex**
 *Type: string*
 
 Runs the regular expression in the specified value against the value of the `path` in the template.  All regular expressions are case-insensitive.  Evaluates to `true` if the regular expression is a match; `false` otherwise.  If the value in the template is not a string, this evaluates to `false`.
