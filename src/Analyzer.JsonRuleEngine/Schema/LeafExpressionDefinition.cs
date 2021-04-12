@@ -103,6 +103,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
                     specifiedValue: this.Is ?? this.NotEquals, 
                     isNegative: this.NotEquals != null);
             }
+            else if (this.Regex != null)
+            {
+                leafOperator = new RegexOperator(Regex, isNegative: false);
+            }
 
             if (leafOperator != null)
             {
