@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(DirectPathTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void InsensitiveToken_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows(string path, bool isPathFullyResolved, object[] pathToExpectedToken, string __)
+        public void InsensitiveToken_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows(string path, bool isPathFullyResolved, object[] pathToExpectedToken, string _)
         {
             try
             {
@@ -260,7 +260,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(DirectPathTestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void InsensitiveTokens_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows(string path, bool isPathFullyResolved, object[] pathToExpectedToken, string __)
+        public void InsensitiveTokens_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows(string path, bool isPathFullyResolved, object[] pathToExpectedToken, string _)
         {
             // This test is logically identical to InsensitiveToken_VariousPathsWithErrorBehavior_ReturnsCorrectTokenOrThrows,
             // but the test calls InsensitiveTokens instead of InsensitiveToken.
@@ -320,6 +320,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         /// </summary>
         public static IReadOnlyList<object[]> WildcardTestScenarios { get; } = new List<object[]>
         {
+            new object[] {
+                "*",
+                new List<object[]> {
+                    new object[] { "topLevel1" },
+                    new object[] { "topLevel2" },
+                    new object[] { "topLevel3" },
+                }, "Path is a single wildcard" },
             new object[] {
                 "topLevel1.subLevel2.*",
                 new List<object[]> {

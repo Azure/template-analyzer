@@ -79,6 +79,10 @@ The examples given with the operators below will be in the context of the follow
          "numberOfResourcesDeployed": {
             "type": "integer",
             "value": 1
+        },
+        "customOutput": {
+            "type": "string",
+            "value": "A custom output string"
         }
     }
 }
@@ -271,7 +275,7 @@ Performs a logical 'and' operation on the array of `Evaluation`s.  Evaluates to 
 Example:
 ```javascript
 {
-    "anyOf": [
+    "allOf": [
         {
             "resourceType": "Microsoft.Compute/virtualMachines",
             "path": "properties.osProfile.adminPassword",
@@ -388,4 +392,41 @@ In contrast to the first example, the `evaluate` operator in the example above w
 ## Wildcard Behavior
 The `path` in an `Evaluation` can specify the '\*' character as a wildcard.  '\*' can be used to match any full property name or as the index into an array (selecting all elements of the array).  When a wildcard is used, zero or more paths in the template will be found that match `path`.  If zero are found, the operator in the `Evaluation` is skipped, as there is nothing to evaluate.  If two or more are found, the operator evaluates each path individually and the results are logically 'and'ed together.
 
-When using a wildcard for a property name, the '\*' character must replace the entire name of a property (such as 'property.\*' or 'property.\*.otherProperty'), being the only character between the periods.  Wildcards for partial property names (e.g. 'property.\*id') are **not** supported.  When using a wildcard as an index into an array (such as 'property[\*]'), the '\*' character must be the only character between the '[]' characters.
+When using a wildcard for a property name, '\*' must replace the entire name of a property (such as *property.\** or *property.\*.otherProperty*), being the only character between the periods.  Wildcards for partial property names (e.g. *property.\*id*) are **not** supported.  When using a wildcard as an index into an array (such as *property[\*]*), '\*' must be the only character between the '[]' characters.
+
+Examples:
+``` js
+{
+    "resourceType": "Microsoft.Compute/virtualMachines",
+    "path": "properties.osProfile.*" // Returns all child properties of osProfile:
+        // resources[0].properties.osProfile.computerName
+        // resources[0].properties.osProfile.adminUsername
+        // resources[0].properties.osProfile.adminPassword
+}
+```
+``` js
+{
+    "resourceType": "Microsoft.Compute/virtualMachines",
+    "path": "properties.networkProfile.networkInterfaces[*]" // Returns all elements in networkInterfaces array (only one element is defined in the array):
+        // resources[0].properties.networkProfile.networkInterfaces[0]
+}
+```
+``` js
+{
+    "path": "resources[*]" // Returns all resources (only one resource is defined):
+        // resources[0]
+}
+```
+``` js
+{
+    "path": "outputs.*" // Returns all outputs:
+        // outputs.numberOfResourcesDeployed
+        // outputs.customOutput
+}
+```
+``` js
+{
+    "resourceType": "Microsoft.Compute/virtualMachines",
+    "path": "tags.*" // Returns all child properties of 'tags' - no paths returned, as no tags are defined in the virtual machine resource
+}
+```
