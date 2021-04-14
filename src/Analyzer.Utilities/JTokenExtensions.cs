@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                                     if (index == "*")
                                     {
                                         // Wildcard index - add all array elements and move to next path segment.
-                                        AddAllArrayElementsToQueue(jtokensToSearchFrom, childArray, tokenContext);
+                                        AddAllJArrayElementsToQueue(jtokensToSearchFrom, childArray, tokenContext);
                                     }
                                     else
                                     {
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 {
                     if (childProperty.Value is JArray jArray)
                     {
-                        AddAllArrayElementsToQueue(tokenQueue, jArray, tokenContext);
+                        AddAllJArrayElementsToQueue(tokenQueue, jArray, tokenContext);
                         continue;
                     }
 
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// Helper for InsensitiveTokens().
         /// Adds all elements of a JArray to the queue to be processed later.
         /// </summary>
-        private static void AddAllArrayElementsToQueue(Queue<InsensitiveTokenContext> tokenQueue, JArray jArray, InsensitiveTokenContext parentContext)
+        private static void AddAllJArrayElementsToQueue(Queue<InsensitiveTokenContext> tokenQueue, JArray jArray, InsensitiveTokenContext parentContext)
         {
             foreach (var elem in jArray)
             {

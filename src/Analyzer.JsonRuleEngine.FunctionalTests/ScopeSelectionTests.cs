@@ -169,13 +169,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
 
         [DataTestMethod]
         [DataRow(null, "outputs",
-            null,
+            null, // Unresolved static path returns null
             DisplayName = "No resource type, path not resolved")]
         [DataRow(null, "$schema",
             "$schema",
             DisplayName = "No resource type, path resolved")]
         [DataRow(null, "params.*",
-            // No scopes expected evaluated
+            // No scopes expected evaluated (unresolved wildcard returns empty)
             DisplayName = "No resource type, wildcard path does not resolve")]
         [DataRow(null, "parameters.*",
             "parameters.location",
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             "resources[0]", "resources[1]", "resources[2]", "resources[3]", "resources[4]",
             DisplayName = "No resource type, wildcard path resolves multiple paths")]
         [DataRow("Microsoft.Storage/storageAccounts", null,
-            // No scopes expected evaluated
+            // No scopes expected evaluated (no resources to evaluate)
             DisplayName = "Resource type matches none, no path")]
         [DataRow("Microsoft.Network/virtualNetworks", null,
             "resources[0]",
@@ -193,16 +193,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             "resources[3]", "resources[4]",
             DisplayName = "Resource type matches multiple, no path")]
         [DataRow("Microsoft.Storage/storageAccounts", "name",
-            // No scopes expected evaluated
+            // No scopes expected evaluated (no resources to evaluate)
             DisplayName = "Resource type matches none, path not resolved")]
         [DataRow("Microsoft.Network/virtualNetworks", "properties.addressSpace",
-            null,
+            null, // Unresolved static path returns null
             DisplayName = "Resource type matches 1, path not resolved")]
         [DataRow("Microsoft.Network/virtualNetworks", "location",
             "resources[0].location",
             DisplayName = "Resource type matches 1, path resolved")]
         [DataRow("Microsoft.Network/virtualNetworks", "dependsOn[*]",
-            // No scopes expected evaluated
+            // No scopes expected evaluated (unresolved wildcard returns empty)
             DisplayName = "Resource type matches 1, wildcard path does not resolve")]
         [DataRow("Microsoft.Network/virtualNetworks", "properties.subnets[*]",
             "resources[0].properties.subnets[0]",
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             "resources[0].properties.subnets[0]", "resources[0].properties.enableDdosProtection",
             DisplayName = "Resource type matches 1, wildcard path resolves multiple paths")]
         [DataRow("Microsoft.Network/networkInterfaces", "properties.dnsSettings",
-            null, null,
+            null, null, // Unresolved static paths return null
             DisplayName = "Resource type matches multiple, path not resolved")]
         [DataRow("Microsoft.Network/networkInterfaces", "properties.networkSecurityGroup",
             "resources[1].properties.networkSecurityGroup", null,
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             "resources[1].properties.ipConfigurations[0]", "resources[2].properties.ipConfigurations[0]",
             DisplayName = "Resource type matches multiple, path resolves in all")]
         [DataRow("Microsoft.Compute/virtualMachines", "properties.hardwareProfile.*",
-            // No scopes expected evaluated
+            // No scopes expected evaluated (unresolved wildcard returns empty)
             DisplayName = "Resource type matches multiple, wildcard path does not resolve")]
         [DataRow("Microsoft.Compute/virtualMachines", "properties.*.customData",
             "resources[4].properties.osProfile.customData",
