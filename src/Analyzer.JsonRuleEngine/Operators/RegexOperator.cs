@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// </summary>
         public string RegexPattern { get; private set; }
 
+        private readonly Regex regex;
+
         /// <summary>
         /// Creates a RegexOperator.
         /// </summary>
@@ -26,6 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             (this.SpecifiedValue, this.IsNegative) = (regexPattern, isNegative);
 
             this.RegexPattern = regexPattern;
+            this.regex = new Regex(this.RegexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
         }
 
         /// <summary>
@@ -40,7 +43,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
                 return false;
             }
 
-            Regex regex = new Regex(this.RegexPattern, RegexOptions.IgnoreCase);
             return regex.IsMatch(tokenToEvaluate.Value<string>());
         }
     }
