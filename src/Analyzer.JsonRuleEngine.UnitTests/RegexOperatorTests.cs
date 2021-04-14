@@ -41,6 +41,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(false, DisplayName = "Property is a boolean")]
         [DataRow(0.1, DisplayName = "Property is a float")]
         [DataRow(new string[] { "value" }, DisplayName = "Property is an array")]
+        [DataRow(null, DisplayName = "Property is null")]
+        [DataRow((string)null, DisplayName = "Property is a null casted as string")]
         public void EvaluateExpression_PropertyIsNotString_EvaluationIsFalse(object objectToMatch)
         {
             var regexOperator = new RegexOperator("", isNegative: false);
