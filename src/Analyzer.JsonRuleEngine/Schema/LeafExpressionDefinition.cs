@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             }
             else if (this.Regex != null)
             {
-                leafOperator = new RegexOperator(Regex, isNegative: false);
+                leafOperator = new RegexOperator(Regex);
             }
 
             if (leafOperator != null)

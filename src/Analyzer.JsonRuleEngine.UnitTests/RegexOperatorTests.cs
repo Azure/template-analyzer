@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateExpression_StringMatchesRegex_EvaluationIsTrue(string regex, string stringToMatch)
         {
             // {"Regex": jTokenValue} is true
-            var regexOperator = new RegexOperator(regex, isNegative: false);
+            var regexOperator = new RegexOperator(regex);
             Assert.IsTrue(regexOperator.EvaluateExpression(stringToMatch));
         }
 
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateExpression_StringDoesNotMatchRegex_EvaluationIsFalse(string regex, string stringToMatch)
         {
             // {"Regex": jTokenValue} is false
-            var regexOperator = new RegexOperator(regex, isNegative: false);
+            var regexOperator = new RegexOperator(regex);
             Assert.IsFalse(regexOperator.EvaluateExpression(stringToMatch));
         }
 
@@ -45,14 +45,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow((string)null, DisplayName = "Property is a null casted as string")]
         public void EvaluateExpression_PropertyIsNotString_EvaluationIsFalse(object objectToMatch)
         {
-            var regexOperator = new RegexOperator("", isNegative: false);
+            var regexOperator = new RegexOperator("");
             Assert.IsFalse(regexOperator.EvaluateExpression(ToJToken(objectToMatch)));
         }
 
         [TestMethod]
         public void GetName_ReturnsCorrectName()
         {
-            Assert.AreEqual("Regex", new RegexOperator("", false).Name);
+            Assert.AreEqual("Regex", new RegexOperator("").Name);
         }
 
         // Creates JSON with 'value' as the value of a key, parses it, then selects that key.

@@ -22,10 +22,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// Creates a RegexOperator.
         /// </summary>
         /// <param name="regexPattern">The regex pattern specified in the JSON rule.</param>
-        /// <param name="isNegative">Whether the result of EvaluateExpression() should be negated or not.</param>
-        public RegexOperator(string regexPattern, bool isNegative)
+        public RegexOperator(string regexPattern)
         {
-            (this.SpecifiedValue, this.IsNegative) = (regexPattern, isNegative);
+            (this.SpecifiedValue, this.IsNegative) = (regexPattern, false);
 
             this.RegexPattern = regexPattern;
             this.regex = new Regex(this.RegexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
