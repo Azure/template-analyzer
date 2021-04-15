@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             }
             catch (Exception e)
             {
-                throw new JsonRuleEngineException($"Failed to parse rules {e.Message}");
+                throw new JsonRuleEngineException($"Failed to parse rules.", e);
             }
 
             foreach (RuleDefinition rule in rules)
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                 }
                 catch (Exception e)
                 {
-                    throw new JsonRuleEngineException($"Failed to parse rule {rule.Name}. {e.Message}");
+                    throw new JsonRuleEngineException($"Failed to parse rule {rule.Name}.", e);
                 }
 
                 JsonRuleEvaluation evaluation = ruleExpression.Evaluate(

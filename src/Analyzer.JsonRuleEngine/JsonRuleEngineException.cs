@@ -7,20 +7,20 @@ using System.Runtime.Serialization;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
     /// <summary>
-    /// Template Analyzer Exception is thrown when there was an issue in Analyzer.Core
+    /// <see cref="JsonRuleEngineException"/> is thrown when there was an issue in Analyzer.RuleEngines.JsonEngine
     /// </summary>
     [Serializable]
     internal class JsonRuleEngineException : Exception
     {
         /// <summary>
-        /// Default constructor for an TemplateAnalyzerException
+        /// Default constructor for a <see cref="JsonRuleEngineException"/>
         /// </summary>
         public JsonRuleEngineException()
         {
         }
 
         /// <summary>
-        /// Creates a new TemplateAnalyzerException
+        /// Creates a new <see cref="JsonRuleEngineException"/>
         /// </summary>
         /// <param name="message">The exception message associated with the exception</param>
         public JsonRuleEngineException(string message) 
@@ -29,10 +29,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
-        /// Creates a new TemplateAnalyzerException
+        /// Creates a new <see cref="JsonRuleEngineException"/>
         /// </summary>
         /// <param name="message">The exception message associated with the exception</param>
-        /// <param name="innerException">The inner exception wrapped by the TemplateAnalyzerException</param>
+        /// <param name="innerException">The inner exception wrapped by the <see cref="JsonRuleEngineException"/></param>
         public JsonRuleEngineException(string message, Exception innerException) 
             : base(message, innerException)
         {
