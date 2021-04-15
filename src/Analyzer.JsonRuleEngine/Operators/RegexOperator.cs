@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
 {
@@ -27,7 +27,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             (this.SpecifiedValue, this.IsNegative) = (regexPattern, false);
 
             this.RegexPattern = regexPattern;
-            this.regex = new Regex(this.RegexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+            try
+            {
+                this.regex = new Regex(this.RegexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            }
+            catch (System.ArgumentException e)
+            {
+                throw new System.ArgumentException($"Regex pattern is not valid: {e.Message}");
+            }
         }
 
         /// <summary>

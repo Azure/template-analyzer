@@ -50,6 +50,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void EvaluateExpresssion_RegexPatternInvalid_ExceptionIsThrown()
+        {
+            var regexOperator = new RegexOperator("[");
+            regexOperator.EvaluateExpression(ToJToken("someValue"));
+        }
+
+        [TestMethod]
         public void GetName_ReturnsCorrectName()
         {
             Assert.AreEqual("Regex", new RegexOperator("").Name);
