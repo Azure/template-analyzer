@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -42,11 +43,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <returns>The results of the rules against the template.</returns>
         public IEnumerable<IEvaluation> EvaluateRules(TemplateContext templateContext, string ruleDefinitions)
         {
-            List<RuleDefinition> rules = JsonConvert.DeserializeObject<List<RuleDefinition>>(ruleDefinitions);
+            List<RuleDefinition> rules;
 
-            foreach(RuleDefinition rule in rules)
+            try
             {
-                var ruleExpression = rule.ExpressionDefinition.ToExpression(BuildLineNumberResolver(templateContext));
+                rules = JsonConvert.DeserializeObject<List<RuleDefinition>>(ruleDefinitions);
+            }
+            catch (Exception e)
+            {
+                throw new JsonRuleEngineException($"Failed to parse rules.", e);
+            }
+
+            foreach (RuleDefinition rule in rules)
+            {
+                Expression ruleExpression;
+
+                try
+                {
+                    ruleExpression = rule.ExpressionDefinition.ToExpression(BuildLineNumberResolver(templateContext));
+                }
+                catch (Exception e)
+                {
+                    throw new JsonRuleEngineException($"Failed to parse rule {rule.Name}.", e);
+                }
+
                 JsonRuleEvaluation evaluation = ruleExpression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,

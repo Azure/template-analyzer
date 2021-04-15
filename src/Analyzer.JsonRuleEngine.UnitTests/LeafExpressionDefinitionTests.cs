@@ -44,6 +44,37 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void ToExpression_EqualsOperator_ReturnsLeafExpressionWithEquals()
+        {
+            string operatorValue = "string";
+            var leafExpression = GenerateLeafExpression(leaf => leaf.Is = operatorValue);
+
+            var leafOperator = leafExpression.Operator as EqualsOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.IsNegative);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.NotEquals = operatorValue);
+
+            leafOperator = leafExpression.Operator as EqualsOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsTrue(leafOperator.IsNegative);
+        }
+
+        [TestMethod]
+        public void ToExpression_RegexOperator_ReturnsLeafExpressionWithRegex()
+        {
+            string operatorValue = "regexPattern";
+            var leafExpression = GenerateLeafExpression(leaf => leaf.Regex = operatorValue);
+
+            var leafOperator = leafExpression.Operator as RegexOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.IsNegative);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(NotImplementedException))]
         public void ToExpression_NoOperators_ThrowsException()
         {
