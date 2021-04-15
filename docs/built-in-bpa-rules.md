@@ -1,4 +1,11 @@
 # Security Related Rules
+## API App should only be accessible over HTTPS
+Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks. To redirect all HTTP traffic to HTTPS, we recommend the following steps: 
+1. Go to the app service custom domains page
+2. In the HTTPS Only toggle select On.
+
+**Recommendation**: [Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-https)
+
 ## Authorized IP ranges should be defined on Kubernetes Services
 To ensure that only applications from allowed networks, machines, or subnets can access your cluster, restrict access to your Kubernetes Service Management API server. It is recommended to limit access to authorized IP ranges to ensure that only applications from allowed networks can access the cluster.
 
