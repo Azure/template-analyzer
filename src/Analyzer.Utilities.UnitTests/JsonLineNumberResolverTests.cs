@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             // Test data for test ResolveLineNumber_ReturnsCorrectLineNumber.
             // Index one is for parameter 'path'.
             // Index two (a sub-array) is for parameter 'pathInOrginalTemplate'.
-            // Index three is the test display name.  This is just so GenerateDisplayName() can do a lookup and is not used in the test.
+            // Index three is the test display name.  This is just so GetDisplayName() can do a lookup and is not used in the test.
             new object[] { "resources[0].properties.somePath", new object[] { "resources", 0, "properties", "somePath" }, "Path matches original template exactly" },
             new object[] { "parameters.parameter1.maxValue", new object[] { "parameters", "parameter1" }, "Beginning of path matches original template parameters, but has missing property" },
             new object[] { "resources[0].anExpandedProperty", new object[] { "resources", 0 }, "Beginning of path matches original template resources array, but has missing property" },
@@ -119,8 +119,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         }.AsReadOnly();
 
         // Just returns the element in the last index of the array from TestScenarios
-        public static string GetDisplayName(MethodInfo _, object[] data)
-            => (string)data[^1];
+        public static string GetDisplayName(MethodInfo _, object[] data) => (string)data[^1];
 
         [DataTestMethod]
         [DynamicData(nameof(TestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
@@ -142,6 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
         [DataRow("resources[4].type", DisplayName = "Extra resource")]
         [DataRow("resources[3].type", DisplayName = "Extra copied resource with missing source copy loop")]
         public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns0(string path)
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumber_ExpandedTemplateIsNullForScenario3_ThrowsException()
+        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathContainsResourcesArray_ThrowsException()
         {
             new JsonLineNumberResolver(
                 new TemplateContext
@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         }
 
         [TestMethod]
-        public void ResolveLineNumber_ExpandedTemplateIsNullForScenario1or2_ReturnsLineNumber()
+        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathDoesNotContainResourcesArray_ReturnsLineNumber()
         {
             new JsonLineNumberResolver(
                 new TemplateContext
