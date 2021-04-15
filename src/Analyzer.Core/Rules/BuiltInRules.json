@@ -22,44 +22,6 @@
     }
   },
   {
-    "name": "Compute_VirtualMachine_ShouldNotBePreview",
-    "description": "Ensures that all virtual machines are not using preview images",
-    "recommendation": "Use a non-preview image for virtual machines",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#ensures-that-all-virtual-machines-are-not-using-preview-images",
-    "evaluation": {
-      "resourceType": "Microsoft.Compute/virtualMachines",
-      "anyOf": [
-        {
-          "path": "properties.storageProfile.imageReference",
-          "regex": "^((?!-preview$).)*$"
-        },
-        {
-          "path": "properties.storageProfile.imageReference.version",
-          "regex": "^((?!-preview$).)*$"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Compute_VirtualMachineScaleSets_ShouldNotBePreview",
-    "description": "Ensure all virtual machine scale set instances are not using preview images",
-    "recommendation": "Use a non-preview image for virtual machine scale set instances",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#ensure-all-virtual-machine-scale-set-instances-are-not-using-preview-images",
-    "evaluation": {
-      "resourceType": "Microsoft.Compute/virtualMachineScaleSets",
-      "anyOf": [
-        {
-          "path": "properties.virtualMachineProfile.storageProfile.imageReference",
-          "regex": "^((?!-preview$).)*$"
-        },
-        {
-          "path": "properties.virtualMachineProfile.storageProfile.imageReference.version",
-          "regex": "^((?!-preview$).)*$"
-        }
-      ]
-    }
-  },
-  {
     "name": "Kubernetes_Must_Restrict_Network_Access",
     "description": "Authorized IP ranges should be defined on Kubernetes Services",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
