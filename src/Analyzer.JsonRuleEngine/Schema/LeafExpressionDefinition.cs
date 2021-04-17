@@ -100,8 +100,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             else if (this.Is != null || this.NotEquals != null)
             {
                 leafOperator = new EqualsOperator(
-                    specifiedValue: this.Is ?? this.NotEquals, 
+                    specifiedValue: this.Is ?? this.NotEquals,
                     isNegative: this.NotEquals != null);
+            }
+            else if (this.Regex != null)
+            {
+                leafOperator = new RegexOperator(Regex);
             }
             else if (this.In != null)
             {

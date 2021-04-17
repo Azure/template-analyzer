@@ -251,6 +251,78 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             }
         }
 
+        [DataTestMethod]
+        [DataRow(@"[{
+                ""name"": ""Invalid Rule"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""evaluation"": {
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    {
+                        ""path"": ""properties.somePath"",
+                        ""regex"": ""[""
+                    }
+                }
+            }]", DisplayName = "Invalid JSON")]
+        [DataRow(@"[{
+                ""name"": ""Invalid Rule"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""evaluation"": {
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""regex"": ""[""
+                }
+            }]", DisplayName = "Invalid regex pattern")]
+        [ExpectedException(typeof(JsonRuleEngineException))]
+        public void EvaluateRules_InvalidRule_ExceptionIsThrown(string invalidRule)
+        {
+            // Arrange
+            var template =
+                JObject.Parse(
+                @"{
+                    ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                    ""resources"": [
+                        {
+                            ""type"": ""Microsoft.ResourceProvider/resource0"",
+                            ""properties"": {
+                                ""somePath"": ""someValue"",
+                                ""someOtherPath"": ""someOtherValue""
+                            }
+                        }
+                    ]
+                }");
+
+            string expectedFileId = "MyTemplate";
+
+            TemplateContext templateContext = new TemplateContext
+            {
+                OriginalTemplate = template,
+                ExpandedTemplate = template,
+                IsMainTemplate = true,
+                TemplateIdentifier = expectedFileId
+            };
+
+            // Setup mock line number resolver
+            var mockLineResolver = new Mock<ILineNumberResolver>();
+
+            var ruleEngine = new JsonRuleEngine(t =>
+            {
+                // Verify the test context was passed
+                if (t == templateContext)
+                {
+                    return mockLineResolver.Object;
+                }
+                Assert.Fail("Expected template context was not passed to LineNumberResolver.");
+                return null;
+            });
+
+            // Act
+            ruleEngine.EvaluateRules(templateContext, invalidRule).ToList();
+        }
+
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullLineNumberResolver_ThrowsException()
