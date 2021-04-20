@@ -3,8 +3,6 @@
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
@@ -21,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(null, DisplayName = "Property value is null")]
         public void EvaluateExpression_PropertyExists_ExistsExpressionIsTrue(object jTokenValue)
         {
-            var jToken = ToJToken(jTokenValue);
+            var jToken = JsonRuleEngineTestsUtilities.ToJToken(jTokenValue);
 
             // {"Exists": true} is true
             var existsOperator = new ExistsOperator(true, isNegative: false);
@@ -35,7 +33,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void EvaluateExpression_PropertyIsObject_ExistsExpressionIsTrue()
         {
-            var jToken = ToJToken(new { });
+            var jToken = JsonRuleEngineTestsUtilities.ToJToken(new { });
 
             // {"Exists": true} is true
             var existsOperator = new ExistsOperator(true, isNegative: false);
@@ -63,9 +61,5 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual("Exists", new ExistsOperator(true, false).Name);
         }
-
-        // Creates JSON with 'value' as the value of a key, parses it, then selects that key.
-        private static JToken ToJToken(object value)
-            => JToken.Parse($"{{\"Key\": {JsonConvert.SerializeObject(value)} }}")["Key"];
     }
 }

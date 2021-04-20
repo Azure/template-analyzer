@@ -75,6 +75,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void ToExpression_InOperator_ReturnsLeafExpressionWithIn()
+        {
+            string[] possibleValues = {"aValue", "anotherValue"};
+            var operatorValue = JToken.FromObject(possibleValues);
+
+            var leafExpression = GenerateLeafExpression(leaf => leaf.In = operatorValue);
+
+            var leafOperator = leafExpression.Operator as InOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(operatorValue, leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.IsNegative);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(NotImplementedException))]
         public void ToExpression_NoOperators_ThrowsException()
         {

@@ -33,6 +33,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("equals", "someString", "exists", true, DisplayName = "{\"Equals\": \"someString\"}, Where: {\"Exists\": true}")]
         [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
         [DataRow("regex", "regexPattern", DisplayName = "{\"Regex\": \"regexPattern\"}")]
+        [DataRow("in", "aValue", DisplayName = "{\"In\": [\"anotherValue\", \"aValue\"]}")]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, params object[] whereCondition)
         {
             // If whereCondition is populated, add a Where condition into JSON to parse.
