@@ -223,7 +223,7 @@ Example:
 ```
 
 #### **In**
-*Type: array of basic JSON values (integer, float, string, bool, null)*
+*Type: mixed-type array of basic JSON values (integer, float, string, bool, null)*
 
 Evaluates the value of the `path` in the template using the `equals` operator for each value specified in the array.  If any results in `true`, `in` will evaluate to true; `false` otherwise.
 
