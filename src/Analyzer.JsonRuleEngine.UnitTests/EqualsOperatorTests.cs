@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("test", "Test", DisplayName = "Case-insensitive string values are equal")]
         public void EvaluateExpression_PropertyIsEqual_EqualsExpressionIsTrue_NotEqualsExpressionIsFalse(object expectedValue, object actualValue = null)
         {
-            var expectedValueJToken = JsonRuleEngineTestsUtilities.ToJToken(expectedValue);
-            var actualValueJToken = JsonRuleEngineTestsUtilities.ToJToken(actualValue ?? expectedValue);
+            var expectedValueJToken = TestUtilities.ToJToken(expectedValue);
+            var actualValueJToken = TestUtilities.ToJToken(actualValue ?? expectedValue);
 
             // {"Equals": jTokenValue} is true
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
@@ -46,8 +46,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(2.3, 2, DisplayName = "Integer and float values are not equal")]
         public void EvaluateExpression_PropertyIsNotEqual_EqualsExpressionIsFalse_NotEqualsExpressionIsTrue(object expectedValue, object actualValue)
         {
-            var expectedValueJToken = JsonRuleEngineTestsUtilities.ToJToken(expectedValue);
-            var actualValueJToken = JsonRuleEngineTestsUtilities.ToJToken(actualValue);
+            var expectedValueJToken = TestUtilities.ToJToken(expectedValue);
+            var actualValueJToken = TestUtilities.ToJToken(actualValue);
 
             // {"Equals": jTokenValue} is false
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);

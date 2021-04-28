@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
-    public class JsonRuleEngineTestsUtilities
+    public class TestUtilities
     {
         // Creates JSON with 'value' as the value of a key, parses it, then selects that key.
         public static JToken ToJToken(object value)

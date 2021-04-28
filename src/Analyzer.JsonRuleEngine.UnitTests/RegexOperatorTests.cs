@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateExpression_PropertyIsNotString_EvaluationIsFalse(object objectToMatch)
         {
             var regexOperator = new RegexOperator("");
-            Assert.IsFalse(regexOperator.EvaluateExpression(JsonRuleEngineTestsUtilities.ToJToken(objectToMatch)));
+            Assert.IsFalse(regexOperator.EvaluateExpression(TestUtilities.ToJToken(objectToMatch)));
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateExpresssion_RegexPatternInvalid_ExceptionIsThrown()
         {
             var regexOperator = new RegexOperator("[");
-            regexOperator.EvaluateExpression(JsonRuleEngineTestsUtilities.ToJToken("someValue"));
+            regexOperator.EvaluateExpression(TestUtilities.ToJToken("someValue"));
         }
 
         [TestMethod]

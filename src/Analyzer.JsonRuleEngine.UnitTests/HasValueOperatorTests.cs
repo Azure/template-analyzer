@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(new object[] { }, DisplayName = "Property value is an array")]
         public void EvaluateExpression_PropertyHasValue_HasValueIsTrue(object jTokenValue)
         {
-            var jToken = JsonRuleEngineTestsUtilities.ToJToken(jTokenValue);
+            var jToken = TestUtilities.ToJToken(jTokenValue);
 
             // {"HasValue": true} is true
             var hasValueOperator = new HasValueOperator(true, isNegative: false);
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void EvaluateExpression_PropertyIsObject_HasValueIsTrue()
         {
-            var jToken = JsonRuleEngineTestsUtilities.ToJToken(new { });
+            var jToken = TestUtilities.ToJToken(new { });
 
             // {"HasValue": true} is true
             var hasValueOperator = new HasValueOperator(true, isNegative: false);
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(null, DisplayName = "Property value is null")]
         public void EvaluateExpression_PropertyHasNullOrEmptyValue_HasValueIsFalse(object jTokenValue)
         {
-            var jToken = JsonRuleEngineTestsUtilities.ToJToken(jTokenValue);
+            var jToken = TestUtilities.ToJToken(jTokenValue);
 
             // {"HasValue": true} is false
             var hasValueOperator = new HasValueOperator(true, isNegative: false);

@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         }
                         else
                         {
-                            var valueAsJson = JsonRuleEngineTestsUtilities.ToJToken(value);
+                            var valueAsJson = TestUtilities.ToJToken(value);
                             Assert.IsTrue(JToken.DeepEquals(valueAsJson, (JToken)parsedValue));
                         }
                     }

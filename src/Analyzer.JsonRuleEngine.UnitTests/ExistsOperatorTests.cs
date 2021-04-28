@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(null, DisplayName = "Property value is null")]
         public void EvaluateExpression_PropertyExists_ExistsExpressionIsTrue(object jTokenValue)
         {
-            var jToken = JsonRuleEngineTestsUtilities.ToJToken(jTokenValue);
+            var jToken = TestUtilities.ToJToken(jTokenValue);
 
             // {"Exists": true} is true
             var existsOperator = new ExistsOperator(true, isNegative: false);
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void EvaluateExpression_PropertyIsObject_ExistsExpressionIsTrue()
         {
-            var jToken = JsonRuleEngineTestsUtilities.ToJToken(new { });
+            var jToken = TestUtilities.ToJToken(new { });
 
             // {"Exists": true} is true
             var existsOperator = new ExistsOperator(true, isNegative: false);

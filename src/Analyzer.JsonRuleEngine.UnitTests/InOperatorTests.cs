@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             var aValue = "aValue";
 
-            var valueJToken = JsonRuleEngineTestsUtilities.ToJToken(aValue);
-            var arrayOfValuesJToken = JsonRuleEngineTestsUtilities.ToJToken(arrayOfValues);
+            var valueJToken = TestUtilities.ToJToken(aValue);
+            var arrayOfValuesJToken = TestUtilities.ToJToken(arrayOfValues);
 
             var inOperator = new InOperator(arrayOfValuesJToken, isNegative: false);
             Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(valueJToken));
