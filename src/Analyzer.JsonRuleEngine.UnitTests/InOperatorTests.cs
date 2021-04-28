@@ -11,20 +11,29 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
     public class InOperatorTests
     {
         [DataTestMethod]
-        [DataRow(true, new object[] { "anotherValue", "aValue" }, DisplayName = "String is in string array")]
-        [DataRow(false, new object[] { "anotherValue", "otherValue" }, DisplayName = "String is not in string array")]
-        [DataRow(false, new object[] { }, DisplayName = "String is not in empty array")]
-        [DataRow(true, new object[] { "anotherValue", 4, false, 3.5, null, "aValue" }, DisplayName = "String is in mixed array")]
-        [DataRow(false, new object[] { "anotherValue", 4, false, 3.5, null, "otherValue" }, DisplayName = "String is not in mixed array")]
-        public void EvaluateExpression(bool evaluationResult, params object[] arrayOfValues)
+        [DataRow(true, 4, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Integer is in")]
+        [DataRow(false, 8, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Integer is not in")]
+        [DataRow(true, 3.5, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Float is in")]
+        [DataRow(false, 9.5, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Float is not in")]
+        [DataRow(true, "aValue", new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "String is in")]
+        [DataRow(false, "someOtherValue", new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "String is not in")]
+        [DataRow(true, false, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Boolean is in")]
+        [DataRow(false, true, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Boolean is not in")]
+        [DataRow(true, null, new object[] { 4, 3.5, "aValue", false, null }, DisplayName = "Null is in")]
+        [DataRow(false, null, new object[] { 4, 3.5, "aValue", false }, DisplayName = "Null is not in")]
+        [DataRow(false, 7, new object[] { }, DisplayName = "Integer is not in empty array")]
+        [DataRow(false, 7.7, new object[] { }, DisplayName = "Float is not in empty array")]
+        [DataRow(false, "aValue", new object[] { }, DisplayName = "String is not in empty array")]
+        [DataRow(false, true, new object[] { }, DisplayName = "Boolean is not in empty array")]
+        [DataRow(false, null, new object[] { }, DisplayName = "Null is not in empty array")]
+        public void EvaluateExpression(bool evaluationResult, object desiredValue, params object[] remainingTestParams)
         {
-            var aValue = "aValue";
-
-            var valueJToken = TestUtilities.ToJToken(aValue);
+            var arrayOfValues = remainingTestParams[0];
+            var desiredValueJToken = TestUtilities.ToJToken(desiredValue);
             var arrayOfValuesJToken = TestUtilities.ToJToken(arrayOfValues);
 
             var inOperator = new InOperator(arrayOfValuesJToken, isNegative: false);
-            Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(valueJToken));
+            Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(desiredValueJToken));
         }
 
         [TestMethod]
