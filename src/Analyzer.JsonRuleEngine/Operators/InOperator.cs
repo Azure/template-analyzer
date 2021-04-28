@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// Creates an InOperator.
         /// </summary>
         /// <param name="specifiedValue">The value specified in the JSON rule, it has to be an array of basic JSON values.</param>
-        /// <param name="isNegative">Whether the result of EvaluateExpression() should be negated or not.</param>
+        /// <param name="isNegative">Whether the result of <see cref="EvaluateExpression(JToken)"/> should be negated or not.</param>
         public InOperator(JToken specifiedValue, bool isNegative)
         {
             this.SpecifiedValue = specifiedValue;
