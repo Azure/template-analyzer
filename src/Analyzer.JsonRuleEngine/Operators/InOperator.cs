@@ -44,7 +44,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             }
 
             return false;
-            
         }
     }
 }

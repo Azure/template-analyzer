@@ -25,11 +25,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             .Where(property => property.Attribute != null)
             .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
 
+        // Test data for 'in' operator test. Needed in order to use an array as parameter
         public static IReadOnlyList<object[]> InOperatorTestScenarios { get; } = new List<object[]>
         {
             new object[] { "in", new object[] { "anotherValue", "aValue"} }
         }.AsReadOnly();
 
+        // Returns the DisplayName for 'in' operator test. If this was stored in InOperatorTestScenarios, ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues would interpret it as part of the whereCondition
         public static string GetInOperatorTestDisplayName(MethodInfo _, object[] data) => "{\"In\": [\"anotherValue\", \"aValue\"]}";
 
         [DataTestMethod]
