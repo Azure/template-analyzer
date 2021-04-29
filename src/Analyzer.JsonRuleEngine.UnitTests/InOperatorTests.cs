@@ -26,11 +26,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(false, "aValue", new object[] { }, DisplayName = "String is not in empty array")]
         [DataRow(false, true, new object[] { }, DisplayName = "Boolean is not in empty array")]
         [DataRow(false, null, new object[] { }, DisplayName = "Null is not in empty array")]
-        public void EvaluateExpression(bool evaluationResult, object desiredValue, params object[] remainingTestParams)
+        public void EvaluateExpression(bool evaluationResult, object desiredValue, object arrayOfValues)
         {
-            var arrayOfValues = remainingTestParams[0];
             var desiredValueJToken = TestUtilities.ToJToken(desiredValue);
-            var arrayOfValuesJToken = TestUtilities.ToJToken(arrayOfValues);
+            var arrayOfValuesJToken = JArray.FromObject(arrayOfValues);
 
             var inOperator = new InOperator(arrayOfValuesJToken, isNegative: false);
             Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(desiredValueJToken));
@@ -39,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void GetName_ReturnsCorrectName()
         {
-            Assert.AreEqual("In", new InOperator(new JObject(), false).Name);
+            Assert.AreEqual("In", new InOperator(new JArray(), false).Name);
         }
     }
 }

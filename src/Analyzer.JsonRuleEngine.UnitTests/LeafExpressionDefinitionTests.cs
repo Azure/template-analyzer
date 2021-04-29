@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void ToExpression_InOperator_ReturnsLeafExpressionWithIn()
         {
             string[] possibleValues = {"aValue", "anotherValue"};
-            var operatorValue = JToken.FromObject(possibleValues);
+            var operatorValue = JArray.FromObject(possibleValues);
 
             var leafExpression = GenerateLeafExpression(leaf => leaf.In = operatorValue);
 

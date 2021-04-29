@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// Gets or sets the In property
         /// </summary>
         [JsonProperty]
-        public JToken In { get; set; }
+        public JArray In { get; set; }
 
         /// <summary>
         /// Gets or sets the Less property

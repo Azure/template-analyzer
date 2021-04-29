@@ -210,12 +210,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(JsonReaderException))]
         public void ReadJson_LeafWithInvalidOperator_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
-            ReadJson($@"
-                {{
-                    ""resourceType"": ""resourceType"",
-                    ""path"": ""path"",
-                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
-                }}");
+            ReadSimpleOperatorJson(operatorProperty, operatorValue);
+        }
+
+        [DataTestMethod]
+        [DataRow("in", "aString", DisplayName = "\"In\": \"aString\"")]
+        [ExpectedException(typeof(JsonSerializationException))]
+        public void ReadJson_LeafWithInvalidOperator_ThrowsSerializationException(string operatorProperty, object operatorValue)
+        {
+            ReadSimpleOperatorJson(operatorProperty, operatorValue);
         }
 
         [DataTestMethod]
@@ -230,12 +233,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(JsonException), AllowDerivedTypes = true)]
         public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorSingleValue, params object[] operatorArrayValue)
         {
-            ReadJson($@"
-                {{
-                    ""resourceType"": ""resourceType"",
-                    ""path"": ""path"",
-                    ""{operatorProperty}"": {JsonConvert.SerializeObject("UseArray".Equals(operatorSingleValue) ? operatorArrayValue : operatorSingleValue)}
-                }}");
+            ReadSimpleOperatorJson(operatorProperty, "UseArray".Equals(operatorSingleValue) ? operatorArrayValue : operatorSingleValue);
         }
 
         [TestMethod]
@@ -324,5 +322,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 typeof(ExpressionDefinition),
                 null,
                 JsonSerializer.CreateDefault());
+
+        private static void ReadSimpleOperatorJson(string operatorProperty, object operatorValue)
+        {
+            ReadJson($@"
+                {{
+                    ""resourceType"": ""resourceType"",
+                    ""path"": ""path"",
+                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
+                }}");
+        }
     }
 }
