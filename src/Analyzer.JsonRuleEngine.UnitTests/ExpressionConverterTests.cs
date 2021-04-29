@@ -214,10 +214,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("in", 7, DisplayName = "\"In\": \"aString\"")]
-        [DataRow("in", 5.7, DisplayName = "\"In\": \"aString\"")]
+        [DataRow("in", 7, DisplayName = "\"In\": \"7\"")]
+        [DataRow("in", 5.7, DisplayName = "\"In\": \"5.7\"")]
         [DataRow("in", "aString", DisplayName = "\"In\": \"aString\"")]
-        [DataRow("in", true, DisplayName = "\"In\": \"aString\"")]
+        [DataRow("in", true, DisplayName = "\"In\": \"true\"")]
         [ExpectedException(typeof(JsonSerializationException))]
         public void ReadJson_LeafWithInvalidOperator_ThrowsSerializationException(string operatorProperty, object operatorValue)
         {
