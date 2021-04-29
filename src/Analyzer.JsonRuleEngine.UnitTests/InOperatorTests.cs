@@ -36,6 +36,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void EvaluateExpression_NullAsDesiredValue()
+        {
+            var inOperator = new InOperator(new JArray(), isNegative: false);
+            Assert.IsFalse(inOperator.EvaluateExpression(null));
+        }
+
+        [TestMethod]
         public void GetName_ReturnsCorrectName()
         {
             Assert.AreEqual("In", new InOperator(new JArray(), false).Name);
