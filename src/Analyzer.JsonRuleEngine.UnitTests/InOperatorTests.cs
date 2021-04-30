@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(false, "aValue", new object[] { }, DisplayName = "String is not in empty array")]
         [DataRow(false, true, new object[] { }, DisplayName = "Boolean is not in empty array")]
         [DataRow(false, null, new object[] { }, DisplayName = "Null is not in empty array")]
-        public void EvaluateExpression(bool evaluationResult, object desiredValue, object arrayOfValues)
+        public void EvaluateExpression_ValidDataType_ReturnsExpectedEvaluationResult(bool evaluationResult, object desiredValue, object arrayOfValues)
         {
             var desiredValueJToken = TestUtilities.ToJToken(desiredValue);
             var arrayOfValuesJToken = JArray.FromObject(arrayOfValues);
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void EvaluateExpression_NullAsTokenToEvaluate()
+        public void EvaluateExpression_NullAsTokenToEvaluate_ReturnsFalse()
         {
             string[] possibleValues = { "aValue", "anotherValue" };
             var operatorValue = JArray.FromObject(possibleValues);
