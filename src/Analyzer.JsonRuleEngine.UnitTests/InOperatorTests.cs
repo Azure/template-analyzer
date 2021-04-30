@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var desiredValueJToken = TestUtilities.ToJToken(desiredValue);
             var arrayOfValuesJToken = JArray.FromObject(arrayOfValues);
 
-            var inOperator = new InOperator(arrayOfValuesJToken, isNegative: false);
+            var inOperator = new InOperator(arrayOfValuesJToken);
 
             Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(desiredValueJToken));
         }
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             string[] possibleValues = { "aValue", "anotherValue" };
             var operatorValue = JArray.FromObject(possibleValues);
-            var inOperator = new InOperator(operatorValue, isNegative: false);
+            var inOperator = new InOperator(operatorValue);
 
             Assert.IsFalse(inOperator.EvaluateExpression(null));
         }
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void GetName_ReturnsCorrectName()
         {
-            Assert.AreEqual("In", new InOperator(new JArray(), false).Name);
+            Assert.AreEqual("In", new InOperator(new JArray()).Name);
         }
     }
 }

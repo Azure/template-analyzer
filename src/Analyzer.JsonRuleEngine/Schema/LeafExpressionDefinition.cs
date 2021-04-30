@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             }
             else if (this.In != null)
             {
-                leafOperator = new InOperator(this.In, false);
+                leafOperator = new InOperator(this.In);
             }
 
             if (leafOperator != null)
