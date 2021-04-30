@@ -33,6 +33,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <returns>A value indicating whether or not the evaluation passed.</returns>
         public override bool EvaluateExpression(JToken tokenToEvaluate)
         {
+            if (tokenToEvaluate == null)
+            {
+                return false;
+            }
+
             var equalsOperator = new EqualsOperator(tokenToEvaluate, isNegative: false);
 
             foreach (var arrayElement in this.SpecifiedValue)

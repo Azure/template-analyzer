@@ -32,13 +32,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var arrayOfValuesJToken = JArray.FromObject(arrayOfValues);
 
             var inOperator = new InOperator(arrayOfValuesJToken, isNegative: false);
+
             Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(desiredValueJToken));
         }
 
         [TestMethod]
-        public void EvaluateExpression_NullAsDesiredValue()
+        public void EvaluateExpression_NullAsTokenToEvaluate()
         {
-            var inOperator = new InOperator(new JArray(), isNegative: false);
+            string[] possibleValues = { "aValue", "anotherValue" };
+            var operatorValue = JArray.FromObject(possibleValues);
+            var inOperator = new InOperator(operatorValue, isNegative: false);
+
             Assert.IsFalse(inOperator.EvaluateExpression(null));
         }
 
