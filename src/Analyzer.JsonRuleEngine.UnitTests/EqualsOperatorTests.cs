@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
@@ -58,10 +59,27 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.IsTrue(notEqualsOperator.EvaluateExpression(actualValueJToken));
         }
 
-        public static string GetArrayValuesDynamicDataDisplayName(MethodInfo methodInfo, object[] data)
+        [DataTestMethod]
+        [DataRow("value", DisplayName = "Missing property is not equal to string")]
+        [DataRow(true, DisplayName = "Missing property is not equal to boolean")]
+        [DataRow(1, DisplayName = "Missing property is not equal to integer")]
+        [DataRow(0.1, DisplayName = "Missing property is not equal to float")]
+        [DataRow(new string[] { "value1", "value2" }, DisplayName = "Missing property is not equal to array")]
+        [DataRow(@"{""property"": ""value11""}", DisplayName = "Missing property is not equal to object")]
+        public void EvaluateExpression_PropertyIsMissing_EqualsExpressionIsFalse_NotEqualsExpressionIsTrue(object expectedValue)
         {
-            return "Array values are not equal";
+            var expectedValueJToken = TestUtilities.ToJToken(expectedValue);
+
+            // {"Equals": jTokenValue} is false
+            var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
+            Assert.IsFalse(equalsOperator.EvaluateExpression(null));
+
+            // {"NotEquals": jTokenValue} is true
+            var notEqualsOperator = new EqualsOperator(expectedValueJToken, isNegative: true);
+            Assert.IsTrue(notEqualsOperator.EvaluateExpression(null));
         }
+
+        public static string GetArrayValuesDynamicDataDisplayName(MethodInfo _, object[] __) => "Array values are not equal";
 
         static IEnumerable<object[]> TestArrays()
         {
@@ -76,6 +94,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual("Equals", new EqualsOperator(new JObject(), false).Name);
             Assert.AreEqual("NotEquals", new EqualsOperator(new JObject(), true).Name);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Constructor_NullSpecifiedValue_ThrowsException()
+        {
+            new EqualsOperator(null, false);
         }
     }
 }

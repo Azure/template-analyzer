@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <param name="isNegative">Whether the result of <see cref="EvaluateExpression(JToken)"/> should be negated or not.</param>
         public EqualsOperator(JToken specifiedValue, bool isNegative)
         {
-            this.SpecifiedValue = specifiedValue;
+            this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
             this.IsNegative = isNegative;
         }
 
@@ -31,6 +32,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <returns>A value indicating whether or not the evaluation passed.</returns>
         public override bool EvaluateExpression(JToken tokenToEvaluate)
         {
+            // tokenToEvaluate will be false if a specified property in the JSON is not defined (does not exist).
+            // In this case, "equals" is by definition false.
+            if (tokenToEvaluate == null)
+            {
+                return this.IsNegative;
+            }
+
             var normalizedSpecifiedValue = NormalizeValue(this.SpecifiedValue);
             var normalizedTokenToEvaluate = NormalizeValue(tokenToEvaluate);
 
