@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
@@ -25,8 +24,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("test", "Test", DisplayName = "Case-insensitive string values are equal")]
         public void EvaluateExpression_PropertyIsEqual_EqualsExpressionIsTrue_NotEqualsExpressionIsFalse(object expectedValue, object actualValue = null)
         {
-            var expectedValueJToken = ToJToken(expectedValue);
-            var actualValueJToken = ToJToken(actualValue ?? expectedValue);
+            var expectedValueJToken = TestUtilities.ToJToken(expectedValue);
+            var actualValueJToken = TestUtilities.ToJToken(actualValue ?? expectedValue);
 
             // {"Equals": jTokenValue} is true
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
@@ -48,8 +47,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(2.3, 2, DisplayName = "Integer and float values are not equal")]
         public void EvaluateExpression_PropertyIsNotEqual_EqualsExpressionIsFalse_NotEqualsExpressionIsTrue(object expectedValue, object actualValue)
         {
-            var expectedValueJToken = ToJToken(expectedValue);
-            var actualValueJToken = ToJToken(actualValue);
+            var expectedValueJToken = TestUtilities.ToJToken(expectedValue);
+            var actualValueJToken = TestUtilities.ToJToken(actualValue);
 
             // {"Equals": jTokenValue} is false
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
@@ -69,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(@"{""property"": ""value11""}", DisplayName = "Missing property is not equal to object")]
         public void EvaluateExpression_PropertyIsMissing_EqualsExpressionIsFalse_NotEqualsExpressionIsTrue(object expectedValue)
         {
-            var expectedValueJToken = ToJToken(expectedValue);
+            var expectedValueJToken = TestUtilities.ToJToken(expectedValue);
 
             // {"Equals": jTokenValue} is false
             var equalsOperator = new EqualsOperator(expectedValueJToken, isNegative: false);
@@ -103,9 +102,5 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             new EqualsOperator(null, false);
         }
-
-        // Creates JSON with 'value' as the value of a key, parses it, then selects that key.
-        private static JToken ToJToken(object value)
-            => JToken.Parse($"{{\"Key\": {JsonConvert.SerializeObject(value)} }}")["Key"];
     }
 }

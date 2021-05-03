@@ -25,6 +25,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             .Where(property => property.Attribute != null)
             .ToDictionary(property => property.Attribute.PropertyName ?? property.Property.Name, property => property.Property, StringComparer.OrdinalIgnoreCase);
 
+        // Test data for 'in' operator test. Needed in order to use an array as parameter
+        public static IReadOnlyList<object[]> InOperatorTestScenarios { get; } = new List<object[]>
+        {
+            new object[] { "in", new object[] { "anotherValue", "aValue"} }
+        }.AsReadOnly();
+
+        // Returns the DisplayName for 'in' operator test. If this was stored in InOperatorTestScenarios, ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues would interpret it as part of the whereCondition
+        public static string GetInOperatorTestDisplayName(MethodInfo _, object[] data) => "{\"In\": [\"anotherValue\", \"aValue\"]}";
+
         [DataTestMethod]
         [DataRow("hasValue", true, DisplayName = "{\"HasValue\": true}")]
         [DataRow("hasValue", false, "hasValue", true, DisplayName = "{\"HasValue\": false}, Where: {\"HasValue\": true}")]
@@ -33,6 +42,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("equals", "someString", "exists", true, DisplayName = "{\"Equals\": \"someString\"}, Where: {\"Exists\": true}")]
         [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
         [DataRow("regex", "regexPattern", DisplayName = "{\"Regex\": \"regexPattern\"}")]
+        [DynamicData(nameof(InOperatorTestScenarios), DynamicDataDisplayName = nameof(GetInOperatorTestDisplayName))]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, params object[] whereCondition)
         {
             // If whereCondition is populated, add a Where condition into JSON to parse.
@@ -83,7 +93,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         }
                         else
                         {
-                            Assert.AreEqual(new JValue(value), parsedValue);
+                            var valueAsJson = TestUtilities.ToJToken(value);
+                            Assert.IsTrue(JToken.DeepEquals(valueAsJson, (JToken)parsedValue));
                         }
                     }
                     else
@@ -199,12 +210,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(JsonReaderException))]
         public void ReadJson_LeafWithInvalidOperator_ThrowsParsingException(string operatorProperty, object operatorValue)
         {
-            ReadJson($@"
-                {{
-                    ""resourceType"": ""resourceType"",
-                    ""path"": ""path"",
-                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
-                }}");
+            ReadSimpleOperatorJson(operatorProperty, operatorValue);
+        }
+
+        [DataTestMethod]
+        [DataRow("in", 7, DisplayName = "\"In\": 7")]
+        [DataRow("in", 5.7, DisplayName = "\"In\": 5.7")]
+        [DataRow("in", "aString", DisplayName = "\"In\": \"aString\"")]
+        [DataRow("in", true, DisplayName = "\"In\": true")]
+        [ExpectedException(typeof(JsonSerializationException))]
+        public void ReadJson_LeafWithInvalidOperator_ThrowsSerializationException(string operatorProperty, object operatorValue)
+        {
+            ReadSimpleOperatorJson(operatorProperty, operatorValue);
         }
 
         [DataTestMethod]
@@ -219,12 +236,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(JsonException), AllowDerivedTypes = true)]
         public void ReadJson_StructuredExpressionWithInvalidExpression_ThrowsParsingException(string operatorProperty, object operatorSingleValue, params object[] operatorArrayValue)
         {
-            ReadJson($@"
-                {{
-                    ""resourceType"": ""resourceType"",
-                    ""path"": ""path"",
-                    ""{operatorProperty}"": {JsonConvert.SerializeObject("UseArray".Equals(operatorSingleValue) ? operatorArrayValue : operatorSingleValue)}
-                }}");
+            ReadSimpleOperatorJson(operatorProperty, "UseArray".Equals(operatorSingleValue) ? operatorArrayValue : operatorSingleValue);
         }
 
         [TestMethod]
@@ -313,5 +325,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 typeof(ExpressionDefinition),
                 null,
                 JsonSerializer.CreateDefault());
+
+        private static void ReadSimpleOperatorJson(string operatorProperty, object operatorValue)
+        {
+            ReadJson($@"
+                {{
+                    ""resourceType"": ""resourceType"",
+                    ""path"": ""path"",
+                    ""{operatorProperty}"": {JsonConvert.SerializeObject(operatorValue)}
+                }}");
+        }
     }
 }
