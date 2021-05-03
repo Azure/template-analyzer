@@ -195,5 +195,50 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Assert
             Assert.AreEqual($"Value \"{actualValue ?? "null"}\" found at \"some.path\" does not match regex pattern: \"{expectedValue}\".", failureMessage);
         }
+
+        [DataTestMethod]
+        [DataRow("value", null, DisplayName = "JToken to match is a string")]
+        [DataRow(1, null, DisplayName = "JToken to match is an int")]
+        [DataRow(.1, null, DisplayName = "JToken to match is a float")]
+        public void FailureMessage_ValidJTokensForInOperator_FailureMessageIsReturnedAsExpected(object expectedValue, object actualValue)
+        {
+            // Arrange
+            var mockOperator = new Mock<LeafExpressionOperator>();
+            mockOperator
+                .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
+                .Returns(false);
+            mockOperator.Object.SpecifiedValue = TestUtilities.ToJToken(expectedValue);
+            mockOperator.Object.FailureMessage = JsonRuleEngineConstants.InFailureMessage;
+
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
+                .Setup(s => s.JToken)
+                .Returns(TestUtilities.ToJToken(actualValue));
+            mockJsonPathResolver
+                .Setup(s => s.Path)
+                .Returns("some.path");
+
+            var mockLineNumberResolver = new Mock<ILineNumberResolver>();
+            mockLineNumberResolver
+                .Setup(s => s.ResolveLineNumber(mockJsonPathResolver.Object.Path))
+                .Returns(0);
+
+            var mockExpression = new LeafExpression(mockLineNumberResolver.Object, mockOperator.Object, new ExpressionCommonProperties { Path = "some.path" });
+
+            var result = new JsonRuleResult()
+            {
+                Passed = mockOperator.Object.EvaluateExpression(mockJsonPathResolver.Object.JToken),
+                JsonPath = mockJsonPathResolver.Object.Path,
+                LineNumber = mockLineNumberResolver.Object.ResolveLineNumber(mockJsonPathResolver.Object.Path),
+                Expression = mockExpression,
+                ActualValue = mockJsonPathResolver.Object.JToken
+            };
+
+            // Act
+            string failureMessage = result.FailureMessage();
+
+            // Assert
+            Assert.AreEqual($"Value \"{expectedValue}\" is not in the list at path \"some.path\".", failureMessage);
+        }
     }
 }
