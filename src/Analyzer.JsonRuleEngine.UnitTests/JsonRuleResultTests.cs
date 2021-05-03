@@ -21,7 +21,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(true, false, DisplayName = "JToken values are bools")]
         [DataRow(null, "ACTUAL_VALUE", DisplayName = "Expected value is null")]
         [DataRow("EXPECTED_VALUE", null, DisplayName = "Actual value is null")]
-        public void FailureMessage_ValidJTokensForEqualsOperator_FailureMessageIsReturnedAsExpected(object expectedValue, object actualValue)
+        [DataRow("ACTUAL_VALUE", "ACTUAL_VALUE", true, DisplayName = "NotEquals message shouldn't include the word \"not\"")]
+        public void FailureMessage_ValidJTokensForEqualsOperator_FailureMessageIsReturnedAsExpected(object expectedValue, object actualValue, bool isNegative = false)
         {
             // Arrange
             var mockOperator = new Mock<LeafExpressionOperator>();
@@ -30,6 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Returns(false);
             mockOperator.Object.SpecifiedValue = TestUtilities.ToJToken(expectedValue);
             mockOperator.Object.FailureMessage = JsonRuleEngineConstants.EqualsFailureMessage;
+            mockOperator.Object.IsNegative = isNegative;
 
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
             mockJsonPathResolver
@@ -59,7 +61,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             string failureMessage = result.FailureMessage();
 
             // Assert
-            Assert.AreEqual($"Value \"{actualValue ?? "null"}\" found at \"some.path\" is not equal to \"{expectedValue ?? "null"}\".", failureMessage);
+            Assert.AreEqual($"Value \"{actualValue ?? "null"}\" found at \"some.path\" is {(isNegative ? "" : "not")} equal to \"{expectedValue ?? "null"}\".", failureMessage);
         }
 
         [DataTestMethod]

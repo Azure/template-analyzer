@@ -11,8 +11,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants
         internal const string ActualValuePlaceholder = "{actualValue}";
         internal const string PathPlaceholder = "{path}";
         internal const string ExpectedValuePlaceholder = "{expectedValue}";
+        internal const string NegationPlaceholder = "{negation}";
 
-        internal static string EqualsFailureMessage = $"Value \"{ActualValuePlaceholder}\" found at \"{PathPlaceholder}\" is not equal to \"{ExpectedValuePlaceholder}\".";
+        internal static string EqualsFailureMessage = $"Value \"{ActualValuePlaceholder}\" found at \"{PathPlaceholder}\" is {NegationPlaceholder} equal to \"{ExpectedValuePlaceholder}\".";
         internal static string ExistsFailureMessage = $"Value found at \"{PathPlaceholder}\" exists: {ActualValuePlaceholder}, expected: {ExpectedValuePlaceholder}.";
         internal static string HasValueFailureMessage = $"Value found at \"{PathPlaceholder}\" has a value: {ActualValuePlaceholder}, expected: {ExpectedValuePlaceholder}.";
         internal static string RegexFailureMessage = $"Value \"{ActualValuePlaceholder}\" found at \"{PathPlaceholder}\" does not match regex pattern: \"{ExpectedValuePlaceholder}\".";

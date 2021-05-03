@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             {
                 string expectedValue = ((Expression as LeafExpression).Operator.SpecifiedValue == null || (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>() == null) ? "null" : (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>();
                 failureMessage = failureMessage.Replace(JsonRuleEngineConstants.ExpectedValuePlaceholder, expectedValue);
+                failureMessage = failureMessage.Replace(JsonRuleEngineConstants.NegationPlaceholder, (Expression as LeafExpression).Operator.IsNegative ? "" : "not");
             }
 
             string actualValue = (ActualValue == null || ActualValue.Value<string>() == null) ? "null" : ActualValue.Value<string>();
