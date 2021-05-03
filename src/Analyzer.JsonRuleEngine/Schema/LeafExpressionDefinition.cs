@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// Gets or sets the In property
         /// </summary>
         [JsonProperty]
-        public JToken In { get; set; }
+        public JArray In { get; set; }
 
         /// <summary>
         /// Gets or sets the Less property
@@ -100,12 +100,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             else if (this.Is != null || this.NotEquals != null)
             {
                 leafOperator = new EqualsOperator(
-                    specifiedValue: this.Is ?? this.NotEquals, 
+                    specifiedValue: this.Is ?? this.NotEquals,
                     isNegative: this.NotEquals != null);
             }
             else if (this.Regex != null)
             {
                 leafOperator = new RegexOperator(Regex);
+            }
+            else if (this.In != null)
+            {
+                leafOperator = new InOperator(this.In);
             }
 
             if (leafOperator != null)

@@ -3,8 +3,6 @@
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
@@ -46,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateExpression_PropertyIsNotString_EvaluationIsFalse(object objectToMatch)
         {
             var regexOperator = new RegexOperator("");
-            Assert.IsFalse(regexOperator.EvaluateExpression(ToJToken(objectToMatch)));
+            Assert.IsFalse(regexOperator.EvaluateExpression(TestUtilities.ToJToken(objectToMatch)));
         }
 
         [TestMethod]
@@ -54,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateExpresssion_RegexPatternInvalid_ExceptionIsThrown()
         {
             var regexOperator = new RegexOperator("[");
-            regexOperator.EvaluateExpression(ToJToken("someValue"));
+            regexOperator.EvaluateExpression(TestUtilities.ToJToken("someValue"));
         }
 
         [TestMethod]
@@ -62,9 +60,5 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual("Regex", new RegexOperator("").Name);
         }
-
-        // Creates JSON with 'value' as the value of a key, parses it, then selects that key.
-        private static JToken ToJToken(object value)
-            => JToken.Parse($"{{\"Key\": {JsonConvert.SerializeObject(value)} }}")["Key"];
     }
 }
