@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockResourcesResolved.Verify(s => s.ResolveResourceType(It.IsAny<string>()), Times.Never);
 
             // The original mock is returned from both mocks when calling Resolve for a path, so the JToken should always come from it.
-            mockJsonPathResolver.Verify(s => s.JToken, Times.Once);
+            mockJsonPathResolver.Verify(s => s.JToken, Times.Exactly(2));
             mockResourcesResolved.Verify(s => s.JToken, Times.Never);
 
             mockLeafExpressionOperator.Verify(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)), Times.Once);

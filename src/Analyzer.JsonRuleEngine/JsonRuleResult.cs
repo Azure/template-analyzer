@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
@@ -27,8 +28,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         internal string JsonPath { get; set; }
 
         /// <summary>
-        /// Gets the expression associated with this result
+        /// Gets the expression associated with this result.
         /// </summary>
         internal Expression Expression { get; set; }
+
+        /// <summary>
+        /// Gets the actual value present at the specified path.
+        /// </summary>
+        internal JToken ActualValue { get; set; }
+
+        /// <summary>
+        /// Gets the messsage which explains why the evaluation failed.
+        /// </summary>
+        public string FailureMessage()
+        {
+            string failureMessage = Expression.FailureMessage;
+
+            if (Expression is LeafExpression)
+            {
+                string expectedValue = ((Expression as LeafExpression).Operator.SpecifiedValue == null || (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>() == null) ? "null" : (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>();
+                failureMessage = failureMessage.Replace("{expectedValue}", expectedValue);
+            }
+
+            string actualValue = (ActualValue == null || ActualValue.Value<string>() == null) ? "null" : ActualValue.Value<string>();
+            return failureMessage.Replace("{actualValue}", actualValue).Replace("{path}", JsonPath);
+        }
     }
 }
