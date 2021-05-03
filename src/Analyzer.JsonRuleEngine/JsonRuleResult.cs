@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
@@ -47,11 +48,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             if (Expression is LeafExpression)
             {
                 string expectedValue = ((Expression as LeafExpression).Operator.SpecifiedValue == null || (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>() == null) ? "null" : (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>();
-                failureMessage = failureMessage.Replace("{expectedValue}", expectedValue);
+                failureMessage = failureMessage.Replace(JsonRuleEngineConstants.ExpectedValuePlaceholder, expectedValue);
             }
 
             string actualValue = (ActualValue == null || ActualValue.Value<string>() == null) ? "null" : ActualValue.Value<string>();
-            return failureMessage.Replace("{actualValue}", actualValue).Replace("{path}", JsonPath);
+            return failureMessage.Replace(JsonRuleEngineConstants.ActualValuePlaceholder, actualValue).Replace(JsonRuleEngineConstants.PathPlaceholder, JsonPath);
         }
     }
 }
