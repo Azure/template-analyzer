@@ -8,7 +8,6 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
@@ -29,13 +28,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockOperator
                 .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
                 .Returns(false);
-            mockOperator.Object.SpecifiedValue = ToJToken(expectedValue);
+            mockOperator.Object.SpecifiedValue = TestUtilities.ToJToken(expectedValue);
             mockOperator.Object.FailureMessage = JsonRuleEngineConstants.EqualsFailureMessage;
 
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
             mockJsonPathResolver
                 .Setup(s => s.JToken)
-                .Returns(ToJToken(actualValue));
+                .Returns(TestUtilities.ToJToken(actualValue));
             mockJsonPathResolver
                 .Setup(s => s.Path)
                 .Returns("some.path");
@@ -74,13 +73,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockOperator
                 .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
                 .Returns(false);
-            mockOperator.Object.SpecifiedValue = ToJToken(expectedValue);
+            mockOperator.Object.SpecifiedValue = TestUtilities.ToJToken(expectedValue);
             mockOperator.Object.FailureMessage = JsonRuleEngineConstants.ExistsFailureMessage;
 
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
             mockJsonPathResolver
                 .Setup(s => s.JToken)
-                .Returns(ToJToken(actualValue));
+                .Returns(TestUtilities.ToJToken(actualValue));
             mockJsonPathResolver
                 .Setup(s => s.Path)
                 .Returns("some.path");
@@ -119,13 +118,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockOperator
                 .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
                 .Returns(false);
-            mockOperator.Object.SpecifiedValue = ToJToken(expectedValue);
+            mockOperator.Object.SpecifiedValue = TestUtilities.ToJToken(expectedValue);
             mockOperator.Object.FailureMessage = JsonRuleEngineConstants.HasValueFailureMessage;
 
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
             mockJsonPathResolver
                 .Setup(s => s.JToken)
-                .Returns(ToJToken(actualValue));
+                .Returns(TestUtilities.ToJToken(actualValue));
             mockJsonPathResolver
                 .Setup(s => s.Path)
                 .Returns("some.path");
@@ -163,13 +162,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockOperator
                 .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
                 .Returns(false);
-            mockOperator.Object.SpecifiedValue = ToJToken(expectedValue);
+            mockOperator.Object.SpecifiedValue = TestUtilities.ToJToken(expectedValue);
             mockOperator.Object.FailureMessage = JsonRuleEngineConstants.RegexFailureMessage;
 
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
             mockJsonPathResolver
                 .Setup(s => s.JToken)
-                .Returns(ToJToken(actualValue));
+                .Returns(TestUtilities.ToJToken(actualValue));
             mockJsonPathResolver
                 .Setup(s => s.Path)
                 .Returns("some.path");
@@ -195,12 +194,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             // Assert
             Assert.AreEqual($"Value \"{actualValue ?? "null"}\" found at \"some.path\" does not match regex pattern: \"{expectedValue}\".", failureMessage);
-        }
-
-        public static JToken ToJToken(object value)
-        {
-            var jsonValue = JsonConvert.SerializeObject(value);
-            return JToken.Parse($"{{\"Key\": {jsonValue} }}")["Key"];
         }
     }
 }
