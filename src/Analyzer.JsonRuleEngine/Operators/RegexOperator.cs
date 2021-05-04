@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
@@ -24,7 +25,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <param name="regexPattern">The regex pattern specified in the JSON rule.</param>
         public RegexOperator(string regexPattern)
         {
-            (this.SpecifiedValue, this.IsNegative) = (regexPattern, false);
+            this.SpecifiedValue = regexPattern ?? throw new ArgumentNullException(nameof(regexPattern));
+            this.IsNegative = false;
 
             this.RegexPattern = regexPattern;
 
@@ -45,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <returns>A value indicating whether or not the evaluation passed.</returns>
         public override bool EvaluateExpression(JToken tokenToEvaluate)
         {
-            if (tokenToEvaluate.Type != JTokenType.String)
+            if (tokenToEvaluate == null || tokenToEvaluate.Type != JTokenType.String)
             {
                 return false;
             }
