@@ -2,13 +2,59 @@
   {
     "name": "AppServiceApiApp_HTTPS",
     "description": "API App should only be accessible over HTTPS",
-    "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks.",
+    "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#api-app-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
         "path": "kind",
         "regex": "api$"
+      },
+      "allOf": [
+        {
+          "path": "properties.httpsOnly",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceFunctionApp_HTTPS",
+    "description": "Function App should only be accessible over HTTPS",
+    "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#function-app-should-only-be-accessible-over-https",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "allOf": [
+        {
+          "path": "properties.httpsOnly",
+          "equals": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceWebApp_HTTPS",
+    "description": "Web Application should only be accessible over HTTPS",
+    "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#web-application-should-only-be-accessible-over-https",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
       },
       "allOf": [
         {
