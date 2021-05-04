@@ -23,3 +23,18 @@ Service Fabric clusters should only use Azure Active Directory for client authen
 You should only use built-in roles instead of cutom RBAC roles. Custom RBAC roles are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.
 
 **Recommendation**: [Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles)
+
+## API App Should Only Be Accessible Over HTTPS
+API Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
+
+**Recommendation**: In the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
+
+## Function App Should Only Be Accessible Over HTTPS
+Function Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
+
+**Recommendation**: In the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
+
+## Web Application Should Only Be Accessible Over HTTPS
+Web Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
+
+**Recommendation**: In the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
