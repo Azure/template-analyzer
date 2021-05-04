@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -14,6 +13,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     internal class CommandLineParser
     {
         RootCommand rootCommand;
+        private readonly string IndentedNewLine = Environment.NewLine + "\t";
+        private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t";
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -79,15 +80,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
+                    string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
+                    if (parametersFilePath != null)
+                    {
+                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
+                    };
+                    Console.WriteLine(fileMetadata);
+
                     foreach (var evaluation in evaluations)
                     {
                         string resultString = GenerateResultString(evaluation);
-                        string fileMetadata = $"\n\tFile: {templateFilePath}";
-                        if (parametersFilePath != null)
-                        {
-                            fileMetadata += $"\n\tParameters File: {parametersFilePath}";
-                        };
-                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}{fileMetadata}\n\tResult: {evaluation.Passed} {resultString}");
+                        
+                        Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
                     }
                 }
                 catch (Exception exp)
@@ -106,19 +110,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             if (!evaluation.Passed)
             {
-                if (evaluation.Results.Count() > 0)
+                foreach (var result in evaluation.Results)
                 {
-                    foreach (var result in evaluation.Results)
-                    {
-                        resultString += $"\n\tLine: {result.LineNumber}";
-                    }
+                    resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
                 }
-                else
+
+                foreach (var innerEvaluation in evaluation.Evaluations)
                 {
-                    foreach (var innerEvaluation in evaluation.Evaluations)
-                    {
-                        resultString += GenerateResultString(innerEvaluation);
-                    }
+                    resultString += GenerateResultString(innerEvaluation);
                 }
             }
 
