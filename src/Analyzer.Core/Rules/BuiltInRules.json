@@ -48,7 +48,7 @@
     "evaluation": {
       "resourceType": "Microsoft.Cache/redis",
       "path": "properties.enableNonSslPort",
-      "equals": false
+      "notEquals": true
     }
   },
   {
