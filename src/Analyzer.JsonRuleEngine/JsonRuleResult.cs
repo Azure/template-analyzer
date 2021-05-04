@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
@@ -27,8 +29,32 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         internal string JsonPath { get; set; }
 
         /// <summary>
-        /// Gets the expression associated with this result
+        /// Gets the expression associated with this result.
         /// </summary>
         internal Expression Expression { get; set; }
+
+        /// <summary>
+        /// Gets the actual value present at the specified path.
+        /// </summary>
+        internal JToken ActualValue { get; set; }
+
+        /// <summary>
+        /// Gets the messsage which explains why the evaluation failed.
+        /// </summary>
+        public string FailureMessage()
+        {
+            string failureMessage = Expression.FailureMessage;
+
+            if (Expression is LeafExpression)
+            {
+                string expectedValue = ((Expression as LeafExpression).Operator.SpecifiedValue == null || (Expression as LeafExpression).Operator.SpecifiedValue.ToObject<object>() == null) ? "null" : (Expression as LeafExpression).Operator.SpecifiedValue.ToString();
+                failureMessage = failureMessage.Replace(JsonRuleEngineConstants.ExpectedValuePlaceholder, expectedValue);
+                failureMessage = failureMessage.Replace(JsonRuleEngineConstants.NegationPlaceholder, (Expression as LeafExpression).Operator.IsNegative ? "" : "not");
+            }
+
+            string actualValue = (ActualValue == null || ActualValue.ToObject<object>() == null) ? "null" : ActualValue.ToString();
+            failureMessage = failureMessage.Replace(JsonRuleEngineConstants.ActualValuePlaceholder, actualValue);
+            return failureMessage.Replace(JsonRuleEngineConstants.PathPlaceholder, JsonPath);
+        }
     }
 }

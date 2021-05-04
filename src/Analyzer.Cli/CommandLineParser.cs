@@ -80,7 +80,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     foreach (var evaluation in evaluations)
                     {
-                        Console.WriteLine($"{evaluation.RuleName}: {evaluation.RuleDescription}, Result: {evaluation.Passed.ToString()}");
+                        string resultString = GenerateResultString(evaluation, templateFilePath.FullName, parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
+
+                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}\n\tResult: {evaluation.Passed} {resultString}");
                     }
                 }
                 catch (Exception exp)
@@ -91,6 +93,34 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             });
 
             return analyzeTemplateCommand;
+        }
+
+        private string GenerateResultString(Types.IEvaluation evaluation, string templateFilePath, string parametersFilePath)
+        {
+            string resultString = "";
+
+            if (!evaluation.Passed)
+            {
+                foreach (var innerEvaluation in evaluation.Evaluations)
+                {
+                    resultString += GenerateResultString(innerEvaluation, templateFilePath, parametersFilePath);
+
+                    foreach (var result in innerEvaluation.Results)
+                    {
+                        if (!innerEvaluation.Passed)
+                        {
+                            resultString += $"\n\tFile: {templateFilePath}";
+                            if (parametersFilePath != null)
+                            {
+                                resultString += $"\n\tParameters File: {parametersFilePath}";
+                            }
+                            resultString += $"\n\tLine: {result.LineNumber}\n\t{result.FailureMessage()}";
+                        }
+                    }
+                }
+            }
+
+            return resultString;
         }
 
         private Command SetupAnalyzeDirectoryCommand()

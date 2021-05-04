@@ -17,5 +17,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// Gets the line number of the file where the rule was evaluated.
         /// </summary>
         public int LineNumber { get; }
+
+        /// <summary>
+        /// Gets the messsage which explains why the evaluation failed.
+        /// </summary>
+        public string FailureMessage();
     }
 }

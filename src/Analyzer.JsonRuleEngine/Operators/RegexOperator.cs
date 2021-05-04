@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.RegularExpressions;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
@@ -36,6 +37,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             {
                 throw new System.ArgumentException($"Regex pattern is not valid.", e);
             }
+
+            this.FailureMessage = $"{this.Name}: {JsonRuleEngineConstants.RegexFailureMessage}";
         }
 
         /// <summary>

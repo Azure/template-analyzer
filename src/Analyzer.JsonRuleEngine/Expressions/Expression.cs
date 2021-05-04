@@ -29,6 +29,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         public Expression Where { get; private set; }
 
         /// <summary>
+        /// Gets the messsage which explains why the evaluation failed.
+        /// </summary>
+        public string FailureMessage { get; internal set; }
+
+        /// <summary>
         /// Initialization for the base Expression.
         /// </summary>
         /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
@@ -36,7 +41,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         {
             (this.ResourceType, this.Path, this.Where) = (commonProperties.ResourceType, commonProperties.Path, commonProperties.Where);
         }
-
 
         /// <summary>
         /// Executes this <see cref="Expression"/> against a template.

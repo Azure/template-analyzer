@@ -26,6 +26,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         public JToken SpecifiedValue { get; set; }
 
         /// <summary>
+        /// Gets the failure message when the operator does not pass
+        /// </summary>
+        public string FailureMessage { get; set; }
+
+        /// <summary>
         /// Evaluates the specified JToken using the defined operation of this <c>Operator</c>.
         /// </summary>
         /// <param name="tokenToEvaluate">The JToken to evaluate</param>

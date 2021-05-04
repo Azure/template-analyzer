@@ -28,6 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         {
             this.jsonLineNumberResolver = jsonLineNumberResolver ?? throw new ArgumentNullException(nameof(jsonLineNumberResolver));
             this.Operator = @operator ?? throw new ArgumentNullException(nameof(@operator));
+            this.FailureMessage = Operator.FailureMessage;
 
             if (commonProperties.Path == null) throw new ArgumentException("Path property must not be null.", nameof(commonProperties));
         }
@@ -51,7 +52,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     Passed = Operator.EvaluateExpression(scope.JToken),
                     JsonPath = scope.Path,
                     LineNumber = this.jsonLineNumberResolver.ResolveLineNumber(scope.Path),
-                    Expression = this
+                    Expression = this,
+                    ActualValue = scope.JToken
                 };
 
                 return result;

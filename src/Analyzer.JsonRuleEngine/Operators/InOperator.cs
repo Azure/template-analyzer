@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
@@ -23,6 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             this.SpecifiedValue = specifiedValue;
             this.IsNegative = false;
+            this.FailureMessage = $"{this.Name}: {JsonRuleEngineConstants.InFailureMessage}";
         }
 
         /// <summary>

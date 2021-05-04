@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
@@ -23,6 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
             this.IsNegative = isNegative;
+            this.FailureMessage = $"{this.Name}: {JsonRuleEngineConstants.EqualsFailureMessage}";
         }
 
         /// <summary>
