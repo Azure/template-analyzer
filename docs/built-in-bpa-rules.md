@@ -1,3 +1,14 @@
+# Best Practice Related Rules
+## Ensure all virtual machines are not using preview images
+Virtual Machines should not use preview versions of images.
+
+**Recommendation**: To use a non-preview image for virtual machines, in the [Microsoft.Compute/VirtualMachines/imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
+
+## Ensure all virtual machine scale set instances are not using preview images
+Virtual Machine Scale Set instances should not use preview versions of images.
+
+**Recommendation**: To use a non-preview image for virtual machine scale set instances, in the [Microsoft.Compute/VirtualMachineScaleSets/storageProfile.imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachinescalesets?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
+
 # Security Related Rules
 ## Authorized IP ranges should be defined on Kubernetes Services
 To ensure that only applications from allowed networks, machines, or subnets can access your cluster, restrict access to your Kubernetes Service Management API server. It is recommended to limit access to authorized IP ranges to ensure that only applications from allowed networks can access the cluster.
