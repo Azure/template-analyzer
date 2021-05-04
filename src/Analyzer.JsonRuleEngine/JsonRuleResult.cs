@@ -47,13 +47,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
             if (Expression is LeafExpression)
             {
-                string expectedValue = ((Expression as LeafExpression).Operator.SpecifiedValue == null || (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>() == null) ? "null" : (Expression as LeafExpression).Operator.SpecifiedValue.Value<string>();
+                string expectedValue = ((Expression as LeafExpression).Operator.SpecifiedValue == null || (Expression as LeafExpression).Operator.SpecifiedValue.ToObject<object>() == null) ? "null" : (Expression as LeafExpression).Operator.SpecifiedValue.ToString();
                 failureMessage = failureMessage.Replace(JsonRuleEngineConstants.ExpectedValuePlaceholder, expectedValue);
                 failureMessage = failureMessage.Replace(JsonRuleEngineConstants.NegationPlaceholder, (Expression as LeafExpression).Operator.IsNegative ? "" : "not");
             }
 
-            string actualValue = (ActualValue == null || ActualValue.Value<string>() == null) ? "null" : ActualValue.Value<string>();
-            return failureMessage.Replace(JsonRuleEngineConstants.ActualValuePlaceholder, actualValue).Replace(JsonRuleEngineConstants.PathPlaceholder, JsonPath);
+            string actualValue = (ActualValue == null || ActualValue.ToObject<object>() == null) ? "null" : ActualValue.ToString();
+            failureMessage = failureMessage.Replace(JsonRuleEngineConstants.ActualValuePlaceholder, actualValue);
+            return failureMessage.Replace(JsonRuleEngineConstants.PathPlaceholder, JsonPath);
         }
     }
 }

@@ -18,5 +18,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants
         internal static string HasValueFailureMessage = $"Value found at \"{PathPlaceholder}\" has a value: {ActualValuePlaceholder}, expected: {ExpectedValuePlaceholder}.";
         internal static string RegexFailureMessage = $"Value \"{ActualValuePlaceholder}\" found at \"{PathPlaceholder}\" does not match regex pattern: \"{ExpectedValuePlaceholder}\".";
         internal static string InFailureMessage = $"Value \"{ExpectedValuePlaceholder}\" is not in the list at path \"{PathPlaceholder}\".";
+
+        internal static string AnyOfFailureMessage = $"No evaluations evaluted to true for the following json property: \"{PathPlaceholder}\".";
+        internal static string AllOfFailureMessage = $"One or more evaluations were false for the following json property: \"{PathPlaceholder}\".";
+
     }
 }

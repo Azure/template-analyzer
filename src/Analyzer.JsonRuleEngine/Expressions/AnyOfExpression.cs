@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Constants;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
@@ -26,6 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             : base(commonProperties)
         {
             this.AnyOf = expressions ?? throw new ArgumentNullException(nameof(expressions));
+            this.FailureMessage = JsonRuleEngineConstants.AnyOfFailureMessage;
         }
 
         /// <summary>

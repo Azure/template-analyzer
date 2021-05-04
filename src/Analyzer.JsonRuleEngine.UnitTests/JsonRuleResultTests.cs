@@ -242,5 +242,93 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Assert
             Assert.AreEqual($"Value \"{expectedValue}\" is not in the list at path \"some.path\".", failureMessage);
         }
+
+        [TestMethod]
+        public void FailureMessage_ValidJTokensForAllOf_FailureMessageIsReturnedAsExpected()
+        {
+            // Arrange
+            var mockOperator = new Mock<LeafExpressionOperator>();
+            mockOperator
+                .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
+                .Returns(false);
+            mockOperator.Object.SpecifiedValue = "EXPECTED_VALUE";
+            mockOperator.Object.FailureMessage = JsonRuleEngineConstants.InFailureMessage;
+
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
+                .Setup(s => s.JToken)
+                .Returns("ACTUAL_VALUE");
+            mockJsonPathResolver
+                .Setup(s => s.Path)
+                .Returns("some.path");
+
+            var mockLineNumberResolver = new Mock<ILineNumberResolver>();
+            mockLineNumberResolver
+                .Setup(s => s.ResolveLineNumber(mockJsonPathResolver.Object.Path))
+                .Returns(0);
+
+            var mockLeafExpression = new LeafExpression(mockLineNumberResolver.Object, mockOperator.Object, new ExpressionCommonProperties { Path = "some.path" });
+
+            var mockStructuredExpression = new AllOfExpression(new Expression[] { mockLeafExpression }, new ExpressionCommonProperties { Path = "some.path" });
+
+            var result = new JsonRuleResult()
+            {
+                Passed = mockOperator.Object.EvaluateExpression(mockJsonPathResolver.Object.JToken),
+                JsonPath = mockJsonPathResolver.Object.Path,
+                LineNumber = mockLineNumberResolver.Object.ResolveLineNumber(mockJsonPathResolver.Object.Path),
+                Expression = mockStructuredExpression,
+                ActualValue = mockJsonPathResolver.Object.JToken
+            };
+
+            // Act
+            string failureMessage = result.FailureMessage();
+
+            // Assert
+            Assert.AreEqual("One or more evaluations were false for the following json property: \"some.path\".", failureMessage);
+        }
+
+        [TestMethod]
+        public void FailureMessage_ValidJTokensForAnyOf_FailureMessageIsReturnedAsExpected()
+        {
+            // Arrange
+            var mockOperator = new Mock<LeafExpressionOperator>();
+            mockOperator
+                .Setup(s => s.EvaluateExpression(It.IsAny<JToken>()))
+                .Returns(false);
+            mockOperator.Object.SpecifiedValue = "EXPECTED_VALUE";
+            mockOperator.Object.FailureMessage = JsonRuleEngineConstants.InFailureMessage;
+
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
+                .Setup(s => s.JToken)
+                .Returns("ACTUAL_VALUE");
+            mockJsonPathResolver
+                .Setup(s => s.Path)
+                .Returns("some.path");
+
+            var mockLineNumberResolver = new Mock<ILineNumberResolver>();
+            mockLineNumberResolver
+                .Setup(s => s.ResolveLineNumber(mockJsonPathResolver.Object.Path))
+                .Returns(0);
+
+            var mockLeafExpression = new LeafExpression(mockLineNumberResolver.Object, mockOperator.Object, new ExpressionCommonProperties { Path = "some.path" });
+
+            var mockStructuredExpression = new AnyOfExpression(new Expression[] { mockLeafExpression }, new ExpressionCommonProperties { Path = "some.path" });
+
+            var result = new JsonRuleResult()
+            {
+                Passed = mockOperator.Object.EvaluateExpression(mockJsonPathResolver.Object.JToken),
+                JsonPath = mockJsonPathResolver.Object.Path,
+                LineNumber = mockLineNumberResolver.Object.ResolveLineNumber(mockJsonPathResolver.Object.Path),
+                Expression = mockStructuredExpression,
+                ActualValue = mockJsonPathResolver.Object.JToken
+            };
+
+            // Act
+            string failureMessage = result.FailureMessage();
+
+            // Assert
+            Assert.AreEqual("No evaluations evaluted to true for the following json property: \"some.path\".", failureMessage);
+        }
     }
 }

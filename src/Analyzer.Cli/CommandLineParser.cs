@@ -80,22 +80,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     foreach (var evaluation in evaluations)
                     {
-                        string resultString = evaluation.Passed.ToString();
-                        
-                        foreach (var result in evaluation.Results)
-                        {
-                            if (!evaluation.Passed)
-                            {
-                                resultString += $"\n\tFile: {templateFilePath.FullName}";
-                                if (parametersFilePath != null)
-                                {
-                                    resultString += $"\n\tParameters File: {parametersFilePath}";
-                                }
-                                resultString += $"\n\tLine: {result.LineNumber}\n\t{result.FailureMessage()}";
-                            }
-                        }
+                        string resultString = GenerateResultString(evaluation, templateFilePath.FullName, parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
 
-                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}\n\tResult: {resultString}");
+                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}\n\tResult: {evaluation.Passed} {resultString}");
                     }
                 }
                 catch (Exception exp)
@@ -106,6 +93,34 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             });
 
             return analyzeTemplateCommand;
+        }
+
+        private string GenerateResultString(Types.IEvaluation evaluation, string templateFilePath, string parametersFilePath)
+        {
+            string resultString = "";
+
+            if (!evaluation.Passed)
+            {
+                foreach (var innerEvaluation in evaluation.Evaluations)
+                {
+                    resultString += GenerateResultString(innerEvaluation, templateFilePath, parametersFilePath);
+
+                    foreach (var result in innerEvaluation.Results)
+                    {
+                        if (!innerEvaluation.Passed)
+                        {
+                            resultString += $"\n\tFile: {templateFilePath}";
+                            if (parametersFilePath != null)
+                            {
+                                resultString += $"\n\tParameters File: {parametersFilePath}";
+                            }
+                            resultString += $"\n\tLine: {result.LineNumber}\n\t{result.FailureMessage()}";
+                        }
+                    }
+                }
+            }
+
+            return resultString;
         }
 
         private Command SetupAnalyzeDirectoryCommand()
