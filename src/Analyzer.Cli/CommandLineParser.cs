@@ -13,6 +13,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     internal class CommandLineParser
     {
         RootCommand rootCommand;
+        private readonly string IndentedNewLine = Environment.NewLine + "\t";
+        private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -78,9 +80,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
+                    string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
+                    if (parametersFilePath != null)
+                    {
+                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
+                    }
+
+                    Console.WriteLine(fileMetadata);
+
                     foreach (var evaluation in evaluations)
                     {
-                        Console.WriteLine($"{evaluation.RuleName}: {evaluation.RuleDescription}, Result: {evaluation.Passed.ToString()}");
+                        string resultString = GenerateResultString(evaluation);
+                        
+                        Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
                     }
                 }
                 catch (Exception exp)
@@ -91,6 +103,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             });
 
             return analyzeTemplateCommand;
+        }
+
+        private string GenerateResultString(Types.IEvaluation evaluation)
+        {
+            string resultString = "";
+
+            if (!evaluation.Passed)
+            {
+                foreach (var result in evaluation.Results)
+                {
+                    resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
+                }
+
+                foreach (var innerEvaluation in evaluation.Evaluations)
+                {
+                    resultString += GenerateResultString(innerEvaluation);
+                }
+            }
+
+            return resultString;
         }
 
         private Command SetupAnalyzeDirectoryCommand()
