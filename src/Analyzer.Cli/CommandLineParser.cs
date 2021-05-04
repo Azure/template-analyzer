@@ -81,8 +81,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     foreach (var evaluation in evaluations)
                     {
-                        string resultString = GenerateResultString(evaluation, parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
-                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}\n\tFile: {templateFilePath}\n\tResult: {evaluation.Passed} {resultString}");
+                        string resultString = GenerateResultString(evaluation);
+                        string fileMetadata = $"\n\tFile: {templateFilePath}";
+                        if (parametersFilePath != null)
+                        {
+                            fileMetadata += $"\n\tParameters File: {parametersFilePath}";
+                        };
+                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}{fileMetadata}\n\tResult: {evaluation.Passed} {resultString}");
                     }
                 }
                 catch (Exception exp)
@@ -95,7 +100,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return analyzeTemplateCommand;
         }
 
-        private string GenerateResultString(Types.IEvaluation evaluation, string parametersFilePath)
+        private string GenerateResultString(Types.IEvaluation evaluation)
         {
             string resultString = "";
 
@@ -105,10 +110,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     foreach (var result in evaluation.Results)
                     {
-                        if (parametersFilePath != null)
-                        {
-                            resultString += $"\n\tParameters File: {parametersFilePath}";
-                        }
                         resultString += $"\n\tLine: {result.LineNumber}";
                     }
                 }
@@ -116,7 +117,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     foreach (var innerEvaluation in evaluation.Evaluations)
                     {
-                        resultString += GenerateResultString(innerEvaluation, parametersFilePath);
+                        resultString += GenerateResultString(innerEvaluation);
                     }
                 }
             }
