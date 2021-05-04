@@ -84,7 +84,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     if (parametersFilePath != null)
                     {
                         fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
-                    };
+                    }
+
                     Console.WriteLine(fileMetadata);
 
                     foreach (var evaluation in evaluations)
