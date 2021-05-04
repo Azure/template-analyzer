@@ -41,6 +41,17 @@
     }
   },
   {
+    "name": "Cache_Redis_SSL_Only",
+    "description": "Only secure connections to your Azure Cache for Redis should be enabled",
+    "recommendation": "Enable connections via SSL only to Redis Cache",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#only-secure-connections-to-your-azure-cache-for-redis-should-be-enabled",
+    "evaluation": {
+      "resourceType": "Microsoft.Cache/redis",
+      "path": "properties.enableNonSslPort",
+      "equals": false
+    }
+  },
+  {
     "name": "Kubernetes_Must_Restrict_Network_Access",
     "description": "Authorized IP ranges should be defined on Kubernetes Services",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
