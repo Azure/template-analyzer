@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     {
         RootCommand rootCommand;
         private readonly string IndentedNewLine = Environment.NewLine + "\t";
-        private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t";
+        private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
