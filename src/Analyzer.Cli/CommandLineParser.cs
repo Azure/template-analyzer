@@ -80,7 +80,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     foreach (var evaluation in evaluations)
                     {
-                        Console.WriteLine($"{evaluation.RuleName}: {evaluation.RuleDescription}, Result: {evaluation.Passed.ToString()}");
+                        string resultString = evaluation.Passed.ToString();
+                        
+                        foreach (var result in evaluation.Results)
+                        {
+                            if (!evaluation.Passed)
+                            {
+                                resultString += $"\n\tFile: {templateFilePath.FullName}";
+                                if (parametersFilePath != null)
+                                {
+                                    resultString += $"\n\tParameters File: {parametersFilePath}";
+                                }
+                                resultString += $"\n\tLine: {result.LineNumber}\n\t{result.FailureMessage()}";
+                            }
+                        }
+
+                        Console.WriteLine($"\n\n{evaluation.RuleName}: {evaluation.RuleDescription}\n\tResult: {resultString}");
                     }
                 }
                 catch (Exception exp)

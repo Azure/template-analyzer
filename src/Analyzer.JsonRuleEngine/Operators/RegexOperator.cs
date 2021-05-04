@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
                 throw new System.ArgumentException($"Regex pattern is not valid.", e);
             }
 
-            this.FailureMessage = $"{this.Name} {JsonRuleEngineConstants.RegexFailureMessage}";
+            this.FailureMessage = $"{this.Name}: {JsonRuleEngineConstants.RegexFailureMessage}";
         }
 
         /// <summary>

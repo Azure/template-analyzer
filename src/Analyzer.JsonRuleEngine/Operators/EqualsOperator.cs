@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
             this.IsNegative = isNegative;
-            this.FailureMessage = $"{this.Name} {JsonRuleEngineConstants.EqualsFailureMessage}";
+            this.FailureMessage = $"{this.Name}: {JsonRuleEngineConstants.EqualsFailureMessage}";
         }
 
         /// <summary>

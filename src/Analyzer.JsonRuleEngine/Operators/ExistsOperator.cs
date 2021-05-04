@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             (this.SpecifiedValue, this.IsNegative) = (specifiedValue, isNegative);
 
             this.EffectiveValue = specifiedValue;
-            this.FailureMessage = $"{this.Name} {JsonRuleEngineConstants.ExistsFailureMessage}";
+            this.FailureMessage = $"{this.Name}: {JsonRuleEngineConstants.ExistsFailureMessage}";
         }
 
         /// <summary>
