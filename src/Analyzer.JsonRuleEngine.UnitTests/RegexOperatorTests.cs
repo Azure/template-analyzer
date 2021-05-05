@@ -48,11 +48,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void EvaluateExpresssion_RegexPatternInvalid_ExceptionIsThrown()
+        public void EvaluateExpression_PropertyIsMissing_EvaluationIsFalse()
         {
-            var regexOperator = new RegexOperator("[");
-            regexOperator.EvaluateExpression(TestUtilities.ToJToken("someValue"));
+            var regexOperator = new RegexOperator("");
+            Assert.IsFalse(regexOperator.EvaluateExpression(null));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentException))]
+        public void EvaluateExpresssion_RegexPatternInvalid_ArgumentExceptionIsThrown()
+        {
+            new RegexOperator("[");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentNullException))]
+        public void EvaluateExpresssion_RegexPatternNull_ArgumentNullExceptionIsThrown()
+        {
+            new RegexOperator(null);
         }
 
         [TestMethod]
