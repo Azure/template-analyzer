@@ -1,3 +1,14 @@
+# Best Practice Related Rules
+## Ensure all virtual machines are not using preview images
+Virtual Machines should not use preview versions of images.
+
+**Recommendation**: To use a non-preview image for virtual machines, in the [Microsoft.Compute/VirtualMachines/imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
+
+## Ensure all virtual machine scale set instances are not using preview images
+Virtual Machine Scale Set instances should not use preview versions of images.
+
+**Recommendation**: To use a non-preview image for virtual machine scale set instances, in the [Microsoft.Compute/VirtualMachineScaleSets/storageProfile.imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachinescalesets?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
+
 # Security Related Rules
 ## API App Should Only Be Accessible Over HTTPS
 API Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
@@ -18,6 +29,11 @@ It is important to enable encryption of Automation account variable assets when 
 Function Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
+
+## Only secure connections to your Azure Cache for Redis should be enabled
+Enable only connections via SSL to Redis Cache. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.
+
+**Recommendation**: To [enable only connections via SSL to Redis Cache](https://docs.microsoft.com/en-us/security/benchmark/azure/baselines/azure-cache-for-redis-security-baseline?toc=/azure/azure-cache-for-redis/TOC.json#44-encrypt-all-sensitive-information-in-transit), in the [Microsoft.Cache/Redis resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.cache/redis?tabs=json#rediscreateproperties-object), update the value of the *enableNonSslPort* property from `true` to `false` or remove the property from the template as the default value is `false`.
 
 ## Role-Based Access Control (RBAC) should be used on Kubernetes Services
 To provide granular filtering on the actions that users can perform, use Role-Based Access Control (RBAC) to manage permissions in Kubernetes Service Clusters and configure relevant authorization policies. To Use Role-Based Access Control (RBAC) you must recreate your Kubernetes Service cluster and enable RBAC during the creation process.
