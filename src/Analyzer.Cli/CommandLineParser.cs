@@ -94,6 +94,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         
                         Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
                     }
+
+                    PowerShellExecutor.EvaluateAndOutputResults(templateFilePath.FullName);
                 }
                 catch (Exception exp)
                 {
