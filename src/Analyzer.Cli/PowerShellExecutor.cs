@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             powerShell.AddStatement();
 
             powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", @"C:\Users\verabo.REDMOND\Repos\arm-ttk\arm-ttk\arm-ttk.psd1"); // TODO include as git submodule?
+                .AddParameter("Name", @"..\..\arm-ttk\arm-ttk\arm-ttk.psd1"); // arm-ttk is added to the project's bin directory in build time 
             powerShell.AddStatement();
 
             powerShell.Commands.AddCommand("Test-AzTemplate")
