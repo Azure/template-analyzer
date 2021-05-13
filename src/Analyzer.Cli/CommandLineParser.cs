@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -79,6 +80,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                    evaluations = evaluations.Concat(PowerShellRuleEngine.EvaluateRules(templateFilePath.FullName)); // TODO move to TemplateAnalyzer
 
                     string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
                     if (parametersFilePath != null)
@@ -94,8 +96,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         
                         Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
                     }
-
-                    PowerShellExecutor.EvaluateAndOutputResults(templateFilePath.FullName);
                 }
                 catch (Exception exp)
                 {

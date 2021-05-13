@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.Types;
 using System;
+using System.Collections.Generic;
 using System.Management.Automation.Runspaces;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -9,13 +11,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// <summary>
     /// Executes template analysis encoded in PowerShell
     /// </summary>
-    internal class PowerShellExecutor // TODO rename
+    internal class PowerShellRuleEngine
     {
         /// <summary>
         /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
         /// </summary>
         /// <param name="templateFullFilePath">The full file path of the template under analysis.</param>
-        public static void EvaluateAndOutputResults(string templateFullFilePath) // TODO rename
+        public static IEnumerable<IEvaluation> EvaluateRules(string templateFullFilePath)
         {
             using var runspace = RunspaceFactory.CreateRunspace();
             runspace.Open();
@@ -41,30 +43,32 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 .AddParameter("Test", "deploymentTemplate")
                 .AddParameter("TemplatePath", templateFullFilePath);
 
-            var results = powerShell.Invoke();
+            var executionResults = powerShell.Invoke();
 
-            foreach (dynamic result in results)
+            var evaluations = new List<PowerShellRuleEvaluation>();
+
+            foreach (dynamic executionResult in executionResults)
             {
-                if (result != null)
+                if (executionResult != null && !executionResult.Passed) // We only want to report failures for now
                 {
-                    // TODO create Evaluation object and return that
+                    var evaluationResults = new List<PowerShellRuleResult>();
 
-                    Console.WriteLine(result.Name);
-                    Console.WriteLine(result.Passed);
-
-                    if (result.Errors.Count > 0)
+                    // TODO check warings too?
+                    if (executionResult.Errors.Count > 0)
                     {
-                       foreach (dynamic error in result.Errors)
+                        foreach (dynamic error in executionResult.Errors)
                        {
-                            Console.WriteLine(error); // TODO line number
-                            Console.WriteLine(error.TargetObject.Name);
-                            Console.WriteLine(error.TargetObject.Value);
+                            var evaluationResult = new PowerShellRuleResult(executionResult.Passed, -1, error.TargetObject); // TODO line number
+                            evaluationResults.Add(evaluationResult);
                         }
                     }
 
-                    // TODO check warings too?
+                    var evaluation = new PowerShellRuleEvaluation(executionResult.Name, executionResult.Passed, evaluationResults);
+                    evaluations.Add(evaluation);
                 }
             }
+
+            return evaluations;
         }
 
         static void HandleDataAddedInStreams(object newData, ConsoleColor? color = null)
