@@ -3,7 +3,7 @@
 
 using Microsoft.Azure.Templates.Analyzer.Types;
 
-namespace Microsoft.Azure.Templates.Analyzer.Cli
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
     internal class PowerShellRuleResult : IResult

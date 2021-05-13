@@ -4,14 +4,13 @@
 using Microsoft.Azure.Templates.Analyzer.Types;
 using System;
 using System.Collections.Generic;
-using System.Management.Automation.Runspaces;
 
-namespace Microsoft.Azure.Templates.Analyzer.Cli
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <summary>
     /// Executes template analysis encoded in PowerShell
     /// </summary>
-    internal class PowerShellRuleEngine
+    public class PowerShellRuleEngine
     {
         /// <summary>
         /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
@@ -19,10 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <param name="templateFullFilePath">The full file path of the template under analysis.</param>
         public static IEnumerable<IEvaluation> EvaluateRules(string templateFullFilePath)
         {
-            using var runspace = RunspaceFactory.CreateRunspace();
-            runspace.Open();
-
-            var powerShell = System.Management.Automation.PowerShell.Create(runspace); // FIXME namespace
+            var powerShell = System.Management.Automation.PowerShell.Create(); // FIXME namespace
 
             powerShell.Streams.Error.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Error[e.Index], ConsoleColor.Red);
             powerShell.Streams.Warning.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Warning[e.Index], ConsoleColor.Yellow);

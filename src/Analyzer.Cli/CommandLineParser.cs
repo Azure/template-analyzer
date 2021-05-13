@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;

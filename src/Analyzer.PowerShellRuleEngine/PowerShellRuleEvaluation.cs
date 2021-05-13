@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
-namespace Microsoft.Azure.Templates.Analyzer.Cli
+namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
     internal class PowerShellRuleEvaluation : IEvaluation
