@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>TemplateAnalyzer</AssemblyName>
-    <Description>A command line interface for Microsoft.Azure.Templates.Analyzer.Core - an ARM Template scanner for security misconfiguration and best practices</Description>
+    <Description>A command line interface for Microsoft.Azure.Templates.Analyzer.Core - an ARM template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

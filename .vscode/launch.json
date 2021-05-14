@@ -8,7 +8,7 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/TemplateAnalyzer.dll",
 
-            // Runs the CLI against the currently open ARM template file.
+            // Runs the analyzer CLI, analyzing the file currently active/being viewed in VS Code.
             // Alternatively, change ${file} to the path of a template to analyze that file.
             // Add "-p" and a path to the parameters file to use specific parameters
             // when analyzing the template.
