@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Core\Analyzer.Core.csproj" />
-    <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
   </ItemGroup>
 
 </Project>

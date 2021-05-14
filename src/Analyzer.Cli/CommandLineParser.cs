@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -79,9 +77,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 try
                 {
-                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
+                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
-                    evaluations = evaluations.Concat(PowerShellRuleEngine.EvaluateRules(templateFilePath.FullName)); // TODO move to TemplateAnalyzer
 
                     string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
                     if (parametersFilePath != null)
