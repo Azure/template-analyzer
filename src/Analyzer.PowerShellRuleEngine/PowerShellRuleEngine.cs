@@ -4,6 +4,7 @@
 using Microsoft.Azure.Templates.Analyzer.Types;
 using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -54,7 +55,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         foreach (dynamic error in executionResult.Errors)
                        {
-                            var evaluationResult = new PowerShellRuleResult(executionResult.Passed, -1, error.TargetObject); // TODO line number
+                            var lineNumber = -1; // FIXME handle in the same way as JSON rules that don't report lines
+                            if (error.TargetObject is PSObject && ((PSObject)error.TargetObject).Properties["lineNumber"] != null)
+                            {
+                                lineNumber = error.TargetObject.lineNumber;
+                            }
+
+                            var evaluationResult = new PowerShellRuleResult(executionResult.Passed, lineNumber, error.TargetObject);
                             evaluationResults.Add(evaluationResult);
                         }
                     }
