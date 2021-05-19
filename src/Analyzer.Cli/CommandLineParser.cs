@@ -88,12 +88,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     Console.WriteLine(fileMetadata);
 
+                    var passedEvaluations = 0;
+                    var failedEvaluations = 0;
+
                     foreach (var evaluation in evaluations)
                     {
                         string resultString = GenerateResultString(evaluation);
                         
-                        Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
+                        if (!evaluation.Passed)
+                        {
+                            failedEvaluations++;
+                            Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
+                        } else
+                        {
+                            passedEvaluations++;
+                        }
                     }
+
+                    Console.WriteLine($"{IndentedNewLine}Rules summary:{TwiceIndentedNewLine}Failed: {failedEvaluations}{TwiceIndentedNewLine}Passed: {passedEvaluations}");
                 }
                 catch (Exception exp)
                 {
