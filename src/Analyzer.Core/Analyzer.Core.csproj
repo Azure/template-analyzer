@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer</RootNamespace>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Core</AssemblyName>
+    <Description>An ARM template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

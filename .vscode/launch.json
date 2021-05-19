@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/TemplateAnalyzer.dll",
+
+            // Runs the analyzer CLI, analyzing the file currently active/being viewed in VS Code.
+            // Alternatively, change ${file} to the path of a template to analyze that file.
+            // Add "-p" and a path to the parameters file to use specific parameters
+            // when analyzing the template.
+            "args": [
+                "analyze-template",
+                "-t", "${file}",
+                //"-p", "path-to-parameters"
+            ],
+
+            "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        }
+    ]
+}
