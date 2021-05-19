@@ -49,24 +49,27 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 if (executionResult != null && !executionResult.Passed) // We only want to report failures for now
                 {
                     var evaluationResults = new List<PowerShellRuleResult>();
+                    var possibleErrorDescriptions = "";
 
                     // TODO check warings too?
                     if (executionResult.Errors.Count > 0)
                     {
                         foreach (dynamic error in executionResult.Errors)
                        {
-                            var lineNumber = -1; // FIXME handle in the same way as JSON rules that don't report lines
-                            if (error.TargetObject is PSObject && ((PSObject)error.TargetObject).Properties["lineNumber"] != null)
+                            var lineNumber = 0;
+                            if (error.TargetObject is PSObject targetObject && targetObject.Properties["lineNumber"] != null)
                             {
                                 lineNumber = error.TargetObject.lineNumber;
                             }
 
-                            var evaluationResult = new PowerShellRuleResult(executionResult.Passed, lineNumber, error.TargetObject);
+                            var evaluationResult = new PowerShellRuleResult(executionResult.Passed, lineNumber);
                             evaluationResults.Add(evaluationResult);
+
+                            possibleErrorDescriptions = possibleErrorDescriptions + error.ToString() + ". "; // Temporal until the JSON engine also reports more info like variable names
                         }
                     }
 
-                    var evaluation = new PowerShellRuleEvaluation(executionResult.Name, executionResult.Passed, evaluationResults);
+                    var evaluation = new PowerShellRuleEvaluation(executionResult.Name, possibleErrorDescriptions, executionResult.Passed, evaluationResults);
                     evaluations.Add(evaluation);
                 }
             }

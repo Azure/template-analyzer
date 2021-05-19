@@ -44,12 +44,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Creates an <see cref="PowerShellRuleEvaluation"/> that describes the evaluation of a PowerShell rule against an ARM template.
         /// </summary>
-        /// <param name="ruleName">The rule associated with this evaluation.</param>
+        /// <param name="ruleName">The name of the rule associated with this evaluation.</param>
+        /// <param name="ruleDescription">The description of the rule associated with this evaluation.</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="results"><see cref="IEnumerable"/> of the results.</param>
-        public PowerShellRuleEvaluation(string ruleName, bool passed, IEnumerable<PowerShellRuleResult> results)
+        public PowerShellRuleEvaluation(string ruleName, string ruleDescription, bool passed, IEnumerable<PowerShellRuleResult> results)
         {
             RuleName = ruleName;
+            RuleDescription = ruleDescription;
             Passed = passed;
             Results = results;
             Evaluations = new List<IEvaluation>();
