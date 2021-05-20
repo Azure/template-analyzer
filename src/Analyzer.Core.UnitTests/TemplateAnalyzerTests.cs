@@ -21,13 +21,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string[] resourceProperties = { GenerateResource(resource1Properties, resourceType), GenerateResource(resource2Properties, resourceType) };
             string template = GenerateTemplate(resourceProperties);
 
-            TemplateAnalyzer templateAnalyzer = new TemplateAnalyzer(template);
+            var templateAnalyzer = new TemplateAnalyzer(template);
             var evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+            var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
 
-            Assert.AreEqual(expectedEvaluationCount, evaluations.Count());
+            Assert.AreEqual(expectedEvaluationCount, evaluationsWithResults.Count);
 
             if (expectedEvaluationCount > 0)
-                Assert.AreEqual(expectedEvaluationPassed, evaluations.First().Passed);
+                Assert.AreEqual(expectedEvaluationPassed, evaluationsWithResults.First().Passed);
         }
 
         private string GenerateTemplate(string[] resourceProperties)
