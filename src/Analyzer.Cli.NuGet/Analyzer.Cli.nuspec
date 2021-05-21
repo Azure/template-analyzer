@@ -9,7 +9,7 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Azure/template-analyzer</projectUrl>
-    <tags>arm azure template analyzer scanner deployment</tags>    
+    <tags>arm azure template analyzer scanner deployment security</tags>    
   </metadata>
 
   <files>
