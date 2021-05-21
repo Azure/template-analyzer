@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Azure.Templates.Analyzer.CommandLine</id>
+    <!-- Also update version of dependency below, and in Analyzer.Core nuspec and Directory.Build.props. -->
+    <version>0.0.1-alpha</version>
+    <authors>Microsoft</authors>
+    <description>A command line interface for Azure.Templates.Analyzer.Core - an ARM Template scanner for security misconfiguration and best practices</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Azure/template-analyzer</projectUrl>
+    <tags>arm azure template analyzer scanner deployment</tags>    
+  </metadata>
+
+  <files>
+    <file src="..\Analyzer.Cli\bin\$configuration$\net5.0\publish\**" target="tools/" exclude="**\*.pdb" />
+  </files>
+
+</package>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Azure.Templates.Analyzer.Core</id>
+    <!-- Also update version in Analyzer.Cli nuspec and Directory.Build.props. -->
+    <version>0.0.1-alpha</version>
+    <authors>Microsoft</authors>
+    <description>ARM Template scanner for security misconfiguration and best practices</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Azure/template-analyzer</projectUrl>
+    <tags>arm azure template analyzer scanner deployment</tags>
+
+    <dependencies>
+      <dependency id="Azure.Deployments.Core" version="1.0.112" />
+      <dependency id="Azure.Deployments.Expression" version="1.0.112" />
+      <dependency id="Azure.Deployments.Templates" version="1.0.112" />
+      <dependency id="Newtonsoft.Json" version="12.0.3" />
+    </dependencies>
+    
+  </metadata>
+
+  <files>
+    <file src="..\Analyzer.Core\bin\$configuration$\**" target="lib\" exclude="**\*.pdb" />
+  </files>
+
+</package>
