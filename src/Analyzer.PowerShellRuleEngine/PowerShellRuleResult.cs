@@ -6,7 +6,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
-    internal class PowerShellRuleResult : IResult
+    public class PowerShellRuleResult : IResult
     {
         /// <inheritdoc/>
         public bool Passed { get; internal set; }

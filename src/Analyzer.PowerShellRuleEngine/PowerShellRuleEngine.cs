@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
         /// </summary>
-        /// <param name="templateFullFilePath">The full file path of the template under analysis.</param>
-        public static IEnumerable<IEvaluation> EvaluateRules(string templateFullFilePath)
+        /// <param name="templateFilePath">The file path of the template under analysis.</param>
+        public static IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
         {
             var powerShell = System.Management.Automation.PowerShell.Create();
 
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
             powerShell.Commands.AddCommand("Test-AzTemplate")
                 .AddParameter("Test", "deploymentTemplate")
-                .AddParameter("TemplatePath", templateFullFilePath);
+                .AddParameter("TemplatePath", templateFilePath);
 
             var executionResults = powerShell.Invoke();
 

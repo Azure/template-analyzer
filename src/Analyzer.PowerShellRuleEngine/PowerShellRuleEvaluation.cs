@@ -9,7 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
-    internal class PowerShellRuleEvaluation : IEvaluation
+    public class PowerShellRuleEvaluation : IEvaluation
     {
         /// <inheritdoc/>
         public string RuleName { get; }
