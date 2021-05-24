@@ -23,6 +23,15 @@ The Template Analyzer solution is comprised of the following main components:
   * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template BPA rules.
 * Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
 * JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template BPA JSON rules.
+
+### NuGet Packages
+* There are two .nuspec files that define NuGet packages that can be created
+  * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer.Core into package *Azure.Templates.Analyzer.Core*.
+  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer.Cli into package *Azure.Templates.Analyzer.CommandLine*.
+* These can be packed (after building the solution) using the [nuget.exe CLI](https://www.nuget.org/downloads)
+  * Example: `nuget pack <nuspec-file> -p Configuration=<Debug|Release>`
+  * Use `Debug` or `Release` depending on the Configuration the solution or projects were built with
+  * This is a great way to test NuGet consumption of local changes
  
 ### Code Structure
 1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer.Core.
