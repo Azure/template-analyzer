@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             powerShell.AddStatement();
 
             powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", @"..\..\..\..\Analyzer.PowerShellRuleEngine\bin\Debug\netstandard2.1\TTK\arm-ttk.psd1"); // arm-ttk is added to the project's bin directory in build time 
+                .AddParameter("Name", @"..\..\..\..\Analyzer.PowerShellRuleEngine\bin\TTK\arm-ttk\arm-ttk.psd1"); // arm-ttk is added to the project's bin directory in build time 
             powerShell.AddStatement();
 
             powerShell.Commands.AddCommand("Test-AzTemplate")

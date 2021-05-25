@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_MissingTTKRepository_DoesNotThrowAnException()
         {
-            var TTKPath = @"..\..\..\..\Analyzer.PowerShellRuleEngine\bin\Debug\netstandard2.1\TTK";
+            var TTKPath = @"..\..\..\..\Analyzer.PowerShellRuleEngine\bin\TTK";
             var wrongTTKPath = TTKPath + "2";
             var templateFilePath = TemplatesFolder + "error_without_line_number.json";
 

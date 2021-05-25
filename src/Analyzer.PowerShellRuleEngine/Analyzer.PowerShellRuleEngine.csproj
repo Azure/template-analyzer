@@ -24,8 +24,7 @@
     <DownloadFile SourceUrl="$(TTKUrl)" DestinationFolder="$(IntermediateOutputPath)" DestinationFileName="ttk.zip">
       <Output TaskParameter="DownloadedFile" ItemName="TTKZip" />
     </DownloadFile>
-    <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />
-    <Exec Command="move /Y $(IntermediateOutputPath)\TTK\arm-ttk $(OutputPath)\TTK" />
+    <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(OutputPath)\..\..\TTK" />
   </Target>
     <Target Name="CleanTTK" AfterTargets="Clean">
     <RemoveDir Directories="$(IntermediateOutputPath)\TTK;$(OutputPath)\TTK" />
