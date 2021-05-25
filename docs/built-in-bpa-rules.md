@@ -9,55 +9,33 @@ Virtual Machine Scale Set instances should not use preview versions of images.
 
 **Recommendation**: To use a non-preview image for virtual machine scale set instances, in the [Microsoft.Compute/VirtualMachineScaleSets/storageProfile.imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachinescalesets?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
 
-More information about the following rules can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
+## arm-ttk' rules
+More information about the rules covered by our integration with arm-ttk can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
 
-## DeploymentTemplate schema is correct
-
-## Parameters must be referenced
-
-## Secure string parameters cannot have defaults
-
-## DeploymentTemplate must not contain hardcoded URI
-
-## Location should not be hardcoded
-
-## Resources should have locations
-
-## VM size should be a parameter
-
-## Min and max values are numbers
-
-## artifacts parameter
-
-## Variables must be referenced
-
-## Dynamic variable references should not use concat
-
-## apiVersions should be Rrcent
-
-## Providers apiVersions is not permitted
-
-## Template should not contain blanks
-
-## IDs should be derived from resourceIDs
-
-## ResourceIDs should not contain
-
-## DependsOn' best practices
-
-## Deployment resources must not be debug
-
-## adminUsername should not be a literal
-
-## VM images should use latest version
-
-## Virtual machines should not be preview
-
-## ManagedIdentityExtension must not be used
-
-## Outputs must not contain secrets
-
-## CommandToExecute must use ProtectedSettings for secrets
+#### DeploymentTemplate schema is correct
+#### Parameters must be referenced
+#### Secure string parameters cannot have defaults
+#### DeploymentTemplate must not contain hardcoded URI
+#### Location should not be hardcoded
+#### Resources should have locations
+#### VM size should be a parameter
+#### Min and max values are numbers
+#### artifacts parameter
+#### Variables must be referenced
+#### Dynamic variable references should not use concat
+#### apiVersions should be Rrcent
+#### Providers apiVersions is not permitted
+#### Template should not contain blanks
+#### IDs should be derived from resourceIDs
+#### ResourceIDs should not contain
+#### DependsOn' best practices
+#### Deployment resources must not be debug
+#### adminUsername should not be a literal
+#### VM images should use latest version
+#### Virtual machines should not be preview
+#### ManagedIdentityExtension must not be used
+#### Outputs must not contain secrets
+#### CommandToExecute must use ProtectedSettings for secrets
 
 # Security Related Rules
 ## API App Should Only Be Accessible Over HTTPS
