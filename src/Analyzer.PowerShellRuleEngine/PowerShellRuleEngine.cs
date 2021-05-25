@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
 
             var lineNumberRegex = new Regex(@"\son\sline:\s\d+");
-            var errorMessage = lineNumberRegex.Replace(error.ToString(), string.Empty);
+            var errorMessage = lineNumberRegex.Replace(error.ToString(), string.Empty); 
 
             if (uniqueErrors.ContainsKey(errorMessage))
             {

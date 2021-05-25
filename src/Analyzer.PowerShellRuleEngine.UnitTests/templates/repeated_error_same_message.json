@@ -7,6 +7,10 @@
         "anOutput": {
             "type": "string",
             "value": "[ reference( concat('/providers/Microsoft.Authorization/type/name'), '2020-01-01', 'Full').someproperty]"
+        },
+        "anotherOutput": {
+            "type": "string",
+            "value": "[ reference( concat('/providers/Microsoft.Authorization/type/name'), '2020-01-01', 'Full').someproperty]"
         }
     }
 }
