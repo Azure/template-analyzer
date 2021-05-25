@@ -89,7 +89,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     Console.WriteLine(fileMetadata);
 
                     var passedEvaluations = 0;
-                    var failedEvaluations = 0;
 
                     foreach (var evaluation in evaluations)
                     {
@@ -97,7 +96,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         
                         if (!evaluation.Passed)
                         {
-                            failedEvaluations++;
                             Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
                         }
                         else

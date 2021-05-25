@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 else
                 {
                     Assert.IsTrue(evaluation.HasResults);
-                    Assert.AreEqual(1, evaluation.Results.ToList().Count);
+                    Assert.AreEqual(1, evaluation.Results.Count());
                     Assert.IsFalse(evaluation.Results.First().Passed);
 
                     failedEvaluations.Add(evaluation);
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
 
-            Assert.AreEqual(1, evaluations.ToList().Count);
+            Assert.AreEqual(1, evaluations.Count());
             Assert.IsFalse(evaluations.First().Passed);
 
             var resultsList = evaluations.First().Results.ToList();
@@ -86,8 +86,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.IsFalse(evaluationsList[0].Passed);
             Assert.IsFalse(evaluationsList[1].Passed);
 
-            Assert.AreEqual(1, evaluationsList[0].Results.ToList().Count);
-            Assert.AreEqual(1, evaluationsList[1].Results.ToList().Count);
+            Assert.AreEqual(1, evaluationsList[0].Results.Count());
+            Assert.AreEqual(1, evaluationsList[1].Results.Count());
 
             Assert.IsFalse(evaluationsList[0].Results.First().Passed);
             Assert.IsFalse(evaluationsList[1].Results.First().Passed);
@@ -106,12 +106,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             System.IO.Directory.Move(TTKPath, wrongTTKPath);
 
             var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
-            Assert.AreEqual(0, evaluations.ToList().Count);
+            Assert.AreEqual(0, evaluations.Count());
 
             System.IO.Directory.Move(wrongTTKPath, TTKPath);
 
             evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
-            Assert.AreEqual(1, evaluations.ToList().Count);
+            Assert.AreEqual(1, evaluations.Count());
         }
     }
 }
