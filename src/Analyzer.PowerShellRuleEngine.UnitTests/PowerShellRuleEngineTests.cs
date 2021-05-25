@@ -13,10 +13,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         private readonly string TemplatesFolder = @"..\..\..\templates\";
 
         [DataTestMethod]
-        [DataRow(@"success.json", 0, new int[] { }, DisplayName = "Base template")]
-        [DataRow(@"error_without_line_number.json", 1, new int[] { 0 }, DisplayName = "Template with an error reported without a line number")]
-        [DataRow(@"error_with_line_number.json", 1, new int[] { 9 }, DisplayName = "Template with an error reported with a line number")]
-        [DataRow(@"warning.json", 1, new int[] { 0 }, DisplayName = "Template with a warning")]
+        [DataRow("success.json", 0, new int[] { }, DisplayName = "Base template")]
+        [DataRow("error_without_line_number.json", 1, new int[] { 0 }, DisplayName = "Template with an error reported without a line number")]
+        [DataRow("error_with_line_number.json", 1, new int[] { 9 }, DisplayName = "Template with an error reported with a line number")]
+        [DataRow("warning.json", 1, new int[] { 0 }, DisplayName = "Template with a warning")]
         public void EvaluateRules_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
             var templateFilePath = TemplatesFolder + templateFileName;
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
 
             var failedEvaluations = new List<PowerShellRuleEvaluation>();
-            
+
             foreach (PowerShellRuleEvaluation evaluation in evaluations)
             {
                 if (evaluation.Passed)
@@ -35,6 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 {
                     Assert.IsTrue(evaluation.HasResults);
                     Assert.AreEqual(1, evaluation.Results.ToList().Count);
+                    Assert.IsFalse(evaluation.Results.First().Passed);
 
                     failedEvaluations.Add(evaluation);
                 }
@@ -58,10 +59,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
 
             Assert.AreEqual(1, evaluations.ToList().Count);
+            Assert.IsFalse(evaluations.First().Passed);
 
             var resultsList = evaluations.First().Results.ToList();
 
             Assert.AreEqual(2, resultsList.Count);
+
+            Assert.IsFalse(resultsList[0].Passed);
+            Assert.IsFalse(resultsList[1].Passed);
 
             Assert.AreEqual(9, resultsList[0].LineNumber);
             Assert.AreEqual(13, resultsList[1].LineNumber);
@@ -78,11 +83,35 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             Assert.AreEqual(2, evaluationsList.Count);
 
+            Assert.IsFalse(evaluationsList[0].Passed);
+            Assert.IsFalse(evaluationsList[1].Passed);
+
             Assert.AreEqual(1, evaluationsList[0].Results.ToList().Count);
             Assert.AreEqual(1, evaluationsList[1].Results.ToList().Count);
 
+            Assert.IsFalse(evaluationsList[0].Results.First().Passed);
+            Assert.IsFalse(evaluationsList[1].Results.First().Passed);
+
             Assert.AreEqual(evaluationsList[0].RuleName, evaluationsList[1].RuleName);
             Assert.AreNotEqual(evaluationsList[0].RuleDescription, evaluationsList[1].RuleDescription);
+        }
+
+        [TestMethod]
+        public void EvaluateRules_MissingTTKRepository_DoesNotThrowAnException()
+        {
+            var TTKPath = @"..\..\..\..\Analyzer.PowerShellRuleEngine\bin\Debug\netstandard2.1\TTK";
+            var wrongTTKPath = TTKPath + "2";
+            var templateFilePath = TemplatesFolder + "error_without_line_number.json";
+
+            System.IO.Directory.Move(TTKPath, wrongTTKPath);
+
+            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            Assert.AreEqual(0, evaluations.ToList().Count);
+
+            System.IO.Directory.Move(wrongTTKPath, TTKPath);
+
+            evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            Assert.AreEqual(1, evaluations.ToList().Count);
         }
     }
 }
