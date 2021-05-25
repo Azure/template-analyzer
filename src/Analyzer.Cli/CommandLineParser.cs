@@ -99,13 +99,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             failedEvaluations++;
                             Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
-                        } else
+                        }
+                        else
                         {
                             passedEvaluations++;
                         }
                     }
 
-                    Console.WriteLine($"{IndentedNewLine}Rules summary:{TwiceIndentedNewLine}Failed: {failedEvaluations}{TwiceIndentedNewLine}Passed: {passedEvaluations}");
+                    Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
                 }
                 catch (Exception exp)
                 {

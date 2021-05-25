@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="6.0.4" />
+    <PackageReference Include="System.Collections" Version="4.3.0" />
     <PackageReference Include="System.Management.Automation" Version="6.0.4" />
   </ItemGroup>
   
@@ -20,10 +21,7 @@
     <TTKUrl>https://aka.ms/arm-ttk-latest</TTKUrl>
   </PropertyGroup>
     <Target Name="DownloadTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
-    <DownloadFile
-        SourceUrl="$(TTKUrl)"
-        DestinationFolder="$(IntermediateOutputPath)"
-        DestinationFileName="ttk.zip">
+    <DownloadFile SourceUrl="$(TTKUrl)" DestinationFolder="$(IntermediateOutputPath)" DestinationFileName="ttk.zip">
       <Output TaskParameter="DownloadedFile" ItemName="TTKZip" />
     </DownloadFile>
     <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />

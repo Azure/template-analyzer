@@ -4,7 +4,10 @@
 using Microsoft.Azure.Templates.Analyzer.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -46,33 +49,59 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
             foreach (dynamic executionResult in executionResults)
             {
-                var evaluationResults = new List<PowerShellRuleResult>();
-                var extraInfo = ""; // Temporal until the JSON engine also reports more info like variable names, warnings
+                var uniqueErrors = new Dictionary<string, SortedSet<int>>(); // Maps error messages to a sorted set of line numbers
 
                 foreach (dynamic warning in executionResult.Warnings)
                 {
-                    extraInfo = extraInfo + "Warning: " + warning.ToString() + ". ";
+                    AddErrorToDictionary(warning, ref uniqueErrors);
                 }
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    var lineNumber = 0;
-                    if (error.TargetObject is PSObject targetObject && targetObject.Properties["lineNumber"] != null)
-                    {
-                        lineNumber = error.TargetObject.lineNumber;
-                    }
-
-                    var evaluationResult = new PowerShellRuleResult(executionResult.Passed, lineNumber);
-                    evaluationResults.Add(evaluationResult);
-
-                    extraInfo = extraInfo + error.ToString() + ". ";
+                    AddErrorToDictionary(error, ref uniqueErrors);
                 }
-                    
-                var evaluation = new PowerShellRuleEvaluation(executionResult.Name, extraInfo, executionResult.Passed, evaluationResults);
-                evaluations.Add(evaluation);
+
+                foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
+                {
+                    var evaluationResults = new List<PowerShellRuleResult>();
+                    foreach (int lineNumber in uniqueError.Value)
+                    {
+                        var evaluationResult = new PowerShellRuleResult(false, lineNumber);
+                        evaluationResults.Add(evaluationResult);
+                    }
+                    var evaluation = new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults);
+                    evaluations.Add(evaluation);
+                }
             }
 
             return evaluations;
+        }
+
+        private static void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
+        {
+            var lineNumber = 0;
+
+            Type errorType = error.GetType();
+            IEnumerable<PropertyInfo> errorProperties = errorType.GetRuntimeProperties();
+            if (errorProperties.Where(prop => prop.Name == "TargetObject").Any())
+            {
+                if (error.TargetObject is PSObject targetObject && targetObject.Properties["lineNumber"] != null)
+                {
+                    lineNumber = error.TargetObject.lineNumber;
+                }
+            }
+
+            var lineNumberRegex = new Regex(@"\son\sline:\s\d+");
+            var errorMessage = lineNumberRegex.Replace(error.ToString(), string.Empty);
+
+            if (uniqueErrors.ContainsKey(errorMessage))
+            {
+                uniqueErrors[errorMessage].Add(lineNumber);
+            }
+            else
+            {
+                uniqueErrors[errorMessage] = new SortedSet<int> { lineNumber };
+            }
         }
 
         static void HandleDataAddedInStreams(object newData, ConsoleColor? color = null)
