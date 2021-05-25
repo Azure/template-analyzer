@@ -3,6 +3,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTests
@@ -99,7 +100,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_MissingTTKRepository_DoesNotThrowAnException()
         {
-            var TTKPath = @"..\..\..\..\Analyzer.PowerShellRuleEngine\bin\TTK";
+            var TTKPath = Path.Combine("..", "..", "..", "..", "Analyzer.PowerShellRuleEngine", "bin", "TTK"); // To get a cross platform file path
             var wrongTTKPath = TTKPath + "2";
             var templateFilePath = TemplatesFolder + "error_without_line_number.json";
 
