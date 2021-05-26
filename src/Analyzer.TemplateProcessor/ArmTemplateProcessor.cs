@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.Deployments.Core.Collections;
-using Azure.Deployments.Core.Constants;
 using Azure.Deployments.Core.Extensions;
 using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
@@ -131,6 +130,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             return template;
         }
 
+        /// <summary>
+        /// Processes each resource for language expressions and parent resources as well
+        /// as processes language expressions for outputs.
+        /// </summary>
+        /// <param name="template">Template being processed.</param>
+        /// <returns>Template after processing resources and outputs.</returns>
         internal Template ProcessResourcesAndOutputs(Template template)
         {
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
@@ -168,11 +173,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             return template;
         }
 
-        internal TemplateResource CopyResourceDependants(TemplateResource templateResource, Dictionary<string, TemplateResource> resources)
+        /// <summary>
+        /// Copies child resources into sub resources for parent resources.
+        /// </summary>
+        /// <param name="templateResource">The child resource.</param>
+        /// <param name="resources">A collection of all resources with a mapping to their processed name.</param>
+        internal void CopyResourceDependants(TemplateResource templateResource, Dictionary<string, TemplateResource> resources)
         {
             if (templateResource.DependsOn == null)
             {
-                return templateResource;
+                return;
             }
 
             foreach (var parentResourceIds in templateResource.DependsOn)
@@ -217,9 +227,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
             }
 
-            return templateResource;
+            return;
         }
 
+        /// <summary>
+        /// Flattens resources that are defined inside other resources.
+        /// </summary>
+        /// <param name="resources">Resources in the template.</param>
+        /// <param name="parentName">Name of the parent resource. Used during recursive call.</param>
+        /// <param name="parentType">Type of the parent resource. Used during recursive call.</param>
+        /// <returns>Dictionary that maps full resource names and types to their corresponding resource.</returns>
         private Dictionary<string, TemplateResource> FlattenResources(TemplateResource[] resources, string parentName = null, string parentType = null)
         {
             Dictionary<string, TemplateResource > flattenedResources = new Dictionary<string, TemplateResource>();
