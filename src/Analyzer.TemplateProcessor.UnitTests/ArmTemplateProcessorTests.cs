@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
+using Azure.Deployments.Core.Json;
 using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Schema;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 {
@@ -153,9 +154,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             Assert.AreEqual("REF_NOT_AVAIL_parameter0", parametersObj["parameter0"].Value<string>());
         }
-    
+
         [TestMethod]
-        public void ProcessTemplateResourceAndOutputPropertiesLanguageExpressions_ValidTemplateWithExpressionInResourceProperties_ProcessResourceProperyLanguageExpressions()
+        public void ProcessResourcesAndOutputs_ValidTemplateWithExpressionInResourceProperties_ProcessResourceProperyLanguageExpressions()
         {
             string templateJson = @"{
             ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
@@ -181,7 +182,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             Template template = TemplateEngine.ParseTemplate(templateJson);
-            _armTemplateProcessor.ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(template);
+            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
 
             Assert.IsTrue(template.Resources.First().Properties.Value.InsensitiveToken("dnsSettings.domainNameLabel").Value<string>().StartsWith("linux-vm-"));
         }
@@ -189,31 +190,14 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         [DataTestMethod]
         [DataRow(@"[reference(variables('publicIPAddressName')).dnsSettings.fqdn]", "NOT_PARSED", DisplayName = "Has reference expression. Returns NOT_PARSED.")]
         [DataRow(@"[concat('output-', uniqueString('uniquestring'))]", "output-", DisplayName = "Has language expression. Returns evaluated expression.")]
-        public void ProcessTemplateResourceAndOutputPropertiesLanguageExpressions_ValidTemplateWithReferenceExpressionInOutputs_ProcessOutputValueLanguageExpressions(string outputValue, string expectedValue)
+        public void ProcessResourcesAndOutputs_ValidTemplateWithReferenceExpressionInOutputs_ProcessOutputValueLanguageExpressions(string outputValue, string expectedValue)
         {
             string templateJson = GenerateTemplate(outputValue);
 
             Template template = TemplateEngine.ParseTemplate(templateJson);
-            _armTemplateProcessor.ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(template);
+            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
 
             Assert.IsTrue(template.Outputs["output0"].Value.Value.ToString().StartsWith(expectedValue));
-        }
-
-        private string GenerateTemplate(string outputValue)
-        {
-            return string.Format(@"{{
-            ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
-            ""contentVersion"": ""1.0.0.0"",
-            ""parameters"": {{ }},
-                ""variables"": {{ }},
-                ""resources"": [ ],
-                ""outputs"": {{
-                    ""output0"": {{
-                        ""type"": ""string"",
-                        ""value"": ""{0}""
-                    }}
-                }}
-            }}", outputValue);
         }
 
         [TestMethod]
@@ -299,6 +283,227 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Assert.AreEqual("name/SSH-VMNamePrefix-1", template.Resources.Last().Name.Value);
             Assert.AreEqual("[concat('name', '/', 'SSH-', 'VMNamePrefix-', copyIndex())]", template.Resources.Last().OriginalName);
             Assert.AreEqual(2201, template.Resources.Last().Properties.Value.InsensitiveToken("frontendPort").Value<int>());
+        }
+
+        [TestMethod]
+        public void CopyResourceDependants_ValidChildResourceDependsOnByNameAndResourceId_ChildResourceGetsCopiedToParentResources()
+        {
+            // Arrange
+            string childTemplateResourceJson = @"{
+                ""type"": ""Microsoft.Network/networkInterfaces"",
+                ""apiVersion"": ""2018-10-01"",
+                ""name"": ""simpleLinuxVMNetInt"",
+                ""location"": ""westus"",
+                ""dependsOn"": [
+                    ""/subscriptions/subId/resourceGroups/resourceGroup/providers/Microsoft.Network/networkSecurityGroups/SecGroupNet"",
+                    ""vNet""
+                ],
+                ""properties"": { }
+            }"; 
+            string parentTemplateResource1Json = @"{
+                ""type"": ""Microsoft.Network/networkSecurityGroups"",
+                ""apiVersion"": ""2019-02-01"",
+                ""name"": ""SecGroupNet"",
+                ""location"": ""westus"",
+                ""properties"": { }
+            }";
+            string parentTemplateResource2Json = @"{
+                ""type"": ""Microsoft.Network/virtualNetworks"",
+                ""apiVersion"": ""2019-04-01"",
+                ""name"": ""vNet"",
+                ""location"": ""westus"",
+                ""properties"": { }
+            }";
+
+            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource parentTemplateResource1 = JObject.Parse(parentTemplateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource parentTemplateResource2 = JObject.Parse(parentTemplateResource2Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+            Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource1, parentTemplateResource2 } };
+
+            // Act
+            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+
+            // Assert
+            var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
+
+            string expectedResourceArray = $"[ {childTemplateResourceJson}, {parentTemplateResource1Json}, {parentTemplateResource2Json} ]";
+            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+            (expectedResourceJArray[1] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
+            (expectedResourceJArray[2] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
+
+            Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+        }
+
+        [DataTestMethod]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Network/networkInterfaces"",
+                ""apiVersion"": ""2018-10-01"",
+                ""name"": ""simpleLinuxVMNetInt"",
+                ""location"": ""westus"",
+                ""dependsOn"": [ ],
+                ""properties"": { }
+            }", DisplayName = "Depends on is empty")]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Network/networkInterfaces"",
+                ""apiVersion"": ""2018-10-01"",
+                ""name"": ""simpleLinuxVMNetInt"",
+                ""location"": ""westus"",
+                ""dependsOn"": [ ""someResource"" ],
+                ""properties"": { }
+            }", DisplayName = "Child resource depends on resource outside template scope")]
+        public void CopyResourceDependants_ChildDependsOnEmptyOrResourceNotInCurrentTemplate_NoResourcesWereChanged(string templateResource0Json)
+        {
+            // Arrange
+            string templateResource1Json = @"{
+                ""type"": ""Microsoft.Network/networkSecurityGroups"",
+                ""apiVersion"": ""2019-02-01"",
+                ""name"": ""SecGroupNet"",
+                ""location"": ""westus"",
+                ""properties"": { }
+            }";
+
+            TemplateResource templateResource0 = JObject.Parse(templateResource0Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource templateResource1 = JObject.Parse(templateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+            Template template = new Template { Resources = new TemplateResource[] { templateResource0, templateResource1 } };
+
+            // Act
+            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+
+            // Assert
+            var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
+
+            string expectedResourceArray = $"[ {templateResource0Json}, {templateResource1Json} ]";
+            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+
+            Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+        }
+
+        [TestMethod]
+        public void CopyResourceDependants_DependsOnIsSubResource_CopiesToCorrectResource()
+        {
+            // Arrange
+            string childTemplateResourceJson = @"{
+                  ""name"": ""resourceName"",
+                  ""type"": ""Microsoft.Logic/workflows"",
+                  ""location"": ""westus"",
+                  ""apiVersion"": ""2016-06-01"",
+                  ""dependsOn"": [
+                    ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.Web/sites/defaultString1/sourcecontrols/web""
+                  ],
+                  ""properties"": { }
+                }";
+
+            string parentTemplateResourceJson = @"{
+                  ""apiVersion"": ""2015-08-01"",
+                  ""type"": ""Microsoft.Web/sites"",
+                  ""name"": ""defaultString1"",
+                  ""location"": ""westus"",
+                  ""kind"": ""functionapp"",
+                  ""properties"": { },
+                  ""resources"": [
+                    {
+                      ""apiVersion"": ""2015-08-01"",
+                      ""name"": ""web"",
+                      ""type"": ""sourcecontrols"",
+                      ""properties"": { }
+                    }
+                  ]
+                }";
+
+            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+            Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource } };
+
+            // Act
+            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+
+            // Assert
+            string expectedResourceArray = $@"[ {childTemplateResourceJson}, {parentTemplateResourceJson} ]";
+            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+            (expectedResourceJArray[1].InsensitiveToken("resources")[0] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
+
+            var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
+
+            var equals = JObject.DeepEquals(expectedResourceJArray, actualResourceArray);
+
+            Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+        }
+
+        [TestMethod]
+        public void CopyResourceDependants_DependsOnIsChained_CopiesToCorrectResource()
+        {
+            // Arrange
+            string parentTemplateResourceJson = @"{
+                ""type"": ""Microsoft.Network/networkSecurityGroups"",
+                ""apiVersion"": ""2019-02-01"",
+                ""name"": ""SecGroupNet"",
+                ""location"": ""westus"",
+                ""properties"": { }
+            }";
+
+            string childTemplateResourceJson = @"{
+                ""type"": ""Microsoft.Network/networkInterfaces"",
+                ""apiVersion"": ""2018-10-01"",
+                ""name"": ""NetInt"",
+                ""location"": ""westus"",
+                ""dependsOn"": [
+                    ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.Network/networkSecurityGroups/SecGroupNet""
+                ],
+                ""properties"": { }
+            }";
+
+            string grandchildTemplateResourceJson = @"{
+                ""type"": ""Microsoft.Compute/virtualMachines"",
+                ""apiVersion"": ""2019-03-01"",
+                ""name"": ""simpleLinuxVM"",
+                ""location"": ""westus"",
+                ""dependsOn"": [
+                    ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.Network/networkInterfaces/NetInt""
+                ],
+                ""properties"": { }
+            }";
+
+            TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource grandchildTemplateResource = JObject.Parse(grandchildTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+            Template template = new Template { Resources = new TemplateResource[] { parentTemplateResource, childTemplateResource, grandchildTemplateResource } };
+
+            // Act
+            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+
+            // Assert
+            var actualResourcesArray = template.ToJToken().InsensitiveToken("resources");
+            string expectedResourceArray = $@"[ {parentTemplateResourceJson}, {childTemplateResourceJson}, {grandchildTemplateResourceJson} ]";
+            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+            // Add child
+            (expectedResourceJArray[0] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
+            // Add grandchild
+            (expectedResourceJArray[0].InsensitiveToken("resources")[0] as JObject).Add("resources", new JArray { JObject.Parse(grandchildTemplateResourceJson) });
+            // Add child
+            (expectedResourceJArray[1] as JObject).Add("resources", new JArray { JObject.Parse(grandchildTemplateResourceJson) });
+
+            Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourcesArray));
+        }
+
+        private string GenerateTemplate(string outputValue)
+        {
+            return string.Format(@"{{
+            ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+            ""contentVersion"": ""1.0.0.0"",
+            ""parameters"": {{ }},
+                ""variables"": {{ }},
+                ""resources"": [ ],
+                ""outputs"": {{
+                    ""output0"": {{
+                        ""type"": ""string"",
+                        ""value"": ""{0}""
+                    }}
+                }}
+            }}", outputValue);
         }
     }
 }
