@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string resource2Properties = null)
         {
             // Arrange
-            string[] resourceProperties = { GenerateResource(resource1Properties, resourceType), GenerateResource(resource2Properties, resourceType) };
+            string[] resourceProperties = { GenerateResource(resource1Properties, resourceType, "resource1"), GenerateResource(resource2Properties, resourceType, "resource2") };
             string template = GenerateTemplate(resourceProperties);
 
             TemplateAnalyzer templateAnalyzer = new TemplateAnalyzer(template);
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             ""resources"": [ {0} ] }}", string.Join(',', resourceProperties));
         }
 
-        private string GenerateResource(string resourceProperties, string resourceType)
+        private string GenerateResource(string resourceProperties, string resourceType, string resourceName)
         {
             if (string.IsNullOrEmpty(resourceProperties))
             {
@@ -48,10 +48,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             return string.Format(@"
                     {{
                       ""apiVersion"": ""2018-02-01"",
-                      ""name"": ""resourceName"",
+                      ""name"": ""{2}"",
                       ""type"": ""{1}"",
                       ""properties"": {0}
-                    }}", resourceProperties, resourceType);
+                    }}", resourceProperties, resourceType, resourceName);
         }
 
         [TestMethod]
