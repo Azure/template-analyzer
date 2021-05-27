@@ -9,7 +9,7 @@ Virtual Machine Scale Set instances should not use preview versions of images.
 
 **Recommendation**: To use a non-preview image for virtual machine scale set instances, in the [Microsoft.Compute/VirtualMachineScaleSets/storageProfile.imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachinescalesets?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
 
-## arm-ttk' rules
+## Azure Resource Manager Template Toolkit' rules
 More information about the rules covered by our integration with [arm-ttk](https://github.com/Azure/arm-ttk) can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
 
 #### DeploymentTemplate schema is correct
@@ -36,6 +36,7 @@ More information about the rules covered by our integration with [arm-ttk](https
 #### ManagedIdentityExtension must not be used
 #### Outputs must not contain secrets
 #### CommandToExecute must use ProtectedSettings for secrets
+#### Resources should not be ambiguous
 
 # Security Related Rules
 ## API App Should Only Be Accessible Over HTTPS
