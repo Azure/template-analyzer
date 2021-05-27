@@ -20,13 +20,18 @@
   <PropertyGroup>
     <TTKUrl>https://aka.ms/arm-ttk-latest</TTKUrl>
   </PropertyGroup>
-    <Target Name="DownloadTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
+
+  <Target Name="DownloadTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
     <DownloadFile SourceUrl="$(TTKUrl)" DestinationFolder="$(IntermediateOutputPath)" DestinationFileName="ttk.zip">
       <Output TaskParameter="DownloadedFile" ItemName="TTKZip" />
     </DownloadFile>
-    <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(OutputPath)\..\..\TTK" />
+    
+    <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />
+    <Exec Command="mv -f $(IntermediateOutputPath)/TTK/arm-ttk $(OutputPath)/TTK" Condition="'$(OS)' == 'Unix'" />
+    <Exec Command="move /Y $(IntermediateOutputPath)\TTK\arm-ttk $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
   </Target>
-    <Target Name="CleanTTK" AfterTargets="Clean">
+
+  <Target Name="CleanTTK" AfterTargets="Clean">
     <RemoveDir Directories="$(IntermediateOutputPath)\TTK;$(OutputPath)\TTK" />
     <Delete Files="$(IntermediateOutputPath)\ttk.zip" />
   </Target>

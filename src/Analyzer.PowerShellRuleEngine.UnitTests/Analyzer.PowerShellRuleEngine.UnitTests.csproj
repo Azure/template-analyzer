@@ -17,4 +17,6 @@
     <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
   </ItemGroup>
 
+  <Import Project="..\CopyTTK.targets" />
+
 </Project>
