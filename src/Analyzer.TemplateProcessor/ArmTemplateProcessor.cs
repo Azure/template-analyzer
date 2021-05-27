@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
                     string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
 
-                    parentResource = resources[$"{parentResourceName} {parentResourceType}"];
+                    resources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResource);
                 }
                 // If the dependsOn references the resource name
                 else
@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <returns>Dictionary that maps full resource names and types to their corresponding resource.</returns>
         private Dictionary<string, TemplateResource> FlattenResources(TemplateResource[] resources, string parentName = null, string parentType = null)
         {
-            Dictionary<string, TemplateResource > flattenedResources = new Dictionary<string, TemplateResource>();
+            Dictionary<string, TemplateResource > flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var resource in resources)
             {
