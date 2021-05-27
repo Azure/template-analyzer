@@ -65,6 +65,34 @@
     }
   },
   {
+    "name": "AppServiceWebApp_RequireLatestTls",
+    "description": "Latest TLS version should be used in your Web App",
+    "recommendation": "Upgrade to the latest TLS version",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-web-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.minTlsVersion",
+          "equals": "1.2"
+        }
+      ]
+    }
+  },
+  {
     "name": "Authorization_RoleDefinition_No_Custom_RBAC",
     "description": "Use built-in roles instead of custom RBAC roles",
     "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
