@@ -196,13 +196,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
                     string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
 
-                    parentResource = resources[$"{parentResourceName}-{parentResourceType}"];
+                    parentResource = resources[$"{parentResourceName} {parentResourceType}"];
                 }
                 // If the dependsOn references the resource name
                 else
                 {
                     parentResourceName = parentResourceIds.Value;
-                    var matchingResources = resources.Where(k => k.Key.StartsWith(parentResourceName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    var matchingResources = resources.Where(k => k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase)).ToList();
                     if (matchingResources.Count == 1)
                     {
                         parentResource = matchingResources.First().Value;
@@ -247,11 +247,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 if (parentName != null && parentType != null)
                 {
-                    dictionaryKey = $"{parentName}/{resource.Name.Value}-{parentType}/{resource.Type.Value}";
+                    dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
                 }
                 else
                 {
-                    dictionaryKey = $"{resource.Name.Value}-{resource.Type.Value}";
+                    dictionaryKey = $"{resource.Name.Value} {resource.Type.Value}";
                 }
 
                 flattenedResources.Add(dictionaryKey, resource);

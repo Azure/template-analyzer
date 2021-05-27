@@ -296,7 +296,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""location"": ""westus"",
                 ""dependsOn"": [
                     ""/subscriptions/subId/resourceGroups/resourceGroup/providers/Microsoft.Network/networkSecurityGroups/SecGroupNet"",
-                    ""vNet""
+                    ""vNet"",
+                    ""parentVnet""
                 ],
                 ""properties"": { }
             }"; 
@@ -314,12 +315,29 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""location"": ""westus"",
                 ""properties"": { }
             }";
+            string parentTemplateResource3Json = @"{
+                ""type"": ""Microsoft.Network/virtualNetworks"",
+                ""apiVersion"": ""2019-04-01"",
+                ""name"": ""parentVnet"",
+                ""location"": ""westus"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Network/virtualNetworks"",
+                        ""apiVersion"": ""2019-04-01"",
+                        ""name"": ""embeddedChildVnet"",
+                        ""location"": ""westus"",
+                        ""properties"": { }
+                    }
+                ],
+                ""properties"": { }
+            }";
 
             TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
             TemplateResource parentTemplateResource1 = JObject.Parse(parentTemplateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
             TemplateResource parentTemplateResource2 = JObject.Parse(parentTemplateResource2Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource parentTemplateResource3 = JObject.Parse(parentTemplateResource3Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
 
-            Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource1, parentTemplateResource2 } };
+            Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource1, parentTemplateResource2, parentTemplateResource3 } };
 
             // Act
             _armTemplateProcessor.ProcessResourcesAndOutputs(template);
@@ -327,10 +345,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             // Assert
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 
-            string expectedResourceArray = $"[ {childTemplateResourceJson}, {parentTemplateResource1Json}, {parentTemplateResource2Json} ]";
+            string expectedResourceArray = $"[ {childTemplateResourceJson}, {parentTemplateResource1Json}, {parentTemplateResource2Json}, {parentTemplateResource3Json} ]";
             var expectedResourceJArray = JArray.Parse(expectedResourceArray);
             (expectedResourceJArray[1] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
             (expectedResourceJArray[2] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
+            (expectedResourceJArray[3].InsensitiveToken("resources") as JArray).Add(JObject.Parse(childTemplateResourceJson));
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
         }
