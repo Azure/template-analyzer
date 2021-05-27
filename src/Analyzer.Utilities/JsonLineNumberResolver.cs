@@ -14,7 +14,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// </summary>
     public class JsonLineNumberResolver : ILineNumberResolver
     {
-        private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static string resourceIndexPattern = @"resources\[(?<index>\d+)\]";
+        private static readonly Regex resourceIndexInPath = new Regex(resourceIndexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex childResourceIndexInPath = new Regex($"{resourceIndexPattern}.{resourceIndexPattern}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private readonly TemplateContext templateContext;
 
@@ -116,18 +118,52 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             var unmatchedPathInOriginalTemplate = pathInExpandedTemplate[originalTemplatePath.Length..].TrimStart('.');
 
             // Compare the path of the expanded template with the path of the JToken found in the original template.
-            // If they match, or if the first unmatched property in the original is NOT a resources array,
+            // If they match or if the first unmatched property in the original is NOT a resources array
+            // and it's looking in a resources array and the first unmatched property in the original is an array index
             // the line number from the JToken of the original template can be returned directly.
             if (originalTemplatePath.Length == pathInExpandedTemplate.Length
-                || !unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase))
+                || (!unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase) 
+                    && !unmatchedPathInOriginalTemplate.StartsWith("[", StringComparison.OrdinalIgnoreCase)
+                    && !originalTemplatePath.EndsWith("resources", StringComparison.OrdinalIgnoreCase)))
             {
                 return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
             }
 
-            // The first unmatched property must be a resources[] array, likely a subresource
-            // of a top-level resource.  This is possible if resources were copied into other
-            // resources as part of template expansion.
-            // TODO
+            string[] pathSegments = unmatchedPathInOriginalTemplate.Split('.');
+            string remainingPathAtResourceScope = string.Join('.', pathSegments[1..]);
+
+            var match2 = childResourceIndexInPath.Match(pathInExpandedTemplate);
+            if (match2.Success)
+            {
+                // Verify the expanded template is available.
+                // (Avoid throwing earlier since this is not always needed.)
+                if (expandedTemplateRoot == null)
+                {
+                    throw new ArgumentNullException(nameof(expandedTemplateRoot));
+                }
+
+                var resourceWithIndex = match2.Value;
+
+                // Get the resource name and type from the expanded template
+                var childResourceName = expandedTemplateRoot.InsensitiveToken($"{resourceWithIndex}.name", InsensitivePathNotFoundBehavior.Null);
+                var childResourceType = expandedTemplateRoot.InsensitiveToken($"{resourceWithIndex}.type", InsensitivePathNotFoundBehavior.Null);
+                if (childResourceName != null && childResourceType != null)
+                {
+                    // Find the resource with this name and type in the expanded template
+                    var childName = childResourceName.Value<string>();
+                    var childType = childResourceType.Value<string>();
+                    foreach (var resource in expandedTemplateRoot.InsensitiveToken("resources").Children())
+                    {
+                        var thisResourceName = resource.InsensitiveToken("name")?.Value<string>();
+                        var thisResourceType = resource.InsensitiveToken("type")?.Value<string>();
+                        if (string.Equals(childType, thisResourceType, StringComparison.OrdinalIgnoreCase) && string.Equals(childName, thisResourceName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // This is the original resource of the child resource
+                            return ResolveLineNumber($"{resource.Path}.{remainingPathAtResourceScope}");
+                        }
+                    }
+                }
+            }
             return 1;
         }
     }
