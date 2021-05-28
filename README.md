@@ -4,20 +4,26 @@
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
  
 ## What is the ARM Template BPA?
-[Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. The Template BPA is an ARM template security validator that scans ARM templates and checks that security best practices are being followed before deployment. 
+[Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. The Template BPA is an ARM template validator that scans ARM templates to ensure security and best practice checks are being followed before deployment.
  
-The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your ARM templates follow best practices. The Template BPA checks are customizable. You can write your own checks and enforce only the checks that are relevant for your business. 
+The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your ARM templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them. 
  
  
 ## Getting started with the Template BPA
-Since the Template BPA is still under development, this project can only be run from source code. Please `clone` the project and use your IDE/text editor of choice that is compatible with .NET.
+The Template BPA is built using .NET 5.  Having the [.NET 5 Runtime](https://dotnet.microsoft.com/download) installed is currently a prerequisite.
 
-Detailed documentation can be found in [docs](./docs).
- 
+After ensuring the .NET Runtime is installed, download the latest Template BPA release by clicking on 'Releases' to the right.
+
 ## Using the Template BPA
- 
+The Template BPA is executed via a command line.  Here is the format to invoke it:
+
+`TemplateAnalyzer.exe analyze-template -t <template-path> [-p <parameters-path>]`
+
+Currently, the working directory during execution must be the same directory the executable is in so the required rules file can be found (more below).
+
 ### Input
-The Template BPA depends on a few inputs – the Template BPA rules, ARM template, and (optional) ARM template parameters. The Template BPA rules are written in JSON. You can add and modify what rules to run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md). The Template BPA then runs the configured rules against the provided [ARM templates]( https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/) and their corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files) if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM templates. **Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **do not** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id). 
+The Template BPA depends on a few inputs – the Template BPA rules, ARM template, and (optional) ARM template parameters. The Template BPA rules are written in JSON. You can add and modify what rules to run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md). The Template BPA then runs the configured rules against the provided [ARM templates]( https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/) and their corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files) if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM templates.
+**Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **do not** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id). 
 
 ### Output
 The Template BPA outputs the results of violated rules, its corresponding line number, and the recommendation to remediate that violation.
