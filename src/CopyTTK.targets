@@ -1,8 +1,8 @@
 <Project>
 
   <Target Name="CopyTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
-    <Exec Command="cp -r ../Analyzer.PowerShellRuleEngine/bin/$(Configuration)/netstandard2.1/TTK $(OutputPath)/TTK/" Condition="'$(OS)' == 'Unix'" />
-    <Exec Command="Xcopy /E /I ..\Analyzer.PowerShellRuleEngine\bin\$(Configuration)\netstandard2.1\TTK $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
+    <Exec Command="cp -r ../Analyzer.PowerShellRuleEngine/bin/$(Configuration)/net5.0/TTK $(OutputPath)/TTK/" Condition="'$(OS)' == 'Unix'" />
+    <Exec Command="Xcopy /E /I ..\Analyzer.PowerShellRuleEngine\bin\$(Configuration)\net5.0\TTK $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
   </Target>
 
 </Project>
