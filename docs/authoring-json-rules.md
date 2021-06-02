@@ -313,6 +313,8 @@ Wraps a single `Evaluation`.  The result of the operator is exactly the result o
 
 This operator is most commonly useful in combination with a [`where` condition](#where-conditions), where `resourceType` or `path` may need to be [scoped down](#scopes) multiple times.
 
+**NOTE**: `evaluate` is not yet supported.  As a workaround, replace it with `allOf` or `anyOf` containing a single `Evaluation`.
+
 Example:
 ```javascript
 {
@@ -364,13 +366,15 @@ Examples:
         "path": "apiVersion",
         "regex": "^2019-.*" // "Microsoft.Compute/virtualMachines" resources where the value of "apiVersion" matches this regex...
     },
-    "evaluate": {
-        "path": "properties.osProfile.computerName",
-        "hasValue": true // ...must have a value for "properties.osProfile.computerName".
-    }
+    "allOf": [
+        {
+            "path": "properties.osProfile.computerName",
+            "hasValue": true // ...must have a value for "properties.osProfile.computerName".
+        }
+    ]
 }
 ```
-In the simple example above, the `evaluate` operator would be skipped, because there is no resource of type "Microsoft.Compute/virtualMachines" where apiVersion starts with 2019.  The entire example would therefore not return any result.
+In the simple example above, the `allOf` operator would be skipped, because there is no resource of type "Microsoft.Compute/virtualMachines" where apiVersion starts with 2019.  The entire example would therefore not return any result.
 
 ``` javascript
 {
@@ -379,15 +383,17 @@ In the simple example above, the `evaluate` operator would be skipped, because t
         "path": "name",
         "equals": "myVmResource" // "Microsoft.Compute/virtualMachines" resources where the value of "name" is "myVmResource"...
     },
-    "evaluate": {
-        "path": "properties.osProfile.computerName",
-        "hasValue": true // ...must have a value for "properties.osProfile.computerName".
-    }
+    "allOf": [
+        {
+            "path": "properties.osProfile.computerName",
+            "hasValue": true // ...must have a value for "properties.osProfile.computerName".
+        }
+    ]
 }
 ```
-In contrast to the first example, the `evaluate` operator in the example above would be evaluated, because the resource of type "Microsoft.Compute/virtualMachines" defines its "name" property to be "myVmResource".
+In contrast to the first example, the `allOf` operator in the example above would be evaluated, because the resource of type "Microsoft.Compute/virtualMachines" defines its "name" property to be "myVmResource".
 
-**NOTE:** In both examples above, `"path": "properties.osProfile.computerName"` is specified *inside* the `evaluate` operator.  This is important because of how [scopes](#scopes) are determined.  If it was instead specified outside the operator (as a sibling to `where`), it would narrow the outer scope to that path.  That path would then be passed into `where`, resulting in `"path": "apiVersion"` and `"path": "name"` (inside `where` in the examples) being appended to *properties.osProfile.computerName* in the outer scope, which is not the intent.
+**NOTE:** In both examples above, `"path": "properties.osProfile.computerName"` is specified *inside* the `allOf` operators.  This is important because of how [scopes](#scopes) are determined.  If it was instead specified outside the operator (as a sibling to `where`), it would narrow the **outer** scope to that path.  That path would then be passed into `where`, resulting in `"path": "apiVersion"` and `"path": "name"` (inside `where` in the examples) being appended to *properties.osProfile.computerName* in the outer scope, which is not the intent.
 
 ## Wildcard Behavior
 The `path` in an `Evaluation` can specify the '\*' character as a wildcard.  '\*' can be used to match any full property name or as the index into an array (selecting all elements of the array).  When a wildcard is used, zero or more paths in the template will be found that match `path`.  If zero are found, the operator in the `Evaluation` is skipped, as there is nothing to evaluate.  If two or more are found, the operator evaluates each path individually and the results are logically 'and'ed together.
