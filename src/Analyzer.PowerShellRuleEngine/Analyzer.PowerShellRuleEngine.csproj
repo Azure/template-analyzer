@@ -5,6 +5,11 @@
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.PowerShellRuleEngine</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine</RootNamespace>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Analyzer.PowerShellRuleEngine.xml</DocumentationFile>
+  </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.1.3" />

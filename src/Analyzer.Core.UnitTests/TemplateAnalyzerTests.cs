@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string[] resourceProperties = { GenerateResource(resource1Properties, resourceType), GenerateResource(resource2Properties, resourceType) };
             string template = GenerateTemplate(resourceProperties);
 
-            var templateAnalyzer = new TemplateAnalyzer(template, null, templateFilePath);
+            var templateAnalyzer = new TemplateAnalyzer(template, templateFilePath: templateFilePath);
             var evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
             var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
 

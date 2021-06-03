@@ -17,6 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow("error_without_line_number.json", 1, new int[] { 0 }, DisplayName = "Template with an error reported without a line number")]
         [DataRow("error_with_line_number.json", 1, new int[] { 9 }, DisplayName = "Template with an error reported with a line number")]
         [DataRow("warning.json", 1, new int[] { 0 }, DisplayName = "Template with a warning")]
+        [DataRow("repeated_error_same_message_same_lines.json", 1, new int[] { 0 }, DisplayName = "Template with an error found in multiple places, reported with the same message and line number for each")]
         public void EvaluateRules_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
             var templateFilePath = TemplatesFolder + templateFileName;
@@ -54,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
         {
-            var templateFilePath = TemplatesFolder + "repeated_error_same_message.json";
+            var templateFilePath = TemplatesFolder + "repeated_error_same_message_different_lines.json";
 
             var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
 
