@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <param name="templateResource">The template resource to process language expressions for.</param>
         /// <param name="evaluationHelper">Evaluation helper to evaluate expressions</param>
         /// <returns>The parsed template as a Template object.</returns>
-        private TemplateResource ProcessTemplateResourceLanguageExpressions(TemplateResource templateResource, TemplateExpressionEvaluationHelper evaluationHelper)
+        private void ProcessTemplateResourceLanguageExpressions(TemplateResource templateResource, TemplateExpressionEvaluationHelper evaluationHelper)
         {
             try
             {
@@ -294,10 +294,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             catch
             {
                 // Do not throw if there was an issue with evaluating language expressions
-                return null;
+                return;
             }
 
-            return templateResource;
+            return;
         }
 
         /// <summary>
