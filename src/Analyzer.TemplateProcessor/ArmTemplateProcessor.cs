@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // Parent resouce is not in the template
                 if (parentResource == null)
                 {
-                    break;
+                    continue;
                 }
 
                 // Add this resource as a child of its parent resource

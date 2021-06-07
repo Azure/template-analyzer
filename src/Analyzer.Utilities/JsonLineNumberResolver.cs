@@ -129,11 +129,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
             }
 
-            string[] pathSegments = unmatchedPathInOriginalTemplate.Split('.');
-            string remainingPathAtResourceScope = string.Join('.', pathSegments[1..]);
+            // Get the line number of the original resource before it was copied
+            int firstPeriodIndex = unmatchedPathInOriginalTemplate.IndexOf('.') + 1;
+            string remainingPathAtResourceScope = unmatchedPathInOriginalTemplate[firstPeriodIndex..];
 
-            var match2 = childResourceIndexInPath.Match(pathInExpandedTemplate);
-            if (match2.Success)
+            var match = childResourceIndexInPath.Match(pathInExpandedTemplate);
+            if (match.Success)
             {
                 // Verify the expanded template is available.
                 // (Avoid throwing earlier since this is not always needed.)
@@ -142,7 +143,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     throw new ArgumentNullException(nameof(expandedTemplateRoot));
                 }
 
-                var resourceWithIndex = match2.Value;
+                var resourceWithIndex = match.Value;
 
                 // Get the resource name and type from the expanded template
                 var childResourceName = expandedTemplateRoot.InsensitiveToken($"{resourceWithIndex}.name", InsensitivePathNotFoundBehavior.Null);

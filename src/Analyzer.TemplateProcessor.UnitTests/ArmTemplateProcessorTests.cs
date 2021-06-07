@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
 using Azure.Deployments.Core.Json;
@@ -9,7 +10,6 @@ using Azure.Deployments.Templates.Schema;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 {
@@ -445,8 +445,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             (expectedResourceJArray[1].InsensitiveToken("resources")[0] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
 
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
-
-            var equals = JObject.DeepEquals(expectedResourceJArray, actualResourceArray);
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
         }
