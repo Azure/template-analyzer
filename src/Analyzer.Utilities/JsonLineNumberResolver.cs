@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         {
             JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
             JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
+            Match match;
 
             if (pathInExpandedTemplate == null || originalTemplateRoot == null)
             {
@@ -66,7 +67,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             if (tokenFromOriginalTemplate.Equals(originalTemplateRoot.InsensitiveToken("resources")))
             {
                 // Verify the path starts with indexing into the template resources[] array
-                var match = resourceIndexInPath.Match(pathInExpandedTemplate);
+                match = resourceIndexInPath.Match(pathInExpandedTemplate);
                 if (match.Success)
                 {
                     // Verify the expanded template is available.
@@ -133,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             int firstPeriodIndex = unmatchedPathInOriginalTemplate.IndexOf('.') + 1;
             string remainingPathAtResourceScope = unmatchedPathInOriginalTemplate[firstPeriodIndex..];
 
-            var match = childResourceIndexInPath.Match(pathInExpandedTemplate);
+            match = childResourceIndexInPath.Match(pathInExpandedTemplate);
             if (match.Success)
             {
                 // Verify the expanded template is available.
