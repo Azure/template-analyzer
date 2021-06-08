@@ -371,6 +371,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""dependsOn"": [ ""someResource"" ],
                 ""properties"": { }
             }", DisplayName = "Child resource depends on resource outside template scope")]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Network/networkInterfaces"",
+                ""apiVersion"": ""2018-10-01"",
+                ""name"": ""simpleLinuxVMNetInt"",
+                ""location"": ""westus"",
+                ""properties"": { }
+            }", DisplayName = "Child resource depends on not specified")]
         public void CopyResourceDependants_ChildDependsOnEmptyOrResourceNotInCurrentTemplate_NoResourcesWereChanged(string templateResource0Json)
         {
             // Arrange
