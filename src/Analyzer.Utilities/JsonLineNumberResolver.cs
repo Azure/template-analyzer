@@ -118,14 +118,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             var originalTemplatePath = tokenFromOriginalTemplate.Path;
             var unmatchedPathInOriginalTemplate = pathInExpandedTemplate[originalTemplatePath.Length..].TrimStart('.');
 
+            bool pathsAreEqual = string.Equals(originalTemplatePath, pathInExpandedTemplate, StringComparison.OrdinalIgnoreCase);
+
+            bool unmatchedSegmentReferencesResourcesArray = unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase);
+            bool unmatchedSegmentStartsWithIndexArray = unmatchedPathInOriginalTemplate.StartsWith("[", StringComparison.OrdinalIgnoreCase);
+            bool originalPathEndsWithResourcesArray = originalTemplatePath.EndsWith("resources", StringComparison.OrdinalIgnoreCase);
+
+            bool pathIsNotFromCopiedResource = !unmatchedSegmentReferencesResourcesArray
+                    && !unmatchedSegmentStartsWithIndexArray
+                    && !originalPathEndsWithResourcesArray;
+
             // Compare the path of the expanded template with the path of the JToken found in the original template.
-            // If they match or if the first unmatched property in the original is NOT a resources array
-            // and it's looking in a resources array and the first unmatched property in the original is an array index
+            // If they match or if the path is not from a copied resource
             // the line number from the JToken of the original template can be returned directly.
-            if (originalTemplatePath.Length == pathInExpandedTemplate.Length
-                || (!unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase) 
-                    && !unmatchedPathInOriginalTemplate.StartsWith("[", StringComparison.OrdinalIgnoreCase)
-                    && !originalTemplatePath.EndsWith("resources", StringComparison.OrdinalIgnoreCase)))
+            if (pathsAreEqual || pathIsNotFromCopiedResource)
             {
                 return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
             }
