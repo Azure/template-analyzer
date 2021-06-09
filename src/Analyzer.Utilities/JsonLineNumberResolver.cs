@@ -139,20 +139,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             var matches = resourceIndexInPath.Matches(pathInExpandedTemplate);
             if (matches.Count > 0)
             {
-                string resourceWithIndex = "";
-
                 // Get the path of the child resource in the expanded template
-                for (int i = 0; i < matches.Count; i++)
-                {
-                    var substringMatch = matches[i];
-
-                    if (i > 0)
-                    {
-                        resourceWithIndex += ".";
-                    }
-
-                    resourceWithIndex += substringMatch.Value;
-                }
+                string resourceWithIndex = string.Join('.', matches);
 
                 // Verify the expanded template is available.
                 // (Avoid throwing earlier since this is not always needed.)
@@ -177,6 +165,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     return ResolveLineNumber($"{resourcePathInOriginalTemplate}.{remainingPathAtResourceScope}");
                 }
             }
+
+            // If code returns here, it is an unexpected case
             return 1;
         }
 
@@ -186,7 +176,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="resources">JArray of resources.</param>
         /// <param name="resourceName">Name of resource.</param>
         /// <param name="resourceType">Type of resource.</param>
-        /// <returns>The JSON path where the resources is located.</returns>
+        /// <returns>The JSON path where the resource is located.</returns>
         private string GetResourcePath(JToken resources, string resourceName, string resourceType)
         {
             if (resources == null)
@@ -203,15 +193,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     return resource.Path;
                 }
 
-                if (resource.InsensitiveToken("resources", InsensitivePathNotFoundBehavior.Null) != null)
+                var childResources = resource.InsensitiveToken("resources", InsensitivePathNotFoundBehavior.Null);
+
+                if (childResources != null)
                 {
-                    string path = GetResourcePath(resource.InsensitiveToken("resources"), resourceName, resourceType);
+                    string path = GetResourcePath(childResources, resourceName, resourceType);
                     
-                    if (path == null)
-                    {
-                        continue;
-                    }
-                    else
+                    if (path != null)
                     {
                         return path;
                     }
