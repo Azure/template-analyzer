@@ -14,8 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// </summary>
     public class JsonLineNumberResolver : ILineNumberResolver
     {
-        private static string resourceIndexPattern = @"resources\[(?<index>\d+)\]";
-        private static readonly Regex resourceIndexInPath = new Regex(resourceIndexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private readonly TemplateContext templateContext;
 
@@ -121,19 +120,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
             bool unmatchedSegmentReferencesResourcesArray = unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase);
             bool unmatchedSegmentStartsWithIndexArray = unmatchedPathInOriginalTemplate.StartsWith("[", StringComparison.OrdinalIgnoreCase);
-            bool originalPathEndsWithResourcesArray = originalTemplatePath.EndsWith("resources", StringComparison.OrdinalIgnoreCase);
+            bool indexExpectedIsInResourcesArray = originalTemplatePath.EndsWith("resources", StringComparison.OrdinalIgnoreCase);
 
-            bool pathIsNotFromCopiedResource = !unmatchedSegmentReferencesResourcesArray
-                    && !unmatchedSegmentStartsWithIndexArray
-                    && !originalPathEndsWithResourcesArray;
+            bool pathIsFromCopiedResource = unmatchedSegmentReferencesResourcesArray
+                    || (unmatchedSegmentStartsWithIndexArray
+                    && indexExpectedIsInResourcesArray);
 
             // Compare the path of the expanded template with the path of the JToken found in the original template.
             // If they match or if the path is not from a copied resource
             // the line number from the JToken of the original template can be returned directly.
-            if (pathsAreEqual || pathIsNotFromCopiedResource)
+            if (pathsAreEqual || !pathIsFromCopiedResource)
             {
                 return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
             }
+
+            // The first unmatched property must be a resources[] array, likely a subresource
+            // of a top-level resource.  This is possible if resources were copied into other
+            // resources as part of template expansion.
 
             // Get the line number of the original resource before it was copied
             var matches = resourceIndexInPath.Matches(pathInExpandedTemplate);
