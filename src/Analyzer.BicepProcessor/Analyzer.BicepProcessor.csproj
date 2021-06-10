@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
+    <Reference Include="..\..\..\bicep\src\Bicep.Core\bin\Debug\netstandard2.1\Bicep.Core.dll" />
+  </ItemGroup>
+
+</Project>
