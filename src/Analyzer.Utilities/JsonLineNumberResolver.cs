@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         {
             JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
             JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
+            Match match;
 
             if (pathInExpandedTemplate == null || originalTemplateRoot == null)
             {
@@ -64,7 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             if (tokenFromOriginalTemplate.Equals(originalTemplateRoot.InsensitiveToken("resources")))
             {
                 // Verify the path starts with indexing into the template resources[] array
-                var match = resourceIndexInPath.Match(pathInExpandedTemplate);
+                match = resourceIndexInPath.Match(pathInExpandedTemplate);
                 if (match.Success)
                 {
                     // Verify the expanded template is available.
@@ -115,11 +116,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             var originalTemplatePath = tokenFromOriginalTemplate.Path;
             var unmatchedPathInOriginalTemplate = pathInExpandedTemplate[originalTemplatePath.Length..].TrimStart('.');
 
+            bool pathsAreEqual = string.Equals(originalTemplatePath, pathInExpandedTemplate, StringComparison.OrdinalIgnoreCase);
+
+            bool unmatchedSegmentReferencesResourcesArray = unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase);
+            bool unmatchedSegmentStartsWithIndexArray = unmatchedPathInOriginalTemplate.StartsWith("[", StringComparison.OrdinalIgnoreCase);
+            bool indexExpectedIsInResourcesArray = originalTemplatePath.EndsWith("resources", StringComparison.OrdinalIgnoreCase);
+
+            bool pathIsFromCopiedResource = unmatchedSegmentReferencesResourcesArray
+                    || (unmatchedSegmentStartsWithIndexArray
+                    && indexExpectedIsInResourcesArray);
+
             // Compare the path of the expanded template with the path of the JToken found in the original template.
-            // If they match, or if the first unmatched property in the original is NOT a resources array,
+            // If they match or if the path is not from a copied resource
             // the line number from the JToken of the original template can be returned directly.
-            if (originalTemplatePath.Length == pathInExpandedTemplate.Length
-                || !unmatchedPathInOriginalTemplate.StartsWith("resources", StringComparison.OrdinalIgnoreCase))
+            if (pathsAreEqual || !pathIsFromCopiedResource)
             {
                 return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 0;
             }
@@ -127,8 +137,79 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // The first unmatched property must be a resources[] array, likely a subresource
             // of a top-level resource.  This is possible if resources were copied into other
             // resources as part of template expansion.
-            // TODO
+
+            // Get the line number of the original resource before it was copied
+            var matches = resourceIndexInPath.Matches(pathInExpandedTemplate);
+            if (matches.Count > 0)
+            {
+                // Get the path of the child resource in the expanded template
+                string resourceWithIndex = string.Join('.', matches);
+
+                // Verify the expanded template is available.
+                // (Avoid throwing earlier since this is not always needed.)
+                if (expandedTemplateRoot == null)
+                {
+                    throw new ArgumentNullException(nameof(expandedTemplateRoot));
+                }
+
+                string remainingPathAtResourceScope = pathInExpandedTemplate[(resourceWithIndex.Length + 1)..];
+
+                // Get the resource name and type from the expanded template
+                var childResourceName = expandedTemplateRoot.InsensitiveToken($"{resourceWithIndex}.name", InsensitivePathNotFoundBehavior.Null);
+                var childResourceType = expandedTemplateRoot.InsensitiveToken($"{resourceWithIndex}.type", InsensitivePathNotFoundBehavior.Null);
+                if (childResourceName != null && childResourceType != null)
+                {
+                    var childName = childResourceName.Value<string>();
+                    var childType = childResourceType.Value<string>();
+
+                    // Find the resource with this name and type in the expanded template
+                    string resourcePathInOriginalTemplate = GetResourcePath(originalTemplateRoot.InsensitiveToken("resources", InsensitivePathNotFoundBehavior.Null), childName, childType);
+                    
+                    return ResolveLineNumber($"{resourcePathInOriginalTemplate}.{remainingPathAtResourceScope}");
+                }
+            }
+
+            // If code returns here, it is an unexpected case
             return 1;
+        }
+
+        /// <summary>
+        /// Given a list of resources, resource name, and resource type, return the JSON path of that resource.
+        /// </summary>
+        /// <param name="resources">JArray of resources.</param>
+        /// <param name="resourceName">Name of resource.</param>
+        /// <param name="resourceType">Type of resource.</param>
+        /// <returns>The JSON path where the resource is located.</returns>
+        private string GetResourcePath(JToken resources, string resourceName, string resourceType)
+        {
+            if (resources == null)
+            {
+                return null;
+            }
+
+            foreach (var resource in resources.Children())
+            {
+                var thisResourceName = resource.InsensitiveToken("name")?.Value<string>();
+                var thisResourceType = resource.InsensitiveToken("type")?.Value<string>();
+                if (string.Equals(resourceType, thisResourceType, StringComparison.OrdinalIgnoreCase) && string.Equals(resourceName, thisResourceName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return resource.Path;
+                }
+
+                var childResources = resource.InsensitiveToken("resources", InsensitivePathNotFoundBehavior.Null);
+
+                if (childResources != null)
+                {
+                    string path = GetResourcePath(childResources, resourceName, resourceType);
+                    
+                    if (path != null)
+                    {
+                        return path;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
