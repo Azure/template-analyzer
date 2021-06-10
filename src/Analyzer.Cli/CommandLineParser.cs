@@ -54,30 +54,38 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Setup analyze-template 
             Command analyzeTemplateCommand = new Command("analyze-template");
 
+            // Setup template option (JSON format)
             Option<FileInfo> templateOption = new Option<FileInfo>(
                     "--template-file-path",
-                    "The ARM template to analyze")
-            {
-                IsRequired = true
-            };
+                    "The ARM template to analyze");
             templateOption.AddAlias("-t");
-
             analyzeTemplateCommand.AddOption(templateOption);
 
+            // Setup bicep option
+            Option<FileInfo> bicepOption = new Option<FileInfo>(
+                    "--bicep-file-path",
+                    "The bicep file to analyze");
+            bicepOption.AddAlias("-b");
+            analyzeTemplateCommand.AddOption(bicepOption);
+
+            // Setup parameter option
             Option<FileInfo> parameterOption = new Option<FileInfo>(
-                 "--parameters-file-path",
-                 "The parameter file to use when parsing the specified ARM template");
+                    "--parameters-file-path",
+                    "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
-
             analyzeTemplateCommand.AddOption(parameterOption);
-
+            
+            // Setup output option
             analyzeTemplateCommand.AddOption(SetupOutputFileOption());
 
             analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) =>
             {
                 try
                 {
-                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
+                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(
+                            File.ReadAllText(templateFilePath.FullName), 
+                            parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName),
+                            true);
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                     string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
