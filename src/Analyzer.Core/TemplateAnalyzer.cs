@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param> TODO improve TemplateAnalyzer interface
+        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param>
         public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null)
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
