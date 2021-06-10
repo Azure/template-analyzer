@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
@@ -17,6 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
+        private string TemplateFilePath { get; }
         private string Template { get; }
         private string Parameters { get; }
         private bool IsBicep { get; }
@@ -26,11 +29,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
+        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param> TODO improve TemplateAnalyzer interface
         /// <param name="isBicep">Whether the ARM Template is written in JSON or Bicep</param>
-        public TemplateAnalyzer(string template, string parameters = null, bool isBicep = false)
+        public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null, bool isBicep = false)
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
+            this.TemplateFilePath = templateFilePath;
             this.IsBicep = isBicep;
         }
 
@@ -70,6 +75,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ExpandedTemplate = templatejObject,
                         IsMainTemplate = true },
                     rules);
+
+                if (TemplateFilePath != null)
+                {
+                    evaluations = evaluations.Concat(PowerShellRuleEngine.EvaluateRules(TemplateFilePath));
+                }
 
                 return evaluations;
             }

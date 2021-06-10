@@ -82,10 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 try
                 {
-                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(
-                            File.ReadAllText(templateFilePath.FullName), 
-                            parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName),
-                            true);
+                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                     string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
@@ -96,12 +93,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     Console.WriteLine(fileMetadata);
 
+                    var passedEvaluations = 0;
+
                     foreach (var evaluation in evaluations)
                     {
                         string resultString = GenerateResultString(evaluation);
                         
-                        Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
+                        if (!evaluation.Passed)
+                        {
+                            Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
+                        }
+                        else
+                        {
+                            passedEvaluations++;
+                        }
                     }
+
+                    Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
                 }
                 catch (Exception exp)
                 {

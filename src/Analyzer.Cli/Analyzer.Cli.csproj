@@ -21,4 +21,6 @@
     <ProjectReference Include="..\Analyzer.Core\Analyzer.Core.csproj" />
   </ItemGroup>
 
+  <Import Project="..\CopyTTK.targets" />
+
 </Project>
