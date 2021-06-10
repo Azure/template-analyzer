@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
     <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
+    <ProjectReference Include="..\Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj" />
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
   </ItemGroup>
 

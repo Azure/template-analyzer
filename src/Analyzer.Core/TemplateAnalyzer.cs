@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json.Linq;
@@ -18,16 +19,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     {
         private string Template { get; }
         private string Parameters { get; }
+        private bool IsBicep { get; }
 
         /// <summary>
         /// Creates a new instance of a TemplateAnalyzer
         /// </summary>
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-        public TemplateAnalyzer(string template, string parameters = null)
+        /// <param name="isBicep">Whether the ARM Template is written in JSON or Bicep</param>
+        public TemplateAnalyzer(string template, string parameters = null, bool isBicep = false)
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
+            this.IsBicep = isBicep;
         }
 
         /// <summary>
@@ -40,7 +44,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(Template);
+                ArmTemplateProcessor armTemplateProcessor = IsBicep 
+                        ? new BicepTemplateProcessor(Template).ToArmTemplateProcessor()
+                        : new ArmTemplateProcessor(Template);
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
             }
             catch (Exception e)
