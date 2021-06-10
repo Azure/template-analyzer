@@ -17,6 +17,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine
     {
         /// <summary>
+        /// Regex that matches a string like: " on line: aNumber"
+        /// </summary>
+        private readonly static Regex lineNumberRegex = new(@"\son\sline:\s\d+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
         /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
         /// </summary>
         /// <param name="templateFilePath">The file path of the template under analysis.</param>
@@ -91,7 +96,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 }
             }
 
-            var lineNumberRegex = new Regex(@"\son\sline:\s\d+");
             var errorMessage = lineNumberRegex.Replace(error.ToString(), string.Empty); 
 
             if (!uniqueErrors.TryAdd(errorMessage, new SortedSet<int> { lineNumber }))
