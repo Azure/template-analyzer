@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
             PowerShell.Commands.AddCommand("Import-Module")
                 .AddParameter("Name", @".\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
+            PowerShell.AddStatement();
 
             PowerShell.Invoke();
         }
