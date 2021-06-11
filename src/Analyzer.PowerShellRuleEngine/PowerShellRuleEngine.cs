@@ -33,12 +33,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.PowerShell = System.Management.Automation.PowerShell.Create();
 
-            PowerShell.Streams.Error.DataAdded += (sender, e) => HandleDataAddedInStreams(PowerShell.Streams.Error[e.Index], ConsoleColor.Red);
-            PowerShell.Streams.Warning.DataAdded += (sender, e) => HandleDataAddedInStreams(PowerShell.Streams.Warning[e.Index], ConsoleColor.Yellow);
-            PowerShell.Streams.Information.DataAdded += (sender, e) => HandleDataAddedInStreams(PowerShell.Streams.Information[e.Index]);
-            PowerShell.Streams.Verbose.DataAdded += (sender, e) => HandleDataAddedInStreams(PowerShell.Streams.Verbose[e.Index]);
-            PowerShell.Streams.Debug.DataAdded += (sender, e) => HandleDataAddedInStreams(PowerShell.Streams.Debug[e.Index]);
-
             PowerShell.Commands.AddCommand("Set-ExecutionPolicy")
                 .AddParameter("Scope", "Process") // Affects only the current PowerShell session
                 .AddParameter("ExecutionPolicy", "Unrestricted");
@@ -114,17 +108,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // errorMessage was already added to the dictionary
                 uniqueErrors[errorMessage].Add(lineNumber);
             }
-        }
-
-        static void HandleDataAddedInStreams(object newData, ConsoleColor? color = null)
-        {
-            if (color.HasValue) {
-                Console.ForegroundColor = color.Value;
-            }
-
-            Console.WriteLine(newData);
-
-            Console.ResetColor();
         }
     }
 }
