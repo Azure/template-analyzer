@@ -72,7 +72,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                 if (TemplateFilePath != null)
                 {
-                    evaluations = evaluations.Concat(PowerShellRuleEngine.EvaluateRules(TemplateFilePath));
+                    var powerShellRuleEngine = new PowerShellRuleEngine();
+                    evaluations = evaluations.Concat(powerShellRuleEngine.EvaluateRules(TemplateFilePath));
                 }
 
                 return evaluations;

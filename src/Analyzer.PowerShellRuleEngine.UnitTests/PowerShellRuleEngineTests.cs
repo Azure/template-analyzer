@@ -21,8 +21,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         public void EvaluateRules_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
             var templateFilePath = TemplatesFolder + templateFileName;
+            var powerShellRuleEngine = new PowerShellRuleEngine();
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
 
             var failedEvaluations = new List<PowerShellRuleEvaluation>();
 
@@ -56,8 +57,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         public void EvaluateRules_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
         {
             var templateFilePath = TemplatesFolder + "repeated_error_same_message_different_lines.json";
+            var powerShellRuleEngine = new PowerShellRuleEngine();
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
 
             Assert.AreEqual(1, evaluations.Count());
             Assert.IsFalse(evaluations.First().Passed);
@@ -77,8 +79,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         public void EvaluateRules_RepeatedErrorDifferentMessage_ReturnsExpectedEvaluations()
         {
             var templateFilePath = TemplatesFolder + "repeated_error_different_message.json";
+            var powerShellRuleEngine = new PowerShellRuleEngine();
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
 
             var evaluationsList = evaluations.ToList();
 
@@ -106,12 +109,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             System.IO.Directory.Move(TTKFolderName, wrongTTKFolderName);
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var powerShellRuleEngineWrongPath = new PowerShellRuleEngine();
+            var evaluations = powerShellRuleEngineWrongPath.EvaluateRules(templateFilePath);
             Assert.AreEqual(0, evaluations.Count());
 
             System.IO.Directory.Move(wrongTTKFolderName, TTKFolderName);
 
-            evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var powerShellRuleEngine = new PowerShellRuleEngine();
+            evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
             Assert.AreEqual(1, evaluations.Count());
         }
     }
