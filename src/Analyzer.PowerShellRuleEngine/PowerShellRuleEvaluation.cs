@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             Passed = passed;
             Results = results;
             Evaluations = new List<IEvaluation>();
+            HelpUri = "https://github.com/Azure/arm-ttk";
         }
     }
 }
