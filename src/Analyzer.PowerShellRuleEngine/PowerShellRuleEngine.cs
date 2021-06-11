@@ -84,11 +84,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     var evaluationResults = new List<PowerShellRuleResult>();
                     foreach (int lineNumber in uniqueError.Value)
                     {
-                        var evaluationResult = new PowerShellRuleResult(false, lineNumber);
-                        evaluationResults.Add(evaluationResult);
+                        evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    var evaluation = new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults);
-                    evaluations.Add(evaluation);
+                    evaluations.Add(new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults));
                 }
             }
 
