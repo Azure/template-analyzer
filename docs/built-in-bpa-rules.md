@@ -1,11 +1,11 @@
 # Best Practice Related Rules
-## Ensure all virtual machines are not using preview images
-Virtual Machines should not use preview versions of images.
+## Ensure all Virtual Machines are not using preview images
+Virtual machines should not use preview versions of images.
 
 **Recommendation**: To use a non-preview image for virtual machines, in the [Microsoft.Compute/VirtualMachines/imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
 
-## Ensure all virtual machine scale set instances are not using preview images
-Virtual Machine Scale Set instances should not use preview versions of images.
+## Ensure all Virtual Machine Scale Set instances are not using preview images
+Virtual machine scale set instances should not use preview versions of images.
 
 **Recommendation**: To use a non-preview image for virtual machine scale set instances, in the [Microsoft.Compute/VirtualMachineScaleSets/storageProfile.imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachinescalesets?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
 
@@ -40,7 +40,7 @@ More information about the rules covered by our integration with [arm-ttk](https
 
 # Security Related Rules
 ## API App Should Only Be Accessible Over HTTPS
-API Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
+API apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
 
@@ -55,9 +55,15 @@ It is important to enable encryption of Automation account variable assets when 
 **Recommendation**: [Enable encryption of Automation account variable assets](https://docs.microsoft.com/en-us/azure/automation/shared-resources/variables?tabs=azure-powershell)
 
 ## Function App Should Only Be Accessible Over HTTPS
-Function Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
+Function apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
+
+## Latest TLS version should be used in your Web App
+Web apps should require the latest TLS version.
+
+**Recommendation**: 
+To [enforce the latest TLS version](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-tls-versions), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *minTlsVersion* property, setting its value to `1.2`.
 
 ## Only secure connections to your Azure Cache for Redis should be enabled
 Enable only connections via SSL to Redis Cache. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.
@@ -80,6 +86,6 @@ You should only use built-in roles instead of cutom RBAC roles. Custom RBAC role
 **Recommendation**: [Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles)
 
 ## Web Application Should Only Be Accessible Over HTTPS
-Web Apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
+Web apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.

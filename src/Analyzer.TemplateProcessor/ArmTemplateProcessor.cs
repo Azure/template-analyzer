@@ -4,15 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
+using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
 using Azure.Deployments.Templates.Configuration;
 using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Expressions;
 using Azure.Deployments.Templates.Extensions;
 using Azure.Deployments.Templates.Schema;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -124,39 +125,29 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             TemplateEngine.ValidateProcessedTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
-            template = ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(template);
+            template = ProcessResourcesAndOutputs(template);
 
             return template;
         }
 
         /// <summary>
-        /// Processes language expressions in the properties property of the resources and value property of outputs.
+        /// Processes each resource for language expressions and parent resources as well
+        /// as processes language expressions for outputs.
         /// </summary>
-        /// <param name="template">The template.</param>
-        /// <returns>The parsed template as a Template object.</returns>
-        internal Template ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(Template template)
+        /// <param name="template">Template being processed.</param>
+        /// <returns>Template after processing resources and outputs.</returns>
+        internal Template ProcessResourcesAndOutputs(Template template)
         {
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
+            var flattenedResources = FlattenResources(template.Resources);
 
             for (int i = 0; i < template.Resources.Length; i++)
             {
                 var resource = template.Resources[i];
 
-                try
-                {
-                    if (resource.Properties != null)
-                    {
-                        evaluationHelper.OnGetCopyContext = () => resource.CopyContext;
-                        resource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
-                            root: resource.Properties.Value,
-                            evaluationContext: evaluationHelper.EvaluationContext);
-                    }
-                }
-                catch
-                {
-                    // Do not throw if there was an issue with evaluating language expressions
-                    continue;
-                }
+                ProcessTemplateResourceLanguageExpressions(resource, evaluationHelper);
+
+                CopyResourceDependants(resource, flattenedResources);
             }
 
             if ((template.Outputs?.Count ?? 0) > 0)
@@ -180,6 +171,133 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             }
 
             return template;
+        }
+
+        /// <summary>
+        /// Copies child resources into sub resources for parent resources.
+        /// </summary>
+        /// <param name="templateResource">The child resource.</param>
+        /// <param name="resources">A collection of all resources with a mapping to their processed name.</param>
+        internal void CopyResourceDependants(TemplateResource templateResource, Dictionary<string, TemplateResource> resources)
+        {
+            if (templateResource.DependsOn == null)
+            {
+                return;
+            }
+
+            foreach (var parentResourceIds in templateResource.DependsOn)
+            {
+                string parentResourceName;
+                TemplateResource parentResource = null;
+                // If the dependsOn references the resourceId
+                if (parentResourceIds.Value.StartsWith("/subscriptions"))
+                {
+                    string parentResourceId = IResourceIdentifiableExtensions.GetUnqualifiedResourceId(parentResourceIds.Value);
+                    parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
+                    string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
+
+                    resources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResource);
+                }
+                // If the dependsOn references the resource name
+                else
+                {
+                    parentResourceName = parentResourceIds.Value;
+                    var matchingResources = resources.Where(k => k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase)).ToList();
+                    if (matchingResources.Count == 1)
+                    {
+                        parentResource = matchingResources.First().Value;
+                    }
+                }
+
+                // Parent resouce is not in the template
+                if (parentResource == null)
+                {
+                    continue;
+                }
+
+                // Add this resource as a child of its parent resource
+                if (parentResource.Resources == null)
+                {
+                    parentResource.Resources = new TemplateResource[] { templateResource };
+                }
+                else
+                {
+                    var childResources = parentResource.Resources;
+                    parentResource.Resources = childResources.ConcatArray(new TemplateResource[] { templateResource });
+                }
+            }
+
+            return;
+        }
+
+        /// <summary>
+        /// Flattens resources that are defined inside other resources.
+        /// </summary>
+        /// <param name="resources">Resources in the template.</param>
+        /// <param name="parentName">Name of the parent resource. Used during recursive call.</param>
+        /// <param name="parentType">Type of the parent resource. Used during recursive call.</param>
+        /// <returns>Dictionary that maps full resource names and types to their corresponding resource.</returns>
+        private Dictionary<string, TemplateResource> FlattenResources(TemplateResource[] resources, string parentName = null, string parentType = null)
+        {
+            Dictionary<string, TemplateResource > flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var resource in resources)
+            {
+                string dictionaryKey;
+
+                if (parentName != null && parentType != null)
+                {
+                    dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
+                }
+                else
+                {
+                    dictionaryKey = $"{resource.Name.Value} {resource.Type.Value}";
+                }
+
+                flattenedResources.Add(dictionaryKey, resource);
+
+                if (resource.Resources != null)
+                {
+                    flattenedResources.AddRange(FlattenResources(resource.Resources, resource.Name.Value, resource.Type.Value));
+                }
+            }
+
+            return flattenedResources;
+        }
+
+        /// <summary>
+        /// Processes language expressions in the properties property of the resources.
+        /// </summary>
+        /// <param name="templateResource">The template resource to process language expressions for.</param>
+        /// <param name="evaluationHelper">Evaluation helper to evaluate expressions</param>
+        /// <returns>The parsed template as a Template object.</returns>
+        private void ProcessTemplateResourceLanguageExpressions(TemplateResource templateResource, TemplateExpressionEvaluationHelper evaluationHelper)
+        {
+            try
+            {
+                if (templateResource.Properties != null)
+                {
+                    evaluationHelper.OnGetCopyContext = () => templateResource.CopyContext;
+                    templateResource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
+                        root: templateResource.Properties.Value,
+                        evaluationContext: evaluationHelper.EvaluationContext);
+                }
+
+                if (templateResource.Resources != null)
+                {
+                    foreach (var childResource in templateResource.Resources)
+                    {
+                        ProcessTemplateResourceLanguageExpressions(childResource, evaluationHelper);
+                    }
+                }
+            }
+            catch
+            {
+                // Do not throw if there was an issue with evaluating language expressions
+                return;
+            }
+
+            return;
         }
 
         /// <summary>

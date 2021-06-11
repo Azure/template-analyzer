@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
-    <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
   </ItemGroup>
 
 </Project>
