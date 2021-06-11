@@ -15,7 +15,7 @@
       <dependency id="Azure.Deployments.Core" version="1.0.112" />
       <dependency id="Azure.Deployments.Expression" version="1.0.112" />
       <dependency id="Azure.Deployments.Templates" version="1.0.112" />
-      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <dependency id="Newtonsoft.Json" version="13.0.1" />
     </dependencies>
     
   </metadata>
