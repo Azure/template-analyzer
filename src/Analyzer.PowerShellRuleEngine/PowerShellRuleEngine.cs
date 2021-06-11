@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
@@ -39,7 +40,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             PowerShell.AddStatement();
 
             PowerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", @".\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
             PowerShell.AddStatement();
 
             PowerShell.Invoke();
