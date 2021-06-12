@@ -34,10 +34,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.PowerShell = System.Management.Automation.PowerShell.Create();
 
+#if (DEBUG)
             PowerShell.Commands.AddCommand("Set-ExecutionPolicy")
                 .AddParameter("Scope", "Process") // Affects only the current PowerShell session
                 .AddParameter("ExecutionPolicy", "Unrestricted");
             PowerShell.AddStatement();
+#endif
 
             PowerShell.Commands.AddCommand("Import-Module")
                 .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
