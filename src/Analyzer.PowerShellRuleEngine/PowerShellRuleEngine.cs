@@ -20,25 +20,25 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Execution environment for PowerShell
         /// </summary>
-        private readonly System.Management.Automation.PowerShell PowerShell;
+        private readonly System.Management.Automation.PowerShell powerShell;
 
         /// <summary>
         /// Regex that matches a string like: " on line: aNumber"
         /// </summary>
-        private readonly Regex LineNumberRegex = new(@"\son\sline:\s\d+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex lineNumberRegex = new(@"\son\sline:\s\d+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Creates a new instance of a PowerShellRuleEngine
         /// </summary>
         public PowerShellRuleEngine()
         {
-            this.PowerShell = System.Management.Automation.PowerShell.Create();
+            this.powerShell = System.Management.Automation.PowerShell.Create();
 
-            PowerShell.Commands.AddCommand("Import-Module")
+            powerShell.Commands.AddCommand("Import-Module")
                 .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
-            PowerShell.AddStatement();
+            powerShell.AddStatement();
 
-            PowerShell.Invoke();
+            powerShell.Invoke();
         }
 
         /// <summary>
@@ -61,11 +61,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <param name="templateFilePath">The file path of the template under analysis.</param>
         public IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
         {
-            this.PowerShell.Commands.AddCommand("Test-AzTemplate")
+            this.powerShell.Commands.AddCommand("Test-AzTemplate")
                 .AddParameter("Test", "deploymentTemplate")
                 .AddParameter("TemplatePath", templateFilePath);
 
-            var executionResults = this.PowerShell.Invoke();
+            var executionResults = this.powerShell.Invoke();
 
             var evaluations = new List<PowerShellRuleEvaluation>();
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 }
             }
 
-            var errorMessage = LineNumberRegex.Replace(error.ToString(), string.Empty); 
+            var errorMessage = lineNumberRegex.Replace(error.ToString(), string.Empty); 
 
             if (!uniqueErrors.TryAdd(errorMessage, new SortedSet<int> { lineNumber }))
             {

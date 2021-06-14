@@ -19,4 +19,10 @@
 
   <Import Project="..\TTK.targets" />
 
+  <ItemGroup>
+      <Content Include="templates\**">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+  </ItemGroup>
+
 </Project>

@@ -10,10 +10,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
     [TestClass]
     public class PowerShellRuleEngineTests
     {
-        private readonly string TemplatesFolder = @"..\..\..\templates\";
+        private readonly string templatesFolder = @"templates\";
 
         [AssemblyInitialize]
-        public static void AssemblyInit(TestContext context)
+        public static void ClassInitialize(TestContext context)
         {
             PowerShellRuleEngine.SetExecutionPolicy();
         }
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow("repeated_error_same_message_same_lines.json", 1, new int[] { 0 }, DisplayName = "Template with an error found in multiple places, reported with the same message and line number for each")]
         public void EvaluateRules_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
-            var templateFilePath = TemplatesFolder + templateFileName;
+            var templateFilePath = templatesFolder + templateFileName;
             var powerShellRuleEngine = new PowerShellRuleEngine();
 
             var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
         {
-            var templateFilePath = TemplatesFolder + "repeated_error_same_message_different_lines.json";
+            var templateFilePath = templatesFolder + "repeated_error_same_message_different_lines.json";
             var powerShellRuleEngine = new PowerShellRuleEngine();
 
             var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_RepeatedErrorDifferentMessage_ReturnsExpectedEvaluations()
         {
-            var templateFilePath = TemplatesFolder + "repeated_error_different_message.json";
+            var templateFilePath = templatesFolder + "repeated_error_different_message.json";
             var powerShellRuleEngine = new PowerShellRuleEngine();
 
             var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         {
             var TTKFolderName = "TTK";
             var wrongTTKFolderName = TTKFolderName + "2";
-            var templateFilePath = TemplatesFolder + "error_without_line_number.json";
+            var templateFilePath = templatesFolder + "error_without_line_number.json";
 
             System.IO.Directory.Move(TTKFolderName, wrongTTKFolderName);
 

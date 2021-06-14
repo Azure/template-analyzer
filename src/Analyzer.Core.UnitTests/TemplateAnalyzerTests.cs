@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
     public class TemplateAnalyzerTests
     {
         [AssemblyInitialize]
-        public static void AssemblyInit(TestContext context)
+        public static void ClassInitialize(TestContext context)
         {
             PowerShellRuleEngine.SetExecutionPolicy();
         }
