@@ -28,6 +28,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         private readonly string armTemplate;
         private readonly string apiVersion;
         private readonly bool dropResourceCopies;
+        private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
+        private Dictionary<string, TemplateResource> flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Mapping between resources in the expanded template to their original resource in 
+        /// the original template. Used to get line numbers.
+        /// The key is the path in the expanded template with value being the path
+        /// in the original template.
+        /// </summary>
+        public Dictionary<string, string> ResourceMappings = new Dictionary<string, string>();
 
         /// <summary>
         ///  Constructor for the ARM Template Processing library
@@ -139,15 +149,21 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         internal Template ProcessResourcesAndOutputs(Template template)
         {
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
-            var flattenedResources = FlattenResources(template.Resources);
+            SaveFlattenedResources(template.Resources);
 
-            for (int i = 0; i < template.Resources.Length; i++)
+            foreach (var resourcePair in flattenedResources)
             {
-                var resource = template.Resources[i];
+                var resource = resourcePair.Value;
 
                 ProcessTemplateResourceLanguageExpressions(resource, evaluationHelper);
 
                 CopyResourceDependants(resource, flattenedResources);
+
+                // The resource maps to the original resource
+                if (resource.Copy == null)
+                {
+                    AddResourceMapping(resource.Path, resource.Path);
+                }
             }
 
             if ((template.Outputs?.Count ?? 0) > 0)
@@ -219,15 +235,53 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 if (parentResource.Resources == null)
                 {
                     parentResource.Resources = new TemplateResource[] { templateResource };
+
+                    AddResourceMapping($"{parentResource.Path}.resources[0]", templateResource.Path);
                 }
                 else
                 {
                     var childResources = parentResource.Resources;
                     parentResource.Resources = childResources.ConcatArray(new TemplateResource[] { templateResource });
+                    int resourceIndex = parentResource.Resources.Length - 1;
+
+                    AddResourceMapping($"{parentResource.Path}.resources[{resourceIndex}]", templateResource.Path);
                 }
             }
 
             return;
+        }
+
+        private void AddResourceMapping(string expandedTemplatePath, string originalTemplatePath)
+        {
+            // Save all permutations of the resource path based off values already present 
+            // in the dictionary with mapping. This is necessary to report an issue in
+            // a copied nth grandchild resource.
+            var tokens = expandedTemplatePath.Split('.');
+
+            for (int i = 0; i < tokens.Length - 1; i++)
+            {
+                string subPath = string.Join('.', tokens[..(i + 1)]);
+                if (originalToExpandedMapping.ContainsKey(subPath))
+                {
+                    foreach (string path in originalToExpandedMapping[subPath])
+                    {
+                        if (!path.Equals(subPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            ResourceMappings.TryAdd($"{path}.{string.Join('.', tokens[(i + 1)..])}", originalTemplatePath);
+                        }
+                    }
+                }
+            }
+
+            if (!ResourceMappings.TryAdd(expandedTemplatePath, originalTemplatePath))
+            {
+                throw new Exception($"Error mapping resource at path {originalTemplatePath}");
+            }
+
+            if(!originalToExpandedMapping.TryAdd(originalTemplatePath, new List<string> { expandedTemplatePath }))
+            {
+                originalToExpandedMapping[originalTemplatePath].Add(expandedTemplatePath);
+            }
         }
 
         /// <summary>
@@ -236,21 +290,23 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <param name="resources">Resources in the template.</param>
         /// <param name="parentName">Name of the parent resource. Used during recursive call.</param>
         /// <param name="parentType">Type of the parent resource. Used during recursive call.</param>
-        /// <returns>Dictionary that maps full resource names and types to their corresponding resource.</returns>
-        private Dictionary<string, TemplateResource> FlattenResources(TemplateResource[] resources, string parentName = null, string parentType = null)
+        private void SaveFlattenedResources(TemplateResource[] resources, string parentName = null, string parentType = null)
         {
-            Dictionary<string, TemplateResource > flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var resource in resources)
+            for (int i = 0; i < resources.Length; i++)
             {
                 string dictionaryKey;
+                var resource = resources[i];
 
                 if (parentName != null && parentType != null)
                 {
+                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].Path}.resources[{i}]";
+
                     dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
                 }
                 else
                 {
+                    resource.Path = $"resources[{i}]";
+
                     dictionaryKey = $"{resource.Name.Value} {resource.Type.Value}";
                 }
 
@@ -258,11 +314,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 if (resource.Resources != null)
                 {
-                    flattenedResources.AddRange(FlattenResources(resource.Resources, resource.Name.Value, resource.Type.Value));
+                    SaveFlattenedResources(resource.Resources, resource.Name.Value, resource.Type.Value);
                 }
             }
-
-            return flattenedResources;
         }
 
         /// <summary>
@@ -270,7 +324,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="templateResource">The template resource to process language expressions for.</param>
         /// <param name="evaluationHelper">Evaluation helper to evaluate expressions</param>
-        /// <returns>The parsed template as a Template object.</returns>
         private void ProcessTemplateResourceLanguageExpressions(TemplateResource templateResource, TemplateExpressionEvaluationHelper evaluationHelper)
         {
             try
@@ -281,14 +334,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     templateResource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
                         root: templateResource.Properties.Value,
                         evaluationContext: evaluationHelper.EvaluationContext);
-                }
-
-                if (templateResource.Resources != null)
-                {
-                    foreach (var childResource in templateResource.Resources)
-                    {
-                        ProcessTemplateResourceLanguageExpressions(childResource, evaluationHelper);
-                    }
                 }
             }
             catch
@@ -378,6 +423,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         else if (!dropResourceCopies)
                         {
                             updatedOrder.Add(resource);
+                            resource.Path = $"resources[{updatedOrder.Count - 1}]";
+                        }
+
+                        if (!dropResourceCopies)
+                        {
+                            AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
                         }
                     }
                     else
