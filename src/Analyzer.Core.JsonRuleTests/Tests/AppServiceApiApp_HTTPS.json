@@ -1,0 +1,7 @@
+[
+    {
+        "Template": "AppServices",
+        "ExpectPass": false,
+        "ReportedLines": [ 29, 44 ]
+    }
+]
