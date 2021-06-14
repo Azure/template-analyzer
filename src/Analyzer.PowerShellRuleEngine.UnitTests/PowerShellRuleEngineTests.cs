@@ -13,9 +13,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         private readonly string templatesFolder = @"templates\";
 
         [AssemblyInitialize]
-        public static void ClassInitialize(TestContext context)
+        public static void AssemblyInitialize(TestContext context)
         {
-            PowerShellRuleEngine.SetExecutionPolicy();
+            PowerShellRuleEngine.SetNeededExecutionPolicy();
         }
 
         [DataTestMethod]

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
@@ -42,17 +43,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         }
 
         /// <summary>
-        /// Sets the PowerShell execution policy for the current process as unrestricted
+        /// Changes the PowerShell execution policy to allow unsigned executions
         /// </summary>
-        public static void SetExecutionPolicy()
+        public static void SetNeededExecutionPolicy()
         {
-            var powerShell = System.Management.Automation.PowerShell.Create();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var powerShell = System.Management.Automation.PowerShell.Create();
 
-            powerShell.Commands.AddCommand("Set-ExecutionPolicy")
-                .AddParameter("Scope", "Process") // Affects only the current PowerShell session
-                .AddParameter("ExecutionPolicy", "Unrestricted");
+                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
+                    .AddParameter("ExecutionPolicy", "Unrestricted");
 
-            powerShell.Invoke();
+                powerShell.Invoke();
+            }
         }
 
         /// <summary>
