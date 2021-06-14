@@ -7,9 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -21,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Execution environment for PowerShell
         /// </summary>
-        private readonly System.Management.Automation.PowerShell powerShell;
+        private readonly Powershell powerShell;
 
         /// <summary>
         /// Regex that matches a string like: " on line: aNumber"
@@ -33,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// </summary>
         public PowerShellRuleEngine()
         {
-            this.powerShell = System.Management.Automation.PowerShell.Create();
+            this.powerShell = Powershell.Create();
 
             powerShell.Commands.AddCommand("Import-Module")
                 .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 

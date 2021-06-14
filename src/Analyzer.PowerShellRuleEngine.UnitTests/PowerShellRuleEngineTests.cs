@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
+
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTests
 {
     [TestClass]
@@ -18,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var powerShell = System.Management.Automation.PowerShell.Create();
+                var powerShell = Powershell.Create();
 
                 powerShell.Commands.AddCommand("Set-ExecutionPolicy")
                     .AddParameter("Scope", "Process") // Affects only the current PowerShell session
