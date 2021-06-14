@@ -43,23 +43,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         }
 
         /// <summary>
-        /// Changes the PowerShell execution policy to allow unsigned executions
-        /// </summary>
-        public static void SetNeededExecutionPolicy()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var powerShell = System.Management.Automation.PowerShell.Create();
-
-                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
-                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
-                    .AddParameter("ExecutionPolicy", "Unrestricted");
-
-                powerShell.Invoke();
-            }
-        }
-
-        /// <summary>
         /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
         /// </summary>
         /// <param name="templateFilePath">The file path of the template under analysis.</param>

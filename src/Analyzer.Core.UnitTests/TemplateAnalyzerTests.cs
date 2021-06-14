@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
+using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,7 +15,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            PowerShellRuleEngine.SetNeededExecutionPolicy();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var powerShell = System.Management.Automation.PowerShell.Create();
+
+                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
+                    .AddParameter("ExecutionPolicy", "Unrestricted");
+
+                powerShell.Invoke();
+            }
         }
 
         [DataTestMethod]
