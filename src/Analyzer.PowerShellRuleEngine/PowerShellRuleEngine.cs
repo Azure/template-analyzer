@@ -34,18 +34,25 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.PowerShell = System.Management.Automation.PowerShell.Create();
 
-#if (DEBUG)
-            PowerShell.Commands.AddCommand("Set-ExecutionPolicy")
-                .AddParameter("Scope", "Process") // Affects only the current PowerShell session
-                .AddParameter("ExecutionPolicy", "Unrestricted");
-            PowerShell.AddStatement();
-#endif
-
             PowerShell.Commands.AddCommand("Import-Module")
                 .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
             PowerShell.AddStatement();
 
             PowerShell.Invoke();
+        }
+
+        /// <summary>
+        /// Sets the PowerShell execution policy for the current process as unrestricted
+        /// </summary>
+        public static void SetExecutionPolicy()
+        {
+            var powerShell = System.Management.Automation.PowerShell.Create();
+
+            powerShell.Commands.AddCommand("Set-ExecutionPolicy")
+                .AddParameter("Scope", "Process") // Affects only the current PowerShell session
+                .AddParameter("ExecutionPolicy", "Unrestricted");
+
+            powerShell.Invoke();
         }
 
         /// <summary>

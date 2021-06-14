@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,6 +12,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
     [TestClass]
     public class TemplateAnalyzerTests
     {
+        [AssemblyInitialize]
+        public static void AssemblyInit(TestContext context)
+        {
+            PowerShellRuleEngine.SetExecutionPolicy();
+        }
+
         [DataTestMethod]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "1 matching Resource with 1 passing evaluation")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "1 matching Resource with 1 failing evaluation")]

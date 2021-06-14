@@ -12,6 +12,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
     {
         private readonly string TemplatesFolder = @"..\..\..\templates\";
 
+        [AssemblyInitialize]
+        public static void AssemblyInit(TestContext context)
+        {
+            PowerShellRuleEngine.SetExecutionPolicy();
+        }
+
         [DataTestMethod]
         [DataRow("success.json", 0, new int[] { }, DisplayName = "Base template")]
         [DataRow("error_without_line_number.json", 1, new int[] { 0 }, DisplayName = "Template with an error reported without a line number")]
