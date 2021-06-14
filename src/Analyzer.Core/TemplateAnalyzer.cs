@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
@@ -75,7 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
         private static string LoadRules()
         {
-            return System.IO.File.ReadAllText("Rules/BuiltInRules.json");
+            return System.IO.File.ReadAllText(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/Rules/BuiltInRules.json");
         }
     }
 }
