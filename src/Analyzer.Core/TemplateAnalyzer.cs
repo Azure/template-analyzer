@@ -30,13 +30,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
         /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param> TODO improve TemplateAnalyzer interface
-        /// <param name="isBicep">Whether the ARM Template is written in JSON or Bicep</param>
-        public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null, bool isBicep = false)
+        public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null)
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
             this.TemplateFilePath = templateFilePath;
-            this.IsBicep = isBicep;
+            this.IsBicep = templateFilePath.ToLower().EndsWith(".bicep");
         }
 
         /// <summary>
@@ -50,12 +49,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 ArmTemplateProcessor armTemplateProcessor = IsBicep 
-                        ? new BicepTemplateProcessor(Template).ToArmTemplateProcessor()
+                        ? new BicepTemplateProcessor(Template, TemplateFilePath).ToArmTemplateProcessor()
                         : new ArmTemplateProcessor(Template);
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 throw new TemplateAnalyzerException("Error while processing template.", e);
             }
 

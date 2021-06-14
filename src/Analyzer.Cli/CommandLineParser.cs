@@ -57,16 +57,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Setup template option (JSON format)
             Option<FileInfo> templateOption = new Option<FileInfo>(
                     "--template-file-path",
-                    "The ARM template to analyze");
+                    "The ARM template to analyze")
+            {
+                IsRequired = true
+            };
             templateOption.AddAlias("-t");
             analyzeTemplateCommand.AddOption(templateOption);
-
-            // Setup bicep option
-            Option<FileInfo> bicepOption = new Option<FileInfo>(
-                    "--bicep-file-path",
-                    "The bicep file to analyze");
-            bicepOption.AddAlias("-b");
-            analyzeTemplateCommand.AddOption(bicepOption);
 
             // Setup parameter option
             Option<FileInfo> parameterOption = new Option<FileInfo>(
@@ -82,7 +78,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 try
                 {
-                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
+                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(
+                            File.ReadAllText(templateFilePath.FullName), 
+                            parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), 
+                            templateFilePath.FullName);
                     IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                     string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
