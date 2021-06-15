@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.JsonRuleTests
         public void TestRule(TestConfiguration ruleExpectations)
         {
             // Get template to analyze
-            var testTemplatePath = @$"TestTemplates\{ruleExpectations.Template}.badtemplate";
+            var testTemplatePath = Path.Combine("TestTemplates", $"{ruleExpectations.Template}.badtemplate");
             var testTemplate = File.ReadAllText(testTemplatePath);
 
             // If not already analyzed, analyze it and store evaluations
