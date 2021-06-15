@@ -39,6 +39,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.PowerShellRuleEngi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.PowerShellRuleEngine.UnitTests", "Analyzer.PowerShellRuleEngine.UnitTests\Analyzer.PowerShellRuleEngine.UnitTests.csproj", "{D6664E6D-827C-49BE-AD94-49977605E780}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.BicepProcessor", "Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj", "{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{D6664E6D-827C-49BE-AD94-49977605E780}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6664E6D-827C-49BE-AD94-49977605E780}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6664E6D-827C-49BE-AD94-49977605E780}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
