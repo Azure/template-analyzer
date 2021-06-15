@@ -350,7 +350,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                         ""apiVersion"": ""2019-04-01"",
                         ""name"": ""embeddedChildVnet"",
                         ""location"": ""westus"",
-                        ""properties"": { }
+                        ""properties"": { },
+                        ""resources"": [
+                            {
+                                ""type"": ""Microsoft.Network/virtualNetworks"",
+                                ""apiVersion"": ""2019-04-01"",
+                                ""name"": ""embeddedGrandChildVnet"",
+                                ""location"": ""westus"",
+                                ""properties"": { }
+                            }
+                        ],
                     }
                 ],
                 ""properties"": { }
@@ -371,6 +380,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[2].resources[0]", "resources[0]" },
                 { "resources[3]", "resources[3]" },
                 { "resources[3].resources[0]", "resources[3].resources[0]" },
+                { "resources[3].resources[0].resources[0]", "resources[3].resources[0].resources[0]" },
                 { "resources[3].resources[1]", "resources[0]" }
             };
 

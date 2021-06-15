@@ -314,7 +314,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 if (resource.Resources != null)
                 {
-                    SaveFlattenedResources(resource.Resources, resource.Name.Value, resource.Type.Value);
+                    string resourceNamePrefix = parentName == null ? "" : $"{parentName}/";
+                    string resourceTypePrefix = parentType == null ? "" : $"{parentType}/";
+
+                    SaveFlattenedResources(resource.Resources, $"{resourceNamePrefix}{resource.Name.Value}", $"{resourceTypePrefix}{resource.Type.Value}");
                 }
             }
         }
