@@ -77,7 +77,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
         private static string LoadRules()
         {
-            return System.IO.File.ReadAllText(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/Rules/BuiltInRules.json");
+            return File.ReadAllText(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+                "/Rules/BuiltInRules.json");
         }
     }
 }
