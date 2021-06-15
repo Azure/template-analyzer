@@ -1,0 +1,16 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+    ],
+    "outputs": {
+        "anOutput": {
+            "type": "string",
+            "value": "[ reference( concat('/providers/Microsoft.Authorization/type/name'), '2020-01-01', 'Full').someproperty]"
+        },
+        "anotherOutput": {
+            "type": "string",
+            "value": "[ reference( concat('/providers/Microsoft.Authorization/type/name'), '2020-01-01', 'Full').someproperty]"
+        }
+    }
+}
