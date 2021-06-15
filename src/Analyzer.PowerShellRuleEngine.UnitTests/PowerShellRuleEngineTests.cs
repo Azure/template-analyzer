@@ -54,6 +54,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 else
                 {
                     Assert.IsTrue(evaluation.HasResults);
+                    Assert.IsFalse(evaluation.HasEvaluations);
                     Assert.AreEqual(1, evaluation.Results.Count());
                     Assert.IsFalse(evaluation.Results.First().Passed);
 

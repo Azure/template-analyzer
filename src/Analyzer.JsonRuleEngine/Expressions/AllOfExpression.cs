@@ -43,6 +43,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 foreach (var expression in AllOf)
                 {
                     var evaluation = expression.Evaluate(scope);
+
+                    // Filter out evaluation if it didn't find the scope to evaluate
+                    if (evaluation.NoScopesFound)
+                    {
+                        continue;
+                    }
+
                     evaluationPassed &= evaluation.Passed;
                     jsonRuleEvaluations.Add(evaluation);
                 }

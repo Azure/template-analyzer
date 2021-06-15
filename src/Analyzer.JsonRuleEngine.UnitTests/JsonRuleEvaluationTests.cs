@@ -244,14 +244,74 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     new JsonRuleEvaluation(
                         null,
                         true,
-                        new JsonRuleEvaluation[0]),
+                        Array.Empty<JsonRuleEvaluation>()),
                     new JsonRuleEvaluation(
                         null,
                         true,
-                        new JsonRuleEvaluation[0])
+                        Array.Empty<JsonRuleEvaluation>())
                 });
 
             Assert.IsFalse(evaluationWithNestedResults.HasResults);
+        }
+
+        [TestMethod]
+        public void HasEvaluations_NestedEvaluationsWithEvaluations_ReturnsTrue()
+        {
+            var evaluationWithNestedEvaluations = new JsonRuleEvaluation(
+                null,
+                true,
+                new[]
+                {
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        Array.Empty<JsonRuleResult>())
+                });
+
+            Assert.IsTrue(evaluationWithNestedEvaluations.HasEvaluations);
+        }
+
+        [TestMethod]
+        public void HasEvaluations_EvaluationsWithNoEvaluations_ReturnsFalse()
+        {
+            var evaluationWithNoEvaluations = new JsonRuleEvaluation(
+                null,
+                true,
+                Array.Empty<JsonRuleEvaluation>());
+
+            Assert.IsFalse(evaluationWithNoEvaluations.HasEvaluations);
+        }
+
+        [TestMethod]
+        public void NoScopesFound_EvaluationsWithNoEvaluations_ReturnsTrue()
+        {
+            var evaluationWithNoEvaluations = new JsonRuleEvaluation(
+                null,
+                true,
+                Array.Empty<JsonRuleEvaluation>());
+
+            Assert.IsTrue(evaluationWithNoEvaluations.NoScopesFound);
+        }
+
+        [TestMethod]
+        public void NoScopesFound_NestedEvaluationsWithNoResults_ReturnsFalse()
+        {
+            var evaluationWithNestedResults = new JsonRuleEvaluation(
+                null,
+                true,
+                new[]
+                {
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        Array.Empty<JsonRuleEvaluation>()),
+                    new JsonRuleEvaluation(
+                        null,
+                        true,
+                        Array.Empty<JsonRuleEvaluation>())
+                });
+
+            Assert.IsFalse(evaluationWithNestedResults.NoScopesFound);
         }
 
         [TestMethod]

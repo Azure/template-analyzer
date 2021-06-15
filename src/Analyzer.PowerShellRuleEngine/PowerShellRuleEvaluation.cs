@@ -41,6 +41,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             get => Results.Any();
         }
 
+        /// <inheritdoc/>
+        public bool HasEvaluations
+        {
+            get => Evaluations.Any();
+        }
+
         /// <summary>
         /// Creates an <see cref="PowerShellRuleEvaluation"/> that describes the evaluation of a PowerShell rule against an ARM template.
         /// </summary>

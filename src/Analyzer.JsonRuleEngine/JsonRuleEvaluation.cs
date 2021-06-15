@@ -75,6 +75,26 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
+        /// Whether or not there are any evaluations associated with this <see cref="JsonRuleEvaluation"/>.
+        /// </summary>
+        /// <returns>True if there are any evaluations in this <see cref="JsonRuleEvaluation"/>.
+        /// False otherwise.</returns>
+        public bool HasEvaluations
+        {
+            get => Evaluations.Any();
+        }
+
+        /// <summary>
+        /// Whether or not there are any results or evaluations associated with this <see cref="JsonRuleEvaluation"/>.
+        /// </summary>
+        /// <returns>True if there are no results and no evaluations in this <see cref="JsonRuleEvaluation"/> or a sub-<see cref="JsonRuleEvaluation"/>.
+        /// False otherwise.</returns>
+        public bool NoScopesFound
+        {
+            get => !HasResults && !HasEvaluations;
+        }
+
+        /// <summary>
         /// Gets the collections of results evaluated to true from this evaluation.
         /// </summary>
         public IEnumerable<IResult> ResultsEvaluatedTrue
