@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.Deployments.Core.Collections;
+using Azure.Deployments.Core.Configuration;
+using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Extensions;
 using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
-using Azure.Deployments.Templates.Configuration;
 using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Expressions;
 using Azure.Deployments.Templates.Extensions;
-using Azure.Deployments.Templates.Schema;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions(template, apiVersion);
+                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName: null, subscriptionId: null, resourceGroupName: null, template, apiVersion);
             }
             catch
             {

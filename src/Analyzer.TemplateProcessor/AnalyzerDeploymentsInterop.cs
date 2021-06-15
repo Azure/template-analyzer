@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Globalization;
 using Azure.Deployments.Core.Instrumentation;
 
@@ -12,6 +13,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         {
 
         }
+
+        public int DeploymentNameLengthLimit => throw new NotImplementedException();
 
         public static void Initialize()
             => DeploymentsInterop.Initialize(new AnalyzerDeploymentsInterop());

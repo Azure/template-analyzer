@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     public class TemplateAnalyzer
     {
         private string TemplateFilePath { get; }
-        private string Template { get; }
+        private string Template { get; set; }
         private string Parameters { get; }
         private bool IsBicep { get; }
 
@@ -48,14 +48,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                ArmTemplateProcessor armTemplateProcessor = IsBicep 
-                        ? new BicepTemplateProcessor(Template, TemplateFilePath).ToArmTemplateProcessor()
-                        : new ArmTemplateProcessor(Template);
+                if (IsBicep)
+                {
+                    Template = new BicepTemplateProcessor(Template, TemplateFilePath).ConvertBicepToJson();
+                }
+                ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(Template);
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new TemplateAnalyzerException("Error while processing template.", e);
             }
 

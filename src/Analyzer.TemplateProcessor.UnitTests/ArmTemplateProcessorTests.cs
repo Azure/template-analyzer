@@ -3,10 +3,10 @@
 
 using System;
 using Azure.Deployments.Core.Collections;
+using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Extensions;
 using Azure.Deployments.Core.Json;
 using Azure.Deployments.Templates.Engines;
-using Azure.Deployments.Templates.Schema;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
