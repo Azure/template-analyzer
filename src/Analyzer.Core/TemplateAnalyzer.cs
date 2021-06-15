@@ -44,11 +44,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         public IEnumerable<IEvaluation> EvaluateRulesAgainstTemplate()
         {
             JToken templatejObject;
-            ArmTemplateProcessor armTemplateProcessor;
+            var armTemplateProcessor = new ArmTemplateProcessor(Template);
 
             try
-            {
-                armTemplateProcessor = new ArmTemplateProcessor(Template);
+            {   
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
             }
             catch (Exception e)

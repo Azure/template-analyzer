@@ -79,12 +79,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     return 1;
                 }
 
-                if (string.Equals(resourceWithIndex, originalResourcePath))
+                if (!string.Equals(resourceWithIndex, originalResourcePath))
                 {
-                    return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
+                    return ResolveLineNumber($"{originalResourcePath}.{remainingPathAtResourceScope}");
                 }
-
-                return ResolveLineNumber($"{originalResourcePath}.{remainingPathAtResourceScope}");
             }
 
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;

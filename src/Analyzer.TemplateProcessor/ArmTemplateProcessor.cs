@@ -260,14 +260,14 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             for (int i = 0; i < tokens.Length - 1; i++)
             {
-                string subPath = string.Join('.', tokens[..(i + 1)]);
-                if (originalToExpandedMapping.ContainsKey(subPath))
+                string possibleOriginalPathOfAnotherResource = string.Join('.', tokens[..(i + 1)]);
+                if (originalToExpandedMapping.TryGetValue(possibleOriginalPathOfAnotherResource, out List<string> copiedLocationsOfAnotherResource))
                 {
-                    foreach (string path in originalToExpandedMapping[subPath])
+                    foreach (string copiedLocationOfAnotherResource in copiedLocationsOfAnotherResource)
                     {
-                        if (!path.Equals(subPath, StringComparison.OrdinalIgnoreCase))
+                        if (!copiedLocationOfAnotherResource.Equals(possibleOriginalPathOfAnotherResource, StringComparison.OrdinalIgnoreCase))
                         {
-                            ResourceMappings.TryAdd($"{path}.{string.Join('.', tokens[(i + 1)..])}", originalTemplatePath);
+                            ResourceMappings.TryAdd($"{copiedLocationOfAnotherResource}.{string.Join('.', tokens[(i + 1)..])}", originalTemplatePath);
                         }
                     }
                 }

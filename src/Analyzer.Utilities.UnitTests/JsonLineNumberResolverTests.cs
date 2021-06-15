@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
         [DataRow("resources[6].type", DisplayName = "Extra resource")]
         [DataRow("resources[5].type", DisplayName = "Extra copied resource with missing source copy loop")]
-        public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns0(string path)
+        public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns1(string path)
         {
             Assert.AreEqual(
                 1,
