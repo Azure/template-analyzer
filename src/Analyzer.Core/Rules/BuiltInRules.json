@@ -38,6 +38,30 @@
     }
   },
   {
+    "name": "AppServiceFunctionApp_RequireLatestTls",
+    "description": "Latest TLS version should be used in your Function App",
+    "recommendation": "Upgrade to the latest TLS version",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-function-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+          "path": "kind",
+          "regex": "^functionapp"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.minTlsVersion",
+          "equals": "1.2"
+        },
+        {
+          "path": "properties.siteConfig.minTlsVersion",
+          "equals": "1.2"
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceWebApp_HTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
