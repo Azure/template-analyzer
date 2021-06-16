@@ -10,29 +10,13 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using static Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests.TestUtilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class AnyOfExpressionTests
     {
-        /// <summary>
-        /// A mock implementation of an <see cref="Expression"/> for testing internal methods.
-        /// </summary>
-        private class MockExpression : Expression
-        {
-            public Func<IJsonPathResolver, JsonRuleEvaluation> EvaluationCallback { get; set; }
-
-            public MockExpression(ExpressionCommonProperties commonProperties)
-                : base(commonProperties)
-            { }
-
-            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
-            {
-                return base.EvaluateInternal(jsonScope, EvaluationCallback);
-            }
-        }
-
         [DataTestMethod]
         [DataRow(true, true, DisplayName = "AnyOf evaluates to true (true || true)")]
         [DataRow(true, false, DisplayName = "AnyOf evaluates to true (true || false)")]
