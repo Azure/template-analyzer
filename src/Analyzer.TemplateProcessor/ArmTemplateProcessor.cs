@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // Do not throw if there was an issue with evaluating language expressions
             }
 
-            template.Resources = ReorderResourceCopies(template, copyNameMap);
+            template.Resources = MapResources(template, copyNameMap);
 
             TemplateEngine.ValidateProcessedTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
@@ -159,8 +159,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 CopyResourceDependants(resource, flattenedResources);
 
-                // The resource maps to the original resource
-                if (resource.Copy == null)
+                if (!ResourceMappings.ContainsKey(resource.Path))
                 {
                     AddResourceMapping(resource.Path, resource.Path);
                 }
@@ -392,58 +391,47 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         }
 
         /// <summary>
-        /// Moves the original resource copied into it's original location to preserve references.
+        /// Maps the resources to their original location.
         /// Also, drops resource copies if the flag is set in the constructor.
         /// </summary>
         /// <param name="template">The template</param>
         /// <param name="copyNameMap">Mapping of the copy name, the original name of the resource, and index of resource in resource list.</param>
-        /// <returns>An array of the Template Resources after they have been reordered.</returns>
-        private TemplateResource[] ReorderResourceCopies(Template template, Dictionary<string, (string, int)> copyNameMap)
+        /// <returns>An array of the Template Resources after they have been dropped if needed.</returns>
+        private TemplateResource[] MapResources(Template template, Dictionary<string, (string, int)> copyNameMap)
         {
             // Set OriginalName back on resources that were copied and reorder the resources.
             // Omit extra copies of resources if needed.
-            List<TemplateResource> updatedOrder = new List<TemplateResource>();
+            List<TemplateResource> resources = new List<TemplateResource>();
             for (int i = 0; i < template.Resources.Length; i++)
             {
                 var resource = template.Resources[i];
-                if (resource.Copy == null)
+                if (resource.Copy != null)
                 {
-                    // non-copied resource.  Add to updated array
-                    updatedOrder.Add(resource);
-                }
-                else
-                {
-                    // Copied resource.  Update OriginalName and:
-                    // - if it's the first copy, insert back where it was supposed to be
-                    // - if it's an extra copy, add to the end, or don't add at all if requested
+                    // Copied resource.  Update OriginalName and
+                    // add maping to original resource
                     if (copyNameMap.TryGetValue(resource.Copy.Name.Value, out (string, int) originalValues))
                     {
                         resource.OriginalName = originalValues.Item1;
-                        if (resource.CopyContext.CopyIndex == 0)
-                        {
-                            updatedOrder.Insert(originalValues.Item2, resource);
-                        }
-                        else if (!dropResourceCopies)
-                        {
-                            updatedOrder.Add(resource);
-                            resource.Path = $"resources[{updatedOrder.Count - 1}]";
-                        }
 
-                        if (!dropResourceCopies)
+                        if (!dropResourceCopies || resource.CopyContext.CopyIndex == 0)
                         {
+                            resources.Add(resource);
+                            resource.Path = $"resources[{resources.Count - 1}]";
                             AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
                         }
-                    }
-                    else
-                    {
-                        // Couldn't get original values.  Insert at end as a precaution,
-                        // but this code should never be reached under normal circumstances.
-                        updatedOrder.Add(resource);
+
+                        continue;
                     }
                 }
+                else
+                {
+                    AddResourceMapping($"resources[{resources.Count}]", resource.Path);
+                }
+
+                resources.Add(resource);
             }
             
-            return updatedOrder.ToArray();
+            return resources.ToArray();
         }
 
         /// <summary>
