@@ -3,7 +3,7 @@
     "name": "AppServiceApiApp_HTTPS",
     "description": "API App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#api-app-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#api-app-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -22,7 +22,7 @@
     "name": "AppServiceFunctionApp_HTTPS",
     "description": "Function App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#function-app-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#function-app-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -41,7 +41,7 @@
     "name": "AppServiceWebApp_HTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#web-application-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#web-application-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -68,7 +68,7 @@
     "name": "AppServiceWebApp_RequireLatestTls",
     "description": "Latest TLS version should be used in your Web App",
     "recommendation": "Upgrade to the latest TLS version",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-web-app",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-web-app",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -96,7 +96,7 @@
     "name": "Authorization_RoleDefinition_No_Custom_RBAC",
     "description": "Use built-in roles instead of custom RBAC roles",
     "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
     "evaluation": {
       "resourceType": "Microsoft.Authorization/roleDefinitions",
       "path": "properties.type",
@@ -107,7 +107,7 @@
     "name": "AutomationAccounts_Variables_Encrypted",
     "description": "Automation account variables should be encrypted",
     "recommendation": "Enable encryption of Automation account variable assets when storing sensitive data",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#automation-account-variables-should-be-encrypted",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#automation-account-variables-should-be-encrypted",
     "evaluation": {
       "resourceType": "Microsoft.Automation/automationAccounts/variables",
       "path": "properties.isEncrypted",
@@ -118,7 +118,7 @@
     "name": "Cache_Redis_SSL_Only",
     "description": "Only secure connections to your Azure Cache for Redis should be enabled",
     "recommendation": "Enable connections via SSL only to Redis Cache",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#only-secure-connections-to-your-azure-cache-for-redis-should-be-enabled",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#onlysecureconnectionstoyourazurecacheforredisshouldbeenabled",
     "evaluation": {
       "resourceType": "Microsoft.Cache/redis",
       "path": "properties.enableNonSslPort",
@@ -129,7 +129,7 @@
     "name": "Kubernetes_Must_Restrict_Network_Access",
     "description": "Authorized IP ranges should be defined on Kubernetes Services",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#authorized-ip-ranges-should-be-defined-on-kubernetes-services",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#authorized-ip-ranges-should-be-defined-on-kubernetes-services",
     "evaluation": {
       "resourceType": "Microsoft.ContainerService/managedClusters",
       "anyOf": [
@@ -148,7 +148,7 @@
     "name": "Kubernetes_Must_Use_RBAC",
     "description": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
     "recommendation": "Enable RBAC in Kubernetes clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#role-based-access-control-rbac-should-be-used-on-kubernetes-services",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#role-basedaccesscontrolrbacshouldbeusedonkubernetesservices",
     "evaluation": {
       "resourceType": "Microsoft.ContainerService/managedClusters",
       "allOf": [
@@ -167,7 +167,7 @@
     "name": "ServiceFabric_Client_AAD_Auth_Only",
     "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
     "evaluation": {
       "resourceType": "Microsoft.ServiceFabric/clusters",
       "path": "properties.azureActiveDirectory.tenantId",
