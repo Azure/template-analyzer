@@ -45,14 +45,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 {
                     var evaluation = expression.Evaluate(scope);
 
-                    // Filter out evaluation if it didn't find the scope to evaluate
-                    if (evaluation.NoScopesFound)
+                    // Add evaluations if scopes where found to evaluate
+                    if (evaluation.ScopesFound)
                     {
-                        continue;
+                        evaluationPassed |= evaluation.Passed;
+                        jsonRuleEvaluations.Add(evaluation);
                     }
-
-                    evaluationPassed |= evaluation.Passed;
-                    jsonRuleEvaluations.Add(evaluation);
                 }
 
                 return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);

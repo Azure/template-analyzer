@@ -87,11 +87,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <summary>
         /// Whether or not there are any results or evaluations associated with this <see cref="JsonRuleEvaluation"/>.
         /// </summary>
-        /// <returns>True if there are no results and no evaluations in this <see cref="JsonRuleEvaluation"/> or a sub-<see cref="JsonRuleEvaluation"/>.
+        /// <returns>True if there are results or evaluations in this <see cref="JsonRuleEvaluation"/> or a sub-<see cref="JsonRuleEvaluation"/>.
         /// False otherwise.</returns>
-        public bool NoScopesFound
+        public bool ScopesFound
         {
-            get => !HasResults && !HasEvaluations;
+            get => HasResults || HasEvaluations;
         }
 
         /// <summary>

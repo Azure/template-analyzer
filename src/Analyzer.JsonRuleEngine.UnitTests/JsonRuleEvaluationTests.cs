@@ -283,18 +283,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void NoScopesFound_EvaluationsWithNoEvaluations_ReturnsTrue()
+        public void ScopesFound_EvaluationsWithNoEvaluations_ReturnsFalse()
         {
             var evaluationWithNoEvaluations = new JsonRuleEvaluation(
                 null,
                 true,
                 Array.Empty<JsonRuleEvaluation>());
 
-            Assert.IsTrue(evaluationWithNoEvaluations.NoScopesFound);
+            Assert.IsFalse(evaluationWithNoEvaluations.ScopesFound);
         }
 
         [TestMethod]
-        public void NoScopesFound_NestedEvaluationsWithNoResults_ReturnsFalse()
+        public void ScopesFound_NestedEvaluationsWithNoResults_ReturnsTrue()
         {
             var evaluationWithNestedResults = new JsonRuleEvaluation(
                 null,
@@ -311,7 +311,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         Array.Empty<JsonRuleEvaluation>())
                 });
 
-            Assert.IsFalse(evaluationWithNestedResults.NoScopesFound);
+            Assert.IsTrue(evaluationWithNestedResults.ScopesFound);
         }
 
         [TestMethod]
