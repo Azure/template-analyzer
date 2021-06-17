@@ -334,18 +334,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
 
             Assert.AreEqual(expectedMapping.Count, template.Resources.Length);
-
-            // First resource should be the resource without a copy index specified
-            Assert.AreEqual("resourceWith/NoCopyLoop", template.Resources.First().Name.Value);
-
-            Assert.AreEqual("name/SSH-VMNamePrefix-1", template.Resources[2].Name.Value);
-            Assert.AreEqual("[concat('name', '/', 'SSH-', 'VMNamePrefix-', copyIndex())]", template.Resources[2].OriginalName);
-            Assert.AreEqual(2201, template.Resources[2].Properties.Value.InsensitiveToken("frontendPort").Value<int>());
-
-            Assert.AreEqual("name/CopyLoop2-SSH-VMNamePrefix-1", template.Resources.Last().Name.Value);
-            Assert.AreEqual("[concat('name', '/', 'CopyLoop2-SSH-', 'VMNamePrefix-', copyIndex())]", template.Resources.Last().OriginalName);
-            Assert.AreEqual(2201, template.Resources.Last().Properties.Value.InsensitiveToken("frontendPort").Value<int>());
-
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
