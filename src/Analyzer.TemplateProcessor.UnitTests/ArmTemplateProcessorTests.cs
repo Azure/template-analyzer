@@ -515,6 +515,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""dependsOn"": [ ""someResource"" ],
                 ""properties"": { }
             }", DisplayName = "Child resource depends on resource outside template scope")]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Network/networkInterfaces"",
+                ""apiVersion"": ""2018-10-01"",
+                ""name"": ""simpleLinuxVMNetInt"",
+                ""location"": ""westus"",
+                ""properties"": { }
+            }", DisplayName = "Child resource depends on not specified")]
         public void CopyResourceDependants_ChildDependsOnEmptyOrResourceNotInCurrentTemplate_NoResourcesWereChanged(string templateResource0Json)
         {
             // Arrange
@@ -540,8 +547,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             // Assert
             var actualResourceArray = template.InsensitiveToken("resources");
 
-            string expectedResourceArray = $"[ {templateResource0Json}, {templateResource1Json} ]";
-            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+            JObject expectedResource0 = JObject.Parse(templateResource0Json);
+            JObject expectedResource1 = JObject.Parse(templateResource1Json);
+
+            expectedResource0.AddIfNotExists("dependsOn", new JArray());
+
+            var expectedResourceJArray = new JArray { expectedResource0, expectedResource1 };
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
 
