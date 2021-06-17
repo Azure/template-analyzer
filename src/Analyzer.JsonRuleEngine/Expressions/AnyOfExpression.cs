@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 {
                     var evaluation = expression.Evaluate(scope);
 
-                    // Add evaluations if scopes where found to evaluate
+                    // Add evaluations if scopes were found to evaluate
                     if (evaluation.HasResults)
                     {
                         evaluationPassed |= evaluation.Passed;
