@@ -37,19 +37,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private RootCommand SetupCommandLineAPI()
         {
             // Command line API is setup using https://github.com/dotnet/command-line-api
-            // Create a root command 
+
             rootCommand = new RootCommand();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
-
-            rootCommand.AddCommand(SetupAnalyzeTemplateCommand());
-            
-            return rootCommand;
-        }
-
-        private Command SetupAnalyzeTemplateCommand()
-        {
-            // Setup analyze-template 
-            Command analyzeTemplateCommand = new Command("analyze-template");
 
             Option<FileInfo> templateOption = new Option<FileInfo>(
                     "--template-file-path",
@@ -58,60 +48,59 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 IsRequired = true
             };
             templateOption.AddAlias("-t");
-
-            analyzeTemplateCommand.AddOption(templateOption);
+            rootCommand.AddOption(templateOption);
 
             Option<FileInfo> parameterOption = new Option<FileInfo>(
                  "--parameters-file-path",
                  "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
+            rootCommand.AddOption(parameterOption);
 
-            analyzeTemplateCommand.AddOption(parameterOption);
+            rootCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) => this.RootCommandHandler(templateFilePath, parametersFilePath));
 
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) =>
+            return rootCommand;
+        }
+
+        private void RootCommandHandler(FileInfo templateFilePath, FileInfo parametersFilePath)
+        {
+            try
             {
-                try
+                var templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
+                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+
+                string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
+                if (parametersFilePath != null)
                 {
-                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
-                    IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
-
-                    string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
-                    if (parametersFilePath != null)
-                    {
-                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
-                    }
-
-                    Console.WriteLine(fileMetadata);
-
-                    var passedEvaluations = 0;
-
-                    foreach (var evaluation in evaluations)
-                    {
-                        string resultString = GenerateResultString(evaluation);
-                        
-                        if (!evaluation.Passed)
-                        {
-                            var output = $"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}" +
-                            $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
-                            $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
-                            Console.WriteLine(output);
-                        }
-                        else
-                        {
-                            passedEvaluations++;
-                        }
-                    }
-
-                    Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
-                }
-                catch (Exception exp)
-                {
-                    Console.WriteLine($"An exception occured: {exp.Message}");
+                    fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
                 }
 
-            });
+                Console.WriteLine(fileMetadata);
 
-            return analyzeTemplateCommand;
+                var passedEvaluations = 0;
+
+                foreach (var evaluation in evaluations)
+                {
+                    string resultString = GenerateResultString(evaluation);
+
+                    if (!evaluation.Passed)
+                    {
+                        var output = $"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}" +
+                        $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
+                        $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
+                        Console.WriteLine(output);
+                    }
+                    else
+                    {
+                        passedEvaluations++;
+                    }
+                }
+
+                Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine($"An exception occured: {exp.Message}");
+            }
         }
 
         private string GenerateResultString(Types.IEvaluation evaluation)
