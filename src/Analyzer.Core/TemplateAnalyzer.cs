@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             var armTemplateProcessor = new ArmTemplateProcessor(Template);
 
             try
-            {   
+            {
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
             }
             catch (Exception e)

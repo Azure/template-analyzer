@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // Do not throw if there was an issue with evaluating language expressions
             }
 
-            MapResources(template, copyNameMap);
+            MapTopLevelResources(template, copyNameMap);
 
             TemplateEngine.ValidateProcessedTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
@@ -392,17 +392,17 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="template">The template</param>
         /// <param name="copyNameMap">Mapping of the copy name, the original name of the resource, and index of resource in resource list.</param>
-        private void MapResources(Template template, Dictionary<string, (string, int)> copyNameMap)
+        private void MapTopLevelResources(Template template, Dictionary<string, (string, int)> copyNameMap)
         {
-            // Set OriginalName back on resources that were copied and map them
-            // to their original resource
+            // Set OriginalName back on resources that were copied
+            // and map them to their original resource
             for (int i = 0; i < template.Resources.Length; i++)
             {
                 var resource = template.Resources[i];
                 if (resource.Copy != null)
                 {
                     // Copied resource.  Update OriginalName and
-                    // add maping to original resource
+                    // add mapping to original resource
                     if (copyNameMap.TryGetValue(resource.Copy.Name.Value, out (string, int) originalValues))
                     {
                         resource.OriginalName = originalValues.Item1;
@@ -413,10 +413,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         continue;
                     }
                 }
-                else
-                {
-                    AddResourceMapping($"resources[{i}]", resource.Path);
-                }
+                    
+                AddResourceMapping($"resources[{i}]", resource.Path);
             }
             
             return;
