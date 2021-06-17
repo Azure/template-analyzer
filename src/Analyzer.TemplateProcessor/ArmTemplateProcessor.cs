@@ -399,25 +399,20 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             for (int i = 0; i < template.Resources.Length; i++)
             {
                 var resource = template.Resources[i];
-                if (resource.Copy != null)
+                if (resource.Copy != null && copyNameMap.TryGetValue(resource.Copy.Name.Value, out (string, int) originalValues))
                 {
                     // Copied resource.  Update OriginalName and
                     // add mapping to original resource
-                    if (copyNameMap.TryGetValue(resource.Copy.Name.Value, out (string, int) originalValues))
-                    {
-                        resource.OriginalName = originalValues.Item1;
+                    resource.OriginalName = originalValues.Item1;
 
-                        resource.Path = $"resources[{i}]";
-                        AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
+                    resource.Path = $"resources[{i}]";
+                    AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
 
-                        continue;
-                    }
+                    continue;
                 }
                     
                 AddResourceMapping($"resources[{i}]", resource.Path);
             }
-            
-            return;
         }
 
         /// <summary>
