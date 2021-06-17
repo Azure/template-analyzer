@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         },
                         ""copy"": {
                             ""name"": ""copyLoop"",
-                            ""count"": 3
+                            ""count"": 2
                         },
                         ""anExpandedProperty"": ""anExpandedValue""
                     },
@@ -171,41 +171,35 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         },
                         ""copy"": {
                             ""name"": ""copyLoop"",
-                            ""count"": 3
+                            ""count"": 2
                         }
                     },
                     {
                         ""type"": ""Microsoft.ResourceProvider/badResource"",
                         ""copy"": {
                             ""name"": ""missingSourceCopyInOriginal"",
-                            ""count"": 3
+                            ""count"": 2
                         }
                     },
                     {
                         ""type"": ""Microsoft.ResourceProvider/ExtraResourceInExpandedTemplate"",
-                    },
-                    {
-                        ""name"": ""resource7""
-                    },
-                    {
-                        ""name"": ""resource8""
-                    },
-                    {
-                        ""name"": ""resource9""
-                    },
-                    {
-                        ""type"": ""Microsoft.ResourceProvider/resource0"",
-                        ""properties"": {
-                            ""somePath"": ""someValue"",
-                            ""anotherProperty"": true
-                        },
-                        ""copy"": {
-                            ""name"": ""copyLoop"",
-                            ""count"": 3
-                        }
                     }
                 ]
-            }")
+            }"),
+
+            ResourceMappings = new Dictionary<string, string>
+            {
+                { "resources[0]", "resources[0]" },
+                { "resources[1]", "resources[1]" },
+                { "resources[1].resources[0]", "resources[2]" },
+                { "resources[1].resources[0].resources[0]", "resources[2].resources[0]" },
+                { "resources[1].resources[0].resources[1]", "resources[3]" },
+                { "resources[2]", "resources[2]" },
+                { "resources[2].resources[0]", "resources[2].resources[0]" },
+                { "resources[2].resources[1]", "resources[3]" },
+                { "resources[3]", "resources[3]" },
+                { "resources[4]", "resources[0]" }
+            }
         };
 
         #endregion
@@ -226,8 +220,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             new object[] { "resources[1].resources[0].resources[1].properties.somePath", new object[] { "resources", 3, "properties", "somePath" }, "Path goes to a resource that's been copied into another resource as a grandchild" },
             new object[] { "resources[1].resources[0].resources[0].properties.somePath", new object[] { "resources", 2, "resources", 0, "properties", "somePath" }, "Path goes to a resource that's been copied but was still originally a child resource" },
             new object[] { "resources[1].resources[0].dependsOn[1]", new object[] { "resources", 2, "dependsOn" }, "Path goes to a property not specified in original template in a copied resource that is also an array" },
-            new object[] { "resources[2].dependsOn[1]", new object[] { "resources", 2, "dependsOn" }, "Path goes to a property not specified in original template in a non-copied resource that is also an array" },
-            new object[] { "resources[10].properties.somePath", new object[] { "resources", 0, "properties", "somePath" }, "Path is in a copied resource where copied index digit length is greater than original resource" }
+            new object[] { "resources[2].dependsOn[1]", new object[] { "resources", 2, "dependsOn" }, "Path goes to a property not specified in original template in a non-copied resource that is also an array" }
         }.AsReadOnly();
 
         // Just returns the element in the last index of the array from TestScenarios
@@ -256,10 +249,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
         [DataRow("resources[6].type", DisplayName = "Extra resource")]
         [DataRow("resources[5].type", DisplayName = "Extra copied resource with missing source copy loop")]
-        public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns0(string path)
+        public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns1(string path)
         {
             Assert.AreEqual(
-                0,
+                1,
                 new JsonLineNumberResolver(templateContext)
                 .ResolveLineNumber(path));
         }
