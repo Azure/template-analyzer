@@ -255,66 +255,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void HasEvaluations_NestedEvaluationsWithEvaluations_ReturnsTrue()
-        {
-            var evaluationWithNestedEvaluations = new JsonRuleEvaluation(
-                null,
-                true,
-                new[]
-                {
-                    new JsonRuleEvaluation(
-                        null,
-                        true,
-                        Array.Empty<JsonRuleResult>())
-                });
-
-            Assert.IsTrue(evaluationWithNestedEvaluations.HasEvaluations);
-        }
-
-        [TestMethod]
-        public void HasEvaluations_EvaluationsWithNoEvaluations_ReturnsFalse()
-        {
-            var evaluationWithNoEvaluations = new JsonRuleEvaluation(
-                null,
-                true,
-                Array.Empty<JsonRuleEvaluation>());
-
-            Assert.IsFalse(evaluationWithNoEvaluations.HasEvaluations);
-        }
-
-        [TestMethod]
-        public void ScopesFound_EvaluationsWithNoEvaluations_ReturnsFalse()
-        {
-            var evaluationWithNoEvaluations = new JsonRuleEvaluation(
-                null,
-                true,
-                Array.Empty<JsonRuleEvaluation>());
-
-            Assert.IsFalse(evaluationWithNoEvaluations.ScopesFound);
-        }
-
-        [TestMethod]
-        public void ScopesFound_NestedEvaluationsWithNoResults_ReturnsTrue()
-        {
-            var evaluationWithNestedResults = new JsonRuleEvaluation(
-                null,
-                true,
-                new[]
-                {
-                    new JsonRuleEvaluation(
-                        null,
-                        true,
-                        Array.Empty<JsonRuleEvaluation>()),
-                    new JsonRuleEvaluation(
-                        null,
-                        true,
-                        Array.Empty<JsonRuleEvaluation>())
-                });
-
-            Assert.IsTrue(evaluationWithNestedResults.ScopesFound);
-        }
-
-        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullResults_ThrowsException()
         {

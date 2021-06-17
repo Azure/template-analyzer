@@ -56,11 +56,5 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         /// <returns>Whether this evaluation has corresponding results</returns>
         public bool HasResults { get; }
-
-        /// <summary>
-        /// Gets wether this evaluation has corresponding evaluations.
-        /// </summary>
-        /// <returns>Whether this evaluation has corresponding evaluations</returns>
-        public bool HasEvaluations { get; }
     }
 }
