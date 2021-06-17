@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
             this.TemplateFilePath = templateFilePath;
-            this.IsBicep = templateFilePath.ToLower().EndsWith(".bicep");
+            this.IsBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep");
         }
 
         /// <summary>
