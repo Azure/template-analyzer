@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
     {
         private readonly string armTemplate;
         private readonly string apiVersion;
-        private readonly bool dropResourceCopies;
         private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
         private Dictionary<string, TemplateResource> flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
 
@@ -44,12 +43,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="armTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
-        /// <param name="dropResourceCopies">Whether copies of resources (when using the copy element in the ARM Template) should be dropped after processing.</param>
-        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", bool dropResourceCopies = false)
+        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01")
         {
             this.armTemplate = armTemplate;
             this.apiVersion = apiVersion;
-            this.dropResourceCopies = dropResourceCopies;
 
             AnalyzerDeploymentsInterop.Initialize();
         }
@@ -131,7 +128,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // Do not throw if there was an issue with evaluating language expressions
             }
 
-            template.Resources = MapResources(template, copyNameMap);
+            MapResources(template, copyNameMap);
 
             TemplateEngine.ValidateProcessedTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
@@ -392,16 +389,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
         /// <summary>
         /// Maps the resources to their original location.
-        /// Also, drops resource copies if the flag is set in the constructor.
         /// </summary>
         /// <param name="template">The template</param>
         /// <param name="copyNameMap">Mapping of the copy name, the original name of the resource, and index of resource in resource list.</param>
-        /// <returns>An array of the Template Resources after they have been dropped if needed.</returns>
-        private TemplateResource[] MapResources(Template template, Dictionary<string, (string, int)> copyNameMap)
+        private void MapResources(Template template, Dictionary<string, (string, int)> copyNameMap)
         {
-            // Set OriginalName back on resources that were copied and reorder the resources.
-            // Omit extra copies of resources if needed.
-            List<TemplateResource> resources = new List<TemplateResource>();
+            // Set OriginalName back on resources that were copied and map them
+            // to their original resource
             for (int i = 0; i < template.Resources.Length; i++)
             {
                 var resource = template.Resources[i];
@@ -413,25 +407,19 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     {
                         resource.OriginalName = originalValues.Item1;
 
-                        if (!dropResourceCopies || resource.CopyContext.CopyIndex == 0)
-                        {
-                            resources.Add(resource);
-                            resource.Path = $"resources[{resources.Count - 1}]";
-                            AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
-                        }
+                        resource.Path = $"resources[{i}]";
+                        AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
 
                         continue;
                     }
                 }
                 else
                 {
-                    AddResourceMapping($"resources[{resources.Count}]", resource.Path);
+                    AddResourceMapping($"resources[{i}]", resource.Path);
                 }
-
-                resources.Add(resource);
             }
             
-            return resources.ToArray();
+            return;
         }
 
         /// <summary>
