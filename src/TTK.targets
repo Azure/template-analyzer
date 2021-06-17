@@ -5,4 +5,8 @@
     <Exec Command="Xcopy /E /I ..\Analyzer.PowerShellRuleEngine\bin\$(Configuration)\net5.0\TTK $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
   </Target>
 
+  <Target Name="CleanTTK" AfterTargets="Clean">
+    <RemoveDir Directories="$(OutputPath)\TTK" />
+  </Target>
+
 </Project>

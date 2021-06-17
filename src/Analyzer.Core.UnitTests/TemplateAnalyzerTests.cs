@@ -3,14 +3,32 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 {
     [TestClass]
     public class TemplateAnalyzerTests
     {
+        [AssemblyInitialize]
+        public static void AssemblyInitialize(TestContext context)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var powerShell = Powershell.Create();
+
+                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
+                    .AddParameter("ExecutionPolicy", "Unrestricted");
+
+                powerShell.Invoke();
+            }
+        }
+
         [DataTestMethod]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "1 matching Resource with 1 passing evaluation")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "1 matching Resource with 1 failing evaluation")]

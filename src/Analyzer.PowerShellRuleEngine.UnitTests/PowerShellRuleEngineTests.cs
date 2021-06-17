@@ -1,16 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTests
 {
     [TestClass]
     public class PowerShellRuleEngineTests
     {
-        private readonly string TemplatesFolder = @"..\..\..\templates\";
+        private readonly string templatesFolder = @"templates\";
+
+        [AssemblyInitialize]
+        public static void AssemblyInitialize(TestContext context)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var powerShell = Powershell.Create();
+
+                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
+                    .AddParameter("ExecutionPolicy", "Unrestricted");
+
+                powerShell.Invoke();
+            }
+        }
 
         [DataTestMethod]
         [DataRow("success.json", 0, new int[] { }, DisplayName = "Base template")]
@@ -20,9 +38,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow("repeated_error_same_message_same_lines.json", 1, new int[] { 0 }, DisplayName = "Template with an error found in multiple places, reported with the same message and line number for each")]
         public void EvaluateRules_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
-            var templateFilePath = TemplatesFolder + templateFileName;
+            var templateFilePath = templatesFolder + templateFileName;
+            var powerShellRuleEngine = new PowerShellRuleEngine();
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
 
             var failedEvaluations = new List<PowerShellRuleEvaluation>();
 
@@ -55,9 +74,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
         {
-            var templateFilePath = TemplatesFolder + "repeated_error_same_message_different_lines.json";
+            var templateFilePath = templatesFolder + "repeated_error_same_message_different_lines.json";
+            var powerShellRuleEngine = new PowerShellRuleEngine();
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
 
             Assert.AreEqual(1, evaluations.Count());
             Assert.IsFalse(evaluations.First().Passed);
@@ -76,9 +96,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [TestMethod]
         public void EvaluateRules_RepeatedErrorDifferentMessage_ReturnsExpectedEvaluations()
         {
-            var templateFilePath = TemplatesFolder + "repeated_error_different_message.json";
+            var templateFilePath = templatesFolder + "repeated_error_different_message.json";
+            var powerShellRuleEngine = new PowerShellRuleEngine();
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
 
             var evaluationsList = evaluations.ToList();
 
@@ -102,16 +123,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         {
             var TTKFolderName = "TTK";
             var wrongTTKFolderName = TTKFolderName + "2";
-            var templateFilePath = TemplatesFolder + "error_without_line_number.json";
+            var templateFilePath = templatesFolder + "error_without_line_number.json";
 
             System.IO.Directory.Move(TTKFolderName, wrongTTKFolderName);
 
-            var evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var powerShellRuleEngineWrongPath = new PowerShellRuleEngine();
+            var evaluations = powerShellRuleEngineWrongPath.EvaluateRules(templateFilePath);
             Assert.AreEqual(0, evaluations.Count());
 
             System.IO.Directory.Move(wrongTTKFolderName, TTKFolderName);
 
-            evaluations = PowerShellRuleEngine.EvaluateRules(templateFilePath);
+            var powerShellRuleEngine = new PowerShellRuleEngine();
+            evaluations = powerShellRuleEngine.EvaluateRules(templateFilePath);
             Assert.AreEqual(1, evaluations.Count());
         }
     }

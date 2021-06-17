@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Azure.Templates.Analyzer.Types;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.Azure.Templates.Analyzer.Types;
+
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -17,33 +20,40 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine
     {
         /// <summary>
+        /// Execution environment for PowerShell
+        /// </summary>
+        private readonly Powershell powerShell;
+
+        /// <summary>
+        /// Regex that matches a string like: " on line: aNumber"
+        /// </summary>
+        private readonly Regex lineNumberRegex = new(@"\son\sline:\s\d+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Creates a new instance of a PowerShellRuleEngine
+        /// </summary>
+        public PowerShellRuleEngine()
+        {
+            this.powerShell = Powershell.Create();
+
+            powerShell.Commands.AddCommand("Import-Module")
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
+            powerShell.AddStatement();
+
+            powerShell.Invoke();
+        }
+
+        /// <summary>
         /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
         /// </summary>
         /// <param name="templateFilePath">The file path of the template under analysis.</param>
-        public static IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
+        public IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
         {
-            var powerShell = System.Management.Automation.PowerShell.Create();
-
-            powerShell.Streams.Error.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Error[e.Index], ConsoleColor.Red);
-            powerShell.Streams.Warning.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Warning[e.Index], ConsoleColor.Yellow);
-            powerShell.Streams.Information.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Information[e.Index]);
-            powerShell.Streams.Verbose.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Verbose[e.Index]);
-            powerShell.Streams.Debug.DataAdded += (sender, e) => HandleDataAddedInStreams(powerShell.Streams.Debug[e.Index]);
-
-            powerShell.Commands.AddCommand("Set-ExecutionPolicy")
-                .AddParameter("Scope", "Process") // Affects only the current PowerShell session
-                .AddParameter("ExecutionPolicy", "Unrestricted");
-            powerShell.AddStatement();
-
-            powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", @".\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
-            powerShell.AddStatement();
-
-            powerShell.Commands.AddCommand("Test-AzTemplate")
+            this.powerShell.Commands.AddCommand("Test-AzTemplate")
                 .AddParameter("Test", "deploymentTemplate")
                 .AddParameter("TemplatePath", templateFilePath);
 
-            var executionResults = powerShell.Invoke();
+            var executionResults = this.powerShell.Invoke();
 
             var evaluations = new List<PowerShellRuleEvaluation>();
 
@@ -66,18 +76,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     var evaluationResults = new List<PowerShellRuleResult>();
                     foreach (int lineNumber in uniqueError.Value)
                     {
-                        var evaluationResult = new PowerShellRuleResult(false, lineNumber);
-                        evaluationResults.Add(evaluationResult);
+                        evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    var evaluation = new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults);
-                    evaluations.Add(evaluation);
+                    evaluations.Add(new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults));
                 }
             }
 
             return evaluations;
         }
 
-        private static void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
+        private void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
         {
             var lineNumber = 0;
 
@@ -91,7 +99,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 }
             }
 
-            var lineNumberRegex = new Regex(@"\son\sline:\s\d+");
             var errorMessage = lineNumberRegex.Replace(error.ToString(), string.Empty); 
 
             if (!uniqueErrors.TryAdd(errorMessage, new SortedSet<int> { lineNumber }))
@@ -99,17 +106,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // errorMessage was already added to the dictionary
                 uniqueErrors[errorMessage].Add(lineNumber);
             }
-        }
-
-        static void HandleDataAddedInStreams(object newData, ConsoleColor? color = null)
-        {
-            if (color.HasValue) {
-                Console.ForegroundColor = color.Value;
-            }
-
-            Console.WriteLine(newData);
-
-            Console.ResetColor();
         }
     }
 }

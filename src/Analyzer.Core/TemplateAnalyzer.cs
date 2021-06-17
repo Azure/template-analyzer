@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
@@ -29,7 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param> TODO improve TemplateAnalyzer interface
+        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param>
         public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null)
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
@@ -79,7 +81,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                 if (TemplateFilePath != null)
                 {
-                    evaluations = evaluations.Concat(PowerShellRuleEngine.EvaluateRules(TemplateFilePath));
+                    var powerShellRuleEngine = new PowerShellRuleEngine();
+                    evaluations = evaluations.Concat(powerShellRuleEngine.EvaluateRules(TemplateFilePath));
                 }
 
                 return evaluations;
@@ -92,7 +95,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
         private static string LoadRules()
         {
-            return System.IO.File.ReadAllText("Rules/BuiltInRules.json");
+            return File.ReadAllText(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+                "/Rules/BuiltInRules.json");
         }
     }
 }

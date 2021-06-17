@@ -1,16 +1,5 @@
 # Best Practice Related Rules
-## Ensure all Virtual Machines are not using preview images
-Virtual machines should not use preview versions of images.
-
-**Recommendation**: To use a non-preview image for virtual machines, in the [Microsoft.Compute/VirtualMachines/imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
-
-## Ensure all Virtual Machine Scale Set instances are not using preview images
-Virtual machine scale set instances should not use preview versions of images.
-
-**Recommendation**: To use a non-preview image for virtual machine scale set instances, in the [Microsoft.Compute/VirtualMachineScaleSets/storageProfile.imageReference resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachinescalesets?tabs=json#ImageReference), ensure the *version* property does not contain "-preview".
-
-## Azure Resource Manager Template Toolkit' rules
-More information about the rules covered by our integration with [arm-ttk](https://github.com/Azure/arm-ttk) can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
+More information about the rules covered by our integration with [Azure Resource Manager Template Toolkit](https://github.com/Azure/arm-ttk) can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
 
 #### DeploymentTemplate schema is correct
 #### Parameters must be referenced
