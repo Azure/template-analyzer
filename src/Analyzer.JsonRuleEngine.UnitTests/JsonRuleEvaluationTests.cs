@@ -244,11 +244,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     new JsonRuleEvaluation(
                         null,
                         true,
-                        new JsonRuleEvaluation[0]),
+                        Array.Empty<JsonRuleEvaluation>()),
                     new JsonRuleEvaluation(
                         null,
                         true,
-                        new JsonRuleEvaluation[0])
+                        Array.Empty<JsonRuleEvaluation>())
                 });
 
             Assert.IsFalse(evaluationWithNestedResults.HasResults);
