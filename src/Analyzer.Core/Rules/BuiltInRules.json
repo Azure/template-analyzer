@@ -19,6 +19,30 @@
     }
   },
   {
+    "name": "AppServiceApiApp_RequireLatestTls",
+    "description": "Latest TLS version should be used in your API App",
+    "recommendation": "Upgrade to the latest TLS version",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+          "path": "kind",
+          "regex": "api$"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.minTlsVersion",
+          "equals": "1.2"
+        },
+        {
+          "path": "properties.siteConfig.minTlsVersion",
+          "equals": "1.2"
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceFunctionApp_HTTPS",
     "description": "Function App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
