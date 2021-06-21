@@ -146,8 +146,8 @@ Example:
 }
 ```
 
-#### **Less [[*]](#note)**
-*Type: number (integer, float)*
+#### **Less**
+*Type: number (integer, float, date)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than the value in the template; `false` otherwise.
 
@@ -160,8 +160,8 @@ Example:
 }
 ```
 
-#### **LessOrEquals [[*]](#note)**
-*Type: number (integer, float)*
+#### **LessOrEquals**
+*Type: number (integer, float, date)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than or equal to the value in the template; `false` otherwise.
 
@@ -174,8 +174,8 @@ Example:
 }
 ```
 
-#### **Greater [[*]](#note)**
-*Type: number (integer, float)*
+#### **Greater**
+*Type: number (integer, float, date)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than the value in the template; `false` otherwise.
 
@@ -188,8 +188,8 @@ Example:
 }
 ```
 
-#### **GreaterOrEquals [[*]](#note)**
-*Type: number (integer, float)*
+#### **GreaterOrEquals**
+*Type: number (integer, float, date)*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than or equal to the value in the template; `false` otherwise.
 
