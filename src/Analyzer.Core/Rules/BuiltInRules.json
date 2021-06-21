@@ -145,6 +145,37 @@
     }
   },
   {
+    "name": "AppServiceWebApp_UseManagedIdentity",
+    "description": "Managed identity should be used in your Web App",
+    "recommendation": "Use a managed identity for enhanced authentication security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-web-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "path": "identity.type",
+          "equals": "UserAssigned"
+        },
+        {
+          "path": "identity.type",
+          "equals": "SystemAssigned"
+        }
+      ]
+    }
+  },
+  {
     "name": "AppService_EnableDiagLogs",
     "description": "Diagnostic logs in App Services should be enabled",
     "recommendation": "Enable diagnostic Logs in App Services",
