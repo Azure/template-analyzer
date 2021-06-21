@@ -10,6 +10,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using static Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests.TestUtilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
@@ -94,6 +95,72 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 Assert.AreEqual(0, evaluation.Evaluations.Count());
                 Assert.AreEqual(1, evaluation.Results.Count());
             }
+        }
+
+        [TestMethod]
+        public void Evaluate_SubResourceScopeNotFound_ExpectedResultIsReturned()
+        {
+            // Arrange
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
+                .Setup(r => r.Resolve(It.IsAny<string>()))
+                .Returns(() => new[] { mockJsonPathResolver.Object });
+            mockJsonPathResolver
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
+                .Returns(() => new[] { mockJsonPathResolver.Object });
+
+            // Create a mock expression for the Where condition.
+            // It will return an Evaluation that has no results, but Passed is true.
+            var whereExpression = new MockExpression(new ExpressionCommonProperties())
+            {
+                // This will only be executed if this where condition is evaluated.
+                EvaluationCallback = pathResolver =>
+                {
+                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                }
+            };
+
+            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
+
+            // This AnyOf will have 2 expressions
+            // A top level mocked expression that contains a Where condition.
+            var mockLeafExpression1 = new MockExpression(new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path", Where = whereExpression })
+            {
+                // This will only be executed if the expression is evaluated.
+                EvaluationCallback = pathResolver =>
+                {
+                    return null;
+                }
+            };
+            var mockOperator2 = new Mock<LeafExpressionOperator>().Object;
+
+            var mockLeafExpression2 = new Mock<LeafExpression>(mockLineResolver, mockOperator2, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
+
+            var jsonRuleResult2 = new JsonRuleResult
+            {
+                Passed = false
+            };
+
+            var results2 = new JsonRuleResult[] { jsonRuleResult2 };
+
+            mockLeafExpression2
+                .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
+                .Returns(new JsonRuleEvaluation(mockLeafExpression2.Object, false, results2));
+
+            var expressionArray = new Expression[] { mockLeafExpression1, mockLeafExpression2.Object };
+
+            var allOfExpression = new AllOfExpression(expressionArray, new ExpressionCommonProperties());
+
+            // Act
+            var allOfEvaluation = allOfExpression.Evaluate(mockJsonPathResolver.Object);
+
+            // Assert
+            Assert.AreEqual(false, allOfEvaluation.Passed);
+            Assert.AreEqual(1, allOfEvaluation.Evaluations.Count());
+            Assert.IsTrue(allOfEvaluation.HasResults);
+
+            Assert.AreEqual(0, allOfEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(1, allOfEvaluation.EvaluationsEvaluatedFalse.Count());
         }
 
         [TestMethod]

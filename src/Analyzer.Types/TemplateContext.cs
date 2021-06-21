@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
@@ -29,5 +30,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// Whether this template is the top-level template in a deployment or nested within another template
         /// </summary>
         public bool IsMainTemplate { get; set; }
+
+        /// <summary>
+        /// Mapping between resources in the expanded template to their original resource in 
+        /// the original template. Used to get line numbers.
+        /// The key is the path in the expanded template with value being the path
+        /// in the original template.
+        /// </summary>
+        public Dictionary<string, string> ResourceMappings { get; set; }
     }
 }
