@@ -132,6 +132,38 @@
     }
   },
   {
+    "name": "AppServiceWebApp_FTPS",
+    "description": "FTPS only should be required in your Web App",
+    "recommendation": "Enable FTPS enforcement for enhanced security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-web-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        },
+        {
+          "path": "properties.siteConfig.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceWebApp_HTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
