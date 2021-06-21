@@ -86,6 +86,29 @@
     }
   },
   {
+    "name": "AppServiceFunctionApp_UseManagedIdentity",
+    "description": "Managed identity should be used in your Function App",
+    "recommendation": "Use a managed identity for enhanced authentication security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-function-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "anyOf": [
+        {
+          "path": "identity.type",
+          "equals": "UserAssigned"
+        },
+        {
+          "path": "identity.type",
+          "equals": "SystemAssigned"
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceWebApp_HTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
