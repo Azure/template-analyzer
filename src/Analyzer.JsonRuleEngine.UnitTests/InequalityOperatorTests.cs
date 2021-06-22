@@ -18,12 +18,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException), "Cannot compare against a string using an InequalityOperator")]
         public void Constructor_InvalidSpecifiedValueType_ThrowsException()
         {
             var specifiedValueToken = TestUtilities.ToJToken("aString");
 
-            new InequalityOperator(specifiedValueToken, true, true);
+            ValidateInvalidOperationException(() => { new InequalityOperator(specifiedValueToken, true, true); }, "Cannot compare against a String using an InequalityOperator");
         }
 
         [TestMethod]
@@ -96,7 +95,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException), "Cannot compare against a string using an InequalityOperator")]
         public void EvaluateExpression_InvalidTokenToEvaluate_ThrowsException()
         {
             var specifiedValueToken = TestUtilities.ToJToken(100);
@@ -104,27 +102,25 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var inequalityOperator = new InequalityOperator(specifiedValueToken, true, true);
 
-            inequalityOperator.EvaluateExpression(tokenToEvaluate);
+            ValidateInvalidOperationException(() => { inequalityOperator.EvaluateExpression(tokenToEvaluate); }, "Cannot compare against a String using an InequalityOperator");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException), "Cannot compare Date with Integer using an InequalityOperator")]
         public void EvaluateExpression_CompareDateWithNumber_ThrowsException()
         {
             var date = new DateTime(637500672000000000);
             var number = 100;
 
-            CompareObjects(date, number);
+            ValidateInvalidOperationException(() => { CompareObjects(date, number); }, "Cannot compare Date with Integer using an InequalityOperator");
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException), "Cannot compare Integer with Date using an InequalityOperator")]
         public void EvaluateExpression_CompareNumberWithDate_ThrowsException()
         {
             var number = 100;
             var date = new DateTime(637500672000000000);
 
-            CompareObjects(number, date);
+            ValidateInvalidOperationException(() => { CompareObjects(number, date); }, "Cannot compare Integer with Date using an InequalityOperator");
         }
 
         private void CompareObjects(object left, object right, bool isNegative = false, bool orEquals = false, bool evaluationResult = false)
@@ -137,6 +133,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(evaluationResult, inequalityOperator.EvaluateExpression(rightToken));
 
             Assert.AreEqual(false, inequalityOperator.EvaluateExpression(null));
+        }
+        
+        private void ValidateInvalidOperationException(Action funct, string exceptionMessage)
+        {
+            try
+            {
+                funct();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Assert.AreEqual(exceptionMessage, ex.Message);
+
+                return;
+            }
+
+            Assert.IsTrue(false, "TestMethod should have thrown an exception");
         }
     }
 }
