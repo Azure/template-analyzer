@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             double value;
 
-            if (token.Type == JTokenType.Date)
+            if (token.Type == JTokenType.Date) // TODO test and document JSON date format?
             {
                 value = token.Value<DateTime>().ToOADate();
             }
