@@ -89,6 +89,40 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void ToExpression_InequalityOperator_ReturnsLeafExpressionWithInequality()
+        {
+            var operatorValue = 100;
+
+            var leafExpression = GenerateLeafExpression(leaf => leaf.Greater = operatorValue);
+            var leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.IsNegative);
+            Assert.IsFalse(leafOperator.OrEquals);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.Less = operatorValue);
+            leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsTrue(leafOperator.IsNegative);
+            Assert.IsFalse(leafOperator.OrEquals);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.GreaterOrEquals = operatorValue);
+            leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.IsNegative);
+            Assert.IsTrue(leafOperator.OrEquals);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.LessOrEquals = operatorValue);
+            leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsTrue(leafOperator.IsNegative);
+            Assert.IsTrue(leafOperator.OrEquals);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(NotImplementedException))]
         public void ToExpression_NoOperators_ThrowsException()
         {

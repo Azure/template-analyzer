@@ -17,19 +17,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <summary>
         /// Whether the operator also considers equality
         /// </summary>
-        private Boolean andEquals;
+        public Boolean OrEquals;
 
         /// <summary>
         /// Creates an InequalityOperator.
         /// </summary>
         /// <param name="specifiedValue">The value specified in the JSON rule.</param>
         /// <param name="isNegative">Whether the operator compares by greater than or by less than.</param>
-        /// <param name="andEquals">Whether the operator also considers equality.</param>
-        public InequalityOperator(JToken specifiedValue, bool isNegative, bool andEquals)
+        /// <param name="orEquals">Whether the operator also considers equality.</param>
+        public InequalityOperator(JToken specifiedValue, bool isNegative, bool orEquals)
         {
             this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
             this.IsNegative = isNegative;
-            this.andEquals = andEquals;
+            this.OrEquals = orEquals;
         }
 
         /// <summary>
@@ -52,12 +52,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
 
             var result = normalizedSpecifiedValue > normalizedTokenToEvaluate;
 
-            if (this.IsNegative)
+            if (IsNegative)
             {
                 result = !result;
             }
 
-            if (this.andEquals)
+            if (OrEquals)
             {
                 result = result || normalizedSpecifiedValue == normalizedTokenToEvaluate;
 
@@ -83,15 +83,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         }
 
         private string GetName() {
-            if (IsNegative && andEquals)
+            if (IsNegative && OrEquals)
             {
                 return "LessOrEquals";
             }
-            else if (IsNegative && !andEquals)
+            else if (IsNegative && !OrEquals)
             {
                 return "Less";
             }
-            else if (!IsNegative && andEquals)
+            else if (!IsNegative && OrEquals)
             {
                 return "GreaterOrEquals";
             }

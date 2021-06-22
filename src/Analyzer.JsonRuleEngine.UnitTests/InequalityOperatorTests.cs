@@ -40,9 +40,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(1.3, 2.8, true, true, true, DisplayName = "A float is less or equal to another float")]
         [DataRow(2.8, 1.3, true, true, false, DisplayName = "A float is not less or equal to another float")]
         [DataRow(1.3, 1.3, true, true, true, DisplayName = "A float is less or equal to another float because both are equal")]
-        public void EvaluateExpression_ValidNumericType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool isNegative, bool andEquals, bool evaluationResult)
+        public void EvaluateExpression_ValidNumericType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool isNegative, bool orEquals, bool evaluationResult)
         {
-            CompareObjects(leftValue, rightValue, isNegative, andEquals, evaluationResult);
+            CompareObjects(leftValue, rightValue, isNegative, orEquals, evaluationResult);
         }
 
         [DataTestMethod]
@@ -60,30 +60,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(637500672000000000, 637676928000000000, true, true, true, DisplayName = "A date is less or equal to another date")]
         [DataRow(637676928000000000, 637500672000000000, true, true, false, DisplayName = "A date is not less or equal to another date")]
         [DataRow(637500672000000000, 637500672000000000, true, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
-        public void EvaluateExpression_ValidDateType_ReturnsExpectedEvaluationResult(long leftTicks, long rightTicks, bool isNegative, bool andEquals, bool evaluationResult)
+        public void EvaluateExpression_ValidDateType_ReturnsExpectedEvaluationResult(long leftTicks, long rightTicks, bool isNegative, bool orEquals, bool evaluationResult)
         {
             var leftDate = new DateTime(leftTicks);
             var rightDate = new DateTime(rightTicks);
 
-            CompareObjects(leftDate, rightDate, isNegative, andEquals, evaluationResult);
+            CompareObjects(leftDate, rightDate, isNegative, orEquals, evaluationResult);
         }
 
         [TestMethod]
         public void GetName_ReturnsCorrectName()
         {
-            Assert.AreEqual("LessOrEquals", new InequalityOperator(new JObject(), isNegative: true, andEquals: true).Name);
-            Assert.AreEqual("Less", new InequalityOperator(new JObject(), isNegative: true, andEquals: false).Name);
-            Assert.AreEqual("GreaterOrEquals", new InequalityOperator(new JObject(), isNegative: false, andEquals: true).Name);
-            Assert.AreEqual("Greater", new InequalityOperator(new JObject(), isNegative: false, andEquals: false).Name);
+            Assert.AreEqual("LessOrEquals", new InequalityOperator(new JObject(), isNegative: true, orEquals: true).Name);
+            Assert.AreEqual("Less", new InequalityOperator(new JObject(), isNegative: true, orEquals: false).Name);
+            Assert.AreEqual("GreaterOrEquals", new InequalityOperator(new JObject(), isNegative: false, orEquals: true).Name);
+            Assert.AreEqual("Greater", new InequalityOperator(new JObject(), isNegative: false, orEquals: false).Name);
 
         }
 
-        private void CompareObjects(object left, object right, bool isNegative, bool andEquals, bool evaluationResult)
+        private void CompareObjects(object left, object right, bool isNegative, bool orEquals, bool evaluationResult)
         {
             var leftJToken = TestUtilities.ToJToken(left);
             var rightJToken = TestUtilities.ToJToken(right);
 
-            var greaterOperator = new InequalityOperator(leftJToken, isNegative: isNegative, andEquals: andEquals);
+            var greaterOperator = new InequalityOperator(leftJToken, isNegative: isNegative, orEquals: orEquals);
 
             Assert.AreEqual(evaluationResult, greaterOperator.EvaluateExpression(rightJToken));
         }
