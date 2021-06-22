@@ -4,13 +4,40 @@
 using System;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
     public class InequalityOperatorTests
     {
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Constructor_NullSpecifiedValue_ThrowsException()
+        {
+            new InequalityOperator(null, true, true);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException), "Cannot compare against a string using an InequalityOperator")]
+        public void Constructor_InvalidSpecifiedValueType_ThrowsException()
+        {
+            var specifiedValueToken = TestUtilities.ToJToken("aString");
+
+            new InequalityOperator(specifiedValueToken, true, true);
+        }
+
+        [TestMethod]
+        public void GetName_ReturnsCorrectName()
+        {
+            var specifiedValue = TestUtilities.ToJToken(100);
+
+            Assert.AreEqual("LessOrEquals", new InequalityOperator(specifiedValue, isNegative: true, orEquals: true).Name);
+            Assert.AreEqual("Less", new InequalityOperator(specifiedValue, isNegative: true, orEquals: false).Name);
+            Assert.AreEqual("GreaterOrEquals", new InequalityOperator(specifiedValue, isNegative: false, orEquals: true).Name);
+            Assert.AreEqual("Greater", new InequalityOperator(specifiedValue, isNegative: false, orEquals: false).Name);
+
+        }
+
         [DataTestMethod]
         // >int
         [DataRow(2, 1, false, false, true, DisplayName = "An integer is greater than another integer")]
@@ -69,23 +96,47 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void GetName_ReturnsCorrectName()
+        [ExpectedException(typeof(InvalidOperationException), "Cannot compare against a string using an InequalityOperator")]
+        public void EvaluateExpression_InvalidTokenToEvaluate_ThrowsException()
         {
-            Assert.AreEqual("LessOrEquals", new InequalityOperator(new JObject(), isNegative: true, orEquals: true).Name);
-            Assert.AreEqual("Less", new InequalityOperator(new JObject(), isNegative: true, orEquals: false).Name);
-            Assert.AreEqual("GreaterOrEquals", new InequalityOperator(new JObject(), isNegative: false, orEquals: true).Name);
-            Assert.AreEqual("Greater", new InequalityOperator(new JObject(), isNegative: false, orEquals: false).Name);
+            var specifiedValueToken = TestUtilities.ToJToken(100);
+            var tokenToEvaluate = TestUtilities.ToJToken("aString");
 
+            var inequalityOperator = new InequalityOperator(specifiedValueToken, true, true);
+
+            inequalityOperator.EvaluateExpression(tokenToEvaluate);
         }
 
-        private void CompareObjects(object left, object right, bool isNegative, bool orEquals, bool evaluationResult)
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException), "Cannot compare Date with Integer using an InequalityOperator")]
+        public void EvaluateExpression_CompareDateWithNumber_ThrowsException()
         {
-            var leftJToken = TestUtilities.ToJToken(left);
-            var rightJToken = TestUtilities.ToJToken(right);
+            var date = new DateTime(637500672000000000);
+            var number = 100;
 
-            var greaterOperator = new InequalityOperator(leftJToken, isNegative: isNegative, orEquals: orEquals);
+            CompareObjects(date, number);
+        }
 
-            Assert.AreEqual(evaluationResult, greaterOperator.EvaluateExpression(rightJToken));
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException), "Cannot compare Integer with Date using an InequalityOperator")]
+        public void EvaluateExpression_CompareNumberWithDate_ThrowsException()
+        {
+            var number = 100;
+            var date = new DateTime(637500672000000000);
+
+            CompareObjects(number, date);
+        }
+
+        private void CompareObjects(object left, object right, bool isNegative = false, bool orEquals = false, bool evaluationResult = false)
+        {
+            var leftToken = TestUtilities.ToJToken(left);
+            var rightToken = TestUtilities.ToJToken(right);
+
+            var inequalityOperator = new InequalityOperator(leftToken, isNegative: isNegative, orEquals: orEquals);
+
+            Assert.AreEqual(evaluationResult, inequalityOperator.EvaluateExpression(rightToken));
+
+            Assert.AreEqual(false, inequalityOperator.EvaluateExpression(null));
         }
     }
 }

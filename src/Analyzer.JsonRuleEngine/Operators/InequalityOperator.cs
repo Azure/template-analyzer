@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
@@ -27,7 +28,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <param name="orEquals">Whether the operator also considers equality.</param>
         public InequalityOperator(JToken specifiedValue, bool isNegative, bool orEquals)
         {
-            this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
+            if (specifiedValue == null)
+            {
+                throw new ArgumentNullException(nameof(specifiedValue));
+            }
+            else
+            {
+                ValidateComparisonTerm(specifiedValue);
+            }
+
+            this.SpecifiedValue = specifiedValue;
             this.IsNegative = isNegative;
             this.OrEquals = orEquals;
         }
@@ -45,9 +55,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
                 return false;
             }
 
-            // TODO before this catch wrong types, like float vs date
+            ValidateComparisonTerm(tokenToEvaluate);
 
-            var normalizedSpecifiedValue = GetNormalizedValue(this.SpecifiedValue);
+            // TODO throw this exception earlier?
+            if ((SpecifiedValue.Type == JTokenType.Date && tokenToEvaluate.Type != JTokenType.Date) ||
+                (tokenToEvaluate.Type == JTokenType.Date && SpecifiedValue.Type != JTokenType.Date))
+            {
+                throw new InvalidOperationException($"Cannot compare {SpecifiedValue.Type} with {tokenToEvaluate.Type} using an InequalityOperator");
+            }
+
+            var normalizedSpecifiedValue = GetNormalizedValue(SpecifiedValue);
             var normalizedTokenToEvaluate = GetNormalizedValue(tokenToEvaluate);
 
             var result = normalizedSpecifiedValue > normalizedTokenToEvaluate;
@@ -66,6 +83,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             return result;
         }
 
+        // TODO throw this exception earlier?
+        private void ValidateComparisonTerm(JToken term)
+        {
+            var validTypes = new JTokenType[] { JTokenType.Date, JTokenType.Float, JTokenType.Integer };
+
+            if (!validTypes.Contains(term.Type))
+            {
+                throw new InvalidOperationException($"Cannot compare against a {term.Type} using an InequalityOperator");
+            }
+        }
+
         private double GetNormalizedValue(JToken token)
         {
             double value;
@@ -73,9 +101,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             if (token.Type == JTokenType.Date)
             {
                 value = token.Value<DateTime>().ToOADate();
-            } else
+            }
+            else
             {
-                // TODO catch type errors earlier?
                 value = token.Value<double>();
             }
 
