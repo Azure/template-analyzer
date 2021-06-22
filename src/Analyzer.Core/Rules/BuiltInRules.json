@@ -1,5 +1,29 @@
 [
   {
+    "name": "AppServiceApiApp_FTPS",
+    "description": "FTPS only should be required in your API App",
+    "recommendation": "Enable FTPS enforcement for enhanced security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        },
+        {
+          "path": "properties.siteConfig.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceApiApp_HTTPS",
     "description": "API App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
@@ -116,8 +140,8 @@
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
-          "path": "kind",
-          "regex": "^functionapp"
+        "path": "kind",
+        "regex": "^functionapp"
       },
       "anyOf": [
         {
