@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 return;
             }
 
-            Assert.IsTrue(false, "TestMethod should have thrown an exception");
+            Assert.IsTrue(false, "Test method should have thrown an exception");
         }
     }
 }
