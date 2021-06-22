@@ -1,7 +1,13 @@
 [
     {
         "Template": "AppServices",
-        "ExpectPass": false,
-        "ReportedLines": [ 70, 85 ]
+        "ReportedFailures": [
+            {
+                "LineNumber": 70
+            },
+            {
+                "LineNumber": 85
+            }
+        ]
     }
 ]

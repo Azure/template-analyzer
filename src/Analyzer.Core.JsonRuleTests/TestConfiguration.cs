@@ -12,11 +12,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.JsonRuleTests
         public string Template;
 
         [JsonProperty]
-        public bool ExpectPass;
-
-        [JsonProperty]
-        public int[] ReportedLines;
+        public ExpectedRuleFailure[] ReportedFailures;
 
         public string TestName { get; set; }
+    }
+
+    [JsonObject]
+    public class ExpectedRuleFailure
+    {
+        [JsonProperty]
+        public int LineNumber;
     }
 }

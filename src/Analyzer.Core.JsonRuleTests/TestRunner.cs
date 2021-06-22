@@ -38,31 +38,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.JsonRuleTests
             }
 
             // Find any instances of the rule being tested
-            var thisRuleEvaluations = results.ToList().Where(e => e.RuleName.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).ToList();
+            var thisRuleEvaluation = results.ToList().Where(e => e.RuleName.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
 
-            if (thisRuleEvaluations.Count == 0)
+            // If there are no expected failures, the evaluation should have passed
+            Assert.AreEqual(ruleExpectations.ReportedFailures.Length == 0, thisRuleEvaluation.Passed);
+
+            if (!thisRuleEvaluation.Passed)
             {
-                // Rule should be expected to pass if no results are returned
-                Assert.IsTrue(ruleExpectations.ExpectPass);
-            }
+                // Get all lines reported as failed
+                var failingLines = GetAllResults(thisRuleEvaluation)
+                    .Where(r => !r.Passed)
+                    .Select(r => r.LineNumber).ToHashSet();
 
-            foreach (var evaluation in thisRuleEvaluations)
-            {
-                Assert.AreEqual(ruleExpectations.ExpectPass, evaluation.Passed);
-
-                if (!evaluation.Passed)
-                {
-                    // Get all lines reported as failed
-                    var failingLines = GetAllResults(evaluation)
-                        .Where(r => !r.Passed)
-                        .Select(r => r.LineNumber).ToHashSet();
-
-                    // Verify all expected lines are reported
-                    var expectedLines = ruleExpectations.ReportedLines.ToHashSet();
-                    Assert.IsTrue(failingLines.SetEquals(expectedLines),
-                        "Expected failing lines do not match actual failed lines.  " +
-                        $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]");
-                }
+                // Verify all expected lines are reported
+                var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
+                Assert.IsTrue(failingLines.SetEquals(expectedLines),
+                    "Expected failing lines do not match actual failed lines.  " +
+                    $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]");
             }
         }
 
