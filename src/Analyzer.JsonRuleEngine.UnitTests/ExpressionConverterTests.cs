@@ -42,6 +42,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("equals", "someString", "exists", true, DisplayName = "{\"Equals\": \"someString\"}, Where: {\"Exists\": true}")]
         [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
         [DataRow("regex", "regexPattern", DisplayName = "{\"Regex\": \"regexPattern\"}")]
+        [DataRow("greater", 100, DisplayName = "{\"Greater\": 100}")]
+        [DataRow("less", 100, DisplayName = "{\"Less\": 100}")]
+        [DataRow("greaterOrEquals", 100, DisplayName = "{\"GreaterOrEquals\": 100}")]
+        [DataRow("lessOrEquals", 100, DisplayName = "{\"LessOrEquals\": 100}")]
         [DynamicData(nameof(InOperatorTestScenarios), DynamicDataDisplayName = nameof(GetInOperatorTestDisplayName))]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, params object[] whereCondition)
         {
