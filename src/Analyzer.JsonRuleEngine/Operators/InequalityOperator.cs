@@ -67,12 +67,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             var normalizedSpecifiedValue = GetNormalizedValue(SpecifiedValue);
             var normalizedTokenToEvaluate = GetNormalizedValue(tokenToEvaluate);
 
-            var result = normalizedSpecifiedValue > normalizedTokenToEvaluate;
-
-            if (IsNegative)
-            {
-                result = !result;
-            }
+            var result = IsNegative ? normalizedSpecifiedValue < normalizedTokenToEvaluate : normalizedSpecifiedValue > normalizedTokenToEvaluate;
 
             if (OrEquals)
             {

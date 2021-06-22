@@ -41,9 +41,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         // >int
         [DataRow(2, 1, false, false, true, DisplayName = "An integer is greater than another integer")]
         [DataRow(1, 2, false, false, false, DisplayName = "An integer is not greater than another integer")]
+        [DataRow(1, 1, false, false, false, DisplayName = "An integer is not greater than another integer because both are equal")]
         // <int
         [DataRow(1, 2, true, false, true, DisplayName = "An integer is less than another integer")]
         [DataRow(2, 1, true, false, false, DisplayName = "An integer is not less than another integer")]
+        [DataRow(1, 1, true, false, false, DisplayName = "An integer is not less than another integer because both are equal")]
         // >=int
         [DataRow(2, 1, false, true, true, DisplayName = "An integer is greater or equal to another integer")]
         [DataRow(1, 2, false, true, false, DisplayName = "An integer is not greater or equal to another integer")]
@@ -55,9 +57,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         // >float
         [DataRow(2.8, 1.3, false, false, true, DisplayName = "A float is greater than another float")]
         [DataRow(1.3, 2.8, false, false, false, DisplayName = "A float is not greater than another float")]
+        [DataRow(1.3, 1.3, false, false, false, DisplayName = "A float is not greater than another float because both are equal")]
         // <float
         [DataRow(1.3, 2.8, true, false, true, DisplayName = "A float is less than another float")]
         [DataRow(2.8, 1.3, true, false, false, DisplayName = "A float is not less than another float")]
+        [DataRow(2.8, 2.8, true, false, false, DisplayName = "A float is not less than another float because both are equal")]
         // >=float
         [DataRow(2.8, 1.3, false, true, true, DisplayName = "A float is greater or equal to another float")]
         [DataRow(1.3, 2.8, false, true, false, DisplayName = "A float is not greater or equal to another float")]
@@ -75,9 +79,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         // >date
         [DataRow(637676928000000000, 637500672000000000, false, false, true, DisplayName = "A date is greater than another date")]
         [DataRow(637500672000000000, 637676928000000000, false, false, false, DisplayName = "A date is not greater than another date")]
+        [DataRow(637500672000000000, 637500672000000000, false, false, false, DisplayName = "A date is not greater than another date because both are equal")]
         // <date
         [DataRow(637500672000000000, 637676928000000000, true, false, true, DisplayName = "A date is less than another date")]
         [DataRow(637676928000000000, 637500672000000000, true, false, false, DisplayName = "A date is not less than another date")]
+        [DataRow(637676928000000000, 637676928000000000, true, false, false, DisplayName = "A date is not less than another date because both are equal")]
         // >=date
         [DataRow(637676928000000000, 637500672000000000, false, true, true, DisplayName = "A date is greater or equal to another date")]
         [DataRow(637500672000000000, 637676928000000000, false, true, false, DisplayName = "A date is not greater or equal to another date")]
