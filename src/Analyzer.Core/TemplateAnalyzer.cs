@@ -47,6 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         public IEnumerable<IEvaluation> EvaluateRulesAgainstTemplate()
         {
             JToken templatejObject;
+            ArmTemplateProcessor armTemplateProcessor;
 
             try
             {
@@ -54,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 {
                     Template = new BicepTemplateProcessor(Template, TemplateFilePath).ConvertBicepToJson();
                 }
-                ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(Template);
+                armTemplateProcessor = new ArmTemplateProcessor(Template);
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
             }
             catch (Exception e)
@@ -76,7 +77,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     new TemplateContext {
                         OriginalTemplate = JObject.Parse(Template),
                         ExpandedTemplate = templatejObject,
-                        IsMainTemplate = true },
+                        IsMainTemplate = true,
+                        ResourceMappings = armTemplateProcessor.ResourceMappings },
                     rules);
 
                 if (TemplateFilePath != null)

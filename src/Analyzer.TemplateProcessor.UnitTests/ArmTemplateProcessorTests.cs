@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Extensions;
@@ -18,8 +19,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
     {
         private static ArmTemplateProcessor _armTemplateProcessor;
 
-        [ClassInitialize]
-        public static void ClassInit(TestContext testContext)
+        [TestInitialize]
+        public void TestInit()
         {
             _armTemplateProcessor = new ArmTemplateProcessor(@"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
@@ -181,10 +182,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""outputs"": { }
             }";
 
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" }
+            };
+
             Template template = TemplateEngine.ParseTemplate(templateJson);
             _armTemplateProcessor.ProcessResourcesAndOutputs(template);
 
             Assert.IsTrue(template.Resources.First().Properties.Value.InsensitiveToken("dnsSettings.domainNameLabel").Value<string>().StartsWith("linux-vm-"));
+
+            AssertDictionariesAreEqual(expectedMapping, _armTemplateProcessor.ResourceMappings);
         }
 
         [DataTestMethod]
@@ -192,12 +199,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         [DataRow(@"[concat('output-', uniqueString('uniquestring'))]", "output-", DisplayName = "Has language expression. Returns evaluated expression.")]
         public void ProcessResourcesAndOutputs_ValidTemplateWithReferenceExpressionInOutputs_ProcessOutputValueLanguageExpressions(string outputValue, string expectedValue)
         {
-            string templateJson = GenerateTemplate(outputValue);
+            string templateJson = GenerateTemplateWithOutputs(outputValue);
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string>();
 
             Template template = TemplateEngine.ParseTemplate(templateJson);
             _armTemplateProcessor.ProcessResourcesAndOutputs(template);
 
             Assert.IsTrue(template.Outputs["output0"].Value.Value.ToString().StartsWith(expectedValue));
+
+            AssertDictionariesAreEqual(expectedMapping, _armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -218,9 +229,112 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "tenantId", "00000000-0000-0000-0000-000000000000" }
             };
 
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" }
+            };
+
             Template template = _armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
 
             Assert.IsTrue(template.Resources.First().Properties.Value.InsensitiveToken("dnsSettings.domainNameLabel").Value<string>().StartsWith("linux-vm-"));
+
+            AssertDictionariesAreEqual(expectedMapping, _armTemplateProcessor.ResourceMappings);
+        }
+
+        [TestMethod]
+        public void ParseAndValidateTemplate_ValidTemplateWithTwoCopyLoops_ProcessResourceCopies()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": { },
+                ""variables"": { },
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2016-03-30"",
+                        ""copy"": {
+                            ""count"": 2,
+                            ""name"": ""masterLbLoopNode""
+                        },
+                        ""location"": ""westus2"",
+                        ""name"": ""[concat('name', '/', 'SSH-', 'VMNamePrefix-', copyIndex())]"",
+                        ""properties"": {
+                            ""backendPort"": 22,
+                            ""enableFloatingIP"": false,
+                            ""frontendIPConfiguration"": {
+                                ""id"": ""Microsoft.Network/loadBalancers/loadBalancer/frontendIPConfigurations/config""
+                            },
+                            ""frontendPort"": ""[copyIndex(2200)]"",
+                            ""protocol"": ""Tcp""
+                        },
+                        ""type"": ""Microsoft.Network/loadBalancers/inboundNatRules""
+                    },
+                    {
+                        ""apiVersion"": ""2016-03-30"",
+                        ""location"": ""westus2"",
+                        ""name"": ""resourceWith/NoCopyLoop"",
+                        ""properties"": {
+                            ""backendPort"": 22,
+                            ""enableFloatingIP"": false,
+                            ""frontendIPConfiguration"": {
+                                ""id"": ""Microsoft.Network/loadBalancers/loadBalancer/frontendIPConfigurations/config""
+                            },
+                            ""frontendPort"": ""28"",
+                            ""protocol"": ""Tcp""
+                        },
+                        ""type"": ""Microsoft.Network/loadBalancers/inboundNatRules""
+                    },
+                    {
+                        ""apiVersion"": ""2016-03-30"",
+                        ""copy"": {
+                            ""count"": 2,
+                            ""name"": ""loop2""
+                        },
+                        ""location"": ""westus2"",
+                        ""name"": ""[concat('name', '/', 'CopyLoop2-SSH-', 'VMNamePrefix-', copyIndex())]"",
+                        ""properties"": {
+                            ""backendPort"": 22,
+                            ""enableFloatingIP"": false,
+                            ""frontendIPConfiguration"": {
+                                ""id"": ""Microsoft.Network/loadBalancers/loadBalancer/frontendIPConfigurations/config""
+                            },
+                            ""frontendPort"": ""[copyIndex(2200)]"",
+                            ""protocol"": ""Tcp""
+                        },
+                        ""type"": ""Microsoft.Network/loadBalancers/inboundNatRules""
+                    }
+                ],
+                ""outputs"": {}
+            }";
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            var parameters = new InsensitiveDictionary<JToken>();
+
+            var metadata = new InsensitiveDictionary<JToken>
+            {
+                { "subscription", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
+                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                { "resourceGroup", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
+                    new JProperty("location", "westus2"),
+                    new JProperty("name", "resource-group")) },
+                { "tenantId", "00000000-0000-0000-0000-000000000000" }
+            };
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[1]" },
+                { "resources[1]", "resources[0]" },
+                { "resources[2]", "resources[0]" },
+                { "resources[3]", "resources[2]" },
+                { "resources[4]", "resources[2]" },
+            };
+
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+
+            Assert.AreEqual(expectedMapping.Count, template.Resources.Length);
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -272,6 +386,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "tenantId", "00000000-0000-0000-0000-000000000000" }
             };
 
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
+                { "resources[1]", "resources[0]" }
+            };
+
             Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
 
             Assert.AreEqual(2, template.Resources.Length);
@@ -283,6 +402,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Assert.AreEqual("name/SSH-VMNamePrefix-1", template.Resources.Last().Name.Value);
             Assert.AreEqual("[concat('name', '/', 'SSH-', 'VMNamePrefix-', copyIndex())]", template.Resources.Last().OriginalName);
             Assert.AreEqual(2201, template.Resources.Last().Properties.Value.InsensitiveToken("frontendPort").Value<int>());
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -326,7 +447,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                         ""apiVersion"": ""2019-04-01"",
                         ""name"": ""embeddedChildVnet"",
                         ""location"": ""westus"",
-                        ""properties"": { }
+                        ""properties"": { },
+                        ""resources"": [
+                            {
+                                ""type"": ""Microsoft.Network/virtualNetworks"",
+                                ""apiVersion"": ""2019-04-01"",
+                                ""name"": ""embeddedGrandChildVnet"",
+                                ""location"": ""westus"",
+                                ""properties"": { }
+                            }
+                        ],
                     }
                 ],
                 ""properties"": { }
@@ -338,6 +468,18 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             TemplateResource parentTemplateResource3 = JObject.Parse(parentTemplateResource3Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
 
             Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource1, parentTemplateResource2, parentTemplateResource3 } };
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
+                { "resources[1]", "resources[1]" },
+                { "resources[1].resources[0]", "resources[0]" },
+                { "resources[2]", "resources[2]" },
+                { "resources[2].resources[0]", "resources[0]" },
+                { "resources[3]", "resources[3]" },
+                { "resources[3].resources[0]", "resources[3].resources[0]" },
+                { "resources[3].resources[0].resources[0]", "resources[3].resources[0].resources[0]" },
+                { "resources[3].resources[1]", "resources[0]" }
+            };
 
             // Act
             _armTemplateProcessor.ProcessResourcesAndOutputs(template);
@@ -352,6 +494,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             (expectedResourceJArray[3].InsensitiveToken("resources") as JArray).Add(JObject.Parse(childTemplateResourceJson));
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+
+            AssertDictionariesAreEqual(expectedMapping, _armTemplateProcessor.ResourceMappings);
         }
 
         [DataTestMethod]
@@ -386,24 +530,33 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""apiVersion"": ""2019-02-01"",
                 ""name"": ""SecGroupNet"",
                 ""location"": ""westus"",
-                ""properties"": { }
+                ""properties"": { },
+                ""dependsOn"": [ ]
             }";
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> { { "resources[0]", "resources[0]" }, { "resources[1]", "resources[1]" } };
 
             TemplateResource templateResource0 = JObject.Parse(templateResource0Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
             TemplateResource templateResource1 = JObject.Parse(templateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
 
-            Template template = new Template { Resources = new TemplateResource[] { templateResource0, templateResource1 } };
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { templateResource0, templateResource1 }));
 
             // Act
-            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+            var template = armTemplateProcessor.ProcessTemplate();
 
             // Assert
-            var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
+            var actualResourceArray = template.InsensitiveToken("resources");
 
-            string expectedResourceArray = $"[ {templateResource0Json}, {templateResource1Json} ]";
-            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+            JObject expectedResource0 = JObject.Parse(templateResource0Json);
+            JObject expectedResource1 = JObject.Parse(templateResource1Json);
+
+            expectedResource0.AddIfNotExists("dependsOn", new JArray());
+
+            var expectedResourceJArray = new JArray { expectedResource0, expectedResource1 };
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -428,23 +581,32 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                   ""location"": ""westus"",
                   ""kind"": ""functionapp"",
                   ""properties"": { },
+                  ""dependsOn"": [ ],
                   ""resources"": [
                     {
                       ""apiVersion"": ""2015-08-01"",
                       ""name"": ""web"",
                       ""type"": ""sourcecontrols"",
-                      ""properties"": { }
+                      ""properties"": { },
+                      ""dependsOn"": [ ],
                     }
                   ]
                 }";
 
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
+                { "resources[1]", "resources[1]" },
+                { "resources[1].resources[0]", "resources[1].resources[0]" },
+                { "resources[1].resources[0].resources[0]", "resources[0]" }
+            };
+
             TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
             TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
 
-            Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource } };
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { childTemplateResource, parentTemplateResource }));
 
             // Act
-            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+            var template = armTemplateProcessor.ProcessTemplate();
 
             // Assert
             string expectedResourceArray = $@"[ {childTemplateResourceJson}, {parentTemplateResourceJson} ]";
@@ -454,6 +616,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -465,7 +629,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""apiVersion"": ""2019-02-01"",
                 ""name"": ""SecGroupNet"",
                 ""location"": ""westus"",
-                ""properties"": { }
+                ""properties"": { },
+                ""dependsOn"": [ ]
             }";
 
             string childTemplateResourceJson = @"{
@@ -490,14 +655,23 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""properties"": { }
             }";
 
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> { 
+                { "resources[0]", "resources[0]" }, 
+                { "resources[0].resources[0]", "resources[1]" },
+                { "resources[0].resources[0].resources[0]", "resources[2]" },
+                { "resources[1]", "resources[1]" },
+                { "resources[1].resources[0]", "resources[2]" },
+                { "resources[2]", "resources[2]" }
+            };
+
             TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
             TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
             TemplateResource grandchildTemplateResource = JObject.Parse(grandchildTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
 
-            Template template = new Template { Resources = new TemplateResource[] { parentTemplateResource, childTemplateResource, grandchildTemplateResource } };
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { parentTemplateResource, childTemplateResource, grandchildTemplateResource }));
 
             // Act
-            _armTemplateProcessor.ProcessResourcesAndOutputs(template);
+            var template = armTemplateProcessor.ProcessTemplate();
 
             // Assert
             var actualResourcesArray = template.ToJToken().InsensitiveToken("resources");
@@ -511,9 +685,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             (expectedResourceJArray[1] as JObject).Add("resources", new JArray { JObject.Parse(grandchildTemplateResourceJson) });
 
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourcesArray));
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
-        private string GenerateTemplate(string outputValue)
+        private string GenerateTemplateWithOutputs(string outputValue)
         {
             return string.Format(@"{{
             ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
@@ -528,6 +704,42 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                     }}
                 }}
             }}", outputValue);
+        }
+
+        private string GenerateTemplateWithResources(TemplateResource[] resources)
+        {
+            string resourcesJsonString = "";
+
+            for (int i = 0; i < resources.Length; i++)
+            {
+                var resource = resources[i];
+
+                if (i > 0)
+                {
+                    resourcesJsonString += ',';
+                }
+
+                resourcesJsonString += resource.ToJson();
+            }
+
+            return string.Format(@"{{
+            ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+            ""contentVersion"": ""1.0.0.0"",
+            ""parameters"": {{ }},
+                ""variables"": {{ }},
+                ""resources"": [ {0} ],
+                ""outputs"": {{ }}
+            }}", resourcesJsonString);
+        }
+
+        private void AssertDictionariesAreEqual(Dictionary<string, string> expectedMapping, Dictionary<string, string> actualMapping)
+        {
+            Assert.AreEqual(expectedMapping.Count, actualMapping.Count);
+            foreach (KeyValuePair<string, string> pair in expectedMapping)
+            {
+                Assert.IsTrue(actualMapping.ContainsKey(pair.Key));
+                Assert.AreEqual(pair.Value, actualMapping[pair.Key]);
+            }
         }
     }
 }
