@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                         jsonRuleEvaluations.Add(evaluation);
                     }
                 }
-                bool evaluationPassed = jsonRuleEvaluations.Count == 0 || jsonRuleEvaluations.Any(e => e.Passed);
+                bool evaluationPassed = jsonRuleEvaluations.Count == 0 || jsonRuleEvaluations.Exists(e => e.Passed);
                 return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
             });
         }
