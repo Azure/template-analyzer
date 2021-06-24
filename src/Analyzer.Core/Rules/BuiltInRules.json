@@ -109,7 +109,7 @@
         "path": "kind",
         "regex": "api$"
       },
-      "anyOf": [
+      "allOf": [
         {
           "resourceType": "Microsoft.Web/sites/config",
           "where": {
@@ -262,7 +262,7 @@
         "path": "kind",
         "regex": "^functionapp"
       },
-      "anyOf": [
+      "allOf": [
         {
           "resourceType": "Microsoft.Web/sites/config",
           "where": {
@@ -455,7 +455,7 @@
           }
         ]
       },
-      "anyOf": [
+      "allOf": [
         {
           "resourceType": "Microsoft.Web/sites/config",
           "where": {
