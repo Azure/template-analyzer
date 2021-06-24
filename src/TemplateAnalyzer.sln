@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Types", "Analyzer.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Cli", "Analyzer.Cli\Analyzer.Cli.csproj", "{28D75A41-485C-483B-B5DD-C907E880ADC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.Core.JsonRuleTests", "Analyzer.Core.JsonRuleTests\Analyzer.Core.JsonRuleTests.csproj", "{2CCAFD07-C1C2-46CA-9776-70F902956DC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.Core.BuiltInRuleTests", "Analyzer.Core.BuiltInRuleTests\Analyzer.Core.BuiltInRuleTests.csproj", "{2CCAFD07-C1C2-46CA-9776-70F902956DC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

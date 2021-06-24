@@ -10,7 +10,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.Core.JsonRuleTests
+namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
 {
     [TestClass]
     public class TestRunner
