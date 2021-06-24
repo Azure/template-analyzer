@@ -113,19 +113,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             }
             else if (this.Greater != null)
             {
-                leafOperator = new InequalityOperator(this.Greater, isNegative: false, orEquals: false);
+                leafOperator = new InequalityOperator(this.Greater, greater: true, orEquals: false);
             }
             else if (this.GreaterOrEquals != null)
             {
-                leafOperator = new InequalityOperator(this.GreaterOrEquals, isNegative: false, orEquals: true);
+                leafOperator = new InequalityOperator(this.GreaterOrEquals, greater: true, orEquals: true);
             }
             else if (this.Less != null)
             {
-                leafOperator = new InequalityOperator(this.Less, isNegative: true, orEquals: false);
+                leafOperator = new InequalityOperator(this.Less, greater: false, orEquals: false);
             }
             else if (this.LessOrEquals != null)
             {
-                leafOperator = new InequalityOperator(this.LessOrEquals, isNegative: true, orEquals: true);
+                leafOperator = new InequalityOperator(this.LessOrEquals, greater: false, orEquals: true);
             }
 
             if (leafOperator != null)

@@ -97,28 +97,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var leafOperator = leafExpression.Operator as InequalityOperator;
             Assert.IsNotNull(leafOperator);
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
-            Assert.IsFalse(leafOperator.IsNegative);
+            Assert.IsTrue(leafOperator.Greater);
             Assert.IsFalse(leafOperator.OrEquals);
 
             leafExpression = GenerateLeafExpression(leaf => leaf.Less = operatorValue);
             leafOperator = leafExpression.Operator as InequalityOperator;
             Assert.IsNotNull(leafOperator);
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
-            Assert.IsTrue(leafOperator.IsNegative);
+            Assert.IsFalse(leafOperator.Greater);
             Assert.IsFalse(leafOperator.OrEquals);
 
             leafExpression = GenerateLeafExpression(leaf => leaf.GreaterOrEquals = operatorValue);
             leafOperator = leafExpression.Operator as InequalityOperator;
             Assert.IsNotNull(leafOperator);
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
-            Assert.IsFalse(leafOperator.IsNegative);
+            Assert.IsTrue(leafOperator.Greater);
             Assert.IsTrue(leafOperator.OrEquals);
 
             leafExpression = GenerateLeafExpression(leaf => leaf.LessOrEquals = operatorValue);
             leafOperator = leafExpression.Operator as InequalityOperator;
             Assert.IsNotNull(leafOperator);
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
-            Assert.IsTrue(leafOperator.IsNegative);
+            Assert.IsFalse(leafOperator.Greater);
             Assert.IsTrue(leafOperator.OrEquals);
         }
 

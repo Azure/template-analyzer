@@ -16,17 +16,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         public override string Name => GetName();
 
         /// <summary>
-        /// Whether the operator also considers equality
+        /// Whether the operator compares by greater than or by less than.
         /// </summary>
-        public Boolean OrEquals;
+        public bool Greater;
+
+        /// <summary>
+        /// Whether the operator also considers equality.
+        /// </summary>
+        public bool OrEquals;
 
         /// <summary>
         /// Creates an InequalityOperator.
         /// </summary>
         /// <param name="specifiedValue">The value specified in the JSON rule.</param>
-        /// <param name="isNegative">Whether the operator compares by greater than or by less than.</param>
+        /// <param name="greater">Whether the operator compares by greater than or by less than.</param>
         /// <param name="orEquals">Whether the operator also considers equality.</param>
-        public InequalityOperator(JToken specifiedValue, bool isNegative, bool orEquals)
+        public InequalityOperator(JToken specifiedValue, bool greater, bool orEquals)
         {
             if (specifiedValue == null)
             {
@@ -38,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             }
 
             this.SpecifiedValue = specifiedValue;
-            this.IsNegative = isNegative;
+            this.Greater = greater;
             this.OrEquals = orEquals;
         }
 
@@ -67,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             var normalizedSpecifiedValue = GetNormalizedValue(SpecifiedValue);
             var normalizedTokenToEvaluate = GetNormalizedValue(tokenToEvaluate);
 
-            var result = IsNegative ? normalizedSpecifiedValue < normalizedTokenToEvaluate : normalizedSpecifiedValue > normalizedTokenToEvaluate;
+            var result = Greater ? normalizedSpecifiedValue > normalizedTokenToEvaluate : normalizedSpecifiedValue < normalizedTokenToEvaluate;
 
             if (OrEquals)
             {
@@ -106,21 +111,21 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         }
 
         private string GetName() {
-            if (IsNegative && OrEquals)
-            {
-                return "LessOrEquals";
-            }
-            else if (IsNegative && !OrEquals)
-            {
-                return "Less";
-            }
-            else if (!IsNegative && OrEquals)
+            if (Greater && OrEquals)
             {
                 return "GreaterOrEquals";
             }
-            else
+            else if (Greater && !OrEquals)
             {
                 return "Greater";
+            }
+            else if (!Greater && OrEquals)
+            {
+                return "LessOrEquals";
+            }
+            else
+            {
+                return "Less";
             }
         }
     }
