@@ -116,6 +116,11 @@ Service Fabric clusters should only use Azure Active Directory for client authen
 
 **Recommendation**: [Enable AAD client authentication on your Service Fabric clusters](https://docs.microsoft.com/en-in/azure/service-fabric/service-fabric-cluster-creation-setup-aad)
 
+## Transparent Data Encryption on SQL databases should be enabled
+Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements.
+
+**Recommendation**: To [enable transparent data encryption](https://docs.microsoft.com/en-us/azure/azure-sql/database/transparent-data-encryption-tde-overview?tabs=azure-portal), in the [Microsoft.Sql/servers/databases/transparentDataEncryption resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/servers/databases/transparentdataencryption?tabs=json), add (or update) the value of the *state* property to `enabled`.
+
 ## Use built-in roles instead of custom RBAC roles
 You should only use built-in roles instead of cutom RBAC roles. Custom RBAC roles are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.
 

@@ -438,5 +438,25 @@
       "path": "properties.azureActiveDirectory.tenantId",
       "hasValue": true
     }
+  },
+  {
+    "name": "SQL_Enable_Encryption",
+    "description": "Transparent Data Encryption on SQL databases should be enabled",
+    "recommendation": "Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#transparent-data-encryption-on-sql-databases-should-be-enabled",
+    "evaluation": {
+      "resourceType": "Microsoft.Sql/servers/databases",
+      "where": {
+        "path": "name",
+        "regex": ".+(?<!master)$"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+          "path": "properties.state",
+          "equals": "enabled"
+        }
+      ]
+    }
   }
 ]
