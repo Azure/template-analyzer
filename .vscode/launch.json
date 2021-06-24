@@ -13,7 +13,6 @@
             // Add "-p" and a path to the parameters file to use specific parameters
             // when analyzing the template.
             "args": [
-                "analyze-template",
                 "-t", "${file}",
                 //"-p", "path-to-parameters"
             ],

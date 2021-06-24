@@ -39,15 +39,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-                bool evaluationPassed = false;
 
                 foreach (var expression in AnyOf)
                 {
                     var evaluation = expression.Evaluate(scope);
-                    evaluationPassed |= evaluation.Passed;
-                    jsonRuleEvaluations.Add(evaluation);
-                }
 
+                    // Add evaluations if scopes were found to evaluate
+                    if (evaluation.HasResults)
+                    {
+                        jsonRuleEvaluations.Add(evaluation);
+                    }
+                }
+                bool evaluationPassed = jsonRuleEvaluations.Count == 0 || jsonRuleEvaluations.Exists(e => e.Passed);
                 return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
             });
         }

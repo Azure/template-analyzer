@@ -74,12 +74,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
                  evaluation.RuleDefinition = rule;
                  evaluation.FileIdentifier = templateContext.TemplateIdentifier;
-
-                // If there are no matching cases of the rule, do not create an evaluation
-                if (!evaluation.HasResults)
-                {
-                    continue;
-                }
                     
                 yield return evaluation;
             }

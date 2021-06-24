@@ -83,10 +83,14 @@
           }
         ]
       },
-      "allOf": [
+      "anyOf": [
         {
           "resourceType": "Microsoft.Web/sites/config",
           "path": "properties.minTlsVersion",
+          "equals": "1.2"
+        },
+        {
+          "path": "properties.siteConfig.minTlsVersion",
           "equals": "1.2"
         }
       ]
@@ -123,44 +127,6 @@
       "resourceType": "Microsoft.Cache/redis",
       "path": "properties.enableNonSslPort",
       "notEquals": true
-    }
-  },
-  {
-    "name": "Compute_VirtualMachine_ShouldNotBePreview",
-    "description": "Ensure all virtual machines are not using preview images",
-    "recommendation": "Use a non-preview image for virtual machines",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#ensure-all-virtual-machines-are-not-using-preview-images",
-    "evaluation": {
-      "resourceType": "Microsoft.Compute/virtualMachines",
-      "anyOf": [
-        {
-          "path": "properties.storageProfile.imageReference",
-          "regex": "^((?!-preview$).)*$"
-        },
-        {
-          "path": "properties.storageProfile.imageReference.version",
-          "regex": "^((?!-preview$).)*$"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Compute_VirtualMachineScaleSets_ShouldNotBePreview",
-    "description": "Ensure all virtual machine scale set instances are not using preview images",
-    "recommendation": "Use a non-preview image for virtual machine scale set instances",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#ensure-all-virtual-machine-scale-set-instances-are-not-using-preview-images",
-    "evaluation": {
-      "resourceType": "Microsoft.Compute/virtualMachineScaleSets",
-      "anyOf": [
-        {
-          "path": "properties.virtualMachineProfile.storageProfile.imageReference",
-          "regex": "^((?!-preview$).)*$"
-        },
-        {
-          "path": "properties.virtualMachineProfile.storageProfile.imageReference.version",
-          "regex": "^((?!-preview$).)*$"
-        }
-      ]
     }
   },
   {
