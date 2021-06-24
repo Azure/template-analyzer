@@ -121,6 +121,11 @@ Enable only connections via SSL to Redis Cache. Use of secure connections ensure
 
 **Recommendation**: To [enable only connections via SSL to Redis Cache](https://docs.microsoft.com/en-us/security/benchmark/azure/baselines/azure-cache-for-redis-security-baseline?toc=/azure/azure-cache-for-redis/TOC.json#44-encrypt-all-sensitive-information-in-transit), in the [Microsoft.Cache/Redis resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.cache/redis?tabs=json#rediscreateproperties-object), update the value of the *enableNonSslPort* property from `true` to `false` or remove the property from the template as the default value is `false`.
 
+## Remote debugging should be turned off for API Apps
+Remote debugging requires inbound ports to be opened on an api app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
+
+**Recommendation**: To disable remote debugging, in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), remove the *remoteDebuggingEnabled* property or update its value to `false`.
+
 ## Remote debugging should be turned off for Function Apps
 Remote debugging requires inbound ports to be opened on a function app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
 

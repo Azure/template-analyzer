@@ -1,5 +1,37 @@
 [
   {
+    "name": "AppServiceApiApp_DisableRemoteDebugging",
+    "description": "Remote debugging should be turned off for API Apps",
+    "recommendation": "Remote debugging should be turned off",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-api-apps",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.remoteDebuggingEnabled",
+              "notEquals": true
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.remoteDebuggingEnabled",
+          "notEquals": true
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceApiApp_FTPS",
     "description": "FTPS only should be required in your API App",
     "recommendation": "Enable FTPS enforcement for enhanced security",
