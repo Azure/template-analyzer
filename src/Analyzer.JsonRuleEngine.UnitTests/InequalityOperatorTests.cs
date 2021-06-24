@@ -69,6 +69,38 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(1.3, 2.8, false, true, true, DisplayName = "A float is less or equal to another float")]
         [DataRow(2.8, 1.3, false, true, false, DisplayName = "A float is not less or equal to another float")]
         [DataRow(1.3, 1.3, false, true, true, DisplayName = "A float is less or equal to another float because both are equal")]
+        // >int, float
+        [DataRow(2, 1.3, true, false, true, DisplayName = "An integer is greater than a float")]
+        [DataRow(1, 2.1, true, false, false, DisplayName = "An integer is not greater than a float")]
+        [DataRow(1, 1.0, true, false, false, DisplayName = "An integer is not greater than a float because both are equal")]
+        // <int, float
+        [DataRow(1, 2.1, false, false, true, DisplayName = "An integer is less than a float")]
+        [DataRow(2, 1.3, false, false, false, DisplayName = "An integer is not less than a float")]
+        [DataRow(1, 1.0, false, false, false, DisplayName = "An integer is not less than a float because both are equal")]
+        // >=int, float
+        [DataRow(2, 1.3, true, true, true, DisplayName = "An integer is greater or equal to a float")]
+        [DataRow(1, 2.1, true, true, false, DisplayName = "An integer is not greater or equal to a float")]
+        [DataRow(2, 2.0, true, true, true, DisplayName = "An integer is greater or equal to a float because both are equal")]
+        // <=int, float
+        [DataRow(1, 2.1, false, true, true, DisplayName = "An integer is less or equal to a float")]
+        [DataRow(2, 1.3, false, true, false, DisplayName = "An integer is not less or equal to a float")]
+        [DataRow(1, 1.0, false, true, true, DisplayName = "An integer is less or equal to a float because both are equal")]
+        // >float, int
+        [DataRow(2.1, 1, true, false, true, DisplayName = "A float is greater than an integer")]
+        [DataRow(1.3, 2, true, false, false, DisplayName = "A float is not greater than an integer")]
+        [DataRow(1.0, 1, true, false, false, DisplayName = "A float is not greater than an integer because both are equal")]
+        // <float, int
+        [DataRow(1.3, 2, false, false, true, DisplayName = "A float is less than an integer")]
+        [DataRow(2.1, 1, false, false, false, DisplayName = "A float is not less than an integer")]
+        [DataRow(1.0, 1, false, false, false, DisplayName = "A float is not less than an integer because both are equal")]
+        // >=float, int
+        [DataRow(2.1, 1, true, true, true, DisplayName = "A float is greater or equal to an integer")]
+        [DataRow(1.3, 2, true, true, false, DisplayName = "A float is not greater or equal to an integer")]
+        [DataRow(2.0, 2, true, true, true, DisplayName = "A float is greater or equal to an integer because both are equal")]
+        // <=float, int
+        [DataRow(1.3, 2, false, true, true, DisplayName = "A float is less or equal to an integer")]
+        [DataRow(2.1, 1, false, true, false, DisplayName = "A float is not less or equal to an integer")]
+        [DataRow(1.0, 1, false, true, true, DisplayName = "A float is less or equal to an integer because both are equal")]
         public void EvaluateExpression_ValidNumericType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
         {
             CompareObjects(leftValue, rightValue, greater, orEquals, evaluationResult);
