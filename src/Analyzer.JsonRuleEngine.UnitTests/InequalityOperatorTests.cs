@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual("Less", new InequalityOperator(specifiedValue, greater: false, orEquals: false).Name);
             Assert.AreEqual("GreaterOrEquals", new InequalityOperator(specifiedValue, greater: true, orEquals: true).Name);
             Assert.AreEqual("Greater", new InequalityOperator(specifiedValue, greater: true, orEquals: false).Name);
-
         }
 
         [DataTestMethod]

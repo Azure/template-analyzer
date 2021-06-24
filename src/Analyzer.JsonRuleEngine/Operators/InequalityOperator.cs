@@ -13,7 +13,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
     internal class InequalityOperator : LeafExpressionOperator
     {
         /// <inheritdoc/>
-        public override string Name => GetName();
+        public override string Name =>
+            Greater && OrEquals ? "GreaterOrEquals" :
+            Greater && !OrEquals ? "Greater" :
+            !Greater && OrEquals ? "LessOrEquals" :
+            "Less";
 
         /// <summary>
         /// Whether the operator compares by greater than or by less than.
@@ -37,10 +41,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             {
                 throw new ArgumentNullException(nameof(specifiedValue));
             }
-            else
-            {
-                ValidateComparisonTerm(specifiedValue);
-            }
+
+            ValidateComparisonTerm(specifiedValue);
 
             this.SpecifiedValue = specifiedValue;
             this.Greater = greater;
@@ -57,7 +59,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             if (tokenToEvaluate == null)
             {
                 // If the specified property in the JSON is not defined then we would assume it could potentially have an undesired value
-                return false;
+                return false; // FIXME
             }
 
             ValidateComparisonTerm(tokenToEvaluate);
@@ -77,13 +79,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             if (OrEquals)
             {
                 result = result || normalizedSpecifiedValue == normalizedTokenToEvaluate;
-
             }
 
             return result;
         }
 
-        // TODO throw this exception earlier?
         private void ValidateComparisonTerm(JToken term)
         {
             var validTypes = new JTokenType[] { JTokenType.Date, JTokenType.Float, JTokenType.Integer };
@@ -108,25 +108,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             }
 
             return value;
-        }
-
-        private string GetName() {
-            if (Greater && OrEquals)
-            {
-                return "GreaterOrEquals";
-            }
-            else if (Greater && !OrEquals)
-            {
-                return "Greater";
-            }
-            else if (!Greater && OrEquals)
-            {
-                return "LessOrEquals";
-            }
-            else
-            {
-                return "Less";
-            }
         }
     }
 }
