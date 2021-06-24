@@ -141,14 +141,13 @@
         "path": "kind",
         "regex": "api$"
       },
-      "anyOf": [
+      "allOf": [
         {
           "path": "identity.type",
-          "equals": "UserAssigned"
-        },
-        {
-          "path": "identity.type",
-          "equals": "SystemAssigned"
+          "in": [
+            "UserAssigned",
+            "SystemAssigned"
+          ]
         }
       ]
     }
@@ -295,14 +294,13 @@
         "path": "kind",
         "regex": "^functionapp"
       },
-      "anyOf": [
+      "allOf": [
         {
           "path": "identity.type",
-          "equals": "UserAssigned"
-        },
-        {
-          "path": "identity.type",
-          "equals": "SystemAssigned"
+          "in": [
+            "UserAssigned",
+            "SystemAssigned"
+          ]
         }
       ]
     }
@@ -497,14 +495,13 @@
           }
         ]
       },
-      "anyOf": [
+      "allOf": [
         {
           "path": "identity.type",
-          "equals": "UserAssigned"
-        },
-        {
-          "path": "identity.type",
-          "equals": "SystemAssigned"
+          "in": [
+            "UserAssigned",
+            "SystemAssigned"
+          ]
         }
       ]
     }
