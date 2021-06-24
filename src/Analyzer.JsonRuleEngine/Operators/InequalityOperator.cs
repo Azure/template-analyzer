@@ -94,20 +94,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             }
         }
 
-        private double GetNormalizedValue(JToken token)
-        {
-            double value;
-
-            if (token.Type == JTokenType.Date) // TODO test and document JSON date format?
-            {
-                value = token.Value<DateTime>().ToOADate();
-            }
-            else
-            {
-                value = token.Value<double>();
-            }
-
-            return value;
-        }
+        private double GetNormalizedValue(JToken token) =>
+            token.Type == JTokenType.Date
+                ? token.Value<DateTime>().ToOADate()
+                : token.Value<double>();
     }
 }
