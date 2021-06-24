@@ -67,6 +67,38 @@
     }
   },
   {
+    "name": "AppServiceApiApp_RestrictCORSAccess",
+    "description": "CORS should not allow every resource to access your API App",
+    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.cors.allowedOrigins[*]",
+              "notEquals": "*"
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.cors.allowedOrigins[*]",
+          "notEquals": "*"
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceApiApp_UseManagedIdentity",
     "description": "Managed identity should be used in your API App",
     "recommendation": "Use a managed identity for enhanced authentication security",
