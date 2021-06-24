@@ -39,7 +39,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-                bool evaluationPassed = false;
 
                 foreach (var expression in AnyOf)
                 {
@@ -48,11 +47,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     // Add evaluations if scopes were found to evaluate
                     if (evaluation.HasResults)
                     {
-                        evaluationPassed |= evaluation.Passed;
                         jsonRuleEvaluations.Add(evaluation);
                     }
                 }
-
+                bool evaluationPassed = jsonRuleEvaluations.Count == 0 || jsonRuleEvaluations.Exists(e => e.Passed);
                 return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
             });
         }
