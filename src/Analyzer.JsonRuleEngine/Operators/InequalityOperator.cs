@@ -37,10 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <param name="orEquals">Whether the operator also considers equality.</param>
         public InequalityOperator(JToken specifiedValue, bool greater, bool orEquals)
         {
-            if (specifiedValue == null)
-            {
-                throw new ArgumentNullException(nameof(specifiedValue));
-            }
+            this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
 
             ValidateComparisonTerm(specifiedValue);
 
