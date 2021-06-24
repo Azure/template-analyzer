@@ -41,7 +41,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
 
             ValidateComparisonTerm(specifiedValue);
 
-            this.SpecifiedValue = specifiedValue;
             this.Greater = greater;
             this.OrEquals = orEquals;
         }
