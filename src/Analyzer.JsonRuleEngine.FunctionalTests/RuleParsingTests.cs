@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
@@ -10,6 +11,7 @@ using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests
 {
@@ -36,6 +38,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
         [DataTestMethod]
         [DataRow("hasValue", false, typeof(HasValueOperator), DisplayName = "HasValue: false")]
         [DataRow("exists", true, typeof(ExistsOperator), DisplayName = "Exists: true")]
+        // [DataRow("greater", "2021-02-28", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28")] FIXME
+        [DataRow("greater", "2021-02-28T18:17:16.543Z", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28T18:17:16.543Z")]
         public void DeserializeExpression_LeafWithValidOperator_ReturnsLeafExpressionWithCorrectOperator(string operatorProperty, object operatorValue, Type operatorType)
         {
             // Generate JSON, parse, and validate parsed LeafExpression
@@ -89,6 +93,27 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
         {
             Assert.AreEqual(operatorValue, existsOperator.EffectiveValue);
             Assert.IsFalse(existsOperator.IsNegative);
+        }
+
+        [OperatorSpecificValidator(typeof(InequalityOperator))]
+        private static void InequalityValidation(InequalityOperator inequalityOperator, string operatorValue)
+        {
+            Assert.IsFalse(inequalityOperator.IsNegative);
+            Assert.IsTrue(inequalityOperator.Greater);
+            Assert.IsFalse(inequalityOperator.OrEquals);
+
+            Assert.AreEqual(JTokenType.Date, inequalityOperator.SpecifiedValue.Type);
+
+            var expectedDate = DateTime.Parse(operatorValue, styles: DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+            var parsedDate = inequalityOperator.SpecifiedValue.Value<DateTime>();
+
+            Assert.AreEqual(expectedDate.Year, parsedDate.Year);
+            Assert.AreEqual(expectedDate.Month, parsedDate.Month);
+            Assert.AreEqual(expectedDate.Day, parsedDate.Day);
+            Assert.AreEqual(expectedDate.Hour, parsedDate.Hour);
+            Assert.AreEqual(expectedDate.Minute, parsedDate.Minute);
+            Assert.AreEqual(expectedDate.Second, parsedDate.Second);
+            Assert.AreEqual(expectedDate.Millisecond, parsedDate.Millisecond);
         }
 
         private const string TestResourceType = "Namespace/ResourceType";
