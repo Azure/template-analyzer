@@ -44,9 +44,9 @@ It is important to enable encryption of Automation account variable assets when 
 **Recommendation**: [Enable encryption of Automation account variable assets](https://docs.microsoft.com/en-us/azure/automation/shared-resources/variables?tabs=azure-powershell)
 
 ## CORS should not allow every resource to access your API App
-Cross-Origin Resource Sharing (CORS) should not allow all domains to access your api app. Allow only required domains to interact with your api app.
+Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.
 
-**Recommendation**: To allow only required domains to interact with your api app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
+**Recommendation**: To allow only required domains to interact with your API app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
 
 ## CORS should not allow every resource to access your Function Apps
 Cross-Origin Resource Sharing (CORS) should not allow all domains to access your function app. Allow only required domains to interact with your function app.
@@ -122,7 +122,7 @@ Enable only connections via SSL to Redis Cache. Use of secure connections ensure
 **Recommendation**: To [enable only connections via SSL to Redis Cache](https://docs.microsoft.com/en-us/security/benchmark/azure/baselines/azure-cache-for-redis-security-baseline?toc=/azure/azure-cache-for-redis/TOC.json#44-encrypt-all-sensitive-information-in-transit), in the [Microsoft.Cache/Redis resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.cache/redis?tabs=json#rediscreateproperties-object), update the value of the *enableNonSslPort* property from `true` to `false` or remove the property from the template as the default value is `false`.
 
 ## Remote debugging should be turned off for API Apps
-Remote debugging requires inbound ports to be opened on an api app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
+Remote debugging requires inbound ports to be opened on an API app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
 
 **Recommendation**: To disable remote debugging, in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), remove the *remoteDebuggingEnabled* property or update its value to `false`.
 
