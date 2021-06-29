@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             while (exception.InnerException != null)
             {
                 exception = exception.InnerException;
-                exceptionMessage += " " + exception.Message;
+                exceptionMessage += " - " + exception.Message;
             }
 
             return exceptionMessage;
