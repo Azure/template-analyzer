@@ -46,6 +46,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("less", 100, DisplayName = "{\"Less\": 100}")]
         [DataRow("greaterOrEquals", 100, DisplayName = "{\"GreaterOrEquals\": 100}")]
         [DataRow("lessOrEquals", 100, DisplayName = "{\"LessOrEquals\": 100}")]
+        [DataRow("greater", "2021-02-28T18:17:16.543Z", DisplayName = "{\"Greater\": 2021-02-28T18:17:16.543Z}")]
+        [DataRow("less", "2021-02-28T18:17:16.543Z", DisplayName = "{\"Less\": 2021-02-28T18:17:16.543Z}")]
+        [DataRow("greaterOrEquals", "2021-02-28T18:17:16.543Z", DisplayName = "{\"GreaterOrEquals\": 2021-02-28T18:17:16.543Z}")]
+        [DataRow("lessOrEquals", "2021-02-28T18:17:16.543Z", DisplayName = "{\"LessOrEquals\": 2021-02-28T18:17:16.543Z}")]
         [DynamicData(nameof(InOperatorTestScenarios), DynamicDataDisplayName = nameof(GetInOperatorTestDisplayName))]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, params object[] whereCondition)
         {
