@@ -132,32 +132,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void EvaluateExpression_InvalidTokenToEvaluate_ThrowsException()
+        public void EvaluateExpression_InvalidTokenToEvaluate_ReturnsFalse()
         {
             var specifiedValueToken = TestUtilities.ToJToken(100);
             var tokenToEvaluate = TestUtilities.ToJToken("aString");
 
-            var inequalityOperator = new InequalityOperator(specifiedValueToken, true, true);
-
-            ValidateInvalidOperationException(() => { inequalityOperator.EvaluateExpression(tokenToEvaluate); }, "Cannot compare against a String using an InequalityOperator");
+            CompareObjects(specifiedValueToken, tokenToEvaluate, evaluationResult: false);
         }
 
         [TestMethod]
-        public void EvaluateExpression_CompareDateWithNumber_ThrowsException()
+        public void EvaluateExpression_CompareDateWithNumber_ReturnsFalse()
         {
             var date = new DateTime(637500672000000000);
             var number = 100;
 
-            ValidateInvalidOperationException(() => { CompareObjects(date, number); }, "Cannot compare Date with Integer using an InequalityOperator");
+            CompareObjects(date, number, evaluationResult: false);
         }
 
         [TestMethod]
-        public void EvaluateExpression_CompareNumberWithDate_ThrowsException()
+        public void EvaluateExpression_CompareNumberWithDate_ReturnsFalse()
         {
             var number = 100;
             var date = new DateTime(637500672000000000);
 
-            ValidateInvalidOperationException(() => { CompareObjects(number, date); }, "Cannot compare Integer with Date using an InequalityOperator");
+            CompareObjects(number, date, evaluationResult: false);
         }
 
         private void CompareObjects(object left, object right, bool greater = false, bool orEquals = false, bool evaluationResult = false)

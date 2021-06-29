@@ -39,7 +39,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
 
-            ValidateComparisonTerm(specifiedValue);
+            if (!ComparisonTermIsValid(specifiedValue))
+            {
+                throw new InvalidOperationException($"Cannot compare against a {specifiedValue.Type} using an InequalityOperator");
+            }
 
             this.Greater = greater;
             this.OrEquals = orEquals;
@@ -52,19 +55,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <returns>A value indicating whether or not the evaluation passed.</returns>
         public override bool EvaluateExpression(JToken tokenToEvaluate)
         {
-            if (tokenToEvaluate == null)
-            {
-                // If the specified property in the JSON is not defined then we would assume it could potentially have an undesired value
-                return false; // FIXME
-            }
-
-            ValidateComparisonTerm(tokenToEvaluate);
-
-            // TODO throw this exception earlier?
-            if ((SpecifiedValue.Type == JTokenType.Date && tokenToEvaluate.Type != JTokenType.Date) ||
+            if (tokenToEvaluate == null ||
+                !ComparisonTermIsValid(tokenToEvaluate) ||
+                (SpecifiedValue.Type == JTokenType.Date && tokenToEvaluate.Type != JTokenType.Date) ||
                 (tokenToEvaluate.Type == JTokenType.Date && SpecifiedValue.Type != JTokenType.Date))
             {
-                throw new InvalidOperationException($"Cannot compare {SpecifiedValue.Type} with {tokenToEvaluate.Type} using an InequalityOperator");
+                return false; // Not ideal, will be improved in the future
             }
 
             var normalizedSpecifiedValue = GetNormalizedValue(SpecifiedValue);
@@ -80,14 +76,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             return result;
         }
 
-        private void ValidateComparisonTerm(JToken term)
+        private bool ComparisonTermIsValid(JToken term)
         {
             var validTypes = new JTokenType[] { JTokenType.Date, JTokenType.Float, JTokenType.Integer };
 
-            if (!validTypes.Contains(term.Type))
-            {
-                throw new InvalidOperationException($"Cannot compare against a {term.Type} using an InequalityOperator");
-            }
+            return validTypes.Contains(term.Type);
         }
 
         private double GetNormalizedValue(JToken token) =>
