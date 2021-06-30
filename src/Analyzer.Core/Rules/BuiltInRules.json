@@ -1,9 +1,121 @@
 [
   {
+    "name": "AppService_EnableDiagLogs",
+    "description": "Diagnostic logs in App Services should be enabled",
+    "recommendation": "Enable diagnostic Logs in App Services",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#diagnostic-logs-in-app-services-should-be-enabled",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "allOf": [
+          {
+            "path": "kind",
+            "regex": "^((?!functionapp).)*$"
+          },
+          {
+            "path": "kind",
+            "regex": "^((?!linux).)*$"
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "allOf": [
+            {
+              "path": "properties.detailedErrorLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.httpLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.requestTracingEnabled",
+              "equals": true
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "path": "properties.siteConfig.detailedErrorLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.siteConfig.httpLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.siteConfig.requestTracingEnabled",
+              "equals": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceApiApp_DisableRemoteDebugging",
+    "description": "Remote debugging should be turned off for API Apps",
+    "recommendation": "Remote debugging should be turned off",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-api-apps",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.remoteDebuggingEnabled",
+              "notEquals": true
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.remoteDebuggingEnabled",
+          "notEquals": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceApiApp_FTPS",
+    "description": "FTPS only should be required in your API App",
+    "recommendation": "Enable FTPS enforcement for enhanced security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        },
+        {
+          "path": "properties.siteConfig.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceApiApp_HTTPS",
     "description": "API App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#api-app-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#api-app-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -19,10 +131,144 @@
     }
   },
   {
+    "name": "AppServiceApiApp_RequireLatestTls",
+    "description": "Latest TLS version should be used in your API App",
+    "recommendation": "Upgrade to the latest TLS version",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.minTlsVersion",
+          "equals": "1.2"
+        },
+        {
+          "path": "properties.siteConfig.minTlsVersion",
+          "equals": "1.2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceApiApp_RestrictCORSAccess",
+    "description": "CORS should not allow every resource to access your API App",
+    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.cors.allowedOrigins[*]",
+              "notEquals": "*"
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.cors.allowedOrigins[*]",
+          "notEquals": "*"
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceApiApp_UseManagedIdentity",
+    "description": "Managed identity should be used in your API App",
+    "recommendation": "Use a managed identity for enhanced authentication security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-api-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "api$"
+      },
+      "allOf": [
+        {
+          "path": "identity.type",
+          "in": [
+            "UserAssigned",
+            "SystemAssigned"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceFunctionApp_DisableRemoteDebugging",
+    "description": "Remote debugging should be turned off for Function Apps",
+    "recommendation": "Remote debugging should be turned off",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-function-apps",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.remoteDebuggingEnabled",
+              "notEquals": true
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.remoteDebuggingEnabled",
+          "notEquals": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceFunctionApp_FTPS",
+    "description": "FTPS only should be required in your Function App",
+    "recommendation": "Enable FTPS enforcement for enhanced security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-function-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        },
+        {
+          "path": "properties.siteConfig.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceFunctionApp_HTTPS",
     "description": "Function App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#function-app-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#function-app-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -38,10 +284,160 @@
     }
   },
   {
+    "name": "AppServiceFunctionApp_RequireLatestTls",
+    "description": "Latest TLS version should be used in your Function App",
+    "recommendation": "Upgrade to the latest TLS version",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-function-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.minTlsVersion",
+          "equals": "1.2"
+        },
+        {
+          "path": "properties.siteConfig.minTlsVersion",
+          "equals": "1.2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceFunctionApp_RestrictCORSAccess",
+    "description": "CORS should not allow every resource to access your Function Apps",
+    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Function app. Allow only required domains to interact with your Function app.",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-function-apps",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.cors.allowedOrigins[*]",
+              "notEquals": "*"
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.cors.allowedOrigins[*]",
+          "notEquals": "*"
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceFunctionApp_UseManagedIdentity",
+    "description": "Managed identity should be used in your Function App",
+    "recommendation": "Use a managed identity for enhanced authentication security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-function-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "path": "kind",
+        "regex": "^functionapp"
+      },
+      "allOf": [
+        {
+          "path": "identity.type",
+          "in": [
+            "UserAssigned",
+            "SystemAssigned"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceWebApp_DisableRemoteDebugging",
+    "description": "Remote debugging should be turned off for Web Applications",
+    "recommendation": "Remote debugging should be turned off",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-web-applications",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.remoteDebuggingEnabled",
+              "notEquals": true
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.remoteDebuggingEnabled",
+          "notEquals": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceWebApp_FTPS",
+    "description": "FTPS only should be required in your Web App",
+    "recommendation": "Enable FTPS enforcement for enhanced security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-web-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "path": "properties.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        },
+        {
+          "path": "properties.siteConfig.ftpsState",
+          "in": [ "FtpsOnly", "Disabled" ]
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceWebApp_HTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#web-application-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#web-application-should-only-be-accessible-over-https",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -68,7 +464,7 @@
     "name": "AppServiceWebApp_RequireLatestTls",
     "description": "Latest TLS version should be used in your Web App",
     "recommendation": "Upgrade to the latest TLS version",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-web-app",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-web-app",
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -97,10 +493,80 @@
     }
   },
   {
+    "name": "AppServiceWebApp_RestrictCORSAccess",
+    "description": "CORS should not allow every resource to access your Web Applications",
+    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Web application. Allow only required domains to interact with your Web app.",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-web-applications",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "where": {
+            "path": "name",
+            "regex": "web$"
+          },
+          "allOf": [
+            {
+              "path": "properties.cors.allowedOrigins[*]",
+              "notEquals": "*"
+            }
+          ]
+        },
+        {
+          "path": "properties.siteConfig.cors.allowedOrigins[*]",
+          "notEquals": "*"
+        }
+      ]
+    }
+  },
+  {
+    "name": "AppServiceWebApp_UseManagedIdentity",
+    "description": "Managed identity should be used in your Web App",
+    "recommendation": "Use a managed identity for enhanced authentication security",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-web-app",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "anyOf": [
+          {
+            "path": "kind",
+            "exists": false
+          },
+          {
+            "path": "kind",
+            "regex": "^app"
+          }
+        ]
+      },
+      "allOf": [
+        {
+          "path": "identity.type",
+          "in": [
+            "UserAssigned",
+            "SystemAssigned"
+          ]
+        }
+      ]
+    }
+  },
+  {
     "name": "Authorization_RoleDefinition_No_Custom_RBAC",
     "description": "Use built-in roles instead of custom RBAC roles",
     "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
     "evaluation": {
       "resourceType": "Microsoft.Authorization/roleDefinitions",
       "path": "properties.type",
@@ -111,7 +577,7 @@
     "name": "AutomationAccounts_Variables_Encrypted",
     "description": "Automation account variables should be encrypted",
     "recommendation": "Enable encryption of Automation account variable assets when storing sensitive data",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#automation-account-variables-should-be-encrypted",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#automation-account-variables-should-be-encrypted",
     "evaluation": {
       "resourceType": "Microsoft.Automation/automationAccounts/variables",
       "path": "properties.isEncrypted",
@@ -122,7 +588,7 @@
     "name": "Cache_Redis_SSL_Only",
     "description": "Only secure connections to your Azure Cache for Redis should be enabled",
     "recommendation": "Enable connections via SSL only to Redis Cache",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#only-secure-connections-to-your-azure-cache-for-redis-should-be-enabled",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#onlysecureconnectionstoyourazurecacheforredisshouldbeenabled",
     "evaluation": {
       "resourceType": "Microsoft.Cache/redis",
       "path": "properties.enableNonSslPort",
@@ -133,7 +599,7 @@
     "name": "Kubernetes_Must_Restrict_Network_Access",
     "description": "Authorized IP ranges should be defined on Kubernetes Services",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#authorized-ip-ranges-should-be-defined-on-kubernetes-services",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#authorized-ip-ranges-should-be-defined-on-kubernetes-services",
     "evaluation": {
       "resourceType": "Microsoft.ContainerService/managedClusters",
       "anyOf": [
@@ -152,7 +618,7 @@
     "name": "Kubernetes_Must_Use_RBAC",
     "description": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
     "recommendation": "Enable RBAC in Kubernetes clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#role-based-access-control-rbac-should-be-used-on-kubernetes-services",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#role-basedaccesscontrolrbacshouldbeusedonkubernetesservices",
     "evaluation": {
       "resourceType": "Microsoft.ContainerService/managedClusters",
       "allOf": [
@@ -171,11 +637,31 @@
     "name": "ServiceFabric_Client_AAD_Auth_Only",
     "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
     "evaluation": {
       "resourceType": "Microsoft.ServiceFabric/clusters",
       "path": "properties.azureActiveDirectory.tenantId",
       "hasValue": true
+    }
+  },
+  {
+    "name": "SQL_Enable_Encryption",
+    "description": "Transparent Data Encryption on SQL databases should be enabled",
+    "recommendation": "Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#transparent-data-encryption-on-sql-databases-should-be-enabled",
+    "evaluation": {
+      "resourceType": "Microsoft.Sql/servers/databases",
+      "where": {
+        "path": "name",
+        "regex": ".+(?<!master)$"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+          "path": "properties.state",
+          "equals": "enabled"
+        }
+      ]
     }
   }
 ]
