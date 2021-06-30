@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
                 IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
-                // Log info on files to be analyzed
+                // Log info on file to be analyzed
                 string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
                 if (parametersFilePath != null)
                 {
