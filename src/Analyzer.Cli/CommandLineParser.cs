@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occured: {exp.Message}");
+                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
             }
         }
 
@@ -194,6 +194,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return validSchemas.Contains(schema);
         }
 
+        private static string GetAllExceptionMessages(Exception exception)
+        {
+            string exceptionMessage = exception.Message;
+
+            while (exception.InnerException != null)
+            {
+                exception = exception.InnerException;
+                exceptionMessage += " - " + exception.Message;
+            }
+
+            return exceptionMessage;
+        }
+
         private string GenerateResultString(Types.IEvaluation evaluation)
         {
             string resultString = "";
@@ -202,7 +215,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 foreach (var result in evaluation.Results)
                 {
-                    resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
+                    if (!result.Passed)
+                    {
+                        resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
+                    }
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)
