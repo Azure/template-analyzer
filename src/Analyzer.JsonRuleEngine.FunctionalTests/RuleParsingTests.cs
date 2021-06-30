@@ -38,8 +38,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
         [DataTestMethod]
         [DataRow("hasValue", false, typeof(HasValueOperator), DisplayName = "HasValue: false")]
         [DataRow("exists", true, typeof(ExistsOperator), DisplayName = "Exists: true")]
-        // [DataRow("greater", "2021-02-28", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28")] FIXME
+        // [DataRow("greater", "2021-02-28", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28")] // FIXME
+        [DataRow("greater", "2021-02-28T18:17:16Z", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28T18:17:16Z")]
         [DataRow("greater", "2021-02-28T18:17:16.543Z", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28T18:17:16.543Z")]
+        // [DataRow("greater", "20210228T181716Z", typeof(InequalityOperator), DisplayName = "Greater: 20210228T181716Z")] // FIXME
+        [DataRow("greater", "2021-02-28T18:17:16+00:00", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28T18:17:16+00:00")]
         public void DeserializeExpression_LeafWithValidOperator_ReturnsLeafExpressionWithCorrectOperator(string operatorProperty, object operatorValue, Type operatorType)
         {
             // Generate JSON, parse, and validate parsed LeafExpression
@@ -104,7 +107,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
 
             Assert.AreEqual(JTokenType.Date, inequalityOperator.SpecifiedValue.Type);
 
-            var expectedDate = DateTime.Parse(operatorValue, styles: DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal);
+            var expectedDate = DateTime.Parse(operatorValue, styles: DateTimeStyles.RoundtripKind);
             var parsedDate = inequalityOperator.SpecifiedValue.Value<DateTime>();
 
             Assert.AreEqual(expectedDate.Year, parsedDate.Year);
