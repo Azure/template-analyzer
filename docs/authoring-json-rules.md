@@ -46,7 +46,7 @@ Documentation on `where` is provided below in [Where Conditions](#where-conditio
 There are two kinds of operators: [value operators](#value-operators) and [structured operators](#structured-operators).  Value operators evaluate a single value, whereas structured operators are used to nest and combine multiple `Evaluation`s, each containing their own operator.
 
 ### Value Operators
-These operators evaluate a specific JSON property in the template.  All operators are valid properties in the `Evaluation`, but only one operator can be present in the top level of the `Evaluation`.  If multiple operators are necessary, a structured operator can be used to combine or nest the operators.  The type of value each operator expects is defined with each operator.  Each operator must be accompanied by a `path` in the `Evaluation`.
+These operators evaluate a specific JSON property in the template.  All operators are valid properties in the `Evaluation`, but only one operator can be present in the top level of the `Evaluation`.  If multiple operators are necessary, a structured operator can be used to combine or nest the operators. Each operator must be accompanied by a `path` in the `Evaluation`. The type of value each operator expects is defined with each operator. Most types are self-descriptive, except the `date` type: dates have to be expressed as a string following the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601), specifying either a date or a date and a time.
 
 The examples given with the operators below will be in the context of the following JSON:
 ```javascript
@@ -147,7 +147,7 @@ Example:
 ```
 
 #### **Less**
-*Type: number (integer, float, date)*
+*Type: number (integer, float), date*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than the value in the template; `false` otherwise.
 
@@ -161,7 +161,7 @@ Example:
 ```
 
 #### **LessOrEquals**
-*Type: number (integer, float, date)*
+*Type: number (integer, float), date*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is less than or equal to the value in the template; `false` otherwise.
 
@@ -175,7 +175,7 @@ Example:
 ```
 
 #### **Greater**
-*Type: number (integer, float, date)*
+*Type: number (integer, float), date*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than the value in the template; `false` otherwise.
 
@@ -189,7 +189,7 @@ Example:
 ```
 
 #### **GreaterOrEquals**
-*Type: number (integer, float, date)*
+*Type: number (integer, float), date*
 
 Compares the template value of the `path` against the value specified in the rule.  Evaluates to `true` if the template value is greater than or equal to the value in the template; `false` otherwise.
 
