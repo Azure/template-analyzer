@@ -99,6 +99,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
             Assert.IsTrue(leafOperator.Greater);
             Assert.IsFalse(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
 
             leafExpression = GenerateLeafExpression(leaf => leaf.Less = operatorValue);
             leafOperator = leafExpression.Operator as InequalityOperator;
@@ -106,6 +107,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
             Assert.IsFalse(leafOperator.Greater);
             Assert.IsFalse(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
 
             leafExpression = GenerateLeafExpression(leaf => leaf.GreaterOrEquals = operatorValue);
             leafOperator = leafExpression.Operator as InequalityOperator;
@@ -113,6 +115,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
             Assert.IsTrue(leafOperator.Greater);
             Assert.IsTrue(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
 
             leafExpression = GenerateLeafExpression(leaf => leaf.LessOrEquals = operatorValue);
             leafOperator = leafExpression.Operator as InequalityOperator;
@@ -120,6 +123,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
             Assert.IsFalse(leafOperator.Greater);
             Assert.IsTrue(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
         }
 
         [TestMethod]

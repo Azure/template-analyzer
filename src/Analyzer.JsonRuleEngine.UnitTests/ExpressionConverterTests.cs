@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
@@ -309,6 +310,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void ReadJson_DateTokenType_DoesNotParseDate()
+        {
+            var @object = ReadJson($@"
+                {{
+                    ""resourceType"": ""someResource/resourceType"",
+                    ""path"": ""some.json.path"",
+                    ""greater"": ""2021-02-28T18:17:16Z"",
+                }}");
+
+            Assert.AreEqual(typeof(LeafExpressionDefinition), @object.GetType());
+
+            var expressionDefinition = @object as LeafExpressionDefinition;
+
+            Assert.AreEqual(JTokenType.String, expressionDefinition.Greater.Type);
+        }
+
+        [TestMethod]
         public void CanRead_ReturnsTrue()
         {
             Assert.IsTrue(new ExpressionConverter().CanRead);
@@ -329,7 +347,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         private static object ReadJson(string jsonString)
             => new ExpressionConverter().ReadJson(
-                JObject.Parse(jsonString).CreateReader(),
+                new JsonTextReader(new StringReader(jsonString)),
                 typeof(ExpressionDefinition),
                 null,
                 JsonSerializer.CreateDefault());

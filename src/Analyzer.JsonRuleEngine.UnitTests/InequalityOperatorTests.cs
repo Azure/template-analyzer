@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void Constructor_InvalidSpecifiedValueType_ThrowsException()
         {
-            var specifiedValueToken = TestUtilities.ToJToken("aString");
+            var specifiedValueToken = TestUtilities.ToJToken("aNonDateString");
 
             ValidateInvalidOperationException(() => { new InequalityOperator(specifiedValueToken, true, true); }, "Cannot compare against a String using an InequalityOperator");
         }
@@ -101,61 +101,37 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(1.3, 2, false, true, true, DisplayName = "A float is less or equal to an integer")]
         [DataRow(2.1, 1, false, true, false, DisplayName = "A float is not less or equal to an integer")]
         [DataRow(1.0, 1, false, true, true, DisplayName = "A float is less or equal to an integer because both are equal")]
-        public void EvaluateExpression_ValidNumericType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
+        // >date
+        [DataRow("2021-09-20", "2021-02-28", true, false, true, DisplayName = "A date is greater than another date")]
+        [DataRow("2021-02-28", "2021-09-20", true, false, false, DisplayName = "A date is not greater than another date")]
+        [DataRow("2021-02-28", "2021-02-28", true, false, false, DisplayName = "A date is not greater than another date because both are equal")]
+        // <date
+        [DataRow("2021-02-28", "2021-09-20", false, false, true, DisplayName = "A date is less than another date")]
+        [DataRow("2021-09-20", "2021-02-28", false, false, false, DisplayName = "A date is not less than another date")]
+        [DataRow("2021-09-20", "2021-09-20", false, false, false, DisplayName = "A date is not less than another date because both are equal")]
+        // >=date
+        [DataRow("2021-09-20", "2021-02-28", true, true, true, DisplayName = "A date is greater or equal to another date")]
+        [DataRow("2021-02-28", "2021-09-20", true, true, false, DisplayName = "A date is not greater or equal to another date")]
+        [DataRow("2021-09-20", "2021-09-20", true, true, true, DisplayName = "A date is greater or equal to another date because both are equal")]
+        // <=date
+        [DataRow("2021-02-28", "2021-09-20", false, true, true, DisplayName = "A date is less or equal to another date")]
+        [DataRow("2021-09-20", "2021-02-28", false, true, false, DisplayName = "A date is not less or equal to another date")]
+        [DataRow("2021-02-28", "2021-02-28", false, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
+        public void EvaluateExpression_ValidTypes_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
         {
             CompareObjects(leftValue, rightValue, greater, orEquals, evaluationResult);
         }
 
-        [DataTestMethod]
-        // >date
-        [DataRow(637676928000000000, 637500672000000000, true, false, true, DisplayName = "A date is greater than another date")]
-        [DataRow(637500672000000000, 637676928000000000, true, false, false, DisplayName = "A date is not greater than another date")]
-        [DataRow(637500672000000000, 637500672000000000, true, false, false, DisplayName = "A date is not greater than another date because both are equal")]
-        // <date
-        [DataRow(637500672000000000, 637676928000000000, false, false, true, DisplayName = "A date is less than another date")]
-        [DataRow(637676928000000000, 637500672000000000, false, false, false, DisplayName = "A date is not less than another date")]
-        [DataRow(637676928000000000, 637676928000000000, false, false, false, DisplayName = "A date is not less than another date because both are equal")]
-        // >=date
-        [DataRow(637676928000000000, 637500672000000000, true, true, true, DisplayName = "A date is greater or equal to another date")]
-        [DataRow(637500672000000000, 637676928000000000, true, true, false, DisplayName = "A date is not greater or equal to another date")]
-        [DataRow(637676928000000000, 637676928000000000, true, true, true, DisplayName = "A date is greater or equal to another date because both are equal")]
-        // <=date
-        [DataRow(637500672000000000, 637676928000000000, false, true, true, DisplayName = "A date is less or equal to another date")]
-        [DataRow(637676928000000000, 637500672000000000, false, true, false, DisplayName = "A date is not less or equal to another date")]
-        [DataRow(637500672000000000, 637500672000000000, false, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
-        public void EvaluateExpression_ValidDateType_ReturnsExpectedEvaluationResult(long leftTicks, long rightTicks, bool greater, bool orEquals, bool evaluationResult)
-        {
-            var leftDate = new DateTime(leftTicks);
-            var rightDate = new DateTime(rightTicks);
-
-            CompareObjects(leftDate, rightDate, greater, orEquals, evaluationResult);
-        }
-
         [TestMethod]
-        public void EvaluateExpression_InvalidTokenToEvaluate_ReturnsFalse()
+        [DataRow(100, "aString", DisplayName = "Invalid token to evaluate")]
+        [DataRow("2021-02-28", 100, DisplayName = "Comparing a date with a number")]
+        [DataRow(100, "2021-02-28", DisplayName = "Comparing a number with a date")]
+        public void EvaluateExpression_InvalidTypes_ReturnsFalse(object leftValue, object rightValue)
         {
-            var specifiedValueToken = TestUtilities.ToJToken(100);
-            var tokenToEvaluate = TestUtilities.ToJToken("aString");
+            var specifiedValueToken = TestUtilities.ToJToken(leftValue);
+            var tokenToEvaluate = TestUtilities.ToJToken(rightValue);
 
             CompareObjects(specifiedValueToken, tokenToEvaluate, evaluationResult: false);
-        }
-
-        [TestMethod]
-        public void EvaluateExpression_CompareDateWithNumber_ReturnsFalse()
-        {
-            var date = new DateTime(637500672000000000);
-            var number = 100;
-
-            CompareObjects(date, number, evaluationResult: false);
-        }
-
-        [TestMethod]
-        public void EvaluateExpression_CompareNumberWithDate_ReturnsFalse()
-        {
-            var number = 100;
-            var date = new DateTime(637500672000000000);
-
-            CompareObjects(number, date, evaluationResult: false);
         }
 
         private void CompareObjects(object left, object right, bool greater = false, bool orEquals = false, bool evaluationResult = false)

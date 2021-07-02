@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Linq;
+using System.Globalization;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
@@ -22,12 +22,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <summary>
         /// Whether the operator compares by greater than or by less than.
         /// </summary>
-        public bool Greater;
+        public bool Greater { get; private set; }
 
         /// <summary>
         /// Whether the operator also considers equality.
         /// </summary>
-        public bool OrEquals;
+        public bool OrEquals { get; private set; }
+
+        /// <summary>
+        /// Gets the effective value this operator will compare against.
+        /// </summary>
+        public double EffectiveValue { get; private set; }
 
         /// <summary>
         /// Creates an InequalityOperator.
@@ -38,12 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         public InequalityOperator(JToken specifiedValue, bool greater, bool orEquals)
         {
             this.SpecifiedValue = specifiedValue ?? throw new ArgumentNullException(nameof(specifiedValue));
-
-            if (!ComparisonTermIsValid(specifiedValue))
-            {
-                throw new InvalidOperationException($"Cannot compare against a {specifiedValue.Type} using an InequalityOperator");
-            }
-
+            this.EffectiveValue = GetFinalComparisonTermIfValid(specifiedValue) ?? throw new InvalidOperationException($"Cannot compare against a {specifiedValue.Type} using an InequalityOperator");
             this.Greater = greater;
             this.OrEquals = orEquals;
         }
@@ -55,37 +55,49 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <returns>A value indicating whether or not the evaluation passed.</returns>
         public override bool EvaluateExpression(JToken tokenToEvaluate)
         {
-            if (tokenToEvaluate == null ||
-                !ComparisonTermIsValid(tokenToEvaluate) ||
-                (SpecifiedValue.Type == JTokenType.Date && tokenToEvaluate.Type != JTokenType.Date) ||
-                (tokenToEvaluate.Type == JTokenType.Date && SpecifiedValue.Type != JTokenType.Date))
+            if (tokenToEvaluate == null)
             {
                 return false; // Not ideal, will be improved in the future
             }
 
-            var normalizedSpecifiedValue = GetNormalizedValue(SpecifiedValue);
-            var normalizedTokenToEvaluate = GetNormalizedValue(tokenToEvaluate);
+            var finalTokenToEvaluate = GetFinalComparisonTermIfValid(tokenToEvaluate);
 
-            var result = Greater ? normalizedSpecifiedValue > normalizedTokenToEvaluate : normalizedSpecifiedValue < normalizedTokenToEvaluate;
+            if (finalTokenToEvaluate == null ||
+                (SpecifiedValue.Type == JTokenType.String && tokenToEvaluate.Type != JTokenType.String) ||
+                (tokenToEvaluate.Type == JTokenType.String && SpecifiedValue.Type != JTokenType.String))
+            {
+                return false; // Not ideal, will be improved in the future
+            }
+
+            var result = Greater ? EffectiveValue > finalTokenToEvaluate : EffectiveValue < finalTokenToEvaluate;
 
             if (OrEquals)
             {
-                result = result || normalizedSpecifiedValue == normalizedTokenToEvaluate;
+                result = result || EffectiveValue == finalTokenToEvaluate;
             }
 
             return result;
         }
 
-        private bool ComparisonTermIsValid(JToken term)
+        private double? GetFinalComparisonTermIfValid(JToken term)
         {
-            var validTypes = new JTokenType[] { JTokenType.Date, JTokenType.Float, JTokenType.Integer };
+            if (term.Type == JTokenType.String)
+            {
+                try
+                {
+                    return DateTime.Parse(term.Value<string>(), styles: DateTimeStyles.RoundtripKind).ToOADate();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+            else if (term.Type == JTokenType.Float || term.Type == JTokenType.Integer)
+            {
+                return term.Value<double>();
+            }
 
-            return validTypes.Contains(term.Type);
+            return null;
         }
-
-        private double GetNormalizedValue(JToken token) =>
-            token.Type == JTokenType.Date
-                ? token.Value<DateTime>().ToOADate()
-                : token.Value<double>();
     }
 }

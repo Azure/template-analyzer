@@ -46,7 +46,14 @@ Documentation on `where` is provided below in [Where Conditions](#where-conditio
 There are two kinds of operators: [value operators](#value-operators) and [structured operators](#structured-operators).  Value operators evaluate a single value, whereas structured operators are used to nest and combine multiple `Evaluation`s, each containing their own operator.
 
 ### Value Operators
-These operators evaluate a specific JSON property in the template.  All operators are valid properties in the `Evaluation`, but only one operator can be present in the top level of the `Evaluation`.  If multiple operators are necessary, a structured operator can be used to combine or nest the operators. Each operator must be accompanied by a `path` in the `Evaluation`. The type of value each operator expects is defined with each operator. Most types are self-descriptive, except the `date` type: dates have to be expressed as a string following the [ISO 8601 standard](https://www.iso.org/iso-8601-date-and-time-format.html), specifying either a date or a date and a time.
+These operators evaluate a specific JSON property in the template.  All operators are valid properties in the `Evaluation`, but only one operator can be present in the top level of the `Evaluation`.  If multiple operators are necessary, a structured operator can be used to combine or nest the operators. Each operator must be accompanied by a `path` in the `Evaluation`. The type of value each operator expects is defined with each operator. Most types are self-descriptive, except the `date` type, the following [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) formats are currently accepted:
+
+* yyyy-MM-dd
+* yyyy-MM-ddThh:mm:ssK
+* yyyy-MM-ddThh:mmK
+* yyyy-MM-dd hh:mm:ssZ
+
+More information on the format identifiers can be found [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings).
 
 The examples given with the operators below will be in the context of the following JSON:
 ```javascript
