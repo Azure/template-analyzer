@@ -117,21 +117,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("2021-02-28", "2021-09-20", false, true, true, DisplayName = "A date is less or equal to another date")]
         [DataRow("2021-09-20", "2021-02-28", false, true, false, DisplayName = "A date is not less or equal to another date")]
         [DataRow("2021-02-28", "2021-02-28", false, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
-        public void EvaluateExpression_ValidTypes_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
+        // Wrong types
+        [DataRow(100, "aString", false, false, false, DisplayName = "Invalid token to evaluate")]
+        [DataRow("2021-02-28", 100, false, false, false, DisplayName = "Comparing a date with a number")]
+        [DataRow(100, "2021-02-28", false, false, false, DisplayName = "Comparing a number with a date")]
+        public void EvaluateExpression_AnyTermType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
         {
             CompareObjects(leftValue, rightValue, greater, orEquals, evaluationResult);
-        }
-
-        [TestMethod]
-        [DataRow(100, "aString", DisplayName = "Invalid token to evaluate")]
-        [DataRow("2021-02-28", 100, DisplayName = "Comparing a date with a number")]
-        [DataRow(100, "2021-02-28", DisplayName = "Comparing a number with a date")]
-        public void EvaluateExpression_InvalidTypes_ReturnsFalse(object leftValue, object rightValue)
-        {
-            var specifiedValueToken = TestUtilities.ToJToken(leftValue);
-            var tokenToEvaluate = TestUtilities.ToJToken(rightValue);
-
-            CompareObjects(specifiedValueToken, tokenToEvaluate, evaluationResult: false);
         }
 
         private void CompareObjects(object left, object right, bool greater = false, bool orEquals = false, bool evaluationResult = false)
