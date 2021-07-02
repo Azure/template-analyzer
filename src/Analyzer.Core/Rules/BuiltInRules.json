@@ -1,5 +1,61 @@
 [
   {
+    "name": "AppService_EnableDiagLogs",
+    "description": "Diagnostic logs in App Services should be enabled",
+    "recommendation": "Enable diagnostic Logs in App Services",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#diagnostic-logs-in-app-services-should-be-enabled",
+    "evaluation": {
+      "resourceType": "Microsoft.Web/sites",
+      "where": {
+        "allOf": [
+          {
+            "path": "kind",
+            "regex": "^((?!functionapp).)*$"
+          },
+          {
+            "path": "kind",
+            "regex": "^((?!linux).)*$"
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "resourceType": "Microsoft.Web/sites/config",
+          "allOf": [
+            {
+              "path": "properties.detailedErrorLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.httpLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.requestTracingEnabled",
+              "equals": true
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "path": "properties.siteConfig.detailedErrorLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.siteConfig.httpLoggingEnabled",
+              "equals": true
+            },
+            {
+              "path": "properties.siteConfig.requestTracingEnabled",
+              "equals": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
     "name": "AppServiceApiApp_DisableRemoteDebugging",
     "description": "Remote debugging should be turned off for API Apps",
     "recommendation": "Remote debugging should be turned off",
@@ -501,62 +557,6 @@
           "in": [
             "UserAssigned",
             "SystemAssigned"
-          ]
-        }
-      ]
-    }
-  },
-  {
-    "name": "AppService_EnableDiagLogs",
-    "description": "Diagnostic logs in App Services should be enabled",
-    "recommendation": "Enable diagnostic Logs in App Services",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#diagnostic-logs-in-app-services-should-be-enabled",
-    "evaluation": {
-      "resourceType": "Microsoft.Web/sites",
-      "where": {
-        "allOf": [
-          {
-            "path": "kind",
-            "regex": "^((?!functionapp).)*$"
-          },
-          {
-            "path": "kind",
-            "regex": "^((?!linux).)*$"
-          }
-        ]
-      },
-      "anyOf": [
-        {
-          "resourceType": "Microsoft.Web/sites/config",
-          "allOf": [
-            {
-              "path": "properties.detailedErrorLoggingEnabled",
-              "equals": true
-            },
-            {
-              "path": "properties.httpLoggingEnabled",
-              "equals": true
-            },
-            {
-              "path": "properties.requestTracingEnabled",
-              "equals": true
-            }
-          ]
-        },
-        {
-          "allOf": [
-            {
-              "path": "properties.siteConfig.detailedErrorLoggingEnabled",
-              "equals": true
-            },
-            {
-              "path": "properties.siteConfig.httpLoggingEnabled",
-              "equals": true
-            },
-            {
-              "path": "properties.siteConfig.requestTracingEnabled",
-              "equals": true
-            }
           ]
         }
       ]
