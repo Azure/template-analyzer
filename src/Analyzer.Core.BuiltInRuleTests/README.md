@@ -30,7 +30,8 @@ The JSON test configuration has the following schema:
         "Template": "Name of template file analyzed (without file extension).  Template must be in the 'TestTemplates' directory.",
         "ReportedFailures": [ // Array of objects with integer line numbers - each are a line number expected to be reported in the failure.
             {
-                "LineNumber": 3 // Line number of expected reported failure
+                "LineNumber": 3, // Line number of expected reported failure
+                "Description": "(Optional) Description of what's being tested for this expected failure."
             }
         ]
     },
