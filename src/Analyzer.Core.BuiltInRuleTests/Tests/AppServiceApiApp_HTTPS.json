@@ -3,10 +3,12 @@
         "Template": "AppServices",
         "ReportedFailures": [
             {
-                "LineNumber": 29
+                "LineNumber": 29,
+                "Description": "HTTPS property not defined"
             },
             {
-                "LineNumber": 44
+                "LineNumber": 44,
+                "Description": "HTTPS property set to false"
             }
         ]
     }
