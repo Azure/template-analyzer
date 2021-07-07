@@ -83,14 +83,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             if (term.Type == JTokenType.String)
             {
-                try
-                {
-                    return DateTime.Parse(term.Value<string>(), styles: DateTimeStyles.AssumeUniversal).ToOADate();
-                }
-                catch
-                {
-                    return null;
-                }
+                return DateTime.TryParse(term.Value<string>(), provider: null, styles: DateTimeStyles.AssumeUniversal, out var date)
+                    ? date.ToOADate()
+                    : (double?)null;
             }
             else if (term.Type == JTokenType.Float || term.Type == JTokenType.Integer)
             {
