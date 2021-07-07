@@ -52,6 +52,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
                 return null;
             }
 
+            reader.DateParseHandling = DateParseHandling.None;
+
             var jsonObject = JObject.Load(reader);
 
             var objectPropertyNames = jsonObject.Properties().Select(property => property.Name).ToList();
@@ -108,7 +110,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             // The object is created and populated explicitly here (instead of using serializer.Deserialize<>()).
             // Otherwise, this converter would continue to be called recusively without end.
             var expression = new T();
-            serializer.Populate(jObject.CreateReader(), expression);
+
+            var reader = jObject.CreateReader();
+            reader.DateParseHandling = DateParseHandling.None;
+
+            serializer.Populate(reader, expression);
+
             return expression;
         }
     }

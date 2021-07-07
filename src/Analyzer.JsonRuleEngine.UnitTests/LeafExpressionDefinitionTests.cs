@@ -89,6 +89,44 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void ToExpression_InequalityOperator_ReturnsLeafExpressionWithInequality()
+        {
+            var operatorValue = 100;
+
+            var leafExpression = GenerateLeafExpression(leaf => leaf.Greater = operatorValue);
+            var leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsTrue(leafOperator.Greater);
+            Assert.IsFalse(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.Less = operatorValue);
+            leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.Greater);
+            Assert.IsFalse(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.GreaterOrEquals = operatorValue);
+            leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsTrue(leafOperator.Greater);
+            Assert.IsTrue(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
+
+            leafExpression = GenerateLeafExpression(leaf => leaf.LessOrEquals = operatorValue);
+            leafOperator = leafExpression.Operator as InequalityOperator;
+            Assert.IsNotNull(leafOperator);
+            Assert.AreEqual(new JValue(operatorValue), leafOperator.SpecifiedValue);
+            Assert.IsFalse(leafOperator.Greater);
+            Assert.IsTrue(leafOperator.OrEquals);
+            Assert.AreEqual(100, leafOperator.EffectiveValue);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(NotImplementedException))]
         public void ToExpression_NoOperators_ThrowsException()
         {

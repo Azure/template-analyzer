@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
@@ -42,6 +43,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("equals", "someString", "exists", true, DisplayName = "{\"Equals\": \"someString\"}, Where: {\"Exists\": true}")]
         [DataRow("notEquals", 0, DisplayName = "{\"NotEquals\": 0}")]
         [DataRow("regex", "regexPattern", DisplayName = "{\"Regex\": \"regexPattern\"}")]
+        [DataRow("greater", 100, DisplayName = "{\"Greater\": 100}")]
+        [DataRow("less", 100, DisplayName = "{\"Less\": 100}")]
+        [DataRow("greaterOrEquals", 100, DisplayName = "{\"GreaterOrEquals\": 100}")]
+        [DataRow("lessOrEquals", 100, DisplayName = "{\"LessOrEquals\": 100}")]
+        [DataRow("greater", "2021-02-28T18:17:16.543Z", DisplayName = "{\"Greater\": 2021-02-28T18:17:16.543Z}")]
+        [DataRow("less", "2021-02-28T18:17:16.543Z", DisplayName = "{\"Less\": 2021-02-28T18:17:16.543Z}")]
+        [DataRow("greaterOrEquals", "2021-02-28T18:17:16.543Z", DisplayName = "{\"GreaterOrEquals\": 2021-02-28T18:17:16.543Z}")]
+        [DataRow("lessOrEquals", "2021-02-28T18:17:16.543Z", DisplayName = "{\"LessOrEquals\": 2021-02-28T18:17:16.543Z}")]
         [DynamicData(nameof(InOperatorTestScenarios), DynamicDataDisplayName = nameof(GetInOperatorTestDisplayName))]
         public void ReadJson_LeafWithValidOperator_ReturnsCorrectTypeAndValues(string operatorProperty, object operatorValue, params object[] whereCondition)
         {
@@ -301,6 +310,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void ReadJson_DateTokenType_DoesNotParseDate()
+        {
+            var @object = ReadJson($@"
+                {{
+                    ""resourceType"": ""someResource/resourceType"",
+                    ""path"": ""some.json.path"",
+                    ""greater"": ""2021-02-28T18:17:16Z"",
+                }}");
+
+            Assert.AreEqual(typeof(LeafExpressionDefinition), @object.GetType());
+
+            var expressionDefinition = @object as LeafExpressionDefinition;
+
+            Assert.AreEqual(JTokenType.String, expressionDefinition.Greater.Type);
+        }
+
+        [TestMethod]
         public void CanRead_ReturnsTrue()
         {
             Assert.IsTrue(new ExpressionConverter().CanRead);
@@ -321,7 +347,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         private static object ReadJson(string jsonString)
             => new ExpressionConverter().ReadJson(
-                JObject.Parse(jsonString).CreateReader(),
+                new JsonTextReader(new StringReader(jsonString)),
                 typeof(ExpressionDefinition),
                 null,
                 JsonSerializer.CreateDefault());
