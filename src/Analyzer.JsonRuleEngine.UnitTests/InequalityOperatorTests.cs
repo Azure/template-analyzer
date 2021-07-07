@@ -121,6 +121,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(100, "aString", false, false, false, DisplayName = "Invalid token to evaluate")]
         [DataRow("2021-02-28", 100, false, false, false, DisplayName = "Comparing a date with a number")]
         [DataRow(100, "2021-02-28", false, false, false, DisplayName = "Comparing a number with a date")]
+        // ! (date_format_a > date_format_b)
+        [DataRow("2021-02-28", "2021-02-28T00:00:00Z", true, false, false, DisplayName = "A date written with format 1 is not greater than itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28T00:00:00+00:00", true, false, false, DisplayName = "A date written with format 2 is not greater than itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28T00:00Z", true, false, false, DisplayName = "A date written with format 3 is not greater than itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28T00:00+00:00", true, false, false, DisplayName = "A date written with format 4 is not greater than itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28 00:00:00Z", true, false, false, DisplayName = "A date written with format 5 is not greater than itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28 00:00:00+00:00", true, false, false, DisplayName = "A date written with format 6 is not greater than itself wrote with the classical format")]
+        // date_format_a >= date_format_b
+        [DataRow("2021-02-28", "2021-02-28T00:00:00Z", true, true, true, DisplayName = "A date written with format 1 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28T00:00:00+00:00", true, true, true, DisplayName = "A date written with format 2 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28T00:00Z", true, true, true, DisplayName = "A date written with format 3 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28T00:00+00:00", true, true, true, DisplayName = "A date written with format 4 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28 00:00:00Z", true, true, true, DisplayName = "A date written with format 5 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28", "2021-02-28 00:00:00+00:00", true, true, true, DisplayName = "A date written with format 6 is greater or equals to itself wrote with the classical format")]
         public void EvaluateExpression_AnyTermType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
         {
             CompareObjects(leftValue, rightValue, greater, orEquals, evaluationResult);
@@ -143,15 +157,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             try
             {
                 funct();
+
+                Assert.Fail("Test method should have thrown an InvalidOperationException");
             }
             catch (InvalidOperationException ex)
             {
                 Assert.AreEqual(exceptionMessage, ex.Message);
-
-                return;
             }
-
-            Assert.Fail("Test method should have thrown an InvalidOperationException");
         }
     }
 }

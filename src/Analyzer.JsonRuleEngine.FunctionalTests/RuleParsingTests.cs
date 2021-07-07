@@ -109,8 +109,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
 
             Assert.AreEqual(2021, parsedDate.Year);
             Assert.AreEqual(2, parsedDate.Month);
-            Assert.AreEqual(28, parsedDate.Day);
-            // Assert.IsTrue(parsedDate.Hour == 0 || parsedDate.Hour == 18); converting to OADate loses localization information
+            // Not checking the day and hour because converting to OADate loses localization information
             Assert.IsTrue(parsedDate.Minute == 0 || parsedDate.Minute == 17);
             Assert.IsTrue(parsedDate.Second == 0 || parsedDate.Second == 16);
         }

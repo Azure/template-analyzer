@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             {
                 try
                 {
-                    return DateTime.Parse(term.Value<string>(), styles: DateTimeStyles.RoundtripKind).ToOADate();
+                    return DateTime.Parse(term.Value<string>(), styles: DateTimeStyles.AssumeUniversal).ToOADate();
                 }
                 catch
                 {
