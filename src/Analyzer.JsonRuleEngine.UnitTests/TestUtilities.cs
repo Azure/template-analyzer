@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.IO;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json;
@@ -20,7 +21,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public static JToken ToJToken(object value)
         {
             var jsonValue = JsonConvert.SerializeObject(value);
-            return JToken.Parse($"{{\"Key\": {jsonValue} }}")["Key"];
+            var jsonString = $"{{\"Key\": {jsonValue} }}";
+            var reader = new JsonTextReader(new StringReader(jsonString))
+            {
+                DateParseHandling = DateParseHandling.None
+            };
+            return JObject.Load(reader)["Key"];
         }
 
         /// <summary>
