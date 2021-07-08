@@ -21,7 +21,14 @@ The Template BPA is executed via a command line.  Here is the format to invoke i
 `TemplateAnalyzer.exe -t <template-path> [-p <parameters-path>]`
 
 ### Input
-The Template BPA depends on a couple inputs – an ARM template to analyze, specified with the `-t` or `--template-file-path` argument, and an (optional) ARM template parameters file, specified with the `-p` or `--parameters-file-path` argument. The Template BPA then runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
+The Template BPA accepts the following inputs:
+
+Argument | Description
+--- | ---
+`-t` or `--template-file-path` | The ARM template to analyze
+**(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
+
+ The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
 
 **Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
