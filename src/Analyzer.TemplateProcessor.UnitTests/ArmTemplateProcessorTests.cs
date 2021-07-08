@@ -407,6 +407,51 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         }
 
         [TestMethod]
+        public void ParseAndValidateTemplate_ValidTemplateWithDates_DoesNotParseDates()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": { },
+                ""variables"": { },
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Consumption/budgets"",
+                        ""apiVersion"": ""2019-10-01"",
+                        ""name"": ""A name"",
+                        ""properties"": {
+                            ""startDate"": ""2021-02-28"",
+                            ""endDate"": ""2031-02-28T18:17:16Z""
+                        }
+                    }
+                ],
+                ""outputs"": {}
+            }";
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            var parameters = new InsensitiveDictionary<JToken>();
+
+            var metadata = new InsensitiveDictionary<JToken>
+            {
+                { "subscription", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
+                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                { "resourceGroup", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
+                    new JProperty("location", "westus2"),
+                    new JProperty("name", "resource-group")) },
+                { "tenantId", "00000000-0000-0000-0000-000000000000" }
+            };
+
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+
+            Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("startDate").Type);
+            Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("endDate").Type);
+        }
+
+        [TestMethod]
         public void CopyResourceDependants_ValidChildResourceDependsOnByNameAndResourceId_ChildResourceGetsCopiedToParentResources()
         {
             // Arrange

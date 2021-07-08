@@ -62,10 +62,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public JToken Less { get; set; }
 
         /// <summary>
-        /// Gets or sets the LessOrEqual property
+        /// Gets or sets the LessOrEquals property
         /// </summary>
         [JsonProperty]
-        public JToken LessOrEqual { get; set; }
+        public JToken LessOrEquals { get; set; }
 
         /// <summary>
         /// Gets or sets the Greater property
@@ -74,10 +74,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public JToken Greater { get; set; }
 
         /// <summary>
-        /// Gets or sets the GreaterOrEqual property
+        /// Gets or sets the GreaterOrEquals property
         /// </summary>
         [JsonProperty]
-        public JToken GreaterOrEqual { get; set; }
+        public JToken GreaterOrEquals { get; set; }
 
         /// <summary>
         /// Creates a <see cref=" LeafExpression"/> capable of evaluating JSON using the operator specified in the JSON rule.
@@ -110,6 +110,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             else if (this.In != null)
             {
                 leafOperator = new InOperator(this.In);
+            }
+            else if (this.Greater != null)
+            {
+                leafOperator = new InequalityOperator(this.Greater, greater: true, orEquals: false);
+            }
+            else if (this.GreaterOrEquals != null)
+            {
+                leafOperator = new InequalityOperator(this.GreaterOrEquals, greater: true, orEquals: true);
+            }
+            else if (this.Less != null)
+            {
+                leafOperator = new InequalityOperator(this.Less, greater: false, orEquals: false);
+            }
+            else if (this.LessOrEquals != null)
+            {
+                leafOperator = new InequalityOperator(this.LessOrEquals, greater: false, orEquals: true);
             }
 
             if (leafOperator != null)
