@@ -37,9 +37,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerShellRuleEngine", "Pow
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.PowerShellRuleEngine", "Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj", "{520EF22F-A694-4B09-94C7-2CCC47B0653F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.PowerShellRuleEngine.UnitTests", "Analyzer.PowerShellRuleEngine.UnitTests\Analyzer.PowerShellRuleEngine.UnitTests.csproj", "{D6664E6D-827C-49BE-AD94-49977605E780}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.PowerShellRuleEngine.UnitTests", "Analyzer.PowerShellRuleEngine.UnitTests\Analyzer.PowerShellRuleEngine.UnitTests.csproj", "{D6664E6D-827C-49BE-AD94-49977605E780}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.BicepProcessor", "Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj", "{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.BicepProcessor", "Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj", "{FC3CC274-6E47-40F7-9948-71C2DE09A0C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BicepTemplateProcessor", "BicepTemplateProcessor", "{C8797EE9-D29F-4D90-845E-4536956FC0B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +121,7 @@ Global
 		{8E491ED0-D7DE-4F89-8AC9-B5220E728A97} = {44123AF8-5D5B-4C69-B1CB-BB8C7868E010}
 		{520EF22F-A694-4B09-94C7-2CCC47B0653F} = {EE9E18BC-5112-4981-8CD9-0CCEF29ADFEA}
 		{D6664E6D-827C-49BE-AD94-49977605E780} = {EE9E18BC-5112-4981-8CD9-0CCEF29ADFEA}
+		{FC3CC274-6E47-40F7-9948-71C2DE09A0C8} = {C8797EE9-D29F-4D90-845E-4536956FC0B0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C716DF78-13EF-44A1-8E2E-CFF3746128CE}

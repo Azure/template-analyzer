@@ -1,36 +1,37 @@
-﻿using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.IO;
 using Bicep.Core.Emit;
 using Bicep.Core.FileSystem;
 using Bicep.Core.Semantics;
 using Bicep.Core.Syntax;
-using Bicep.Core.Workspaces;
 using Bicep.Core.TypeSystem.Az;
+using Bicep.Core.Workspaces;
 
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
+    /// <summary>
+    /// Contains functionality to process Bicep templates.
+    /// Contains functionality to convert Bicep template into JSON templates.
+    /// </summary>
     public class BicepTemplateProcessor
     {
-
-        private readonly string bicep;
         private readonly string bicepPath;
-        private readonly string apiVersion;
-        private readonly bool dropResourceCopies;
 
         /// <summary>
-        ///  Constructor for the ARM Template Processing library
+        ///  Constructor for the Bicep Template Processing library
         /// </summary>
-        /// <param name="bicepTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
-        /// <param name="bicepPath">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
-        /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
-        /// <param name="dropResourceCopies">Whether copies of resources (when using the copy element in the ARM Template) should be dropped after processing.</param>
-        public BicepTemplateProcessor(string bicepTemplate, string bicepPath, string apiVersion = "2020-01-01", bool dropResourceCopies = false)
+        /// <param name="bicepPath">The Bicep Template file path. Needed to convert to JSON.</param>
+        public BicepTemplateProcessor(string bicepPath)
         {
-            this.bicep = bicepTemplate;
             this.bicepPath = bicepPath;
-            this.apiVersion = apiVersion;
-            this.dropResourceCopies = dropResourceCopies;
         }
+
+        /// <summary>
+        /// Converts Bicep template into JSON template and returns it as a string
+        /// </summary>
+        /// <returns>The processed template as a <c>JSON</c> object.</returns>
         public string ConvertBicepToJson()
         {
             using var stringWriter = new StringWriter();
