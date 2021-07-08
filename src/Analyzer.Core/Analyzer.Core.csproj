@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer</RootNamespace>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Core</AssemblyName>
     <Description>An ARM template scanner for security misconfigurations and best practices</Description>
@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
+    <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
     <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
   </ItemGroup>

@@ -37,22 +37,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private RootCommand SetupCommandLineAPI()
         {
             // Command line API is setup using https://github.com/dotnet/command-line-api
-            // Create a root command 
+
             rootCommand = new RootCommand();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
-
-            // It has two commands - analyze-template and analyze-directory
-            rootCommand.AddCommand(SetupAnalyzeTemplateCommand());
-
-            rootCommand.AddCommand(SetupAnalyzeDirectoryCommand());
-            
-            return rootCommand;
-        }
-
-        private Command SetupAnalyzeTemplateCommand()
-        {
-            // Setup analyze-template 
-            Command analyzeTemplateCommand = new Command("analyze-template");
 
             Option<FileInfo> templateOption = new Option<FileInfo>(
                     "--template-file-path",
@@ -61,48 +48,72 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 IsRequired = true
             };
             templateOption.AddAlias("-t");
-
-            analyzeTemplateCommand.AddOption(templateOption);
+            rootCommand.AddOption(templateOption);
 
             Option<FileInfo> parameterOption = new Option<FileInfo>(
                  "--parameters-file-path",
                  "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
+            rootCommand.AddOption(parameterOption);
 
-            analyzeTemplateCommand.AddOption(parameterOption);
+            rootCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) => this.RootCommandHandler(templateFilePath, parametersFilePath));
 
-            analyzeTemplateCommand.AddOption(SetupOutputFileOption());
+            return rootCommand;
+        }
 
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) =>
+        private void RootCommandHandler(FileInfo templateFilePath, FileInfo parametersFilePath)
+        {
+            try
             {
-                try
+                var templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
+                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+
+                string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
+                if (parametersFilePath != null)
                 {
-                    Core.TemplateAnalyzer templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName));
-                    IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
-
-                    string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
-                    if (parametersFilePath != null)
-                    {
-                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
-                    }
-
-                    Console.WriteLine(fileMetadata);
-
-                    foreach (var evaluation in evaluations)
-                    {
-                        string resultString = GenerateResultString(evaluation);
-                        
-                        Console.WriteLine($"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}");
-                    }
-                }
-                catch (Exception exp)
-                {
-                    Console.WriteLine($"An exception occured: {exp.Message}");
+                    fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
                 }
 
-            });
+                Console.WriteLine(fileMetadata);
 
-            return analyzeTemplateCommand;
+                var passedEvaluations = 0;
+
+                foreach (var evaluation in evaluations)
+                {
+                    string resultString = GenerateResultString(evaluation);
+
+                    if (!evaluation.Passed)
+                    {
+                        var output = $"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}" +
+                        $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
+                        $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
+                        Console.WriteLine(output);
+                    }
+                    else
+                    {
+                        passedEvaluations++;
+                    }
+                }
+
+                Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+            }
+        }
+
+        private static string GetAllExceptionMessages(Exception exception)
+        {
+            string exceptionMessage = exception.Message;
+
+            while (exception.InnerException != null)
+            {
+                exception = exception.InnerException;
+                exceptionMessage += " - " + exception.Message;
+            }
+
+            return exceptionMessage;
         }
 
         private string GenerateResultString(Types.IEvaluation evaluation)
@@ -113,7 +124,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 foreach (var result in evaluation.Results)
                 {
-                    resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
+                    if (!result.Passed)
+                    {
+                        resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
+                    }
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)
@@ -123,49 +137,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             return resultString;
-        }
-
-        private Command SetupAnalyzeDirectoryCommand()
-        {
-            // Setup analyze-directory 
-            Command analyzeDirectoryCommand = new Command("analyze-directory");
-
-            Option<DirectoryInfo> directoryOption = new Option<DirectoryInfo>(
-                    "--directory-path",
-                    "Directory to search for ARM templates (.json file extension)")
-            {
-                IsRequired = true
-            };
-            directoryOption.AddAlias("-d");
-
-            analyzeDirectoryCommand.AddOption(directoryOption);
-
-            Option<bool> recursiveOption = new Option<bool>(
-                    "--recursive",
-                    "Search directory and all subdirectories");
-            recursiveOption.AddAlias("-r");
-
-            analyzeDirectoryCommand.AddOption(recursiveOption);
-
-            analyzeDirectoryCommand.AddOption(SetupOutputFileOption());
-
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, bool>((directoryPath, recursive) =>
-            {
-                // TODO: This needs to call the library and pass in a list of templates
-            });
-
-            return analyzeDirectoryCommand;
-        }
-
-        private Option SetupOutputFileOption()
-        {
-            Option<FileInfo> outputFileOption = new Option<FileInfo>(
-                        "--output-path",
-                        "Redirect output to specified file in JSON format");
-
-            outputFileOption.AddAlias("-o");
-
-            return outputFileOption;
         }
     }
 }

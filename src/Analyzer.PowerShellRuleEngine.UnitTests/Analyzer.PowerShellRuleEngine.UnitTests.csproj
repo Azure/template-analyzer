@@ -1,13 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
-
-    <AssemblyName>Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests</AssemblyName>
-
-    <RootNamespace>Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
+    <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\TTK.targets" />
+
+  <ItemGroup>
+      <Content Include="templates\**">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
   </ItemGroup>
 
 </Project>
