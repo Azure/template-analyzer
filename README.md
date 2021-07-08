@@ -19,18 +19,16 @@ Also explore [information about built-in rules](docs\built-in-bpa-rules.md).
 ## Using the Template BPA
 The Template BPA is executed via a command line.  Here is the format to invoke it:
 
-`TemplateAnalyzer.exe analyze-template -t <template-path> [-p <parameters-path>]`
-
-Currently, the working directory during execution must be the same directory the executable is in so the required rules file can be found (more below).
+`TemplateAnalyzer.exe -t <template-path> [-p <parameters-path>]`
 
 ### Input
-The Template BPA depends on a few inputs – the Template BPA rules, ARM template, and (optional) ARM template parameters. The Template BPA rules are written in JSON. You can add and modify what rules to run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md). The Template BPA then runs the configured rules against the provided [ARM templates]( https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/) and their corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files) if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM templates.
+The Template BPA depends on a few inputs – an ARM template to analyze, ARM template parameters (optional), and the Template BPA rules (not specified on the command line). The Template BPA rules are written in JSON, located in *Rules/BuiltInRules.json* (starting from the same directory *TemplateAnalyzer.exe* is in). You can add to and/or modify that file to change the rules that are run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md). The Template BPA then runs the configured rules against the provided [ARM templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/) and their corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files) if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM templates.
 
-**Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **do not** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id). 
+**Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **do not** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
 ### Output
 The Template BPA outputs the results of violated rules, its corresponding line number, and the recommendation to remediate that violation.
- 
+
 ## Contributing
 This project welcomes contributions and suggestions. Please see the [Contribution Guide](./CONTRIBUTING.md) for more details about how to contribute to the Template BPA. Most contributions require you to
 agree to a Contributor License Agreement (CLA) declaring that you have the right to,
