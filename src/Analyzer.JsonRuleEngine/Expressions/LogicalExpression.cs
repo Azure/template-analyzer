@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-                bool evaluationPassed = false;
+                bool evaluationPassed = Operator != LogicalOperator.Or;
 
                 foreach (var expression in Expressions)
                 {
@@ -77,6 +77,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                         jsonRuleEvaluations.Add(evaluation);
                     }
                 }
+
+                evaluationPassed |= jsonRuleEvaluations.Count == 0;
 
                 return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
             });
