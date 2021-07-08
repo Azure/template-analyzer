@@ -6,11 +6,6 @@
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.TemplateProcessor</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Analyzer.TemplateProcessor.xml</DocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Azure.Deployments.Core" Version="1.0.112" />
     <PackageReference Include="Azure.Deployments.Expression" Version="1.0.112" />
