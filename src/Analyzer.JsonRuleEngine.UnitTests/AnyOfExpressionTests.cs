@@ -10,6 +10,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using static Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests.TestUtilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
@@ -86,6 +87,59 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             Assert.AreEqual(expectedTrue, anyOfEvaluation.EvaluationsEvaluatedTrue.Count());
             Assert.AreEqual(expectedFalse, anyOfEvaluation.EvaluationsEvaluatedFalse.Count());
+        }
+
+        [DataTestMethod]
+        [DataRow(null, true, true, DisplayName = "First expression not evaluated, second expression passes, overall result is pass")]
+        [DataRow(null, false, false, DisplayName = "First expression not evaluated, second expression fails, overall result is fail")]
+        [DataRow(true, null, true, DisplayName = "First expression passes, second expression not evaluated, overall result is pass")]
+        [DataRow(null, null, true, DisplayName = "All expressions not evaluated, overall result is pass")]
+        public void Evaluate_SubResourceScopeNotFound_ExpectedResultIsReturned(bool? firstExpressionPass, bool? secondExpressionPass, bool overallPass)
+        {
+            string evaluatedPath = "some.evaluated.path";
+            string notEvaluatedPath = "path.not.evaluated";
+
+            // Arrange
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
+                .Setup(r => r.Resolve(It.Is<string>(path => evaluatedPath.Equals(path))))
+                .Returns(() => new[] { mockJsonPathResolver.Object });
+
+            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
+
+            // Create 2 expressions for the AnyOf.
+            // Whether each is evaluated or not is determined by the path passed to each.
+
+            var mockLeafExpression1 = new MockExpression(new ExpressionCommonProperties { Path = firstExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
+            {
+                EvaluationCallback = pathResolver => firstExpressionPass.HasValue
+                        ? new JsonRuleEvaluation(null, firstExpressionPass.Value, new[] { new JsonRuleResult { Passed = firstExpressionPass.Value } })
+                        : null
+            };
+
+            var mockLeafExpression2 = new MockExpression(new ExpressionCommonProperties { Path = secondExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
+            {
+                EvaluationCallback = pathResolver => secondExpressionPass.HasValue
+                        ? new JsonRuleEvaluation(null, secondExpressionPass.Value, new[] { new JsonRuleResult { Passed = secondExpressionPass.Value } })
+                        : null
+            };
+
+            var anyOfExpression = new AnyOfExpression(
+                new Expression[] { mockLeafExpression1, mockLeafExpression2 },
+                new ExpressionCommonProperties());
+
+            var expectedResults = new[] { firstExpressionPass, secondExpressionPass };
+
+            // Act
+            var anyOfEvaluation = anyOfExpression.Evaluate(mockJsonPathResolver.Object);
+
+            // Assert
+            Assert.AreEqual(overallPass, anyOfEvaluation.Passed);
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue), anyOfEvaluation.Evaluations.Count());
+            Assert.AreEqual(expectedResults.Any(r => r.HasValue), anyOfEvaluation.HasResults);
+
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue && r.Value), anyOfEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue && !r.Value), anyOfEvaluation.EvaluationsEvaluatedFalse.Count());
         }
 
         [TestMethod]

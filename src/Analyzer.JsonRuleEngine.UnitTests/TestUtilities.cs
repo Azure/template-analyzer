@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
+using System.IO;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,7 +21,29 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public static JToken ToJToken(object value)
         {
             var jsonValue = JsonConvert.SerializeObject(value);
-            return JToken.Parse($"{{\"Key\": {jsonValue} }}")["Key"];
+            var jsonString = $"{{\"Key\": {jsonValue} }}";
+            var reader = new JsonTextReader(new StringReader(jsonString))
+            {
+                DateParseHandling = DateParseHandling.None
+            };
+            return JObject.Load(reader)["Key"];
+        }
+
+        /// <summary>
+        /// A mock implementation of an <see cref="Expression"/> for testing internal methods.
+        /// </summary>
+        internal class MockExpression : Expression
+        {
+            public Func<IJsonPathResolver, JsonRuleEvaluation> EvaluationCallback { get; set; }
+
+            public MockExpression(ExpressionCommonProperties commonProperties)
+                : base(commonProperties)
+            { }
+
+            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
+            {
+                return base.EvaluateInternal(jsonScope, EvaluationCallback);
+            }
         }
     }
 }

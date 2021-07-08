@@ -3,31 +3,55 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 {
     [TestClass]
     public class TemplateAnalyzerTests
     {
+        [AssemblyInitialize]
+        public static void AssemblyInitialize(TestContext context)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var powerShell = Powershell.Create();
+
+                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
+                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
+                    .AddParameter("ExecutionPolicy", "Unrestricted");
+
+                powerShell.Invoke();
+            }
+        }
+
         [DataTestMethod]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "1 matching Resource with 1 passing evaluation")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "1 matching Resource with 1 failing evaluation")]
         [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.Storage/storageAccounts", 0, false, DisplayName = "0 matching Resources with no results")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, false, @"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", DisplayName = "2 matching Resources with 1 passing evaluation")]
-        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string resource2Properties = null)
+        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\success.json", DisplayName = "1 matching Resource with 1 passing evaluation, specifying a template file path")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 2, false, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", DisplayName = "1 matching Resource with 2 failing evaluations, specifying a template file path")]
+        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string resource2Properties = null, string templateFilePath = null)
         {
             // Arrange
-            string[] resourceProperties = { GenerateResource(resource1Properties, resourceType), GenerateResource(resource2Properties, resourceType) };
+            string[] resourceProperties = { GenerateResource(resource1Properties, resourceType, "resource1"), GenerateResource(resource2Properties, resourceType, "resource2") };
             string template = GenerateTemplate(resourceProperties);
 
-            TemplateAnalyzer templateAnalyzer = new TemplateAnalyzer(template);
+            var templateAnalyzer = new TemplateAnalyzer(template, templateFilePath: templateFilePath);
             var evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+            var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
 
-            Assert.AreEqual(expectedEvaluationCount, evaluations.Count());
+            Assert.AreEqual(expectedEvaluationCount, evaluationsWithResults.Count);
 
-            if (expectedEvaluationCount > 0)
-                Assert.AreEqual(expectedEvaluationPassed, evaluations.First().Passed);
+            foreach(IEvaluation evaluation in evaluationsWithResults)
+            {
+                Assert.AreEqual(expectedEvaluationPassed, evaluation.Passed);
+            }
         }
 
         private string GenerateTemplate(string[] resourceProperties)
@@ -38,7 +62,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             ""resources"": [ {0} ] }}", string.Join(',', resourceProperties));
         }
 
-        private string GenerateResource(string resourceProperties, string resourceType)
+        private string GenerateResource(string resourceProperties, string resourceType, string resourceName)
         {
             if (string.IsNullOrEmpty(resourceProperties))
             {
@@ -48,10 +72,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             return string.Format(@"
                     {{
                       ""apiVersion"": ""2018-02-01"",
-                      ""name"": ""resourceName"",
+                      ""name"": ""{2}"",
                       ""type"": ""{1}"",
                       ""properties"": {0}
-                    }}", resourceProperties, resourceType);
+                    }}", resourceProperties, resourceType, resourceName);
         }
 
         [TestMethod]

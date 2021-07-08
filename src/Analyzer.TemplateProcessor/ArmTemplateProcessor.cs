@@ -4,15 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
+using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
 using Azure.Deployments.Templates.Configuration;
 using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Expressions;
 using Azure.Deployments.Templates.Extensions;
 using Azure.Deployments.Templates.Schema;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -26,19 +27,26 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
     {
         private readonly string armTemplate;
         private readonly string apiVersion;
-        private readonly bool dropResourceCopies;
+        private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
+        private Dictionary<string, TemplateResource> flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Mapping between resources in the expanded template to their original resource in 
+        /// the original template. Used to get line numbers.
+        /// The key is the path in the expanded template with value being the path
+        /// in the original template.
+        /// </summary>
+        public Dictionary<string, string> ResourceMappings = new Dictionary<string, string>();
 
         /// <summary>
         ///  Constructor for the ARM Template Processing library
         /// </summary>
         /// <param name="armTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
-        /// <param name="dropResourceCopies">Whether copies of resources (when using the copy element in the ARM Template) should be dropped after processing.</param>
-        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", bool dropResourceCopies = false)
+        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01")
         {
             this.armTemplate = armTemplate;
             this.apiVersion = apiVersion;
-            this.dropResourceCopies = dropResourceCopies;
 
             AnalyzerDeploymentsInterop.Initialize();
         }
@@ -120,42 +128,37 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // Do not throw if there was an issue with evaluating language expressions
             }
 
-            template.Resources = ReorderResourceCopies(template, copyNameMap);
+            MapTopLevelResources(template, copyNameMap);
 
             TemplateEngine.ValidateProcessedTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 
-            template = ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(template);
+            template = ProcessResourcesAndOutputs(template);
 
             return template;
         }
 
         /// <summary>
-        /// Processes language expressions in the properties property of the resources and value property of outputs.
+        /// Processes each resource for language expressions and parent resources as well
+        /// as processes language expressions for outputs.
         /// </summary>
-        /// <param name="template">The template.</param>
-        /// <returns>The parsed template as a Template object.</returns>
-        internal Template ProcessTemplateResourceAndOutputPropertiesLanguageExpressions(Template template)
+        /// <param name="template">Template being processed.</param>
+        /// <returns>Template after processing resources and outputs.</returns>
+        internal Template ProcessResourcesAndOutputs(Template template)
         {
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
+            SaveFlattenedResources(template.Resources);
 
-            for (int i = 0; i < template.Resources.Length; i++)
+            foreach (var resourcePair in flattenedResources)
             {
-                var resource = template.Resources[i];
+                var resource = resourcePair.Value;
 
-                try
+                ProcessTemplateResourceLanguageExpressions(resource, evaluationHelper);
+
+                CopyResourceDependants(resource, flattenedResources);
+
+                if (!ResourceMappings.ContainsKey(resource.Path))
                 {
-                    if (resource.Properties != null)
-                    {
-                        evaluationHelper.OnGetCopyContext = () => resource.CopyContext;
-                        resource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
-                            root: resource.Properties.Value,
-                            evaluationContext: evaluationHelper.EvaluationContext);
-                    }
-                }
-                catch
-                {
-                    // Do not throw if there was an issue with evaluating language expressions
-                    continue;
+                    AddResourceMapping(resource.Path, resource.Path);
                 }
             }
 
@@ -180,6 +183,165 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             }
 
             return template;
+        }
+
+        /// <summary>
+        /// Copies child resources into sub resources for parent resources.
+        /// </summary>
+        /// <param name="templateResource">The child resource.</param>
+        /// <param name="resources">A collection of all resources with a mapping to their processed name.</param>
+        internal void CopyResourceDependants(TemplateResource templateResource, Dictionary<string, TemplateResource> resources)
+        {
+            if (templateResource.DependsOn == null)
+            {
+                return;
+            }
+
+            foreach (var parentResourceIds in templateResource.DependsOn)
+            {
+                string parentResourceName;
+                TemplateResource parentResource = null;
+                // If the dependsOn references the resourceId
+                if (parentResourceIds.Value.StartsWith("/subscriptions"))
+                {
+                    string parentResourceId = IResourceIdentifiableExtensions.GetUnqualifiedResourceId(parentResourceIds.Value);
+                    parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
+                    string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
+
+                    resources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResource);
+                }
+                // If the dependsOn references the resource name
+                else
+                {
+                    parentResourceName = parentResourceIds.Value;
+                    var matchingResources = resources.Where(k => k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase)).ToList();
+                    if (matchingResources.Count == 1)
+                    {
+                        parentResource = matchingResources.First().Value;
+                    }
+                }
+
+                // Parent resouce is not in the template
+                if (parentResource == null)
+                {
+                    continue;
+                }
+
+                // Add this resource as a child of its parent resource
+                if (parentResource.Resources == null)
+                {
+                    parentResource.Resources = new TemplateResource[] { templateResource };
+
+                    AddResourceMapping($"{parentResource.Path}.resources[0]", templateResource.Path);
+                }
+                else
+                {
+                    var childResources = parentResource.Resources;
+                    parentResource.Resources = childResources.ConcatArray(new TemplateResource[] { templateResource });
+                    int resourceIndex = parentResource.Resources.Length - 1;
+
+                    AddResourceMapping($"{parentResource.Path}.resources[{resourceIndex}]", templateResource.Path);
+                }
+            }
+
+            return;
+        }
+
+        private void AddResourceMapping(string expandedTemplatePath, string originalTemplatePath)
+        {
+            // Save all permutations of the resource path based off values already present 
+            // in the dictionary with mapping. This is necessary to report an issue in
+            // a copied nth grandchild resource.
+            var tokens = expandedTemplatePath.Split('.');
+
+            for (int i = 0; i < tokens.Length - 1; i++)
+            {
+                string possibleOriginalPathOfAnotherResource = string.Join('.', tokens[..(i + 1)]);
+                if (originalToExpandedMapping.TryGetValue(possibleOriginalPathOfAnotherResource, out List<string> copiedLocationsOfAnotherResource))
+                {
+                    foreach (string copiedLocationOfAnotherResource in copiedLocationsOfAnotherResource)
+                    {
+                        if (!copiedLocationOfAnotherResource.Equals(possibleOriginalPathOfAnotherResource, StringComparison.OrdinalIgnoreCase))
+                        {
+                            ResourceMappings.TryAdd($"{copiedLocationOfAnotherResource}.{string.Join('.', tokens[(i + 1)..])}", originalTemplatePath);
+                        }
+                    }
+                }
+            }
+
+            if (!ResourceMappings.TryAdd(expandedTemplatePath, originalTemplatePath))
+            {
+                throw new Exception($"Error mapping resource at path {originalTemplatePath}");
+            }
+
+            if(!originalToExpandedMapping.TryAdd(originalTemplatePath, new List<string> { expandedTemplatePath }))
+            {
+                originalToExpandedMapping[originalTemplatePath].Add(expandedTemplatePath);
+            }
+        }
+
+        /// <summary>
+        /// Flattens resources that are defined inside other resources.
+        /// </summary>
+        /// <param name="resources">Resources in the template.</param>
+        /// <param name="parentName">Name of the parent resource. Used during recursive call.</param>
+        /// <param name="parentType">Type of the parent resource. Used during recursive call.</param>
+        private void SaveFlattenedResources(TemplateResource[] resources, string parentName = null, string parentType = null)
+        {
+            for (int i = 0; i < resources.Length; i++)
+            {
+                string dictionaryKey;
+                var resource = resources[i];
+
+                if (parentName != null && parentType != null)
+                {
+                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].Path}.resources[{i}]";
+
+                    dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
+                }
+                else
+                {
+                    resource.Path = $"resources[{i}]";
+
+                    dictionaryKey = $"{resource.Name.Value} {resource.Type.Value}";
+                }
+
+                flattenedResources.Add(dictionaryKey, resource);
+
+                if (resource.Resources != null)
+                {
+                    string resourceNamePrefix = parentName == null ? "" : $"{parentName}/";
+                    string resourceTypePrefix = parentType == null ? "" : $"{parentType}/";
+
+                    SaveFlattenedResources(resource.Resources, $"{resourceNamePrefix}{resource.Name.Value}", $"{resourceTypePrefix}{resource.Type.Value}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Processes language expressions in the properties property of the resources.
+        /// </summary>
+        /// <param name="templateResource">The template resource to process language expressions for.</param>
+        /// <param name="evaluationHelper">Evaluation helper to evaluate expressions</param>
+        private void ProcessTemplateResourceLanguageExpressions(TemplateResource templateResource, TemplateExpressionEvaluationHelper evaluationHelper)
+        {
+            try
+            {
+                if (templateResource.Properties != null)
+                {
+                    evaluationHelper.OnGetCopyContext = () => templateResource.CopyContext;
+                    templateResource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
+                        root: templateResource.Properties.Value,
+                        evaluationContext: evaluationHelper.EvaluationContext);
+                }
+            }
+            catch
+            {
+                // Do not throw if there was an issue with evaluating language expressions
+                return;
+            }
+
+            return;
         }
 
         /// <summary>
@@ -226,52 +388,31 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         }
 
         /// <summary>
-        /// Moves the original resource copied into it's original location to preserve references.
-        /// Also, drops resource copies if the flag is set in the constructor.
+        /// Maps the resources to their original location.
         /// </summary>
         /// <param name="template">The template</param>
         /// <param name="copyNameMap">Mapping of the copy name, the original name of the resource, and index of resource in resource list.</param>
-        /// <returns>An array of the Template Resources after they have been reordered.</returns>
-        private TemplateResource[] ReorderResourceCopies(Template template, Dictionary<string, (string, int)> copyNameMap)
+        private void MapTopLevelResources(Template template, Dictionary<string, (string, int)> copyNameMap)
         {
-            // Set OriginalName back on resources that were copied and reorder the resources.
-            // Omit extra copies of resources if needed.
-            List<TemplateResource> updatedOrder = new List<TemplateResource>();
+            // Set OriginalName back on resources that were copied
+            // and map them to their original resource
             for (int i = 0; i < template.Resources.Length; i++)
             {
                 var resource = template.Resources[i];
-                if (resource.Copy == null)
+                if (resource.Copy != null && copyNameMap.TryGetValue(resource.Copy.Name.Value, out (string, int) originalValues))
                 {
-                    // non-copied resource.  Add to updated array
-                    updatedOrder.Add(resource);
+                    // Copied resource.  Update OriginalName and
+                    // add mapping to original resource
+                    resource.OriginalName = originalValues.Item1;
+
+                    resource.Path = $"resources[{i}]";
+                    AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
+
+                    continue;
                 }
-                else
-                {
-                    // Copied resource.  Update OriginalName and:
-                    // - if it's the first copy, insert back where it was supposed to be
-                    // - if it's an extra copy, add to the end, or don't add at all if requested
-                    if (copyNameMap.TryGetValue(resource.Copy.Name.Value, out (string, int) originalValues))
-                    {
-                        resource.OriginalName = originalValues.Item1;
-                        if (resource.CopyContext.CopyIndex == 0)
-                        {
-                            updatedOrder.Insert(originalValues.Item2, resource);
-                        }
-                        else if (!dropResourceCopies)
-                        {
-                            updatedOrder.Add(resource);
-                        }
-                    }
-                    else
-                    {
-                        // Couldn't get original values.  Insert at end as a precaution,
-                        // but this code should never be reached under normal circumstances.
-                        updatedOrder.Add(resource);
-                    }
-                }
+                    
+                AddResourceMapping($"resources[{i}]", resource.Path);
             }
-            
-            return updatedOrder.ToArray();
         }
 
         /// <summary>
