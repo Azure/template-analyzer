@@ -316,11 +316,11 @@ Example:
 #### **Evaluate [[*]](#note)**
 *Type: [`Evaluation`](#evaluation-object)*
 
+**NOTE: `evaluate` is not yet supported.  As a workaround, replace it with an `allOf` or `anyOf` operator containing a single `Evaluation`. See the examples in [Where Conditions](#where-conditions) for what this would look like.**
+
 Wraps a single `Evaluation`.  The result of the operator is exactly the result of the `Evaluation` it contains.
 
 This operator is most commonly useful in combination with a [`where` condition](#where-conditions), where `resourceType` or `path` may need to be [scoped down](#scopes) multiple times.
-
-**NOTE**: `evaluate` is not yet supported.  As a workaround, replace it with `allOf` or `anyOf` containing a single `Evaluation`.
 
 Example:
 ```javascript
