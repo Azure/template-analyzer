@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             using var stringWriter = new StringWriter();
             var syntaxTreeGrouping = SyntaxTreeGroupingBuilder.Build(new FileResolver(), new Workspace(), PathHelper.FilePathToFileUrl(bicepPath));
             var compilation = new Compilation(AzResourceTypeProvider.CreateWithAzTypes(), syntaxTreeGrouping);
-            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), "0.4.123.62267");
+            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), "");
             emitter.Emit(stringWriter);
             return stringWriter.ToString();
         }

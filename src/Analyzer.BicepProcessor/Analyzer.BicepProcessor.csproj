@@ -2,8 +2,6 @@
 
   <PropertyGroup>
   	<TargetFramework>net5.0</TargetFramework>
-	<DocumentationFile>bin\Analyzer.Utilities.xml</DocumentationFile>  
-	<TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
   </PropertyGroup>
 
   <ItemGroup>
