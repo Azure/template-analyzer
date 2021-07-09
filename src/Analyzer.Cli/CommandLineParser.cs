@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             Argument<DirectoryInfo> directoryArgument = new Argument<DirectoryInfo>(
                 "directory-path",
-                "The directory to analyze");
+                "The directory to find ARM templates");
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
             analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo>((directoryPath) => this.AnalyzeDirectory(directoryPath));
@@ -80,26 +80,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private void AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool analyzeSingleTemplate = true)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool analyzeSingleTemplate = true)
         {
             try
             {
-
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
                 // Check that the schema is valid
-                if (!isValidSchema(templateFileContents))
+                if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
                 {
                     if (analyzeSingleTemplate)
                     {
                         Console.WriteLine("File is not a valid ARM Template.");
                     }
-                    return;
+                    return 0;
                 }
-
-                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
-                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                 // Log info on file to be analyzed
                 string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
@@ -108,6 +104,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
                 }
                 Console.WriteLine(fileMetadata);
+
+                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                 var passedEvaluations = 0;
 
@@ -129,59 +128,78 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
+
+                return 1;
             }
             catch (Exception exp)
             {
                 Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+                return -1;
             }
         }
 
         private void AnalyzeDirectory(DirectoryInfo directoryPath)
         {
             try {
+
+                if (!directoryPath.Exists)
+                {
+                    Console.WriteLine($"Invalid directory ({directoryPath})");
+                    return;
+                }
+
                 // Find files to analyze
                 List<FileInfo> filesToAnalyze = new List<FileInfo>();
-                FindTemplateInDirectory(directoryPath, filesToAnalyze);
+                FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
                 // Log root directory
                 string directoryMetadata = Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}";
                 Console.WriteLine(directoryMetadata);
 
+                int numOfSuccesses = 0;
+                int numOfFails = 0;
                 foreach (FileInfo fileToAnalyze in filesToAnalyze)
                 {
-                    AnalyzeTemplate(fileToAnalyze, null, false);
+                    int res = AnalyzeTemplate(fileToAnalyze, null, false);
+                    if (res == 1) 
+                    {
+                        numOfSuccesses++;
+                    }
+                    else if (res == -1) 
+                    {
+                        numOfFails++;
+                    }
                 }
+
+                Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} files.");
+                if (numOfFails > 0) {
+                    Console.WriteLine($"Unable to analyze {numOfFails} files.");
+                }
+
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occured: {exp.Message}");
+                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
             }
 
         }
 
-        private void FindTemplateInDirectory(DirectoryInfo directoryPath, List<FileInfo> files) 
+        private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
         {
-            try
+            foreach (FileInfo file in directoryPath.GetFiles())
             {
-                foreach (FileInfo file in directoryPath.GetFiles())
+                if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (file.Extension.Equals(".json"))
-                    {
-                        files.Add(file);
-                    }
-                }
-                foreach (DirectoryInfo dir in directoryPath.GetDirectories())
-                {
-                    FindTemplateInDirectory(dir, files);
+                    files.Add(file);
                 }
             }
-            catch (Exception)
+            foreach (DirectoryInfo dir in directoryPath.GetDirectories())
             {
-                throw new Exception($"Unable to process directory ({directoryPath})");
-            }
+                FindJsonFilesInDirectoryRecursive(dir, files);
+            }         
         }
 
-        private bool isValidSchema(string template)
+        private bool IsValidSchema(string template)
         {
             JObject jsonTemplate = JObject.Parse(template);
             string schema = (string)jsonTemplate["$schema"];
