@@ -8,23 +8,14 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
     /// <summary>
-    /// Represents an anyOf expression in a JSON rule.
+    /// Represents a compound expression in a JSON rule.
     /// </summary>
-    internal class LogicalExpression : Expression
+    internal class CompoundExpression : Expression
     {
         /// <summary>
-        /// Enumeration for supported logical operators.
+        /// Determines the boolean operation to use when evaluating the expressions.
         /// </summary>
-        internal enum LogicalOperator
-        {
-            And,
-            Or
-        }
-
-        /// <summary>
-        /// Determines the logical operator to use when evaluating the expressions.
-        /// </summary>
-        internal LogicalOperator Operator;
+        private readonly Func<bool, bool, bool> Operation;
 
         /// <summary>
         /// Gets or sets the expressions to be evaluated.
@@ -32,16 +23,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         internal Expression[] Expressions { get; set; }
 
         /// <summary>
-        /// Creates an <see cref="LogicalExpression"/>.
+        /// Creates a <see cref="CompoundExpression"/>.
         /// </summary>
         /// <param name="expressions">List of expressions to perform a logical operation against.</param>
-        /// <param name="logicalOperator">The logical operation to perform on the expressions</param>
+        /// <param name="operation">The boolean operation to perform to compound the expressions results</param>
         /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
-        public LogicalExpression(Expression[] expressions, LogicalOperator logicalOperator,  ExpressionCommonProperties commonProperties)
+        public CompoundExpression(Expression[] expressions, Func<bool,bool, bool> operation, ExpressionCommonProperties commonProperties)
             : base(commonProperties)
         {
             Expressions = expressions ?? throw new ArgumentNullException(nameof(expressions));
-            Operator = logicalOperator;
+            Operation = operation;
         }
 
         /// <summary>
@@ -55,7 +46,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-                bool evaluationPassed = Operator != LogicalOperator.Or;
+                bool? evaluationPassed = null;
 
                 foreach (var expression in Expressions)
                 {
@@ -64,23 +55,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     // Add evaluations if scopes were found to evaluate
                     if (evaluation.HasResults)
                     {
-                        switch (Operator)
+                        // if no value, this is the first expression evaluated so set the inital value of result
+                        if (!evaluationPassed.HasValue)
                         {
-                            case LogicalOperator.And:
-                                evaluationPassed &= evaluation.Passed;
-                                break;
-                            case LogicalOperator.Or:
-                                evaluationPassed |= evaluation.Passed;
-                                break;
+                            evaluationPassed = evaluation.Passed;
                         }
-                        
+                        // otherwise use defined operation to compound expression results
+                        else
+                        {
+                            evaluationPassed = Operation(evaluationPassed.Value, evaluation.Passed);
+                        }
                         jsonRuleEvaluations.Add(evaluation);
                     }
                 }
 
                 evaluationPassed |= jsonRuleEvaluations.Count == 0;
 
-                return new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
+                return new JsonRuleEvaluation(this, evaluationPassed.Value, jsonRuleEvaluations);
             });
         }
     }

@@ -15,22 +15,43 @@ using static Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
-    public class AnyOfExpressionTests
+    public class CompoundExpressionTests
     {
+        private readonly Func<bool, bool, bool> DummyOperation = (x, y) => x ^ y;
+
+        // tests functionality of AllOfExpression
         [DataTestMethod]
-        [DataRow(true, true, DisplayName = "AnyOf evaluates to true (true || true)")]
-        [DataRow(true, false, DisplayName = "AnyOf evaluates to true (true || false)")]
-        [DataRow(false, true, DisplayName = "AnyOf evaluates to true (false || true)")]
-        [DataRow(false, false, DisplayName = "AnyOf evaluates to false (false || false)")]
-        [DataRow(false, false, "ResourceProvider/resource", DisplayName = "AnyOf - scoped to resourceType - evaluates to false (false || false)")]
-        [DataRow(false, false, "ResourceProvider/resource", "some.path", DisplayName = "AnyOf - scoped to resourceType and path - evaluates to false (false || false)")]
-        public void Evaluate_TwoLeafExpressions_ExpectedResultIsReturned(bool evaluation1, bool evaluation2, string resourceType = null, string path = null)
+        [DataRow(true, true, DisplayName = "Evaluates to true (true && true)")]
+        [DataRow(true, false, DisplayName = "Evaluates to false (true && false)")]
+        [DataRow(false, true, DisplayName = "Evaluates to false (false && true)")]
+        [DataRow(false, false, DisplayName = "Evaluates to false (false && false)")]
+        [DataRow(false, false, "ResourceProvider/resource", DisplayName = "Scoped to resourceType - Evaluates to false (false && false)")]
+        [DataRow(false, false, "ResourceProvider/resource", "some.path", DisplayName = "Scoped to resourceType and path - Evaluates to false (false && false)")]
+        public void Evaluate_TwoLeafExpressions_ExpectedResultIsReturnedForAndOperations(bool evaluation1, bool evaluation2, string resourceType = null, string path = null)
+        {
+            Evaluate_TwoLeafExpressions(evaluation1, evaluation2, (x, y) => x && y, resourceType, path);
+        }
+
+        // tests functionality of AnyOfExpression
+        [DataTestMethod]
+        [DataRow(true, true, DisplayName = "Evaluates to true (true || true)")]
+        [DataRow(true, false, DisplayName = "Evaluates to true (true || false)")]
+        [DataRow(false, true, DisplayName = "Evaluates to true (false || true)")]
+        [DataRow(false, false, DisplayName = "Evaluates to false (false || false)")]
+        [DataRow(false, false, "ResourceProvider/resource", DisplayName = "Scoped to resourceType - Evaluates to false (false || false)")]
+        [DataRow(false, false, "ResourceProvider/resource", "some.path", DisplayName = "Scoped to resourceType and path - Evaluates to false (false || false)")]
+        public void Evaluate_TwoLeafExpressions_ExpectedResultIsReturnedForOrOperations(bool evaluation1, bool evaluation2, string resourceType = null, string path = null)
+        {
+            Evaluate_TwoLeafExpressions(evaluation1, evaluation2, (x, y) => x || y, resourceType, path);
+        }
+
+        private static void Evaluate_TwoLeafExpressions(bool evaluation1, bool evaluation2, Func<bool, bool, bool> operation, string resourceType = null, string path = null)
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
             var mockLineResolver = new Mock<ILineNumberResolver>().Object;
 
-            // This AnyOf will have 2 expressions
+            // This AllOf will have 2 expressions
             var mockOperator1 = new Mock<LeafExpressionOperator>().Object;
             var mockOperator2 = new Mock<LeafExpressionOperator>().Object;
 
@@ -48,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             mockJsonPathResolver
-                .Setup(s => s.Resolve(It.IsAny<string>()))
+                .Setup(s => s.Resolve(It.Is<string>(path => path == "some.path")))
                 .Returns(new List<IJsonPathResolver> { mockJsonPathResolver.Object });
 
             if (!string.IsNullOrEmpty(resourceType))
@@ -71,22 +92,30 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
-            var anyOfExpression = new AnyOfExpression(expressionArray, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
+            var compoundExpression = new CompoundExpression(expressionArray, operation, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var anyOfEvaluation = anyOfExpression.Evaluate(mockJsonPathResolver.Object);
+            var compoundEvaluation = compoundExpression.Evaluate(mockJsonPathResolver.Object);
 
             // Assert
-            bool expectedAnyOfEvaluation = evaluation1 || evaluation2;
-            Assert.AreEqual(expectedAnyOfEvaluation, anyOfEvaluation.Passed);
-            Assert.AreEqual(2, anyOfEvaluation.Evaluations.Count());
-            Assert.IsTrue(anyOfEvaluation.HasResults);
+            bool expectedCompoundEvaluation = operation(evaluation1, evaluation2);
+            Assert.AreEqual(expectedCompoundEvaluation, compoundEvaluation.Passed);
+            Assert.AreEqual(2, compoundEvaluation.Evaluations.Count());
+            Assert.IsTrue(compoundEvaluation.HasResults);
 
             int expectedTrue = new[] { evaluation1, evaluation2 }.Count(e => e);
             int expectedFalse = 2 - expectedTrue;
 
-            Assert.AreEqual(expectedTrue, anyOfEvaluation.EvaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedFalse, anyOfEvaluation.EvaluationsEvaluatedFalse.Count());
+            Assert.AreEqual(expectedTrue, compoundEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(expectedFalse, compoundEvaluation.EvaluationsEvaluatedFalse.Count());
+
+            foreach (var evaluation in compoundEvaluation.Evaluations)
+            {
+                // Assert all leaf expressions have results and no evaluations
+                Assert.IsTrue(evaluation.HasResults);
+                Assert.AreEqual(0, evaluation.Evaluations.Count());
+                Assert.AreEqual(1, evaluation.Results.Count());
+            }
         }
 
         [DataTestMethod]
@@ -124,36 +153,37 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         : null
             };
 
-            var anyOfExpression = new AnyOfExpression(
+            var compoundExpression = new CompoundExpression(
                 new Expression[] { mockLeafExpression1, mockLeafExpression2 },
+                DummyOperation,
                 new ExpressionCommonProperties());
 
             var expectedResults = new[] { firstExpressionPass, secondExpressionPass };
 
             // Act
-            var anyOfEvaluation = anyOfExpression.Evaluate(mockJsonPathResolver.Object);
+            var compoundEvaluation = compoundExpression.Evaluate(mockJsonPathResolver.Object);
 
             // Assert
-            Assert.AreEqual(overallPass, anyOfEvaluation.Passed);
-            Assert.AreEqual(expectedResults.Count(r => r.HasValue), anyOfEvaluation.Evaluations.Count());
-            Assert.AreEqual(expectedResults.Any(r => r.HasValue), anyOfEvaluation.HasResults);
+            Assert.AreEqual(overallPass, compoundEvaluation.Passed);
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue), compoundEvaluation.Evaluations.Count());
+            Assert.AreEqual(expectedResults.Any(r => r.HasValue), compoundEvaluation.HasResults);
 
-            Assert.AreEqual(expectedResults.Count(r => r.HasValue && r.Value), anyOfEvaluation.EvaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedResults.Count(r => r.HasValue && !r.Value), anyOfEvaluation.EvaluationsEvaluatedFalse.Count());
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue && r.Value), compoundEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue && !r.Value), compoundEvaluation.EvaluationsEvaluatedFalse.Count());
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            new AnyOfExpression(new Expression[0], new ExpressionCommonProperties()).Evaluate(jsonScope: null);
+            new CompoundExpression(Array.Empty<Expression>(), DummyOperation, new ExpressionCommonProperties()).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new AnyOfExpression(null, new ExpressionCommonProperties());
+            new CompoundExpression(null, DummyOperation, new ExpressionCommonProperties());
         }
     }
 }

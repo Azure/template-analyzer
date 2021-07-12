@@ -4,9 +4,9 @@
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
     /// <summary>
-    /// Represents an allOf expression in a JSON rule.
+    /// Represents an AnyOf expression in a JSON rule.
     /// </summary>
-    internal class AnyOfExpression : LogicalExpression
+    internal class AnyOfExpression : CompoundExpression
     {
         /// <summary>
         /// Gets the expressions to be evaluated.
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="expressions">List of expressions to perform a logical OR against.</param>
         /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
         public AnyOfExpression(Expression[] expressions, ExpressionCommonProperties commonProperties)
-            : base(expressions, LogicalOperator.Or, commonProperties)
+            : base(expressions, (x, y) => x || y, commonProperties)
         {
         }
     }

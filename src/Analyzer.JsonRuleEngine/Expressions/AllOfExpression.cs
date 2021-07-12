@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
     /// <summary>
     /// Represents an allOf expression in a JSON rule.
     /// </summary>
-    internal class AllOfExpression : LogicalExpression
+    internal class AllOfExpression : CompoundExpression
     {
         /// <summary>
         /// Gets the expressions to be evaluated.
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="expressions">List of expressions to perform a logical AND against.</param>
         /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
         public AllOfExpression(Expression[] expressions, ExpressionCommonProperties commonProperties)
-            : base(expressions, LogicalOperator.And, commonProperties)
+            : base(expressions, (x, y) => x && y, commonProperties)
         {
         }
     }

@@ -674,11 +674,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""apiVersion"": ""2020-02-02-preview"",
                 ""name"": ""sqlServerName"",
                 ""location"": ""location"",
-                ""properties"": {
-                  ""administratorLogin"": ""sqlAdministratorLogin"",
-                  ""administratorLoginPassword"": ""sqlAdministratorPassword"",
-                  ""version"": ""12.0""
-                },
+                ""properties"": {},
                 ""resources"": [
                   {
                     ""type"": ""databases"",
@@ -689,27 +685,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                     ""dependsOn"": [
                       ""sqlServerName""
                     ],
-                    ""properties"": {
-                      ""edition"": ""DataWarehouse"",
-                      ""status"": ""Online"",
-                      ""requestedServiceObjectiveName"": ""serviceLevelObjective"",
-                      ""collation"": ""SQL_Latin1_General_CP1_CI_AS"",
-                      ""readScale"": ""Disabled"",
-                      ""zoneRedundant"": false,
-                      ""isUpgradeRequested"": false
-                    },
+                    ""properties"": {},
                     ""resources"": [
                       {
-                        ""comments"": ""Transparent Data Encryption"",
                         ""type"": ""transparentDataEncryption"",
                         ""apiVersion"": ""2017-03-01-preview"",
                         ""name"": ""current"",
                         ""dependsOn"": [
                           ""dataWarehouseName""
                         ],
-                        ""properties"": {
-                          ""status"": ""'transparentDataEncryption""
-                        }
+                        ""properties"": {}
                       }
                     ]
                   }
