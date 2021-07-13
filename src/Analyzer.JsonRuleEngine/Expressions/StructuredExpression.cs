@@ -8,9 +8,9 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
     /// <summary>
-    /// Represents a compound expression in a JSON rule.
+    /// Represents a structured expression in a JSON rule.
     /// </summary>
-    internal class CompoundExpression : Expression
+    internal class StructuredExpression : Expression
     {
         /// <summary>
         /// Determines the boolean operation to use when evaluating the expressions.
@@ -23,12 +23,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         internal Expression[] Expressions { get; set; }
 
         /// <summary>
-        /// Creates a <see cref="CompoundExpression"/>.
+        /// Creates a <see cref="StructuredExpression"/>.
         /// </summary>
         /// <param name="expressions">List of expressions to perform a logical operation against.</param>
-        /// <param name="operation">The boolean operation to perform to compound the expressions results</param>
+        /// <param name="operation">The boolean operation to perform to calculate the overall expression result.</param>
         /// <param name="commonProperties">The properties common across all <see cref="Expression"/> types.</param>
-        public CompoundExpression(Expression[] expressions, Func<bool,bool, bool> operation, ExpressionCommonProperties commonProperties)
+        public StructuredExpression(Expression[] expressions, Func<bool,bool, bool> operation, ExpressionCommonProperties commonProperties)
             : base(commonProperties)
         {
             Expressions = expressions ?? throw new ArgumentNullException(nameof(expressions));
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                         {
                             evaluationPassed = evaluation.Passed;
                         }
-                        // otherwise use defined operation to compound expression results
+                        // otherwise use defined operation to calculate intermediate expression result
                         else
                         {
                             evaluationPassed = Operation(evaluationPassed.Value, evaluation.Passed);

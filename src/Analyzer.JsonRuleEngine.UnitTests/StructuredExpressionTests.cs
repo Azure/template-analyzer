@@ -15,7 +15,7 @@ using static Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 {
     [TestClass]
-    public class CompoundExpressionTests
+    public class StructuredExpressionTests
     {
         private readonly Func<bool, bool, bool> DummyOperation = (x, y) => x ^ y;
 
@@ -92,24 +92,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
-            var compoundExpression = new CompoundExpression(expressionArray, operation, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
+            var structuredExpression = new StructuredExpression(expressionArray, operation, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var compoundEvaluation = compoundExpression.Evaluate(mockJsonPathResolver.Object);
+            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object);
 
             // Assert
             bool expectedCompoundEvaluation = operation(evaluation1, evaluation2);
-            Assert.AreEqual(expectedCompoundEvaluation, compoundEvaluation.Passed);
-            Assert.AreEqual(2, compoundEvaluation.Evaluations.Count());
-            Assert.IsTrue(compoundEvaluation.HasResults);
+            Assert.AreEqual(expectedCompoundEvaluation, structuredEvaluation.Passed);
+            Assert.AreEqual(2, structuredEvaluation.Evaluations.Count());
+            Assert.IsTrue(structuredEvaluation.HasResults);
 
             int expectedTrue = new[] { evaluation1, evaluation2 }.Count(e => e);
             int expectedFalse = 2 - expectedTrue;
 
-            Assert.AreEqual(expectedTrue, compoundEvaluation.EvaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedFalse, compoundEvaluation.EvaluationsEvaluatedFalse.Count());
+            Assert.AreEqual(expectedTrue, structuredEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(expectedFalse, structuredEvaluation.EvaluationsEvaluatedFalse.Count());
 
-            foreach (var evaluation in compoundEvaluation.Evaluations)
+            foreach (var evaluation in structuredEvaluation.Evaluations)
             {
                 // Assert all leaf expressions have results and no evaluations
                 Assert.IsTrue(evaluation.HasResults);
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         : null
             };
 
-            var compoundExpression = new CompoundExpression(
+            var structuredExpression = new StructuredExpression(
                 new Expression[] { mockLeafExpression1, mockLeafExpression2 },
                 DummyOperation,
                 new ExpressionCommonProperties());
@@ -161,29 +161,29 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var expectedResults = new[] { firstExpressionPass, secondExpressionPass };
 
             // Act
-            var compoundEvaluation = compoundExpression.Evaluate(mockJsonPathResolver.Object);
+            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object);
 
             // Assert
-            Assert.AreEqual(overallPass, compoundEvaluation.Passed);
-            Assert.AreEqual(expectedResults.Count(r => r.HasValue), compoundEvaluation.Evaluations.Count());
-            Assert.AreEqual(expectedResults.Any(r => r.HasValue), compoundEvaluation.HasResults);
+            Assert.AreEqual(overallPass, structuredEvaluation.Passed);
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue), structuredEvaluation.Evaluations.Count());
+            Assert.AreEqual(expectedResults.Any(r => r.HasValue), structuredEvaluation.HasResults);
 
-            Assert.AreEqual(expectedResults.Count(r => r.HasValue && r.Value), compoundEvaluation.EvaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedResults.Count(r => r.HasValue && !r.Value), compoundEvaluation.EvaluationsEvaluatedFalse.Count());
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue && r.Value), structuredEvaluation.EvaluationsEvaluatedTrue.Count());
+            Assert.AreEqual(expectedResults.Count(r => r.HasValue && !r.Value), structuredEvaluation.EvaluationsEvaluatedFalse.Count());
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Evaluate_NullScope_ThrowsException()
         {
-            new CompoundExpression(Array.Empty<Expression>(), DummyOperation, new ExpressionCommonProperties()).Evaluate(jsonScope: null);
+            new StructuredExpression(Array.Empty<Expression>(), DummyOperation, new ExpressionCommonProperties()).Evaluate(jsonScope: null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullExpressions_ThrowsException()
         {
-            new CompoundExpression(null, DummyOperation, new ExpressionCommonProperties());
+            new StructuredExpression(null, DummyOperation, new ExpressionCommonProperties());
         }
     }
 }

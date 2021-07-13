@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
     /// <summary>
     /// Represents an allOf expression in a JSON rule.
     /// </summary>
-    internal class AllOfExpression : CompoundExpression
+    internal class AllOfExpression : StructuredExpression
     {
         /// <summary>
         /// Gets the expressions to be evaluated.
