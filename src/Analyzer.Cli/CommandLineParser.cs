@@ -80,17 +80,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool analyzeSingleTemplate = true)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool printMessageIfNotTemplate = true)
         {
             try
             {
+                // Check that template file paths exist
+                if (!templateFilePath.Exists)
+                {
+                    Console.WriteLine($"Invalid template file path ({templateFilePath})");
+                    return 0;
+                }
+
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
                 // Check that the schema is valid
                 if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
                 {
-                    if (analyzeSingleTemplate)
+                    if (printMessageIfNotTemplate)
                     {
                         Console.WriteLine("File is not a valid ARM Template.");
                     }
@@ -140,8 +147,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private void AnalyzeDirectory(DirectoryInfo directoryPath)
         {
-            try {
-
+            try
+            {
                 if (!directoryPath.Exists)
                 {
                     Console.WriteLine($"Invalid directory ({directoryPath})");
@@ -153,27 +160,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
                 // Log root directory
-                string directoryMetadata = Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}";
-                Console.WriteLine(directoryMetadata);
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
                 int numOfSuccesses = 0;
-                int numOfFails = 0;
-                foreach (FileInfo fileToAnalyze in filesToAnalyze)
+                List<FileInfo> filesFailed = new List<FileInfo>();
+                foreach (FileInfo file in filesToAnalyze)
                 {
-                    int res = AnalyzeTemplate(fileToAnalyze, null, false);
+                    int res = AnalyzeTemplate(file, null, false);
                     if (res == 1) 
                     {
                         numOfSuccesses++;
                     }
                     else if (res == -1) 
                     {
-                        numOfFails++;
+                        filesFailed.Add(file);
                     }
                 }
 
-                Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} files.");
-                if (numOfFails > 0) {
-                    Console.WriteLine($"Unable to analyze {numOfFails} files.");
+                Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
+                if (filesFailed.Count > 0) 
+                {
+                    Console.WriteLine($"Unable to analyze {filesFailed.Count} file(s):");
+                    foreach (FileInfo failedFile in filesFailed)
+                    {
+                        Console.WriteLine($"\t{failedFile}");
+                    }
                 }
 
             }
@@ -196,7 +207,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             foreach (DirectoryInfo dir in directoryPath.GetDirectories())
             {
                 FindJsonFilesInDirectoryRecursive(dir, files);
-            }         
+            }
         }
 
         private bool IsValidSchema(string template)
