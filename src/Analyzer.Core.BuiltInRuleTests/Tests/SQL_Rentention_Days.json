@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Template": "SQLServerAuditingSettings",
+    "ReportedFailures": [
+      {
+        "LineNumber": 45,
+        "Description": "retentionDays set to less than 90"
+      }
+    ]
+  }
+]
