@@ -46,9 +46,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             if (!thisRuleEvaluation.Passed)
             {
                 // Get all lines reported as failed
-                var failingLines = GetAllResults(thisRuleEvaluation)
-                    .Where(r => !r.Passed)
-                    .Select(r => r.LineNumber).ToHashSet();
+                var failingLines = thisRuleEvaluation.Evaluations
+                    .Where(e => !e.Passed)
+                    .Select(e => GetAllResults(e))
+                    .Select(rs => rs.Where(r => !r.Passed)
+                                    .Select(r => r.LineNumber)
+                                    .ToList())
+                    .SelectMany(x => x)
+                    .ToHashSet();
 
                 // Verify all expected lines are reported
                 var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
