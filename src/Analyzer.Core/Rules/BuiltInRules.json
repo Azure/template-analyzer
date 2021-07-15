@@ -663,5 +663,49 @@
         }
       ]
     }
+  },
+  {
+    "name": "SQL_Rentention_Days",
+    "description": "SQL servers with auditing to storage account destination should be configured with 90 days retention or higher",
+    "recommendation": "Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days",
+    "helpUri": "https://github.com/Azure/template-analyzer/docs/built-in-bpa-rules.md/#sql-servers-with-auditing-to-storage-account-destination-should-be-configured-with-90-days-retention-or-higher",
+    "evaluation": {
+      "resourceType": "Microsoft.Sql/servers",
+      "where": {
+        "path": "properties.kind",
+        "regex": "^((?!analytics).)*$"
+      },
+      "allOf": [
+        {
+          "resourceType": "Microsoft.Sql/servers/auditingSettings",
+          "where": {
+            "path": "name",
+            "equals": "default"
+          },
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "path": "properties.isAzureMonitorTargetEnabled",
+                  "equals": true
+                },
+                {
+                  "path": "properties.storageEndpoint",
+                  "equals": ""
+                }
+              ]
+            },
+            {
+              "path": "properties.retentionDays",
+              "equals": 0
+            },
+            {
+              "path": "properties.retentionDays",
+              "greaterOrEquals": 90
+            }
+          ]
+        }
+      ]
+    }
   }
 ]
