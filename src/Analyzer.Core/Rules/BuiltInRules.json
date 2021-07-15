@@ -697,7 +697,7 @@
             },
             {
               "path": "properties.retentionDays",
-              "equals": 0
+              "equals": 0 // 0 == unlimited retention
             },
             {
               "path": "properties.retentionDays",
