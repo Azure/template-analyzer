@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
 
             Option<FileInfo> templateOption = new Option<FileInfo>(
-                    "--template-file-path",
-                    "The ARM template to analyze")
+                "--template-file-path",
+                "The ARM template to analyze")
             {
                 IsRequired = true
             };
@@ -52,8 +52,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             // Setup parameter option
             Option<FileInfo> parameterOption = new Option<FileInfo>(
-                    "--parameters-file-path",
-                    "The parameter file to use when parsing the specified ARM template");
+                "--parameters-file-path",
+                "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
             rootCommand.AddOption(parameterOption);
 

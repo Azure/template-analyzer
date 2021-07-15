@@ -1,27 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-  	<TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Reference Include="..\lib\Bicep.Core.dll" />
-	<PackageReference Include="JetBrains.Annotations" Version="2021.1.0">
-		<PrivateAssets>all</PrivateAssets>
-	</PackageReference>
-	<PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-	<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-	<PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-	<PackageReference Include="Azure.Deployments.Expression" Version="1.0.207" />
-	<PackageReference Include="Azure.Deployments.Core" Version="1.0.207" />
-	<PackageReference Include="Azure.Bicep.Types" Version="0.1.157" />
-	<PackageReference Include="Azure.Bicep.Types.Az" Version="0.1.157" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.1.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.207" />
+    <PackageReference Include="Azure.Deployments.Core" Version="1.0.207" />
+    <PackageReference Include="Azure.Bicep.Types" Version="0.1.157" />
+    <PackageReference Include="Azure.Bicep.Types.Az" Version="0.1.157" />
   </ItemGroup>
-
+  
 </Project>

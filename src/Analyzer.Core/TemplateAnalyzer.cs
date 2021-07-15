@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 if (IsBicep)
                 {
-                    Template = new BicepTemplateProcessor(TemplateFilePath).ConvertBicepToJson();
+                    Template = BicepTemplateProcessor.ConvertBicepToJson(TemplateFilePath);
                 }
                 armTemplateProcessor = new ArmTemplateProcessor(Template);
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
