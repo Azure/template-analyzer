@@ -1,0 +1,7 @@
+<Project>
+  <!-- Defined in .targets file because $(Configuration) and $(Platform) aren't yet defined when Directory.Build.props is imported and evaluated. -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU' And !$(MSBuildProjectName.EndsWith('Tests'))">
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>
