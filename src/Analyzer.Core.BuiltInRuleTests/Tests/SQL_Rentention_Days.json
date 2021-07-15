@@ -2,8 +2,18 @@
   {
     "Template": "SQLServerAuditingSettings",
     "ReportedFailures": [
+      // The resource between lines 10 and 33 passes this check because all the elements of the AnyOf are true
+      // The ones between lines 34 and 113 pass because at least one of the elements of the AnyOf is true
       {
-        "LineNumber": 45,
+        "LineNumber": 127,
+        "Description": "isAzureMonitorTargetEnabled set to false"
+      },
+      {
+        "LineNumber": 128,
+        "Description": "storageEndpoint is not an empty string"
+      },
+      {
+        "LineNumber": 129,
         "Description": "retentionDays set to less than 90"
       }
     ]

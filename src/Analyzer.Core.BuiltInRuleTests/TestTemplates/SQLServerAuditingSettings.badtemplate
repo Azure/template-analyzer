@@ -44,13 +44,89 @@
           "type": "Microsoft.Sql/servers/auditingSettings",
           "name": "default",
           "properties": {
-            "state": "Enabled",
             "isAzureMonitorTargetEnabled": false,
             "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
-            "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value]",
-            "retentionDays": 45,
-            "storageAccountSubscriptionId": "[subscription().subscriptionId]",
-            "isStorageSecondaryKeyInUse": false
+            "retentionDays": 90
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "AlsoASQLServerName",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 95
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "SQLServerNameIV",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "SQLServerNameV",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": true,
+            "storageEndpoint": "",
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "SixthSQLServerName",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 45
           }
         }
       ]
