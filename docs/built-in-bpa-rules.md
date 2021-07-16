@@ -160,3 +160,8 @@ You should only use built-in roles instead of cutom RBAC roles. Custom RBAC role
 Web apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/en-us/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
+
+## SQL servers with auditing to storage account destination should be configured with 90 days retention or higher
+Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days.
+
+**Recommendation**: For incident investigation purposes, we recommend setting the data retention for your [SQL Server' auditing to storage account destination](https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/2020-11-01-preview/servers/auditingsettings?tabs=json#serverblobauditingpolicyproperties-object) to at least 90 days. Confirm that you are meeting the necessary retention rules for the regions in which you are operating. This is sometimes required for compliance with regulatory standards.
