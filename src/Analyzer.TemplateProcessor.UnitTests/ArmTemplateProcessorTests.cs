@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         }
 
         [TestMethod]
-        public void ProcessResourcesAndOutputs_ValidTemplateWithExpressionInResourceProperties_ProcessResourceProperyLanguageExpressions()
+        public void ProcessResourcesAndOutputs_ValidTemplateWithExpressionInResourceProperties_ProcessResourcePropertyLanguageExpressions()
         {
             string templateJson = @"{
             ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
@@ -657,6 +657,67 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             string expectedResourceArray = $@"[ {childTemplateResourceJson}, {parentTemplateResourceJson} ]";
             var expectedResourceJArray = JArray.Parse(expectedResourceArray);
             (expectedResourceJArray[1].InsensitiveToken("resources")[0] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
+
+            var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
+
+            Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+        }
+
+        [TestMethod]
+        public void CopyResourceDependants_DependsOnSpecifiedInNestedChildResource()
+        {
+            // Arrange
+            string resourceJson = @"{
+                ""type"": ""Microsoft.Sql/servers"",
+                ""apiVersion"": ""2020-02-02-preview"",
+                ""name"": ""sqlServerName"",
+                ""location"": ""location"",
+                ""properties"": {},
+                ""resources"": [
+                  {
+                    ""type"": ""databases"",
+                    ""apiVersion"": ""2020-02-02-preview"",
+                    ""name"": ""dataWarehouseName"",
+                    ""location"": ""location'"",
+                    ""kind"": ""v12.0,user,datawarehouse"",
+                    ""dependsOn"": [
+                      ""sqlServerName""
+                    ],
+                    ""properties"": {},
+                    ""resources"": [
+                      {
+                        ""type"": ""transparentDataEncryption"",
+                        ""apiVersion"": ""2017-03-01-preview"",
+                        ""name"": ""current"",
+                        ""dependsOn"": [
+                          ""dataWarehouseName""
+                        ],
+                        ""properties"": {}
+                      }
+                    ]
+                  }
+                ]
+              }";
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
+                { "resources[0].resources[0]", "resources[0].resources[0]" },
+                { "resources[0].resources[0].resources[0]", "resources[0].resources[0].resources[0]" }
+            };
+
+            TemplateResource templateResource = JObject.Parse(resourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { templateResource }));
+
+            // Act
+            var template = armTemplateProcessor.ProcessTemplate();
+
+            // Assert
+            string expectedResourceArray = $@"[ {resourceJson} ]";
+            var expectedResourceJArray = JArray.Parse(expectedResourceArray);
+            (expectedResourceJArray[0] as JObject).Add("dependsOn", new JArray());
 
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 

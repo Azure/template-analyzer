@@ -234,7 +234,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                     AddResourceMapping($"{parentResource.Path}.resources[0]", templateResource.Path);
                 }
-                else
+                // check if resource is already a child of parent resource
+                else if (!parentResource.Resources.Any(res =>
+                    res.Name.Value == templateResource.Name.Value &&
+                    res.Type.Value == templateResource.Type.Value))
                 {
                     var childResources = parentResource.Resources;
                     parentResource.Resources = childResources.ConcatArray(new TemplateResource[] { templateResource });

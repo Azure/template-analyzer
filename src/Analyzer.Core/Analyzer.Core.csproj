@@ -7,11 +7,6 @@
     <Description>An ARM template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Analyzer.Core.xml</DocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
     <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
@@ -25,5 +20,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Import Project="..\TTK.targets" />
 
 </Project>
