@@ -130,6 +130,46 @@
           }
         }
       ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "SQLServerOfAnalyticsKind",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "analytics"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "SQLServerWithNonDefaultAuditingSettings",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "anotherName",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 45
+          }
+        }
+      ]
     }
   ]
 }

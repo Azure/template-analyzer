@@ -3,7 +3,8 @@
     "Template": "SQLServerAuditingSettings",
     "ReportedFailures": [
       // The resource between lines 10 and 33 passes this check because all the elements of the AnyOf are true
-      // The ones between lines 34 and 113 pass because at least one of the elements of the AnyOf is true
+      // The ones between lines 34 and 113 passes because at least one of the elements of the AnyOf is true
+      // And the ones between lines 135 and 173 passes because of empty scopes
       {
         "LineNumber": 127,
         "Description": "isAzureMonitorTargetEnabled set to false"
@@ -14,7 +15,7 @@
       },
       {
         "LineNumber": 129,
-        "Description": "retentionDays set to less than 90"
+        "Description": "retentionDays set to a value different than 0 and less than 90"
       }
     ]
   }
