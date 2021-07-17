@@ -691,7 +691,7 @@
                 },
                 {
                   "path": "properties.storageEndpoint",
-                  "equals": ""
+                  "hasValue": false
                 }
               ]
             },

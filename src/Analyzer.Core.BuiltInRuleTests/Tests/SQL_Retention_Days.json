@@ -3,18 +3,18 @@
     "Template": "SQLServerAuditingSettings",
     "ReportedFailures": [
       // The resource between lines 10 and 33 passes this check because all the elements of the AnyOf are true
-      // The ones between lines 34 and 113 passes because at least one of the elements of the AnyOf is true
-      // And the ones between lines 135 and 173 passes because of empty scopes
+      // The ones between lines 34 and 132 passes because at least one of the elements of the AnyOf is true
+      // And the ones between lines 153 and 192 passes because of empty scopes
       {
-        "LineNumber": 127,
+        "LineNumber": 146,
         "Description": "isAzureMonitorTargetEnabled set to false"
       },
       {
-        "LineNumber": 128,
+        "LineNumber": 147,
         "Description": "storageEndpoint is not an empty string"
       },
       {
-        "LineNumber": 129,
+        "LineNumber": 148,
         "Description": "retentionDays set to a value different than 0 and less than 90"
       }
     ]

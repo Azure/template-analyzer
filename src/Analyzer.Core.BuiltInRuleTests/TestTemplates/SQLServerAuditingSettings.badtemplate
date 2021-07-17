@@ -113,7 +113,26 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "SixthSQLServerName",
+      "name": "DoesNotSpecifyStorageEndpoint",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": true,
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "FailsSQLRetentionDaysRule",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
