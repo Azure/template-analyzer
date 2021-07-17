@@ -49,10 +49,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
                 var failingLines = thisRuleEvaluation.Evaluations
                     .Where(e => !e.Passed)
                     .Select(e => GetAllResults(e))
-                    .Select(rs => rs.Where(r => !r.Passed)
+                    .SelectMany(rs => rs.Where(r => !r.Passed)
                                     .Select(r => r.LineNumber)
                                     .ToList())
-                    .SelectMany(x => x)
                     .ToHashSet();
 
                 // Verify all expected lines are reported
