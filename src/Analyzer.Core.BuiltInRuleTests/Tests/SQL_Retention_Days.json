@@ -4,7 +4,7 @@
     "ReportedFailures": [
       // The resource between lines 10 and 33 passes this check because all the elements of the AnyOf are true
       // The ones between lines 34 and 132 passes because at least one of the elements of the AnyOf is true
-      // And the ones between lines 153 and 192 passes because of empty scopes
+      // And the ones between lines 153 and 192 passes because the resources are out of scope: server kind containing the word "analytics", and auditing settings not named "default"
       {
         "LineNumber": 146,
         "Description": "isAzureMonitorTargetEnabled set to false"
