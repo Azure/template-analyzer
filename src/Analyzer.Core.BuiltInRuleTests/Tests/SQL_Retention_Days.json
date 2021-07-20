@@ -15,7 +15,7 @@
       },
       {
         "LineNumber": 148,
-        "Description": "retentionDays set to a value different than 0 and less than 90"
+        "Description": "retentionDays not set to a value equal to 0 or greater than 90"
       }
     ]
   }
