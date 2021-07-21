@@ -1,4 +1,5 @@
 [![Build Status](https://dev.azure.com/azure/template-analyzer/_apis/build/status/BuildAndTest?branchName=main)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
+[![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 
 # ARM Template Best Practice Analyzer (BPA)
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
