@@ -33,7 +33,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "AnotherSQLServerName",
+      "name": "With90RetentionDays",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
@@ -53,7 +53,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "AlsoASQLServerName",
+      "name": "WithMoreThan90RetentionDays",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
@@ -73,7 +73,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "SQLServerNameIV",
+      "name": "With0RetentionDays",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
@@ -93,7 +93,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "SQLServerNameV",
+      "name": "WithEmptyStorageEndpointAndAzureMonitorTargetEnabled",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
@@ -113,7 +113,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "DoesNotSpecifyStorageEndpoint",
+      "name": "WithNoStorageEndpointAndAzureMonitorTargetEnabled",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
@@ -152,7 +152,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "SQLServerOfAnalyticsKind",
+      "name": "OfAnalyticsKind",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "analytics"
@@ -172,7 +172,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "SQLServerWithNonDefaultAuditingSettings",
+      "name": "WithNonDefaultAuditingSettings",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
