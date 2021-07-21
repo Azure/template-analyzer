@@ -23,6 +23,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("value", "aaavalueaaa", DisplayName = "String contains \"value\"")]
+        [DataRow("value", "aaaVaLuEaaa", DisplayName = "String contains \"value\" - case-insensitive")]
+        [DataRow("^value", "valueaaa", DisplayName = "String begins with \"value\"")]
+        [DataRow("value$", "aaavalue", DisplayName = "String ends with \"value\"")]
+        [DataRow("^((?!value).)*$", "aaa", DisplayName = "String does not contain \"value\"")]
+        public void EvaluateExpression_StringMatchesRegexIsNegative_EvaluationIsTrue(string regex, string stringToMatch)
+        {
+            // Not: {"Regex": jTokenValue} is false
+            var regexOperator = new RegexOperator(regex, true);
+            Assert.IsFalse(regexOperator.EvaluateExpression(stringToMatch));
+        }
+
+        [DataTestMethod]
         [DataRow("value", "aaa", DisplayName = "String does not contain \"value\"")]
         [DataRow("^value", "aaavalue", DisplayName = "String does not begin with \"value\"")]
         [DataRow("value$", "valueaaa", DisplayName = "String does not end with \"value\"")]

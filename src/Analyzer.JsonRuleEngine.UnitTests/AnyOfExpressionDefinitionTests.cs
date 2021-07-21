@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Assert
             foreach (var mockLeafExpressionDefinition in mockLeafExpressionDefinitions)
             {
-                mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver), Times.Once);
+                mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver, false), Times.Once);
             }
 
             Assert.AreEqual(numberOfExpressionDefinitions, anyOfExpression.AnyOf.Length);
@@ -76,15 +76,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Act
-            var anyOfExpression = anyOfExpressionDefinition.ToExpression(mockResolver) as AnyOfExpression;
+            var anyOfExpression = anyOfExpressionDefinition.ToExpression(mockResolver, false) as AnyOfExpression;
 
             // Assert
             foreach (var mockLeafExpressionDefinition in mockLeafExpressionDefinitions)
             {
-                mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver), Times.Once);
+                mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver, false), Times.Once);
             }
 
-            singleMockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver), Times.Once);
+            singleMockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver, false), Times.Once);
 
             Assert.AreEqual(2, anyOfExpression.AnyOf.Length);
             Assert.IsInstanceOfType(anyOfExpression.AnyOf.First(), typeof(AnyOfExpression));
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 var mockLineResolver = new Mock<ILineNumberResolver>().Object;
                 var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockLeafExpressionOperator, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
                 mockLeafExpressionDefinition
-                    .Setup(s => s.ToExpression(mockResolver))
+                    .Setup(s => s.ToExpression(mockResolver, false))
                     .Returns(mockLeafExpression.Object);
 
                 yield return mockLeafExpressionDefinition;

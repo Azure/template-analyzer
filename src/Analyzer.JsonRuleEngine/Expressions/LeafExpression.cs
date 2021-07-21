@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 var result = new JsonRuleResult()
-                {
+                {    
                     Passed = Operator.EvaluateExpression(scope.JToken),
                     JsonPath = scope.Path,
                     LineNumber = this.jsonLineNumberResolver.ResolveLineNumber(scope.Path),
