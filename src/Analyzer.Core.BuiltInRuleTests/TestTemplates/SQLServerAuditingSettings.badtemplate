@@ -1,0 +1,194 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "ASQLServerName",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "state": "Enabled",
+            "isAzureMonitorTargetEnabled": true,
+            "storageEndpoint": "",
+            "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').keys[0].value]",
+            "retentionDays": 90,
+            "storageAccountSubscriptionId": "[subscription().subscriptionId]",
+            "isStorageSecondaryKeyInUse": false
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "With90RetentionDays",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 90
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "WithMoreThan90RetentionDays",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 95
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "With0RetentionDays",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 0
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "WithEmptyStorageEndpointAndAzureMonitorTargetEnabled",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": true,
+            "storageEndpoint": "",
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "WithNoStorageEndpointAndAzureMonitorTargetEnabled",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": true,
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "FailsSQLRetentionDaysRule",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "OfAnalyticsKind",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "analytics"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "default",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 45
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "WithNonDefaultAuditingSettings",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2020-02-02-preview",
+          "type": "Microsoft.Sql/servers/auditingSettings",
+          "name": "anotherName",
+          "properties": {
+            "isAzureMonitorTargetEnabled": false,
+            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+            "retentionDays": 45
+          }
+        }
+      ]
+    }
+  ]
+}
