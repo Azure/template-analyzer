@@ -28,7 +28,7 @@ The Template BPA accepts the following inputs:
 Argument | Description
 --- | ---
 `<template-path>` | The ARM template to analyze
-`<directory-path>` | The directory to find ARM templates
+`<directory-path>` | The directory to find ARM templates (recursively finds all templates in the directory and its subdirectories.)
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
