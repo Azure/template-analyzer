@@ -13,6 +13,7 @@ using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json.Linq;
+using Bicep.Core.SourceMapping;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
 {
@@ -23,6 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     {
         private string TemplateFilePath { get; }
         private string Template { get; set; }
+        private SourceMap SourceMap { get; set; }
         private string Parameters { get; }
         private bool IsBicep { get; }
 
@@ -53,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 if (IsBicep)
                 {
-                    Template = BicepTemplateProcessor.ConvertBicepToJson(TemplateFilePath);
+                    (Template, SourceMap) = BicepTemplateProcessor.ConvertBicepToJson(TemplateFilePath);
                 }
                 armTemplateProcessor = new ArmTemplateProcessor(Template);
                 templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
@@ -78,7 +80,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         OriginalTemplate = JObject.Parse(Template),
                         ExpandedTemplate = templatejObject,
                         IsMainTemplate = true,
-                        ResourceMappings = armTemplateProcessor.ResourceMappings },
+                        ResourceMappings = armTemplateProcessor.ResourceMappings,
+                        IsBicep = IsBicep,
+                        SourceMap = SourceMap },
                     rules);
 
                 if (TemplateFilePath != null)

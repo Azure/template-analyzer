@@ -85,7 +85,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 }
             }
 
-            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
+            int lineNumber = (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
+            if (this.templateContext.IsBicep)
+            {
+                lineNumber = this.templateContext.SourceMap.GetBicepLineNumber(lineNumber);
+            }
+
+            return lineNumber;
         }
     }
 }

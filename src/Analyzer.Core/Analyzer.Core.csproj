@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="..\lib\Bicep.Core.dll" />
     <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
     <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
     <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
