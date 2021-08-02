@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": "Launch CLI on Template",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -13,10 +13,28 @@
             // Add "-p" and a path to the parameters file to use specific parameters
             // when analyzing the template.
             "args": [
-                "-t", "${file}",
+                "analyze-template",
+                "${file}"
                 //"-p", "path-to-parameters"
             ],
+            "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Launch CLI on Directory",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/TemplateAnalyzer.dll",
 
+            // Runs the analyzer CLI, analyzing the directory of the file currently active/being 
+            // viewed in VS Code. Alternatively, change ${fileDirname} to the path of a directory to 
+            // analyze that directory.
+            "args": [
+                "analyze-directory",
+                "${fileDirname}",
+            ],
             "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/",
             "console": "internalConsole",
             "stopAtEntry": false

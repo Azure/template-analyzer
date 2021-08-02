@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -41,40 +43,77 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             rootCommand = new RootCommand();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
 
-            Option<FileInfo> templateOption = new Option<FileInfo>(
-                    "--template-file-path",
-                    "The ARM template to analyze")
-            {
-                IsRequired = true
-            };
-            templateOption.AddAlias("-t");
-            rootCommand.AddOption(templateOption);
+            // Setup analyze-template w/ template file argument and parameter file option
+            Command analyzeTemplateCommand = new Command(
+                "analyze-template",
+                "Analyze a singe template");
+            
+            Argument<FileInfo> templateArgument = new Argument<FileInfo>(
+                "template-file-path",
+                "The ARM template to analyze");
+            analyzeTemplateCommand.AddArgument(templateArgument);
 
             Option<FileInfo> parameterOption = new Option<FileInfo>(
                  "--parameters-file-path",
                  "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
-            rootCommand.AddOption(parameterOption);
+            analyzeTemplateCommand.AddOption(parameterOption);            
+            
+            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath));
 
-            rootCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) => this.RootCommandHandler(templateFilePath, parametersFilePath));
+            // Setup analyze-directory w/ directory argument 
+            Command analyzeDirectoryCommand = new Command(
+                "analyze-directory", 
+                "Analyze all templates within a directory");
+
+            Argument<DirectoryInfo> directoryArgument = new Argument<DirectoryInfo>(
+                "directory-path",
+                "The directory to find ARM templates");
+            analyzeDirectoryCommand.AddArgument(directoryArgument);
+
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo>((directoryPath) => this.AnalyzeDirectory(directoryPath));
+
+            // Add commands to root command
+            rootCommand.AddCommand(analyzeTemplateCommand);
+            rootCommand.AddCommand(analyzeDirectoryCommand);
 
             return rootCommand;
         }
 
-        private void RootCommandHandler(FileInfo templateFilePath, FileInfo parametersFilePath)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool printMessageIfNotTemplate = true)
         {
             try
             {
-                var templateAnalyzer = new Core.TemplateAnalyzer(File.ReadAllText(templateFilePath.FullName), parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName), templateFilePath.FullName);
-                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                // Check that template file paths exist
+                if (!templateFilePath.Exists)
+                {
+                    Console.WriteLine($"Invalid template file path ({templateFilePath})");
+                    return 0;
+                }
 
+                string templateFileContents = File.ReadAllText(templateFilePath.FullName);
+                string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
+
+                // Check that the schema is valid
+                if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
+                {
+                    if (printMessageIfNotTemplate)
+                    {
+                        Console.WriteLine("File is not a valid ARM Template.");
+                    }
+                    return 0;
+                }
+
+                // Log info on file to be analyzed
                 string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
                 if (parametersFilePath != null)
                 {
                     fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
                 }
-
                 Console.WriteLine(fileMetadata);
+
+                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                 var passedEvaluations = 0;
 
@@ -96,11 +135,92 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
+
+                return 1;
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+                return -1;
+            }
+        }
+
+        private void AnalyzeDirectory(DirectoryInfo directoryPath)
+        {
+            try
+            {
+                if (!directoryPath.Exists)
+                {
+                    Console.WriteLine($"Invalid directory ({directoryPath})");
+                    return;
+                }
+
+                // Find files to analyze
+                List<FileInfo> filesToAnalyze = new List<FileInfo>();
+                FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
+
+                // Log root directory
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
+
+                int numOfSuccesses = 0;
+                List<FileInfo> filesFailed = new List<FileInfo>();
+                foreach (FileInfo file in filesToAnalyze)
+                {
+                    int res = AnalyzeTemplate(file, null, false);
+                    if (res == 1) 
+                    {
+                        numOfSuccesses++;
+                    }
+                    else if (res == -1) 
+                    {
+                        filesFailed.Add(file);
+                    }
+                }
+
+                Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
+                if (filesFailed.Count > 0) 
+                {
+                    Console.WriteLine($"Unable to analyze {filesFailed.Count} file(s):");
+                    foreach (FileInfo failedFile in filesFailed)
+                    {
+                        Console.WriteLine($"\t{failedFile}");
+                    }
+                }
+
             }
             catch (Exception exp)
             {
                 Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
             }
+
+        }
+
+        private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
+        {
+            foreach (FileInfo file in directoryPath.GetFiles())
+            {
+                if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    files.Add(file);
+                }
+            }
+            foreach (DirectoryInfo dir in directoryPath.GetDirectories())
+            {
+                FindJsonFilesInDirectoryRecursive(dir, files);
+            }
+        }
+
+        private bool IsValidSchema(string template)
+        {
+            JObject jsonTemplate = JObject.Parse(template);
+            string schema = (string)jsonTemplate["$schema"];
+            string[] validSchemas = { 
+                "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"};
+            return validSchemas.Contains(schema);
         }
 
         private static string GetAllExceptionMessages(Exception exception)
