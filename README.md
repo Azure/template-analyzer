@@ -41,7 +41,7 @@ The Template BPA outputs the results of violated rules, the corresponding line n
 
 For a template which deploys an API App that does not require HTTPS, running the Template BPA on the template would produce output which looks similar to the following:
 ```
->TemplateAnalyzer.exe -t "C:\Templates\azuredeploy.json"
+>TemplateAnalyzer.exe analyze-template "C:\Templates\azuredeploy.json"
 
 File: C:\Templates\azuredeploy.json
 
