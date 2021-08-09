@@ -13,8 +13,9 @@ We welcome community contributions to the Template BPA. Please note that by part
 * [Visual Studio Code](https://code.visualstudio.com/) with the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) is a great way to get started.
   * Start VS Code and open the root directory where the code is cloned locally (File->Open Folder...).
 * Run the `build` task (Terminal->Run Task...->build) in VS Code to build the Template BPA.
-* Try analyzing a template: open a template file in VS Code and then run the `.NET Core Launch (console)` launch configuration (Run->Start Debugging).
+* Try analyzing a template: open a template file in VS Code and then run the `Launch CLI on Template` launch configuration (Run->Start Debugging).
   * Alternatively, modify the configuration in [launch.json](./.vs/launch.json) and specify a path to a template file, and optionally specify a path to a parameters file to use.
+  * Additionally, the `Launch CLI on Directory` launch configuration analyzes the directory of the open file in VS Code. 
 
 ### Components
 The Template Analyzer solution is comprised of the following main components:
@@ -44,7 +45,7 @@ The Template Analyzer solution is comprised of the following main components:
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
 
 ### Contributing Analyzer Rules
-Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to contribute to the built-in Template BPA rules.
+Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template BPA rules. Information on the new rules would also have to be added in [Built-in BPA Rules](./docs/built-in-bpa-rules.md), in alphabetical order. Thorough tests are required as well, documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
 
 ### Coding Conventions
 
