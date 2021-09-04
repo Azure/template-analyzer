@@ -57,7 +57,7 @@
             "apiVersion": "2019-08-01",
             "type": "Microsoft.Web/sites",
             "kind": "app",
-            "name": "diagLogsDisabledInSiteConfig",
+            "name": "diagLogsDisabledInSiteConfigProperty",
             "location": "[parameters('location')]",
             "properties": {
                 "siteConfig": {
@@ -71,15 +71,31 @@
             "apiVersion": "2019-08-01",
             "type": "Microsoft.Web/sites",
             "kind": "app",
-            "name": "diagLogsDisabledInSiteConfig",
+            "name": "diagLogsEnabledInSiteConfigProperty",
             "location": "[parameters('location')]",
             "properties": {
                 "siteConfig": {
-                    "detailedErrorLoggingEnabled": false,
-                    "httpLoggingEnabled": false,
-                    "requestTracingEnabled": false
+                    "detailedErrorLoggingEnabled": true,
+                    "httpLoggingEnabled": true,
+                    "requestTracingEnabled": true
                 }
             }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Web/sites/config",
+            "kind": "app",
+            "name": "diagLogsDisabledInSitesConfigResourceType",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
+            ],
+            "properties": {
+                "detailedErrorLoggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "requestTracingEnabled": false
+            }
         }
+        // FIXME same resource as above but with all trues
     ]
 }
