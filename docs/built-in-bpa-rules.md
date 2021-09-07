@@ -146,6 +146,11 @@ Service Fabric clusters should only use Azure Active Directory for client authen
 
 **Recommendation**: [Enable AAD client authentication on your Service Fabric clusters](https://docs.microsoft.com/en-in/azure/service-fabric/service-fabric-cluster-creation-setup-aad)
 
+## SQL servers with auditing to storage account destination should be configured with 90 days retention or higher
+Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days.
+
+**Recommendation**: For incident investigation purposes, we recommend setting the data retention for your SQL Server's auditing to storage account destination to at least 90 days, in the [Microsoft.Sql/servers/auditingSettings resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/2020-11-01-preview/servers/auditingsettings?tabs=json#serverblobauditingpolicyproperties-object), using the *retentionDays* property. Confirm that you are meeting the necessary retention rules for the regions in which you are operating. This is sometimes required for compliance with regulatory standards.
+
 ## Transparent Data Encryption on SQL databases should be enabled
 Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements.
 

@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("2021-09-20", "2021-02-28", false, true, false, DisplayName = "A date is not less or equal to another date")]
         [DataRow("2021-02-28", "2021-02-28", false, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
         // Wrong types
-        [DataRow(100, "aString", false, false, false, DisplayName = "Invalid token to evaluate")]
+        [DataRow("aString", 100, false, false, false, DisplayName = "Invalid token to evaluate")]
         [DataRow("2021-02-28", 100, false, false, false, DisplayName = "Comparing a date with a number")]
         [DataRow(100, "2021-02-28", false, false, false, DisplayName = "Comparing a number with a date")]
         // ! (date_format_a > date_format_b)
@@ -145,9 +145,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var leftToken = TestUtilities.ToJToken(left);
             var rightToken = TestUtilities.ToJToken(right);
 
-            var inequalityOperator = new InequalityOperator(leftToken, greater: greater, orEquals: orEquals);
+            var inequalityOperator = new InequalityOperator(rightToken, greater: greater, orEquals: orEquals);
 
-            Assert.AreEqual(evaluationResult, inequalityOperator.EvaluateExpression(rightToken));
+            Assert.AreEqual(evaluationResult, inequalityOperator.EvaluateExpression(leftToken));
 
             Assert.AreEqual(false, inequalityOperator.EvaluateExpression(null));
         }

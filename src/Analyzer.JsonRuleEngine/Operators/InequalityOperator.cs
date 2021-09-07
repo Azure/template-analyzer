@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
                 return false; // Not ideal, will be improved in the future
             }
 
-            var result = Greater ? EffectiveValue > finalTokenToEvaluate : EffectiveValue < finalTokenToEvaluate;
+            var result = Greater ? finalTokenToEvaluate > EffectiveValue : finalTokenToEvaluate < EffectiveValue;
 
             if (OrEquals)
             {

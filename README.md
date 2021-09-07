@@ -1,4 +1,5 @@
 [![Build Status](https://dev.azure.com/azure/template-analyzer/_apis/build/status/BuildAndTest?branchName=main)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
+[![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 
 # ARM Template Best Practice Analyzer (BPA)
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
@@ -16,16 +17,19 @@ After ensuring the .NET Runtime is installed, download the latest Template BPA r
 To preview the rules that come bundled with the Template BPA, explore [the built-in rules](docs/built-in-bpa-rules.md).
 
 ## Using the Template BPA
-The Template BPA is executed via a command line.  Here is the format to invoke it:
+The Template BPA is executed via a command line.  Here are the formats to invoke it:
 
-`TemplateAnalyzer.exe -t <template-path> [-p <parameters-path>]`
+`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>]`
+
+`TemplateAnalyzer.exe analyze-directory <directory-path>`
 
 ### Input
 The Template BPA accepts the following inputs:
 
 Argument | Description
 --- | ---
-`-t` or `--template-file-path` | The ARM template to analyze
+`<template-path>` | The ARM template to analyze
+`<directory-path>` | The directory to find ARM templates (recursively finds all templates in the directory and its subdirectories.)
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
@@ -37,7 +41,7 @@ The Template BPA outputs the results of violated rules, the corresponding line n
 
 For a template which deploys an API App that does not require HTTPS, running the Template BPA on the template would produce output which looks similar to the following:
 ```
->TemplateAnalyzer.exe -t "C:\Templates\azuredeploy.json"
+>TemplateAnalyzer.exe analyze-template "C:\Templates\azuredeploy.json"
 
 File: C:\Templates\azuredeploy.json
 
