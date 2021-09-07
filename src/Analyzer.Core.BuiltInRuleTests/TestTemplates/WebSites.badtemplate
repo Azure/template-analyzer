@@ -95,7 +95,36 @@
                 "httpLoggingEnabled": false,
                 "requestTracingEnabled": false
             }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Web/sites/config",
+            "kind": "app",
+            "name": "diagLogsEnabledInSitesConfigResourceType",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
+            ],
+            "properties": {
+                "detailedErrorLoggingEnabled": true,
+                "httpLoggingEnabled": true,
+                "requestTracingEnabled": true
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Web/sites/config",
+            "kind": "app",
+            "name": "diagLogsDisabledInSitesConfigResourceTypeDependingOnLinuxKind",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', 'linuxKind')]"
+            ],
+            "properties": {
+                "detailedErrorLoggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "requestTracingEnabled": false
+            }
         }
-        // FIXME same resource as above but with all trues
     ]
 }

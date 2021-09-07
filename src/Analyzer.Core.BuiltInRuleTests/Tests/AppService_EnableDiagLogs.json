@@ -2,8 +2,10 @@
     {
         "Template": "WebSites", // didn't use the existing AppServices template because AppServiceWebApp_HTTPS would trigger for all the new resources, and AppService_EnableDiagLogs for all the already existing ones
         "ReportedFailures": [
-            // The resouces between lines 14 and 55 are not reported because their kind property includes "functionapp" or "linux"
+            // The resources between lines 14 and 55 are not reported because their kind property includes "functionapp" or "linux"
             // The one between lines 70 and 83 is not reported because the siteConfig property has the desired values
+            // In lines 100-113 there's a resource that depends on another that doesn't fulfill the first property of the anyOf, but itself fulfills the second one
+            // And the last one of sites/config type depends on a resource such that neither of them makes the anyOf properties true, but the first one is of Linux type
             {
                 "LineNumber": 64,
                 "Description": "detailedErrorLoggingEnabled set to false"
