@@ -1,6 +1,6 @@
 [
     {
-        "Template": "WebSites", // didn't use the existing AppServices template because AppServiceWebApp_HTTPS would trigger for all the new resources, and AppService_EnableDiagLogs for all the already existing ones
+        "Template": "AppServicesLogs", // didn't use the existing AppServices template because AppServiceWebApp_HTTPS would trigger for all the new resources, and AppService_EnableDiagLogs for all the already existing ones
         "ReportedFailures": [
             // The resources between lines 14 and 55 are not reported because their kind property includes "functionapp" or "linux"
             // The one between lines 70 and 83 is not reported because the siteConfig property has the desired values
