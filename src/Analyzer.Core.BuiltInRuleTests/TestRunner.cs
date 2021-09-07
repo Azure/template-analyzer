@@ -54,6 +54,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
                                     .ToList())
                     .ToHashSet();
 
+                failingLines.UnionWith(thisRuleEvaluation.Results
+                .Where(r => !r.Passed)
+                .Select(r => r.LineNumber)
+                .ToHashSet());
+
                 // Verify all expected lines are reported
                 var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
                 Assert.IsTrue(failingLines.SetEquals(expectedLines),
