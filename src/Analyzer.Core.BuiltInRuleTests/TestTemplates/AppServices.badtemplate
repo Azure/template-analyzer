@@ -180,7 +180,8 @@
       "name": "SitesConfig_RestrictedCORSAccess_web",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "ApiApp_NoSitesConfig"
+        "ApiApp_NoSitesConfig",
+        "WebApp_NoSitesConfig"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]",
@@ -219,7 +220,8 @@
       "name": "SitesConfig_UnrestrictedCORSAccess_web",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "ApiApp_NoSitesConfig"
+        "ApiApp_NoSitesConfig",
+        "WebApp_NoSitesConfig"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]",
@@ -228,6 +230,83 @@
             "*"
           ]
         }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "WebApp_RestrictedCORSAccess_EmbeddedSitesConfig",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "cors": {
+            "allowedOrigins": [
+              "someIP"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "WebApp_NoKind_RestrictedCORSAccess_EmbeddedSitesConfig",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "cors": {
+            "allowedOrigins": [
+              "someIP"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "WebApp_UnrestrictedCORSAccess_EmbeddedSitesConfig",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]",
+        "httpsOnly": true,
+        "siteConfig": {
+          "cors": {
+            "allowedOrigins": [
+              "someIP",
+              "*"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "WebApp_NoSitesConfig",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarm')]",
+        "httpsOnly": true
       }
     }
   ]
