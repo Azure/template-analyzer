@@ -3,11 +3,11 @@
         "Template": "AppServices",
         "ReportedFailures": [
             {
-                "LineNumber": 292,
+                "LineNumber": 294,
                 "Description": "Embedded sites config has a * rule in CORS"
             },
             {
-                "LineNumber": 230,
+                "LineNumber": 232,
                 "Description": "Stand alone sites config has a * rule in CORS"
             }
         ]
