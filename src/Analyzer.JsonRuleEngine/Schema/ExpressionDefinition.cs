@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             {
                 ResourceType = ResourceType,
                 Path = Path,
-                Where = Where?.ToExpression(jsonLineNumberResolver, false)
+                Where = Where?.ToExpression(jsonLineNumberResolver, isNegative: false)
             };
 
         /// <summary>
