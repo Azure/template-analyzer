@@ -29,6 +29,10 @@
       {
         "LineNumber": 96,
         "Description": "requestTracingEnabled set to false in sites/config"
+      },
+      {
+        "LineNumber": 138,
+        "Description": "httpLoggingEnabled set to false in a resource with detailedErrorLoggingEnabled and requestTracingEnabled as true"
       }
     ]
   }

@@ -125,6 +125,20 @@
         "httpLoggingEnabled": false,
         "requestTracingEnabled": false
       }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "aPropertyRequiredAsEnabledIsDisabled",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": true,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": true
+        }
+      }
     }
   ]
 }
