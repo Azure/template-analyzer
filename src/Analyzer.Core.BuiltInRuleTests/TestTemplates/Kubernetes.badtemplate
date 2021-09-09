@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_AuthorizedIPs",
+      "location": "[parameters('location')]",
+      "properties": {
+        "apiServerAccessProfile": {
+          "authorizedIPRanges": [ "IP1" ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_AuthorizedIPsEmpty",
+      "location": "[parameters('location')]",
+      "properties": {
+        "apiServerAccessProfile": {
+          "authorizedIPRanges": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_NoIPRestrictions",
+      "location": "[parameters('location')]",
+      "properties": {
+        "apiServerAccessProfile": {}
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_EnablePrivateClusterTrue",
+      "location": "[parameters('location')]",
+      "properties": {
+        "apiServerAccessProfile": {
+          "enablePrivateCluster": true
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_EnablePrivateClusterFalse",
+      "location": "[parameters('location')]",
+      "properties": {
+        "apiServerAccessProfile": {
+          "enablePrivateCluster": false
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_EnablePrivateClusterFalse_AuthorizedIPs",
+      "location": "[parameters('location')]",
+      "properties": {
+        "apiServerAccessProfile": {
+          "enablePrivateCluster": false,
+          "authorizedIPRanges": [ "IP1" ]
+        }
+      }
+    }
+  ]
+}
