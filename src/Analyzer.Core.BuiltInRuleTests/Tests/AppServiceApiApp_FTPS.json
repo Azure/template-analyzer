@@ -1,15 +1,15 @@
 [
-    {
-        "Template": "AppServicesFTPS",
-        "ReportedFailures": [
-            {
-                "LineNumber": 29,
-                "Description": "No properties are specified"
-            },
-            {
-                "LineNumber": 40,
-                "Description": "siteConfig.ftpsState set to an undesired value"
-            }
-        ]
-    }
+  {
+    "Template": "AppServicesFTPS",
+    "ReportedFailures": [
+      {
+        "LineNumber": 29,
+        "Description": "No properties are specified"
+      },
+      {
+        "LineNumber": 40,
+        "Description": "siteConfig.ftpsState set to an undesired value"
+      }
+    ]
+  }
 ]

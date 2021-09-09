@@ -1,11 +1,11 @@
 [
-    {
-        "Template": "RedisCache",
-        "ReportedFailures": [
-            {
-                "LineNumber": 28,
-                "Description": "enableNonSslPort equals true"
-            }
-        ]
-    }
+  {
+    "Template": "RedisCache",
+    "ReportedFailures": [
+      {
+        "LineNumber": 28,
+        "Description": "enableNonSslPort equals true"
+      }
+    ]
+  }
 ]
