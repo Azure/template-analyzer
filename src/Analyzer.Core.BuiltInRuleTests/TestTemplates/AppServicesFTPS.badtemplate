@@ -86,6 +86,28 @@
       "properties": {
         "ftpsState": "FtpsOnly"
       }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "misingKindPropertyWithUndesiredFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "undesiredValue"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "misingKindPropertyWithDesiredFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "FtpsOnly"
+        }
+      }
     }
   ]
 }
