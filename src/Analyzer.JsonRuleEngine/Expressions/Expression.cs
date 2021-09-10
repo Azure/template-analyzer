@@ -37,7 +37,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             (this.ResourceType, this.Path, this.Where) = (commonProperties.ResourceType, commonProperties.Path, commonProperties.Where);
         }
 
-
         /// <summary>
         /// Executes this <see cref="Expression"/> against a template.
         /// </summary>

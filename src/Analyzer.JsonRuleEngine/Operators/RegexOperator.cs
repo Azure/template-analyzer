@@ -23,10 +23,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// Creates a RegexOperator.
         /// </summary>
         /// <param name="regexPattern">The regex pattern specified in the JSON rule.</param>
-        public RegexOperator(string regexPattern)
+        /// <param name="isNegative">Whether to negate the result of the regex match.</param>
+        public RegexOperator(string regexPattern, bool isNegative = false)
         {
             this.SpecifiedValue = regexPattern ?? throw new ArgumentNullException(nameof(regexPattern));
-            this.IsNegative = false;
+            this.IsNegative = isNegative;
 
             this.RegexPattern = regexPattern;
 
@@ -52,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
                 return false;
             }
 
-            return regex.IsMatch(tokenToEvaluate.Value<string>());
+            return regex.IsMatch(tokenToEvaluate.Value<string>()) ^ this.IsNegative;
         }
     }
 }

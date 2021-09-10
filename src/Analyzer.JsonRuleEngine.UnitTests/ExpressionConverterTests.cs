@@ -214,6 +214,70 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow(DisplayName = "Not Expression")]
+        [DataRow("not", typeof(NotExpressionDefinition), DisplayName = "Not Expression with Where condition")]
+        public void ReadJson_ValidNotExpression_ReturnsCorrectTypeAndValues(params object[] whereCondition)
+        {
+            var expressionTemplate = $@"
+                {{
+                    ""resourceType"": ""someResource/resourceType"",
+                    ""path"": ""some.json.path"",
+                    $$where$$
+                    ""not"":
+                        {{
+                            ""path"": ""some.other.path"", 
+                            ""hasValue"": true 
+                        }}
+                }}";
+
+            // If test should use a 'where' condition, create the expression to put in it
+            string optionalWhereBlock = string.Empty;
+            if (whereCondition.Length > 0)
+            {
+                if (whereCondition.Length != 2 || !(whereCondition[0] is string && whereCondition[1] is Type))
+                    Assert.Fail($"{nameof(whereCondition)} must contain (only) the operator name and type.");
+
+                // Replace values to make it valid and unique from the outer expression
+                optionalWhereBlock = "\"where\": "
+                    + expressionTemplate
+                        .Replace("$$where$$", "")
+                        .Replace("someResource", "whereResource")
+                        .Replace("some.json.path", "some.where.path")
+                    + ",";
+            }
+
+            // Parse expression
+            var @object = ReadJson(expressionTemplate.Replace("$$where$$", optionalWhereBlock));
+
+            // Local function to validate expression and potential inner 'where' expression
+            static void ValidateExpression(ExpressionDefinition expression, Type expectedSpecificType, string expectedResourceType, string expectedPath)
+            {
+                // Validate specific type and string properties
+                Assert.AreEqual(expectedSpecificType, expression.GetType());
+                Assert.AreEqual(expectedResourceType, expression.ResourceType);
+                Assert.AreEqual(expectedPath, expression.Path);
+                Assert.AreEqual(typeof(LeafExpressionDefinition), (expression as NotExpressionDefinition).Not.GetType());
+            }
+
+            Assert.AreEqual(typeof(NotExpressionDefinition), @object.GetType());
+
+            // Validate top-level expression
+            ExpressionDefinition expressionDefinition = @object as ExpressionDefinition;
+            ValidateExpression(expressionDefinition, typeof(NotExpressionDefinition), "someResource/resourceType", "some.json.path");
+
+            // Validate where condition, if specified
+            if (whereCondition.Length > 0)
+            {
+                Assert.IsNotNull(expressionDefinition.Where);
+                ValidateExpression(expressionDefinition.Where, (Type)whereCondition[1], "whereResource/resourceType", "some.where.path");
+            }
+            else
+            {
+                Assert.IsNull(expressionDefinition.Where);
+            }
+        }
+
+        [DataTestMethod]
         [DataRow("hasValue", "string", DisplayName = "\"HasValue\": \"string\"")]
         [DataRow("exists", new int[0], DisplayName = "\"Exists\": []")]
         [ExpectedException(typeof(JsonReaderException))]

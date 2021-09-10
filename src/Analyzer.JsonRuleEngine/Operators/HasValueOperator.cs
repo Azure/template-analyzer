@@ -41,16 +41,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             if (tokenToEvaluate == null || tokenToEvaluate.Type == JTokenType.Null)
             {
-                return !EffectiveValue;
+                return !EffectiveValue ^ this.IsNegative;
             }
 
             if (tokenToEvaluate.Type == JTokenType.String
                 && tokenToEvaluate.Value<string>().Length == 0)
             {
-                return !EffectiveValue;
+                return !EffectiveValue ^ this.IsNegative;
             }
 
-            return EffectiveValue;
+            return EffectiveValue ^ this.IsNegative;
         }
     }
 }

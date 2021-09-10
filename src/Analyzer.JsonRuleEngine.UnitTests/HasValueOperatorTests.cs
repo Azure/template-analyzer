@@ -26,6 +26,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // {"HasValue": false} is false
             hasValueOperator = new HasValueOperator(false, isNegative: false);
             Assert.IsFalse(hasValueOperator.EvaluateExpression(jToken));
+
+            // Not {"HasValue": true} is false
+            hasValueOperator = new HasValueOperator(true, isNegative: true);
+            Assert.IsFalse(hasValueOperator.EvaluateExpression(jToken));
+
+            // Not {"HasValue": false} is true
+            hasValueOperator = new HasValueOperator(false, isNegative: true);
+            Assert.IsTrue(hasValueOperator.EvaluateExpression(jToken));
         }
 
         [TestMethod]

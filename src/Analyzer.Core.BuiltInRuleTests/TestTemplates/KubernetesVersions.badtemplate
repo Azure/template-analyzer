@@ -1,0 +1,168 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_Non-vulnerableVersion_1.13.5+",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.13.5"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.13.0",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.13.0"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_Non-vulnerableVersion_1.12.7+",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.12.7"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.12.1",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.12.1"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_Non-vulnerableVersion_1.11.9+",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.11.9"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.11.2",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.11.2"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.10.2",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.10.2"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.9.4",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.9.4"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.8.1",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.8.1"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.7.0",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.7.0"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.6.7",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.6.7"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.5.3",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.5.3"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.4.7",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.4.7"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.3.4",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.3.4"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.2.9",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.2.9"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.1.10",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.1.10"
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2020-07-01",
+      "name": "AKS_VulnerableVersion_1.0.5",
+      "location": "[parameters('location')]",
+      "properties": {
+        "kubernetesVersion": "1.0.5"
+      }
+    }
+  ]
+}

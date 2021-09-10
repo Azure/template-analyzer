@@ -297,7 +297,7 @@ Example:
 }
 ```
 
-#### **Not [[*]](#note)**
+#### **Not**
 *Type: [`Evaluation`](#evaluation-object)*
 
 Performs a logical 'not' operation on the `Evaluation`.  Evaluates to `true` if the result of the `Evaluation` it contains is `false`; evaluates to `false` otherwise.

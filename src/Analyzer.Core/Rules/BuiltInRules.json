@@ -634,6 +634,29 @@
     }
   },
   {
+    "name": "Kubernetes_Upgrade_Non-Vulnerable_Version",
+    "description": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
+    "recommendation": "Upgrade to a non-vulnerable Kubernetes version (1.11.9+, 1.12.7+, 1.13.5+, and 1.14.0+)",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#kubernetes-services-should-be-upgraded-to-a-non-vulnerable-kubernetes-version",
+    "evaluation": {
+      "resourceType": "Microsoft.ContainerService/managedClusters",
+      "allOf": [
+        {
+          "not": {
+            "path": "properties.kubernetesVersion",
+            "regex": "^1\\.((11\\.[0-8])|(12\\.[0-6])|(13\\.[0-4]))"
+          }
+        },
+        {
+          "not": {
+            "path": "properties.kubernetesVersion",
+            "regex": "^1\\.(([0-9]|10)\\.\\d+)"
+          }
+        }
+      ]
+    }
+  },
+  {
     "name": "ServiceFabric_Client_AAD_Auth_Only",
     "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
