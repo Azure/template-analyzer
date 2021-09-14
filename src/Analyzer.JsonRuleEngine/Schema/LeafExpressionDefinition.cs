@@ -84,48 +84,49 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// </summary>
         /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
         /// pass to the created <see cref="Expression"/>.</param>
+        /// <param name="isNegative">Whether to negate the evaluation.</param>
         /// <returns>The LeafExpression.</returns>
-        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
+        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver, bool isNegative = false)
         {
             LeafExpressionOperator leafOperator = null;
 
             if (this.Exists != null)
             {
-                leafOperator = new ExistsOperator(Exists.Value, isNegative: false);
+                leafOperator = new ExistsOperator(Exists.Value, isNegative);
             }
             else if (this.HasValue != null)
             {
-                leafOperator = new HasValueOperator(HasValue.Value, isNegative: false);
+                leafOperator = new HasValueOperator(HasValue.Value, isNegative);
             }
             else if (this.Is != null || this.NotEquals != null)
             {
                 leafOperator = new EqualsOperator(
                     specifiedValue: this.Is ?? this.NotEquals,
-                    isNegative: this.NotEquals != null);
+                    isNegative: this.NotEquals != null ^ isNegative);
             }
             else if (this.Regex != null)
             {
-                leafOperator = new RegexOperator(Regex);
+                leafOperator = new RegexOperator(this.Regex, isNegative);
             }
             else if (this.In != null)
             {
-                leafOperator = new InOperator(this.In);
+                leafOperator = new InOperator(this.In, isNegative);
             }
             else if (this.Greater != null)
             {
-                leafOperator = new InequalityOperator(this.Greater, greater: true, orEquals: false);
+                leafOperator = new InequalityOperator(this.Greater, greater: true ^ isNegative, orEquals: false ^ isNegative);
             }
             else if (this.GreaterOrEquals != null)
             {
-                leafOperator = new InequalityOperator(this.GreaterOrEquals, greater: true, orEquals: true);
+                leafOperator = new InequalityOperator(this.GreaterOrEquals, greater: true ^ isNegative, orEquals: true ^ isNegative);
             }
             else if (this.Less != null)
             {
-                leafOperator = new InequalityOperator(this.Less, greater: false, orEquals: false);
+                leafOperator = new InequalityOperator(this.Less, greater: false ^ isNegative, orEquals: false ^ isNegative);
             }
             else if (this.LessOrEquals != null)
             {
-                leafOperator = new InequalityOperator(this.LessOrEquals, greater: false, orEquals: true);
+                leafOperator = new InequalityOperator(this.LessOrEquals, greater: false ^ isNegative, orEquals: true ^ isNegative);
             }
 
             if (leafOperator != null)

@@ -39,8 +39,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// </summary>
         /// <param name="jsonLineNumberResolver">An <see cref=" ILineNumberResolver"/> to
         /// pass to the created <see cref="Expression"/>.</param>
+        /// <param name="isNegative">Whether to negate the evaluation.</param>
         /// <returns>The <see cref="Expression"/>.</returns>
-        public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver);
+        public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver, bool isNegative = false);
 
         /// <summary>
         /// Gets the properties common across all <see cref="Expression"/> types.
@@ -53,7 +54,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             {
                 ResourceType = ResourceType,
                 Path = Path,
-                Where = Where?.ToExpression(jsonLineNumberResolver)
+                Where = Where?.ToExpression(jsonLineNumberResolver, isNegative: false)
             };
 
         /// <summary>

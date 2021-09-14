@@ -31,10 +31,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var desiredValueJToken = TestUtilities.ToJToken(desiredValue);
             var arrayOfValuesJToken = JArray.FromObject(arrayOfValues);
 
-            var inOperator = new InOperator(arrayOfValuesJToken);
+            var inOperator = new InOperator(arrayOfValuesJToken, false);
 
             Assert.AreEqual(evaluationResult, inOperator.EvaluateExpression(desiredValueJToken));
+
+            // test negated operator as well
+            var inOperatorNegated = new InOperator(arrayOfValuesJToken, true);
+
+            Assert.AreEqual(!evaluationResult, inOperatorNegated.EvaluateExpression(desiredValueJToken));
         }
+
 
         [TestMethod]
         public void EvaluateExpression_NullAsTokenToEvaluate_ReturnsFalse()

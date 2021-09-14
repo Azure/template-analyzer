@@ -20,6 +20,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // {"Regex": jTokenValue} is true
             var regexOperator = new RegexOperator(regex);
             Assert.IsTrue(regexOperator.EvaluateExpression(stringToMatch));
+
+            // Not {"Regex": jTokenValue} is false
+            var regexOperatorNegated = new RegexOperator(regex, true);
+            Assert.IsFalse(regexOperatorNegated.EvaluateExpression(stringToMatch));
         }
 
         [DataTestMethod]
@@ -32,6 +36,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // {"Regex": jTokenValue} is false
             var regexOperator = new RegexOperator(regex);
             Assert.IsFalse(regexOperator.EvaluateExpression(stringToMatch));
+
+            // Not {"Regex": jTokenValue} is true
+            var regexOperatorNegated = new RegexOperator(regex, true);
+            Assert.IsTrue(regexOperatorNegated.EvaluateExpression(stringToMatch));
         }
 
         [DataTestMethod]

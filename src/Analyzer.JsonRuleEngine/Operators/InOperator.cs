@@ -19,10 +19,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// Creates an InOperator.
         /// </summary>
         /// <param name="specifiedValue">The value specified in the JSON rule, it has to be an array of basic JSON values.</param>
-        public InOperator(JArray specifiedValue)
+        /// <param name="isNegative">Whether to negate the result of the operator.</param>
+        public InOperator(JArray specifiedValue, bool isNegative = false)
         {
             this.SpecifiedValue = specifiedValue;
-            this.IsNegative = false;
+            this.IsNegative = isNegative;
         }
 
         /// <summary>
@@ -37,17 +38,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
                 return false;
             }
 
-            var equalsOperator = new EqualsOperator(tokenToEvaluate, isNegative: this.IsNegative);
+            bool tokenMatched = false;
+
+            var equalsOperator = new EqualsOperator(tokenToEvaluate, isNegative: false);
 
             foreach (var arrayElement in this.SpecifiedValue)
             {
                 if (equalsOperator.EvaluateExpression(arrayElement))
                 {
-                    return true;
+                    tokenMatched = true;
+                    break;
                 }
             }
 
-            return false;
+            return tokenMatched ^ this.IsNegative;
         }
     }
 }
