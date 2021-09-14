@@ -78,7 +78,7 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
       "kind": "api",
-      "name": "ftpsOnlyInSitesConfigResourceType",
+      "name": "inSitesConfigResourceType/desiredFtpsState",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', 'withoutSpecifyingPropertiesForSitesConfig')]"
@@ -107,6 +107,26 @@
         "siteConfig": {
           "ftpsState": "FtpsOnly"
         }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "misingKindPropertyAndFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "name": "dependingOnAResourceWithoutKindProperty/desiredFtpsState",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'misingKindPropertyAndFtpsState')]"
+      ],
+      "properties": {
+        "ftpsState": "FtpsOnly"
       }
     }
   ]
