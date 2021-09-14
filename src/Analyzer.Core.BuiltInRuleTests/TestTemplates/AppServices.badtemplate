@@ -169,7 +169,7 @@
     {
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
-      "name": "SitesConfig_RestrictedCORSAccess_web",
+      "name": "SitesConfig/RestrictedCORSAccess_web",
       "location": "[parameters('location')]",
       "dependsOn": [
         "ApiApp_NoSitesConfig",
@@ -205,7 +205,7 @@
     {
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
-      "name": "SitesConfig_UnrestrictedCORSAccess_web",
+      "name": "SitesConfig/UnrestrictedCORSAccess_web",
       "location": "[parameters('location')]",
       "dependsOn": [
         "ApiApp_NoSitesConfig",

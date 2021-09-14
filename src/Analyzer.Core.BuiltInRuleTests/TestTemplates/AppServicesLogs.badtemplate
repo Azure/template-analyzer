@@ -85,7 +85,7 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
       "kind": "app",
-      "name": "diagLogsDisabledInSitesConfigResourceType",
+      "name": "sitesConfig/diagLogsDisabled",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
@@ -100,7 +100,7 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
       "kind": "app",
-      "name": "diagLogsEnabledInSitesConfigResourceType",
+      "name": "sitesConfig/diagLogsEnabled",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
@@ -115,7 +115,7 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
       "kind": "app",
-      "name": "diagLogsDisabledInSitesConfigResourceTypeDependingOnLinuxKind",
+      "name": "sitesConfigDependingOnLinuxKind/diagLogsDisabled",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', 'linuxKind')]"

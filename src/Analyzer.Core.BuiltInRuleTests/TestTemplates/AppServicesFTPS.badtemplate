@@ -78,7 +78,7 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
       "kind": "api",
-      "name": "inSitesConfigResourceType/desiredFtpsState",
+      "name": "sitesConfig/desiredFtpsState",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', 'withoutSpecifyingPropertiesForSitesConfig')]"
@@ -120,7 +120,7 @@
     {
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites/config",
-      "name": "dependingOnAResourceWithoutKindProperty/desiredFtpsState",
+      "name": "sitesConfigDependingOnAResourceWithoutKindProperty/desiredFtpsState",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', 'misingKindPropertyAndFtpsState')]"
