@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+                Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
                 return -1;
             }
         }
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+                Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
             }
 
         }
