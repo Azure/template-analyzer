@@ -634,7 +634,7 @@
     }
   },
   {
-    "id": "TA-Kubernetes_Upgrade_Non-Vulnerable_Version-1", // TODO
+    "id": "TA-PV-7-1",
     "description": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
     "recommendation": "Upgrade to a non-vulnerable Kubernetes version (1.11.9+, 1.12.7+, 1.13.5+, and 1.14.0+)",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#kubernetes-services-should-be-upgraded-to-a-non-vulnerable-kubernetes-version",
