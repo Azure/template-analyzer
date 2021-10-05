@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         internal RuleDefinition RuleDefinition { get; set; }
 
         /// <inheritdoc/>
-        public string RuleName => RuleDefinition.Name;
+        public string RuleID => RuleDefinition.ID;
 
         /// <inheritdoc/>
         public string RuleDescription => RuleDefinition.Description;

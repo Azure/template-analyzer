@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             // Find any instances of the rule being tested
             // Exception containing "Sequence contains no elements" likely means you did 
             // not name the test file the same name as the rule
-            var thisRuleEvaluation = results.ToList().Where(e => e.RuleName.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
+            var thisRuleEvaluation = results.ToList().Where(e => e.RuleID.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
 
             // If there are no expected failures, the evaluation should have passed
             Assert.AreEqual(ruleExpectations.ReportedFailures.Length == 0, thisRuleEvaluation.Passed);

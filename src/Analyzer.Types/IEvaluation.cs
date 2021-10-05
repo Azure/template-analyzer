@@ -12,9 +12,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
     public interface IEvaluation
     {
         /// <summary>
-        /// Gets the name of the rule this evaluation is for.
+        /// Gets the ID of the rule this evaluation is for.
         /// </summary>
-        public string RuleName { get; }
+        public string RuleID { get; }
 
         /// <summary>
         /// Gets the description of the rule this evaluation is for.
