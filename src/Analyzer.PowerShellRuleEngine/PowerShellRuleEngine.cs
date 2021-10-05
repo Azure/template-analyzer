@@ -61,11 +61,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             {
                 var uniqueErrors = new Dictionary<string, SortedSet<int>>(); // Maps error messages to a sorted set of line numbers
 
-                foreach (dynamic warning in executionResult.Warnings)
-                {
-                    AddErrorToDictionary(warning, ref uniqueErrors);
-                }
-
                 foreach (dynamic error in executionResult.Errors)
                 {
                     AddErrorToDictionary(error, ref uniqueErrors);
