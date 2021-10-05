@@ -78,7 +78,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    evaluations.Add(new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults));
+                    var ruleID = "TA-" + executionResult.Errors[0].FullyQualifiedErrorId.Split(',')[0].TrimStart('"');
+                    var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
+                    evaluations.Add(new PowerShellRuleEvaluation(ruleID, ruleDescription, false, evaluationResults));
                 }
             }
 
