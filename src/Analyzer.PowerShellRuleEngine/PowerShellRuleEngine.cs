@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             this.powerShell = Powershell.Create();
 
             powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time
             powerShell.AddStatement();
 
             powerShell.Invoke();
@@ -60,10 +60,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             foreach (dynamic executionResult in executionResults)
             {
                 var uniqueErrors = new Dictionary<string, SortedSet<int>>(); // Maps error messages to a sorted set of line numbers
+                var ruleIDs = new Dictionary<string, string>(); // Maps error messages to rule IDs
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    AddErrorToDictionary(error, ref uniqueErrors);
+                    AddErrorToDictionaries(error, ref uniqueErrors, ref ruleIDs);
                 }
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
@@ -73,26 +74,34 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    var ruleID = "TA-" + executionResult.Errors[0].FullyQualifiedErrorId.Split(',')[0].TrimStart('"');
                     var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
-                    evaluations.Add(new PowerShellRuleEvaluation(ruleID, ruleDescription, false, evaluationResults));
+                    evaluations.Add(new PowerShellRuleEvaluation(ruleIDs[uniqueError.Key], ruleDescription, false, evaluationResults));
                 }
             }
 
             return evaluations;
         }
 
-        private void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
+        private void AddErrorToDictionaries(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors, ref Dictionary<string, string> ruleIDs)
         {
             var lineNumber = 0;
+            var ruleID = "";
 
             Type errorType = error.GetType();
             IEnumerable<PropertyInfo> errorProperties = errorType.GetRuntimeProperties();
             if (errorProperties.Where(prop => prop.Name == "TargetObject").Any())
             {
-                if (error.TargetObject is PSObject targetObject && targetObject.Properties["lineNumber"] != null)
+                if (error.TargetObject is PSObject targetObject)
                 {
-                    lineNumber = error.TargetObject.lineNumber;
+                    if (targetObject.Properties["lineNumber"] != null)
+                    {
+                        lineNumber = error.TargetObject.lineNumber;
+                    }
+
+                    if (targetObject.Properties["ruleID"] != null)
+                    {
+                        ruleID = "TA-" + error.TargetObject.ruleID;
+                    }
                 }
             }
 
@@ -103,6 +112,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // errorMessage was already added to the dictionary
                 uniqueErrors[errorMessage].Add(lineNumber);
             }
+
+            ruleIDs[errorMessage] = ruleID;
         }
     }
 }
