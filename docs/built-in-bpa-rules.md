@@ -25,7 +25,7 @@ More information about the rules covered by our integration with [Azure Resource
 #### TA-000050: Secure string parameters cannot have defaults
 #### TA-000051: Template should not contain blanks
 #### TA-000052: Variables must be referenced
-#### Ta-000053: Virtual machines should not be preview
+#### TA-000053: Virtual machines should not be preview
 #### TA-000054: Virtual machine images should use latest version
 
 # Security Related Rules
