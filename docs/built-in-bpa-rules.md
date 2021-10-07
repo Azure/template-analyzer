@@ -1,31 +1,32 @@
 # Best Practice Related Rules
 More information about the rules covered by our integration with [Azure Resource Manager Template Toolkit](https://github.com/Azure/arm-ttk) can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
 
-#### DeploymentTemplate schema is correct
-#### Parameters must be referenced
-#### Secure string parameters cannot have defaults
-#### DeploymentTemplate must not contain hardcoded URI
-#### Location should not be hardcoded
-#### Resources should have locations
-#### VM size should be a parameter
-#### Min and max values are numbers
-#### artifacts parameter
-#### Variables must be referenced
-#### Dynamic variable references should not use concat
-#### apiVersions should be Rrcent
-#### Providers apiVersions is not permitted
-#### Template should not contain blanks
-#### IDs should be derived from resourceIDs
-#### ResourceIDs should not contain
-#### DependsOn' best practices
-#### Deployment resources must not be debug
-#### adminUsername should not be a literal
-#### VM images should use latest version
-#### Virtual machines should not be preview
-#### ManagedIdentityExtension must not be used
-#### Outputs must not contain secrets
-#### CommandToExecute must use ProtectedSettings for secrets
-#### Resources should not be ambiguous
+#### TA-000029: Admin username should not be a literal
+#### TA-000030: API versions should be recent
+#### TA-000031: Virtual machine size should be a parameter
+#### TA-000032: Artifacts parameter' best practices
+#### TA-000033: CommandToExecute must use ProtectedSettings for secrets
+#### TA-000034: DependsOn' best practices
+#### TA-000035: Deployment resources must not be debug
+#### TA-000036: DeploymentTemplate must not contain hardcoded URI
+#### TA-000037: DeploymentTemplate schema is correct
+#### TA-000038: Dynamic variable references should not use concat
+#### TA-000039: IDs should be derived from resource IDs
+#### TA-000040: Location should not be hardcoded
+#### TA-000041: ManagedIdentityExtension must not be used
+#### TA-000042: Min and max values are numbers
+#### TA-000043: Outputs must not contain secrets
+#### TA-000044: Parameters must be referenced
+#### TA-000045: Providers' apiVersions is not permitted
+#### TA-000046: ResourceIDs should not contain
+#### TA-000047: Resources should have locations
+#### TA-000048: Resources should not be ambiguous
+#### TA-000049: Secure parameters in nested deployments
+#### TA-000050: Secure string parameters cannot have defaults
+#### TA-000051: Template should not contain blanks
+#### TA-000052: Variables must be referenced
+#### Ta-000053: Virtual machines should not be preview
+#### TA-000054: Virtual machine images should use latest version
 
 # Security Related Rules
 
