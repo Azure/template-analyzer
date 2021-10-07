@@ -1,6 +1,6 @@
 [
   {
-    "id": "TA-LT-4-1",
+    "id": "TA-000001",
     "description": "Diagnostic logs in App Services should be enabled",
     "recommendation": "Enable diagnostic Logs in App Services",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#diagnostic-logs-in-app-services-should-be-enabled",
@@ -56,7 +56,7 @@
     }
   },
   {
-    "id": "TA-PV-2-1",
+    "id": "TA-000002",
     "description": "Remote debugging should be turned off for API Apps",
     "recommendation": "Remote debugging should be turned off",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-api-apps",
@@ -88,7 +88,7 @@
     }
   },
   {
-    "id": "TA-DP-4-1",
+    "id": "TA-000003",
     "description": "FTPS only should be required in your API App",
     "recommendation": "Enable FTPS enforcement for enhanced security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-api-app",
@@ -112,7 +112,7 @@
     }
   },
   {
-    "id": "TA-DP-4-2",
+    "id": "TA-000004",
     "description": "API App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#api-app-should-only-be-accessible-over-https",
@@ -131,7 +131,7 @@
     }
   },
   {
-    "id": "TA-DP-4-3",
+    "id": "TA-000005",
     "description": "Latest TLS version should be used in your API App",
     "recommendation": "Upgrade to the latest TLS version",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-api-app",
@@ -155,7 +155,7 @@
     }
   },
   {
-    "id": "TA-PV-2-2",
+    "id": "TA-000006",
     "description": "CORS should not allow every resource to access your API App",
     "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-api-app",
@@ -187,7 +187,7 @@
     }
   },
   {
-    "id": "TA-IM-1-1-IM-2-1",
+    "id": "TA-000007",
     "description": "Managed identity should be used in your API App",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-api-app",
@@ -209,7 +209,7 @@
     }
   },
   {
-    "id": "TA-PV-2-3",
+    "id": "TA-000008",
     "description": "Remote debugging should be turned off for Function Apps",
     "recommendation": "Remote debugging should be turned off",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-function-apps",
@@ -241,7 +241,7 @@
     }
   },
   {
-    "id": "TA-DP-4-4",
+    "id": "TA-000009",
     "description": "FTPS only should be required in your Function App",
     "recommendation": "Enable FTPS enforcement for enhanced security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-function-app",
@@ -265,7 +265,7 @@
     }
   },
   {
-    "id": "TA-DP-4-5",
+    "id": "TA-000010",
     "description": "Function App should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#function-app-should-only-be-accessible-over-https",
@@ -284,7 +284,7 @@
     }
   },
   {
-    "id": "TA-DP-4-6",
+    "id": "TA-000011",
     "description": "Latest TLS version should be used in your Function App",
     "recommendation": "Upgrade to the latest TLS version",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-function-app",
@@ -308,7 +308,7 @@
     }
   },
   {
-    "id": "TA-PV-2-4",
+    "id": "TA-000012",
     "description": "CORS should not allow every resource to access your Function Apps",
     "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Function app. Allow only required domains to interact with your Function app.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-function-apps",
@@ -340,7 +340,7 @@
     }
   },
   {
-    "id": "TA-IM-1-2-IM-2-2",
+    "id": "TA-000013",
     "description": "Managed identity should be used in your Function App",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-function-app",
@@ -362,7 +362,7 @@
     }
   },
   {
-    "id": "TA-PV-2-5",
+    "id": "TA-000014",
     "description": "Remote debugging should be turned off for Web Applications",
     "recommendation": "Remote debugging should be turned off",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#remote-debugging-should-be-turned-off-for-web-applications",
@@ -402,7 +402,7 @@
     }
   },
   {
-    "id": "TA-DP-4-7",
+    "id": "TA-000015",
     "description": "FTPS only should be required in your Web App",
     "recommendation": "Enable FTPS enforcement for enhanced security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ftps-only-should-be-required-in-your-web-app",
@@ -434,7 +434,7 @@
     }
   },
   {
-    "id": "TA-DP-4-8",
+    "id": "TA-000016",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#web-application-should-only-be-accessible-over-https",
@@ -461,7 +461,7 @@
     }
   },
   {
-    "id": "TA-DP-4-9",
+    "id": "TA-000017",
     "description": "Latest TLS version should be used in your Web App",
     "recommendation": "Upgrade to the latest TLS version",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#latest-tls-version-should-be-used-in-your-web-app",
@@ -493,7 +493,7 @@
     }
   },
   {
-    "id": "TA-PV-2-6",
+    "id": "TA-000018",
     "description": "CORS should not allow every resource to access your Web Applications",
     "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Web application. Allow only required domains to interact with your Web app.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#cors-should-not-allow-every-resource-to-access-your-web-applications",
@@ -533,7 +533,7 @@
     }
   },
   {
-    "id": "TA-IM-1-3-IM-2-3",
+    "id": "TA-000019",
     "description": "Managed identity should be used in your Web App",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#managed-identity-should-be-used-in-your-web-app",
@@ -563,7 +563,7 @@
     }
   },
   {
-    "id": "TA-PA-7-1",
+    "id": "TA-000020",
     "description": "Use built-in roles instead of custom RBAC roles",
     "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#use-built-in-roles-instead-of-custom-rbac-roles",
@@ -574,7 +574,7 @@
     }
   },
   {
-    "id": "TA-DP-5-1",
+    "id": "TA-000021",
     "description": "Automation account variables should be encrypted",
     "recommendation": "Enable encryption of Automation account variable assets when storing sensitive data",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#automation-account-variables-should-be-encrypted",
@@ -585,7 +585,7 @@
     }
   },
   {
-    "id": "TA-DP-4-10",
+    "id": "TA-000022",
     "description": "Only secure connections to your Azure Cache for Redis should be enabled",
     "recommendation": "Enable connections via SSL only to Redis Cache",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#onlysecureconnectionstoyourazurecacheforredisshouldbeenabled",
@@ -596,7 +596,7 @@
     }
   },
   {
-    "id": "TA-NS-1-1-NS-4-1",
+    "id": "TA-000023",
     "description": "Authorized IP ranges should be defined on Kubernetes Services",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#authorized-ip-ranges-should-be-defined-on-kubernetes-services",
@@ -615,7 +615,7 @@
     }
   },
   {
-    "id": "TA-PA-7-2",
+    "id": "TA-000024",
     "description": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
     "recommendation": "Enable RBAC in Kubernetes clusters",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#role-basedaccesscontrolrbacshouldbeusedonkubernetesservices",
@@ -634,7 +634,7 @@
     }
   },
   {
-    "id": "TA-PV-7-1",
+    "id": "TA-000025",
     "description": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
     "recommendation": "Upgrade to a non-vulnerable Kubernetes version (1.11.9+, 1.12.7+, 1.13.5+, and 1.14.0+)",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#kubernetes-services-should-be-upgraded-to-a-non-vulnerable-kubernetes-version",
@@ -657,7 +657,7 @@
     }
   },
   {
-    "id": "TA-IM-1-4",
+    "id": "TA-000026",
     "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
@@ -668,7 +668,7 @@
     }
   },
   {
-    "id": "TA-DP-2-1-DP-5-2",
+    "id": "TA-000027",
     "description": "Transparent Data Encryption on SQL databases should be enabled",
     "recommendation": "Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#transparent-data-encryption-on-sql-databases-should-be-enabled",
@@ -688,7 +688,7 @@
     }
   },
   {
-    "id": "TA-LT-6-1",
+    "id": "TA-000028",
     "description": "SQL servers with auditing to storage account destination should be configured with 90 days retention or higher",
     "recommendation": "Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#sql-servers-with-auditing-to-storage-account-destination-should-be-configured-with-90-days-retention-or-higher",
