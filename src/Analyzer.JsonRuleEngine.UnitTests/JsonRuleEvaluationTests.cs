@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
     {
 
         [TestMethod]
-        public void GetRuleID_ReturnsNameFromRule()
+        public void GetRuleID_ReturnsIDFromRule()
         {
             Assert.AreEqual(
                 "testRule",
