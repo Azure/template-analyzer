@@ -27,6 +27,7 @@ More information about the rules covered by our integration with [Azure Resource
 #### TA-000052: Variables must be referenced
 #### TA-000053: Virtual machines should not be preview
 #### TA-000054: Virtual machine images should use latest version
+#### TA-000055: Password parameters must be secure
 
 # Security Related Rules
 
