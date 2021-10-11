@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    AddErrorToDictionaries(error, ref uniqueErrors, ref ruleIDs);
+                    PreProcessErrors(error, uniqueErrors, ruleIDs);
                 }
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             return evaluations;
         }
 
-        private void AddErrorToDictionaries(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors, ref Dictionary<string, string> ruleIDs)
+        private void PreProcessErrors(dynamic error, Dictionary<string, SortedSet<int>> uniqueErrors, Dictionary<string, string> ruleIDs)
         {
             var lineNumber = 0;
             var ruleID = "";
