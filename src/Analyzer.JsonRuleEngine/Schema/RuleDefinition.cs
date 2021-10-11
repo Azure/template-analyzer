@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
     internal class RuleDefinition
     {
         /// <summary>
-        /// Gets or sets the Id of the rule.
+        /// Gets or sets the id of the rule.
         /// </summary>
         [JsonProperty]
         public string Id { get; set; }
