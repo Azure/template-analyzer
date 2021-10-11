@@ -2,13 +2,13 @@
 <a name="note"></a>***Note**: The ARM Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-Template BPA rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as ID, description, help information), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template BPA rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
 
 ## Template BPA Rule Object
 Here are the fields that make up a rule definition.
 ```javascript
 {
-    "id": "Rule ID",
+    "id": "Rule id",
     "description": "Brief description of what the rule is evaluating",
     "recommendation": "Guidance describing what should be done to fix the issue if a template violates the rule",
     "helpUri": "URI to find more detailed information about the rule and how to fix a template",
@@ -17,7 +17,7 @@ Here are the fields that make up a rule definition.
 ```
 
 ### Guidelines for rule metadata
-- The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule IDs already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md).
+- The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md).
 - The `recommendation` should provide clear but concise guidance on how to modify a template if the rule fails.  If some details are somewhat complex, or the rule takes a bit more to understand, add those details to a guide accessible at the URI in `helpUri`.
 - The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository.
 

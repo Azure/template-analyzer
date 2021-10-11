@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEvaluation : IEvaluation
     {
         /// <inheritdoc/>
-        public string RuleID { get; }
+        public string RuleId { get; }
 
         /// <inheritdoc/>
         public string RuleDescription { get; }
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <param name="results"><see cref="IEnumerable"/> of the results.</param>
         public PowerShellRuleEvaluation(string ruleID, string ruleDescription, bool passed, IEnumerable<PowerShellRuleResult> results)
         {
-            RuleID = ruleID;
+            RuleId = ruleID;
             RuleDescription = ruleDescription;
             Passed = passed;
             Results = results;
