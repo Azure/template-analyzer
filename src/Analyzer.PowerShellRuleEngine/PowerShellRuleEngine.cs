@@ -60,11 +60,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             foreach (dynamic executionResult in executionResults)
             {
                 var uniqueErrors = new Dictionary<string, SortedSet<int>>(); // Maps error messages to a sorted set of line numbers
-                var ruleIds = new Dictionary<string, string>(); // Maps error messages to rule ids
+
+                foreach (dynamic warning in executionResult.Warnings)
+                {
+                    PreProcessErrors(warning, uniqueErrors);
+                }
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    PreProcessErrors(error, uniqueErrors, ruleIds);
+                    PreProcessErrors(error, uniqueErrors);
                 }
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
@@ -75,33 +79,24 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
                     var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
-                    evaluations.Add(new PowerShellRuleEvaluation(ruleIds[uniqueError.Key], ruleDescription, false, evaluationResults));
+                    evaluations.Add(new PowerShellRuleEvaluation("", ruleDescription, false, evaluationResults));
                 }
             }
 
             return evaluations;
         }
 
-        private void PreProcessErrors(dynamic error, Dictionary<string, SortedSet<int>> uniqueErrors, Dictionary<string, string> ruleIds)
+        private void PreProcessErrors(dynamic error, Dictionary<string, SortedSet<int>> uniqueErrors)
         {
             var lineNumber = 0;
-            var ruleId = "";
 
             Type errorType = error.GetType();
             IEnumerable<PropertyInfo> errorProperties = errorType.GetRuntimeProperties();
             if (errorProperties.Where(prop => prop.Name == "TargetObject").Any())
             {
-                if (error.TargetObject is PSObject targetObject)
+                if (error.TargetObject is PSObject targetObject && targetObject.Properties["lineNumber"] != null)
                 {
-                    if (targetObject.Properties["lineNumber"] != null)
-                    {
-                        lineNumber = error.TargetObject.lineNumber;
-                    }
-
-                    if (targetObject.Properties["ruleId"] != null)
-                    {
-                        ruleId = "TA-" + error.TargetObject.ruleId;
-                    }
+                    lineNumber = error.TargetObject.lineNumber;
                 }
             }
 
@@ -112,8 +107,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // errorMessage was already added to the dictionary
                 uniqueErrors[errorMessage].Add(lineNumber);
             }
-
-            ruleIds[errorMessage] = ruleId;
         }
     }
 }

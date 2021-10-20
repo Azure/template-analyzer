@@ -1,33 +1,33 @@
 # Best Practice Related Rules
 More information about the rules covered by our integration with [Azure Resource Manager Template Toolkit](https://github.com/Azure/arm-ttk) can be found [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases):
 
-#### TA-000029: Admin username should not be a literal
-#### TA-000030: API versions should be recent
-#### TA-000031: Virtual machine size should be a parameter
-#### TA-000032: Artifacts parameter' best practices
-#### TA-000033: CommandToExecute must use ProtectedSettings for secrets
-#### TA-000034: DependsOn' best practices
-#### TA-000035: Deployment resources must not be debug
-#### TA-000036: DeploymentTemplate must not contain hardcoded URI
-#### TA-000037: DeploymentTemplate schema is correct
-#### TA-000038: Dynamic variable references should not use concat
-#### TA-000039: IDs should be derived from resource IDs
-#### TA-000040: Location should not be hardcoded
-#### TA-000041: ManagedIdentityExtension must not be used
-#### TA-000042: Min and max values are numbers
-#### TA-000043: Outputs must not contain secrets
-#### TA-000044: Parameters must be referenced
-#### TA-000045: Providers' apiVersions is not permitted
-#### TA-000046: ResourceIDs should not contain
-#### TA-000047: Resources should have locations
-#### TA-000048: Resources should not be ambiguous
-#### TA-000049: Secure parameters in nested deployments
-#### TA-000050: Secure string parameters cannot have defaults
-#### TA-000051: Template should not contain blanks
-#### TA-000052: Variables must be referenced
-#### TA-000053: Virtual machines should not be preview
-#### TA-000054: Virtual machine images should use latest version
-#### TA-000055: Password parameters must be secure
+#### Admin username should not be a literal
+#### API versions should be recent
+#### Artifacts parameter' best practices
+#### CommandToExecute must use ProtectedSettings for secrets
+#### DependsOn' best practices
+#### Deployment resources must not be debug
+#### DeploymentTemplate must not contain hardcoded URI
+#### DeploymentTemplate schema is correct
+#### Dynamic variable references should not use concat
+#### IDs should be derived from resource IDs
+#### Location should not be hardcoded
+#### ManagedIdentityExtension must not be used
+#### Min and max values are numbers
+#### Outputs must not contain secrets
+#### Parameters must be referenced
+#### Password parameters must be secure
+#### Providers' apiVersions is not permitted
+#### ResourceIDs should not contain
+#### Resources should have locations
+#### Resources should not be ambiguous
+#### Secure parameters in nested deployments
+#### Secure string parameters cannot have defaults
+#### Template should not contain blanks
+#### Variables must be referenced
+#### Virtual machine images should use latest version
+#### Virtual machine size should be a parameter
+#### Virtual machines should not be preview
 
 # Security Related Rules
 
