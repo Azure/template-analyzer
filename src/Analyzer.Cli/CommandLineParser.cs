@@ -123,12 +123,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     if (!evaluation.Passed)
                     {
-                        var output = IndentedNewLine;
-                        if (evaluation.RuleId != "")
-                        {
-                            output += $"{evaluation.RuleId}: ";
-                        }
-                        output = output + $"{evaluation.RuleDescription}" +
+                        var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                         $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                         $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                         Console.WriteLine(output);
