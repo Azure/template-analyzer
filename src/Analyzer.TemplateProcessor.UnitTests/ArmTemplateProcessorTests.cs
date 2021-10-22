@@ -569,7 +569,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""name"": ""vms0"",
                 ""apiVersion"": ""2017-03-30"",
                 ""dependsOn"": [
-                    ""[resourceId('Microsoft.Compute/availabilitySets/', concat('as','1'))]""
+                    ""as1""
                 ],
                 ""properties"": {
                 }
@@ -580,7 +580,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""name"": ""vms1"",
                 ""apiVersion"": ""2017-03-30"",
                 ""dependsOn"": [
-                    ""[resourceId('Microsoft.Compute/availabilitySets/',concat('as','2'))]""
+                    ""as2""
                 ],
                 ""properties"": {
                 }

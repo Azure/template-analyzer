@@ -274,7 +274,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         foreach (string copiedLocationOfPathSegment in copiedLocationsOfPathSegment)
                         {
                             // This check is done to avoid assuming that the resource was copied to other top-level resources that don't necessarily depend on it:
-                            if (copiedLocationOfPathSegment.Split('.').Length != segmentOfExpandedPath.Split('.').Length)
+                            Func<string, int> getSegmentLength = segment => segment.Split('.').Length;
+                            if (getSegmentLength(copiedLocationOfPathSegment) != getSegmentLength(segmentOfExpandedPath))
                             {
                                 var fullExpandedPath = $"{copiedLocationOfPathSegment}.{string.Join('.', tokens[(i + 1)..])}";
                                 ResourceMappings.TryAdd(fullExpandedPath, originalTemplatePath);
