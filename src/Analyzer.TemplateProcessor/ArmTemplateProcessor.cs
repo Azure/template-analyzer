@@ -266,7 +266,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // Each segment of a path in the expanded template corresponds to one resource in the original template,
                 // not necessarily the same number of resource, copies move resources around.
                 // And each resource in the original template could be copied to multiple locations in the expanded template:
-
                 string originalPathOfSegmentOfExpandedPath;
                 if (expandedToOriginalMapping.TryGetValue(segmentOfExpandedPath, out originalPathOfSegmentOfExpandedPath))
                 {
@@ -274,7 +273,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     {
                         foreach (string copiedLocationOfPathSegment in copiedLocationsOfPathSegment)
                         {
-                            if (!copiedLocationOfPathSegment.Equals(segmentOfExpandedPath, StringComparison.OrdinalIgnoreCase))
+                            // This check is done to avoid assuming that the resource was copied to other top-level resources that don't necessarily depend on it:
+                            if (copiedLocationOfPathSegment.Split('.').Length != segmentOfExpandedPath.Split('.').Length)
                             {
                                 var fullExpandedPath = $"{copiedLocationOfPathSegment}.{string.Join('.', tokens[(i + 1)..])}";
                                 ResourceMappings.TryAdd(fullExpandedPath, originalTemplatePath);

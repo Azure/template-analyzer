@@ -550,6 +550,78 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         }
 
         [TestMethod]
+        public void ParseAndValidateTemplate_ValidTemplateWithCopiedResourcesAndDependenciesOnOneCopy_ProcessResourceCopies()
+        {
+            string stringResourceCopied = @"{
+                ""type"": ""Microsoft.Compute/availabilitySets"",
+                ""name"": ""[concat('as', copyindex(1))]"",
+                ""apiVersion"": ""2017-12-01"",
+                ""copy"": {
+                    ""name"": ""availSetLoop"",
+                    ""count"": 2
+                },
+                ""properties"": {
+                }
+            }";
+
+            string stringResourceWithDependency1 = @"{
+                ""type"": ""Microsoft.Compute/virtualMachines"",
+                ""name"": ""vms0"",
+                ""apiVersion"": ""2017-03-30"",
+                ""dependsOn"": [
+                    ""[resourceId('Microsoft.Compute/availabilitySets/', concat('as','1'))]""
+                ],
+                ""properties"": {
+                }
+            }";
+
+            string stringResourceWithDependency2 = @"{
+                ""type"": ""Microsoft.Compute/virtualMachines"",
+                ""name"": ""vms1"",
+                ""apiVersion"": ""2017-03-30"",
+                ""dependsOn"": [
+                    ""[resourceId('Microsoft.Compute/availabilitySets/',concat('as','2'))]""
+                ],
+                ""properties"": {
+                }
+            }";
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[1]" },
+                { "resources[1]", "resources[2]" },
+                { "resources[2]", "resources[0]" },
+                { "resources[3]", "resources[0]" },
+                { "resources[2].resources[0]", "resources[1]" },
+                { "resources[3].resources[0]", "resources[2]" }
+            };
+
+            var resourceCopied = _getTemplateFromString(stringResourceCopied);
+            var resourceWithDependency1 = _getTemplateFromString(stringResourceWithDependency1);
+            var resourceWithDependency2 = _getTemplateFromString(stringResourceWithDependency2);
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { resourceCopied, resourceWithDependency1, resourceWithDependency2 }));
+
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
+
+            Assert.AreEqual(4, template.Resources.Length);
+            Assert.AreEqual("vms0", template.Resources[0].Name.Value);
+            Assert.AreEqual("vms1", template.Resources[1].Name.Value);
+            Assert.AreEqual("as1", template.Resources[2].Name.Value);
+            Assert.AreEqual("as2", template.Resources[3].Name.Value);
+
+            Assert.AreEqual(null, template.Resources[0].Resources);
+            Assert.AreEqual(null, template.Resources[1].Resources);
+
+            Assert.AreEqual(1, template.Resources[2].Resources.Length);
+            Assert.AreEqual("vms0", template.Resources[2].Resources[0].Name.Value);
+
+            Assert.AreEqual(1, template.Resources[3].Resources.Length);
+            Assert.AreEqual("vms1", template.Resources[3].Resources[0].Name.Value);
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+        }
+
+        [TestMethod]
         public void CopyResourceDependants_ValidChildResourceDependsOnByNameAndResourceId_ChildResourceGetsCopiedToParentResources()
         {
             // Arrange
