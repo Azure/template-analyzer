@@ -18,6 +18,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
     public class ArmTemplateProcessorTests
     {
         private static ArmTemplateProcessor _armTemplateProcessor;
+        private static InsensitiveDictionary<JToken> _templateMetadata;
+        private static InsensitiveDictionary<JToken> _templateParameters;
+        private Func<string, TemplateResource> _getTemplateFromString = templateString => JObject.Parse(templateString).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
 
         [TestInitialize]
         public void TestInit()
@@ -44,6 +47,21 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ],
                 ""outputs"": {}
             }");
+
+            _templateMetadata = new InsensitiveDictionary<JToken>
+            {
+                { "subscription", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
+                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                { "resourceGroup", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
+                    new JProperty("location", "westus2"),
+                    new JProperty("name", "resource-group")) },
+                { "tenantId", "00000000-0000-0000-0000-000000000000" }
+            };
+
+            _templateParameters = new InsensitiveDictionary<JToken>();
         }
 
         [TestMethod]
@@ -214,26 +232,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         [TestMethod]
         public void ParseAndValidateTemplate_ValidTemplateWithExpressionInResourceProperties_ProcessResourceProperyLanguageExpressions()
         {
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[0]" }
             };
 
-            Template template = _armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = _armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.IsTrue(template.Resources.First().Properties.Value.InsensitiveToken("dnsSettings.domainNameLabel").Value<string>().StartsWith("linux-vm-"));
 
@@ -307,22 +310,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
-
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
+            
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[1]" },
                 { "resources[1]", "resources[0]" },
@@ -331,7 +319,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[4]", "resources[2]" },
             };
 
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.AreEqual(expectedMapping.Count, template.Resources.Length);
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
@@ -370,28 +358,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
-
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
+            
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[0]" },
                 { "resources[1]", "resources[0]" }
             };
 
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.AreEqual(2, template.Resources.Length);
 
@@ -430,25 +403,84 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
 
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("startDate").Type);
             Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("endDate").Type);
+        }
+
+        [TestMethod]
+        public void ParseAndValidateTemplate_ValidTemplateWithCopiedResourceThatDependsOnOthers_ProcessResourceCopies()
+        {
+            string stringResourceWithDependsOnAndCopy = @"{
+                ""type"": ""Microsoft.Compute/virtualMachines"",
+                ""name"": ""[concat('vmName', copyIndex())]"",
+                ""apiVersion"": ""2020-12-01"",
+                ""copy"": {
+                ""name"": ""virtualMachineLoop"",
+                ""count"": 2
+                },
+                ""dependsOn"": [
+                    ""storageAccountName"",
+                    ""asName""
+                ],
+                ""properties"": {
+                }
+            }";
+
+            string stringResourceDependedOn1 = @"{
+                ""type"": ""Microsoft.Compute/availabilitySets"",
+                ""name"": ""asName"",
+                ""apiVersion"": ""2020-12-01"",
+                ""properties"": {
+                }
+            }";
+
+            string stringResourceDependedOn2 = @"{
+              ""type"": ""Microsoft.Storage/storageAccounts"",
+              ""name"": ""storageAccountName"",
+              ""apiVersion"": ""2020-12-01"",
+              ""properties"": {
+              }
+            }";
+
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[1]" },
+                { "resources[1]", "resources[2]" },
+                { "resources[2]", "resources[0]" },
+                { "resources[3]", "resources[0]" },
+                { "resources[0].resources[0]", "resources[0]" },
+                { "resources[0].resources[1]", "resources[0]" },
+                { "resources[1].resources[0]", "resources[0]" },
+                { "resources[1].resources[1]", "resources[0]" }
+            };
+
+            var resourceWithDependsOnAndCopy = _getTemplateFromString(stringResourceWithDependsOnAndCopy);
+            var resourceDependedOn1 = _getTemplateFromString(stringResourceDependedOn1);
+            var resourceDependedOn2 = _getTemplateFromString(stringResourceDependedOn2);
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { resourceWithDependsOnAndCopy, resourceDependedOn1, resourceDependedOn2 }));
+
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
+
+            Assert.AreEqual(4, template.Resources.Length);
+            Assert.AreEqual("asName", template.Resources[0].Name.Value);
+            Assert.AreEqual("storageAccountName", template.Resources[1].Name.Value);
+            Assert.AreEqual("vmName0", template.Resources[2].Name.Value);
+            Assert.AreEqual("vmName1", template.Resources[3].Name.Value);
+
+            Assert.AreEqual(2, template.Resources[0].Resources.Length);
+            Assert.AreEqual("vmName0", template.Resources[0].Resources[0].Name.Value);
+            Assert.AreEqual("vmName1", template.Resources[0].Resources[1].Name.Value);
+
+            Assert.AreEqual(2, template.Resources[1].Resources.Length);
+            Assert.AreEqual("vmName0", template.Resources[1].Resources[0].Name.Value);
+            Assert.AreEqual("vmName1", template.Resources[1].Resources[1].Name.Value);
+
+            Assert.AreEqual(null, template.Resources[2].Resources);
+            Assert.AreEqual(null, template.Resources[3].Resources);
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -507,10 +539,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""properties"": { }
             }";
 
-            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource1 = JObject.Parse(parentTemplateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource2 = JObject.Parse(parentTemplateResource2Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource3 = JObject.Parse(parentTemplateResource3Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource childTemplateResource = _getTemplateFromString(childTemplateResourceJson);
+            TemplateResource parentTemplateResource1 = _getTemplateFromString(parentTemplateResource1Json);
+            TemplateResource parentTemplateResource2 = _getTemplateFromString(parentTemplateResource2Json);
+            TemplateResource parentTemplateResource3 = _getTemplateFromString(parentTemplateResource3Json);
 
             Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource1, parentTemplateResource2, parentTemplateResource3 } };
 
@@ -581,8 +613,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> { { "resources[0]", "resources[0]" }, { "resources[1]", "resources[1]" } };
 
-            TemplateResource templateResource0 = JObject.Parse(templateResource0Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource templateResource1 = JObject.Parse(templateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource templateResource0 = _getTemplateFromString(templateResource0Json);
+            TemplateResource templateResource1 = _getTemplateFromString(templateResource1Json);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { templateResource0, templateResource1 }));
 
@@ -645,8 +677,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[1].resources[0].resources[0]", "resources[0]" }
             };
 
-            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource childTemplateResource = _getTemplateFromString(childTemplateResourceJson);
+            TemplateResource parentTemplateResource = _getTemplateFromString(parentTemplateResourceJson);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { childTemplateResource, parentTemplateResource }));
 
@@ -707,7 +739,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[0].resources[0].resources[0]", "resources[0].resources[0].resources[0]" }
             };
 
-            TemplateResource templateResource = JObject.Parse(resourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource templateResource = _getTemplateFromString(resourceJson);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { templateResource }));
 
@@ -770,9 +802,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[2]", "resources[2]" }
             };
 
-            TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource grandchildTemplateResource = JObject.Parse(grandchildTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource parentTemplateResource = _getTemplateFromString(parentTemplateResourceJson);
+            TemplateResource childTemplateResource = _getTemplateFromString(childTemplateResourceJson);
+            TemplateResource grandchildTemplateResource = _getTemplateFromString(grandchildTemplateResourceJson);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { parentTemplateResource, childTemplateResource, grandchildTemplateResource }));
 
