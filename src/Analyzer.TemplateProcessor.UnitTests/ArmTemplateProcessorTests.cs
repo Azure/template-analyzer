@@ -417,8 +417,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""name"": ""[concat('vmName', copyIndex())]"",
                 ""apiVersion"": ""2020-12-01"",
                 ""copy"": {
-                ""name"": ""virtualMachineLoop"",
-                ""count"": 2
+                    ""name"": ""virtualMachineLoop"",
+                    ""count"": 2
                 },
                 ""dependsOn"": [
                     ""storageAccountName"",
