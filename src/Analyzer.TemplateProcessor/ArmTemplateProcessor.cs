@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         private readonly string apiVersion;
         private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
         private Dictionary<string, string> expandedToOriginalMapping = new Dictionary<string, string>();
-        private Dictionary<string, (TemplateResource, string)> flattenedResources = new Dictionary<string, (TemplateResource, string)>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new Dictionary<string, (TemplateResource, string)>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Mapping between resources in the expanded template to their original resource in 
@@ -149,18 +149,15 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
             SaveFlattenedResources(template.Resources);
 
-            foreach (var resourceInfo in flattenedResources)
+            foreach (var resourceInfo in flattenedResources.Values)
             {
-                var resource = resourceInfo.Value.Item1;
-                var expandedPath = resourceInfo.Value.Item2;
+                ProcessTemplateResourceLanguageExpressions(resourceInfo.resource, evaluationHelper);
 
-                ProcessTemplateResourceLanguageExpressions(resource, evaluationHelper);
+                CopyResourceDependants(resourceInfo.resource);
 
-                CopyResourceDependants(resource);
-
-                if (!ResourceMappings.ContainsKey(resource.Path))
+                if (!ResourceMappings.ContainsKey(resourceInfo.resource.Path))
                 {
-                    AddResourceMapping(expandedPath, resource.Path);
+                    AddResourceMapping(resourceInfo.expandedPath, resourceInfo.resource.Path);
                 }
             }
 
@@ -201,7 +198,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             foreach (var parentResourceIds in templateResource.DependsOn)
             {
                 string parentResourceName;
-                (TemplateResource, string) parentResourceInfo = (null, null);
+                (TemplateResource resource, string expandedPath) parentResourceInfo = (null, null);
                 // If the dependsOn references the resourceId
                 if (parentResourceIds.Value.StartsWith("/subscriptions"))
                 {
@@ -229,8 +226,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
 
                 // Add this resource as a child of its parent resource
-                var parentResource = parentResourceInfo.Item1;
-                var parentResourceExpandedPath = parentResourceInfo.Item2;
+                var parentResource = parentResourceInfo.resource;
+                var parentResourceExpandedPath = parentResourceInfo.expandedPath;
                 if (parentResource.Resources == null)
                 {
                     parentResource.Resources = new TemplateResource[] { templateResource };
@@ -312,7 +309,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 if (parentName != null && parentType != null)
                 {
-                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].Item1.Path}.resources[{i}]";
+                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].resource.Path}.resources[{i}]";
 
                     dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
                 }
