@@ -283,7 +283,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             if (!ResourceMappings.TryAdd(expandedTemplatePath, originalTemplatePath) && ResourceMappings[expandedTemplatePath] != originalTemplatePath)
             {
-                throw new Exception($"Error mapping resource at path {originalTemplatePath}");
+                throw new Exception($"Error processing resource dependencies: " +
+                    $"{expandedTemplatePath} currently maps to {ResourceMappings[expandedTemplatePath]}, instead of {originalTemplatePath}.");
             }
 
             expandedToOriginalMapping[expandedTemplatePath] = originalTemplatePath;
