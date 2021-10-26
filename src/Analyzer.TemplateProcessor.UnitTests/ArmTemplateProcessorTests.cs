@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
 using Azure.Deployments.Core.Json;
@@ -21,6 +22,155 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         private static InsensitiveDictionary<JToken> _templateMetadata;
         private static InsensitiveDictionary<JToken> _templateParameters;
         private Func<string, TemplateResource> _getTemplateFromString = templateString => JObject.Parse(templateString).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+        /// <summary>
+        /// Test data for tests that verify behavior for copied resources with dependencies
+        /// Index 1: Template resouces
+        /// Index 2: Expected resource mapping
+        /// Index 3: Expected resource names in the final template
+        /// Index 4: Array containing an array of internal resource names for each resource in the final template
+        /// Index 5: Test display name, this is just so GetDisplayName() can do a lookup, and is not used in the test itself
+        /// </summary>
+        public static IReadOnlyList<object[]> ScenariosOfCopiesWithDependencies { get; } = new List<object[]>
+        {
+            new object[] {
+                new string[] {
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""[concat('vmName', copyIndex())]"",
+                        ""apiVersion"": ""2020-12-01"",
+                        ""copy"": {
+                            ""name"": ""virtualMachineLoop"",
+                            ""count"": 2
+                        },
+                        ""dependsOn"": [
+                            ""storageAccountName"",
+                            ""asName""
+                        ],
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/availabilitySets"",
+                        ""name"": ""asName"",
+                        ""apiVersion"": ""2020-12-01"",
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Storage/storageAccounts"",
+                        ""name"": ""storageAccountName"",
+                        ""apiVersion"": ""2020-12-01"",
+                        ""properties"": {
+                        }
+                    }"
+                },
+                new Dictionary<string, string> {
+                    { "resources[0]", "resources[1]" },
+                    { "resources[1]", "resources[2]" },
+                    { "resources[2]", "resources[0]" },
+                    { "resources[3]", "resources[0]" },
+                    { "resources[0].resources[0]", "resources[0]" },
+                    { "resources[0].resources[1]", "resources[0]" },
+                    { "resources[1].resources[0]", "resources[0]" },
+                    { "resources[1].resources[1]", "resources[0]" }
+                },
+                new string[] { "asName", "storageAccountName", "vmName0", "vmName1" },
+                new string[][] { new string[] { "vmName0", "vmName1" }, new string[] { "vmName0", "vmName1" }, new string[] { }, new string[] { } },
+                "Copied resource that depends on others"
+            },
+            new object[] {
+                new string[] {
+                    @"{
+                        ""type"": ""Microsoft.Network/networkInterfaces"",
+                        ""name"": ""[concat('ni', copyindex())]"",
+                        ""apiVersion"": ""2016-03-30"",
+                        ""dependsOn"": [
+                        ],
+                        ""copy"": {
+                            ""name"": ""WebTierNicLoop"",
+                            ""count"": 2
+                        },
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""[concat('vm', copyindex())]"",
+                        ""apiVersion"": ""2017-03-30"",
+                        ""dependsOn"": [
+                            ""[resourceId('Microsoft.Network/networkInterfaces/', concat('ni', copyindex()))]""
+                        ],
+                        ""copy"": {
+                            ""name"": ""WebTierVMLoop"",
+                            ""count"": 2
+                        },
+                        ""properties"": {
+                        }
+                    }"
+                },
+                new Dictionary<string, string> {
+                    { "resources[0]", "resources[0]" },
+                    { "resources[1]", "resources[0]" },
+                    { "resources[2]", "resources[1]" },
+                    { "resources[3]", "resources[1]" },
+                    { "resources[0].resources[0]", "resources[1]" },
+                    { "resources[1].resources[0]", "resources[1]" }
+                },
+                new string[] { "ni0", "ni1", "vm0", "vm1" },
+                new string[][] { new string[] { "vm0" }, new string[] { "vm1" }, new string[] { }, new string[] { } },
+                "Copied resources where index 0 depends on the other index 0, and index 1 on index 1"
+            },
+            new object[] {
+                new string[] {
+                    @"{
+                        ""type"": ""Microsoft.Compute/availabilitySets"",
+                        ""name"": ""[concat('as', copyindex(1))]"",
+                        ""apiVersion"": ""2017-12-01"",
+                        ""copy"": {
+                            ""name"": ""availSetLoop"",
+                            ""count"": 2
+                        },
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""vms0"",
+                        ""apiVersion"": ""2017-03-30"",
+                        ""dependsOn"": [
+                            ""as1""
+                        ],
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""vms1"",
+                        ""apiVersion"": ""2017-03-30"",
+                        ""dependsOn"": [
+                            ""as2""
+                        ],
+                        ""properties"": {
+                        }
+                    }"
+                },
+                new Dictionary<string, string> {
+                    { "resources[0]", "resources[1]" },
+                    { "resources[1]", "resources[2]" },
+                    { "resources[2]", "resources[0]" },
+                    { "resources[3]", "resources[0]" },
+                    { "resources[2].resources[0]", "resources[1]" },
+                    { "resources[3].resources[0]", "resources[2]" }
+                },
+                new string[] { "vms0", "vms1", "as1", "as2" },
+                new string[][] { new string[] { }, new string[] { }, new string[] { "vms0" }, new string[] { "vms1" } },
+                "Copied resource with different resources depending on each copy"
+            },
+        }.AsReadOnly();
+
+        // Just returns the element in the last index of the array from ScenariosOfCopiesWithDependencies
+        public static string GetDisplayName(MethodInfo _, object[] data) => (string)data[^1];
 
         [TestInitialize]
         public void TestInit()
@@ -409,216 +559,44 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("endDate").Type);
         }
 
-        [TestMethod]
-        public void ParseAndValidateTemplate_ValidTemplateWithCopiedResourceThatDependsOnOthers_ProcessResourceCopies()
+        [DataTestMethod]
+        [DynamicData(nameof(ScenariosOfCopiesWithDependencies), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void ParseAndValidateTemplate_ValidTemplatesWithCopiesAndDependencies_ProcessResourceCopies(
+            string[] stringResources, Dictionary<string, string> expectedResourceMapping,
+            string[] resourceNames, string[][] internalResources, string _)
         {
-            string stringResourceWithDependsOnAndCopy = @"{
-                ""type"": ""Microsoft.Compute/virtualMachines"",
-                ""name"": ""[concat('vmName', copyIndex())]"",
-                ""apiVersion"": ""2020-12-01"",
-                ""copy"": {
-                    ""name"": ""virtualMachineLoop"",
-                    ""count"": 2
-                },
-                ""dependsOn"": [
-                    ""storageAccountName"",
-                    ""asName""
-                ],
-                ""properties"": {
-                }
-            }";
+            var resources = new TemplateResource[] { };
+            foreach (string resourceString in stringResources)
+            {
+                resources = resources.ConcatArray(new TemplateResource[] { _getTemplateFromString(resourceString) });
+            }
 
-            string stringResourceDependedOn1 = @"{
-                ""type"": ""Microsoft.Compute/availabilitySets"",
-                ""name"": ""asName"",
-                ""apiVersion"": ""2020-12-01"",
-                ""properties"": {
-                }
-            }";
-
-            string stringResourceDependedOn2 = @"{
-              ""type"": ""Microsoft.Storage/storageAccounts"",
-              ""name"": ""storageAccountName"",
-              ""apiVersion"": ""2020-12-01"",
-              ""properties"": {
-              }
-            }";
-
-            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
-                { "resources[0]", "resources[1]" },
-                { "resources[1]", "resources[2]" },
-                { "resources[2]", "resources[0]" },
-                { "resources[3]", "resources[0]" },
-                { "resources[0].resources[0]", "resources[0]" },
-                { "resources[0].resources[1]", "resources[0]" },
-                { "resources[1].resources[0]", "resources[0]" },
-                { "resources[1].resources[1]", "resources[0]" }
-            };
-
-            var resourceWithDependsOnAndCopy = _getTemplateFromString(stringResourceWithDependsOnAndCopy);
-            var resourceDependedOn1 = _getTemplateFromString(stringResourceDependedOn1);
-            var resourceDependedOn2 = _getTemplateFromString(stringResourceDependedOn2);
-
-            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { resourceWithDependsOnAndCopy, resourceDependedOn1, resourceDependedOn2 }));
+            var armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(resources));
 
             Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
-            Assert.AreEqual(4, template.Resources.Length);
-            Assert.AreEqual("asName", template.Resources[0].Name.Value);
-            Assert.AreEqual("storageAccountName", template.Resources[1].Name.Value);
-            Assert.AreEqual("vmName0", template.Resources[2].Name.Value);
-            Assert.AreEqual("vmName1", template.Resources[3].Name.Value);
+            Assert.AreEqual(resourceNames.Length, internalResources.Length);
+            Assert.AreEqual(resourceNames.Length, template.Resources.Length);
 
-            Assert.AreEqual(2, template.Resources[0].Resources.Length);
-            Assert.AreEqual("vmName0", template.Resources[0].Resources[0].Name.Value);
-            Assert.AreEqual("vmName1", template.Resources[0].Resources[1].Name.Value);
+            for (int resourceNumber = 0; resourceNumber < internalResources.Length; resourceNumber++)
+            {
+                Assert.AreEqual(resourceNames[resourceNumber], template.Resources[resourceNumber].Name.Value);
 
-            Assert.AreEqual(2, template.Resources[1].Resources.Length);
-            Assert.AreEqual("vmName0", template.Resources[1].Resources[0].Name.Value);
-            Assert.AreEqual("vmName1", template.Resources[1].Resources[1].Name.Value);
-
-            Assert.AreEqual(null, template.Resources[2].Resources);
-            Assert.AreEqual(null, template.Resources[3].Resources);
-
-            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
-        }
-
-        [TestMethod]
-        public void ParseAndValidateTemplate_ValidTemplateWithCopiedResourcesAndDependencies_ProcessResourceCopies()
-        {
-            string stringResourceWithCopy0 = @"{
-                ""type"": ""Microsoft.Network/networkInterfaces"",
-                ""name"": ""[concat('ni', copyindex())]"",
-                ""apiVersion"": ""2016-03-30"",
-                ""dependsOn"": [
-                ],
-                ""copy"": {
-                    ""name"": ""WebTierNicLoop"",
-                    ""count"": 2
-                },
-                ""properties"": {
+                if (internalResources[resourceNumber].Length == 0)
+                {
+                    Assert.AreEqual(null, template.Resources[resourceNumber].Resources);
+                } 
+                else
+                {
+                    for (int internalResourceNumber = 0; internalResourceNumber < internalResources[resourceNumber].Length; internalResourceNumber++)
+                    {
+                        Assert.AreEqual(internalResources[resourceNumber][internalResourceNumber],
+                            template.Resources[resourceNumber].Resources[internalResourceNumber].Name.Value);
+                    }
                 }
-            }";
+            }
 
-            string stringResourceWithCopy1 = @"{
-                ""type"": ""Microsoft.Compute/virtualMachines"",
-                ""name"": ""[concat('vm', copyindex())]"",
-                ""apiVersion"": ""2017-03-30"",
-                ""dependsOn"": [
-                    ""[resourceId('Microsoft.Network/networkInterfaces/', concat('ni', copyindex()))]""
-                ],
-                ""copy"": {
-                    ""name"": ""WebTierVMLoop"",
-                    ""count"": 2
-                },
-                ""properties"": {
-                }
-            }";
-
-            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
-                { "resources[0]", "resources[0]" },
-                { "resources[1]", "resources[0]" },
-                { "resources[2]", "resources[1]" },
-                { "resources[3]", "resources[1]" },
-                { "resources[0].resources[0]", "resources[1]" },
-                { "resources[1].resources[0]", "resources[1]" }
-            };
-
-            var resourceWithCopy0 = _getTemplateFromString(stringResourceWithCopy0);
-            var resourceWithCopy1 = _getTemplateFromString(stringResourceWithCopy1);
-
-            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { resourceWithCopy0, resourceWithCopy1 }));
-
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
-
-            Assert.AreEqual(4, template.Resources.Length);
-            Assert.AreEqual("ni0", template.Resources[0].Name.Value);
-            Assert.AreEqual("ni1", template.Resources[1].Name.Value);
-            Assert.AreEqual("vm0", template.Resources[2].Name.Value);
-            Assert.AreEqual("vm1", template.Resources[3].Name.Value);
-
-            Assert.AreEqual(1, template.Resources[0].Resources.Length);
-            Assert.AreEqual("vm0", template.Resources[0].Resources[0].Name.Value);
-
-            Assert.AreEqual(1, template.Resources[1].Resources.Length);
-            Assert.AreEqual("vm1", template.Resources[1].Resources[0].Name.Value);
-
-            Assert.AreEqual(null, template.Resources[2].Resources);
-            Assert.AreEqual(null, template.Resources[3].Resources);
-
-            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
-        }
-
-        [TestMethod]
-        public void ParseAndValidateTemplate_ValidTemplateWithCopiedResourcesAndDependenciesOnOneCopy_ProcessResourceCopies()
-        {
-            string stringResourceCopied = @"{
-                ""type"": ""Microsoft.Compute/availabilitySets"",
-                ""name"": ""[concat('as', copyindex(1))]"",
-                ""apiVersion"": ""2017-12-01"",
-                ""copy"": {
-                    ""name"": ""availSetLoop"",
-                    ""count"": 2
-                },
-                ""properties"": {
-                }
-            }";
-
-            string stringResourceWithDependency1 = @"{
-                ""type"": ""Microsoft.Compute/virtualMachines"",
-                ""name"": ""vms0"",
-                ""apiVersion"": ""2017-03-30"",
-                ""dependsOn"": [
-                    ""as1""
-                ],
-                ""properties"": {
-                }
-            }";
-
-            string stringResourceWithDependency2 = @"{
-                ""type"": ""Microsoft.Compute/virtualMachines"",
-                ""name"": ""vms1"",
-                ""apiVersion"": ""2017-03-30"",
-                ""dependsOn"": [
-                    ""as2""
-                ],
-                ""properties"": {
-                }
-            }";
-
-            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
-                { "resources[0]", "resources[1]" },
-                { "resources[1]", "resources[2]" },
-                { "resources[2]", "resources[0]" },
-                { "resources[3]", "resources[0]" },
-                { "resources[2].resources[0]", "resources[1]" },
-                { "resources[3].resources[0]", "resources[2]" }
-            };
-
-            var resourceCopied = _getTemplateFromString(stringResourceCopied);
-            var resourceWithDependency1 = _getTemplateFromString(stringResourceWithDependency1);
-            var resourceWithDependency2 = _getTemplateFromString(stringResourceWithDependency2);
-
-            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { resourceCopied, resourceWithDependency1, resourceWithDependency2 }));
-
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
-
-            Assert.AreEqual(4, template.Resources.Length);
-            Assert.AreEqual("vms0", template.Resources[0].Name.Value);
-            Assert.AreEqual("vms1", template.Resources[1].Name.Value);
-            Assert.AreEqual("as1", template.Resources[2].Name.Value);
-            Assert.AreEqual("as2", template.Resources[3].Name.Value);
-
-            Assert.AreEqual(null, template.Resources[0].Resources);
-            Assert.AreEqual(null, template.Resources[1].Resources);
-
-            Assert.AreEqual(1, template.Resources[2].Resources.Length);
-            Assert.AreEqual("vms0", template.Resources[2].Resources[0].Name.Value);
-
-            Assert.AreEqual(1, template.Resources[3].Resources.Length);
-            Assert.AreEqual("vms1", template.Resources[3].Resources[0].Name.Value);
-
-            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+            AssertDictionariesAreEqual(expectedResourceMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
