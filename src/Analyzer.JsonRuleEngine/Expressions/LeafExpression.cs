@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 {
                     Passed = Operator.EvaluateExpression(scope.JToken),
                     JsonPath = scope.Path,
-                    LineNumber = jsonLineNumberResolver.ResolveLineNumber(scope.Path),
+                    LineNumber = jsonLineNumberResolver?.ResolveLineNumber(scope.Path) ?? 0,
                     Expression = this
                 };
 

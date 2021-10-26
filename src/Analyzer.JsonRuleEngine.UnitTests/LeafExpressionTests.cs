@@ -118,6 +118,26 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void Evaluate_NullLineNumberResolver_LineNumberIsZero()
+        {
+            var mockJsonPathResolver = new Mock<IJsonPathResolver>();
+            mockJsonPathResolver
+                .Setup(s => s.Resolve(It.IsAny<string>()))
+                .Returns(new[] { mockJsonPathResolver.Object });
+
+            var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>();
+            mockLeafExpressionOperator
+                .Setup(o => o.EvaluateExpression(It.IsAny<JToken>()))
+                .Returns(false);
+
+            var leafExpression = new LeafExpression(mockLeafExpressionOperator.Object, new ExpressionCommonProperties { Path = "" });
+            var results = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: null).Results.ToList();
+
+            Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(0, results[0].LineNumber);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void Constructor_NullPath_ThrowsException()
         {

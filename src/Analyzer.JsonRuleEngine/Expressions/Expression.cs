@@ -93,10 +93,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation,
             Func<IJsonPathResolver, JsonRuleResult> getResult)
         {
-            if (jsonScope == null || jsonLineNumberResolver == null)
-            {
-                throw new ArgumentNullException(jsonScope == null ? nameof(jsonScope) : nameof(jsonLineNumberResolver));
-            }
+            if (jsonScope == null) throw new ArgumentNullException(nameof(jsonScope));
 
             // Select resources of given type, if specified
             IEnumerable<IJsonPathResolver> scopesToEvaluate;
@@ -123,7 +120,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 foreach (var propertyToEvaluate in expandedScopes)
                 {
                     // Evaluate this path if either (a) there is no Where condition to evaluate, or (b) the Where expression passed for this path.
-                    var whereEvaluation = Where?.Evaluate(propertyToEvaluate, jsonLineNumberResolver);
+                    // Do not pass a line number resolver to Where because line numbers in these evaluations do not matter.
+                    var whereEvaluation = Where?.Evaluate(propertyToEvaluate, jsonLineNumberResolver: null);
                     if (whereEvaluation == null || (whereEvaluation.Passed && whereEvaluation.HasResults))
                     {
                         // Expression implementation will generate Evaluation or Result.

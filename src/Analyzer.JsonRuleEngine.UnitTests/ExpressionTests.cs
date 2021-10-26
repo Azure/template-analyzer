@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -52,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             };
 
-            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
+            mockExpression.Evaluate(mockPathResolver.Object, null);
 
             // whereConditionWasEvaluated will only be true if 'whereExpression'
             // is evaluated in the base Expression class.
@@ -94,7 +93,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             };
 
-            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
+            mockExpression.Evaluate(mockPathResolver.Object, null);
 
             Assert.IsTrue(whereConditionWasEvaluated);
         }
@@ -135,10 +134,53 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             };
 
-            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
+            mockExpression.Evaluate(mockPathResolver.Object, null);
 
             Assert.IsTrue(whereConditionWasEvaluated);
             Assert.IsTrue(topLevelExpressionWasEvaluated);
+        }
+
+        [TestMethod]
+        public void EvaluateInternal_HasWhereCondition_LineNumberResolverNotPassed()
+        {
+            var mockPathResolver = new Mock<IJsonPathResolver>();
+            mockPathResolver
+                .Setup(r => r.Resolve(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+            mockPathResolver
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
+                .Returns(() => new[] { mockPathResolver.Object });
+
+
+            bool lineNumberResolverWasAlwaysNull = true;
+
+            var whereExpression = new Mock<Expression>(new ExpressionCommonProperties());
+            whereExpression
+                .Setup(w => w.Evaluate(It.IsAny<IJsonPathResolver>(), It.IsAny<ILineNumberResolver>()))
+                .Returns((IJsonPathResolver pathResolver, ILineNumberResolver lineNumberResolver) =>
+                {
+                    // If a non-null ILineNumberResolver was passed to this Where condition, record it to assert later.
+                    lineNumberResolverWasAlwaysNull &= lineNumberResolver == null;
+                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                });
+
+            // A top level mocked expression that contains a Where condition.
+            var mockExpression = new MockExpression(new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path", Where = whereExpression.Object })
+            {
+                EvaluationCallback = pathResolver =>
+                {
+                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                }
+            };
+
+            // Evaluate scope - line number resolver should not be passed into Where condition
+            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
+
+            // Set up a Result Callback to exercise both EvaluateInternal methods
+            mockExpression.ResultsCallback = resolver => new JsonRuleResult();
+            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
+
+            Assert.IsTrue(lineNumberResolverWasAlwaysNull, "A non-null ILineNumberResolver was passed to a Where condition when it shouldn't have.");
         }
 
         [TestMethod]
@@ -152,31 +194,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void EvaluateInternalGetEvaluation_NullLineNumberResolver_ThrowsException()
-        {
-            // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleEvaluation>
-            new MockExpression(new ExpressionCommonProperties { Path = "path" })
-                .Evaluate(new Mock<IJsonPathResolver>().Object, null);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void EvaluateInternalGetResult_NullScope_ThrowsException()
         {
             // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleResult>
             var expression = new MockExpression(new ExpressionCommonProperties { Path = "path" });
             expression.ResultsCallback = r => (JsonRuleResult)null;
             expression.Evaluate(null, new Mock<ILineNumberResolver>().Object);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void EvaluateInternalGetResult_NullLineNumberResolver_ThrowsException()
-        {
-            // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleResult>
-            var expression = new MockExpression(new ExpressionCommonProperties { Path = "path" });
-            expression.ResultsCallback = r => (JsonRuleResult)null;
-            expression.Evaluate(new Mock<IJsonPathResolver>().Object, null);
         }
 
         [TestMethod]
