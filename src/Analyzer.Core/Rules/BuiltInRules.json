@@ -700,7 +700,7 @@
       },
       "allOf": [
         {
-          "resourceType": "Microsoft.Sql/servers/auditingSettings",
+          "resourceType": "auditingSettings",
           "where": {
             "path": "name",
             "equals": "default"

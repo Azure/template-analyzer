@@ -17,7 +17,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "state": "Enabled",
@@ -41,7 +41,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
@@ -61,7 +61,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
@@ -81,7 +81,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
@@ -101,7 +101,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": true,
@@ -121,7 +121,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": true,
@@ -140,7 +140,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
@@ -160,7 +160,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "default",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
@@ -180,7 +180,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "auditingSettings",
           "name": "anotherName",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
