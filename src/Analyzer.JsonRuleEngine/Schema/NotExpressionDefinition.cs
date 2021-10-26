@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -21,12 +20,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates a <see cref="NotExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
-        /// pass to the created <see cref="Expression"/>.</param>
         /// <param name="isNegative">Whether to negate the evaluation.</param>
         /// <returns>The NotExpression.</returns>
-        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver, bool isNegative = true)
-            => new NotExpression(this.Not.ToExpression(jsonLineNumberResolver, true), GetCommonProperties(jsonLineNumberResolver));
+        public override Expression ToExpression(bool isNegative = true)
+            => new NotExpression(this.Not.ToExpression(isNegative: true), this.CommonProperties);
 
         /// <summary>
         /// Validates the <see cref="NotExpressionDefinition"/> for valid syntax

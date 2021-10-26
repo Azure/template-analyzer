@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -39,5 +40,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// </summary>
         [JsonProperty(PropertyName = "evaluation")]
         public ExpressionDefinition ExpressionDefinition { get; set; }
+
+        /// <summary>
+        /// Gets or sets an <see cref="Expression"/> that can evaluate a template against this rule.
+        /// </summary>
+        [JsonIgnore]
+        internal Expression Expression { get; set; }
     }
 }

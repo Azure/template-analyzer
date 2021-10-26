@@ -8,6 +8,8 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Templates.Analyzer.Core;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -18,12 +20,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private readonly string IndentedNewLine = Environment.NewLine + "\t";
         private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
+        private readonly TemplateAnalyzer templateAnalyzer;
+
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
         /// </summary>
         public CommandLineParser()
         {
             SetupCommandLineAPI();
+            templateAnalyzer = TemplateAnalyzer.Create();
         }
 
         /// <summary>
@@ -112,8 +117,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
                 Console.WriteLine(fileMetadata);
 
-                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
-                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
 
                 var passedEvaluations = 0;
 

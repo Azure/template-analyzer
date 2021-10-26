@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockOperator = new Mock<LeafExpressionOperator>().Object;
             mockOperator.IsNegative = true;
 
-            var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockOperator, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
+            var mockLeafExpression = new Mock<LeafExpression>(mockOperator, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             var jsonRuleResult = new JsonRuleResult
             {
@@ -50,30 +50,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var leafExpressionresults = new JsonRuleResult[] { jsonRuleResult };
 
             mockLeafExpression
-                .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
+                .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
                 .Returns(new JsonRuleEvaluation(mockLeafExpression.Object, expectedEvaluationResult, leafExpressionresults));
 
             var notExpression = new NotExpression(mockLeafExpression.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var evaluation = notExpression.Evaluate(jsonScope: mockJsonPathResolver.Object);
+            var evaluation = notExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, mockLineResolver);
 
             // Assert
             Assert.AreEqual(expectedEvaluationResult, evaluation.Passed);
             Assert.AreEqual(expectedEvaluationResult, evaluation.Results.First().Passed);
 
             Assert.IsTrue(mockLeafExpression.Object.Operator.IsNegative);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void Evaluate_NullScope_ThrowsException()
-        {
-            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
-            var mockOperator = new Mock<LeafExpressionOperator>().Object;
-            var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockOperator, new ExpressionCommonProperties { ResourceType = "", Path = "" });
-
-            new NotExpression(mockLeafExpression.Object, new ExpressionCommonProperties()).Evaluate(jsonScope: null);
         }
 
         [TestMethod]

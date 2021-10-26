@@ -7,7 +7,6 @@ using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -22,12 +21,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
         {
             this.Operator = @operator;
         }
-    }
-
-    // Mock ILineNumberResolver for use in tests
-    public class MockLineResolver : ILineNumberResolver
-    {
-        public int ResolveLineNumber(string path) => 0;
     }
 
     [TestClass]
@@ -75,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
                 operatorProperty,
                 jsonValue));
 
-            var leafExpression = leafDefinition.ToExpression(new MockLineResolver()) as LeafExpression;
+            var leafExpression = leafDefinition.ToExpression() as LeafExpression;
             Assert.IsNotNull(leafExpression);
             Assert.AreEqual(TestPath, leafExpression.Path);
             Assert.AreEqual(TestResourceType, leafExpression.ResourceType);
