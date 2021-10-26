@@ -126,8 +126,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             catch (Exception ex)
             {
                 if (ex.Message.Contains("incorrect segment lengths")) {
-                    // Processing stops when the error is found: some resources could be missing their
-                    // updated DependsOn and Name properties, that are needed for the remaining template processing
+                    // Processing stops when the error is found: some resources could be missing
+                    // information that is needed for the remaining template processing,
+                    // like updated values in their DependsOn and Name properties
                     throw ex;
                 }
 
