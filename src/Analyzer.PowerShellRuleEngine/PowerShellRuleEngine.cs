@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             this.powerShell = Powershell.Create();
 
             powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time
             powerShell.AddStatement();
 
             powerShell.Invoke();
@@ -69,12 +69,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 foreach (dynamic warning in executionResult.Warnings)
                 {
-                    AddErrorToDictionary(warning, ref uniqueErrors);
+                    PreProcessErrors(warning, uniqueErrors);
                 }
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    AddErrorToDictionary(error, ref uniqueErrors);
+                    PreProcessErrors(error, uniqueErrors);
                 }
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
@@ -84,14 +84,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    evaluations.Add(new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults));
+                    var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
+                    evaluations.Add(new PowerShellRuleEvaluation("", ruleDescription, false, evaluationResults));
                 }
             }
 
             return evaluations;
         }
 
-        private void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
+        private void PreProcessErrors(dynamic error, Dictionary<string, SortedSet<int>> uniqueErrors)
         {
             var lineNumber = 0;
 

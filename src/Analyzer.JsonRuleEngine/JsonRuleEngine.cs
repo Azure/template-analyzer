@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             {
                 foreach (var rule in rules)
                 {
-                    currentRule = rule.Name;
+                    currentRule = rule.Id;
                     rule.Expression = rule.ExpressionDefinition.ToExpression();
                 }
             }

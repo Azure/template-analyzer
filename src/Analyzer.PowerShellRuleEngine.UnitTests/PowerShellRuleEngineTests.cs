@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.IsFalse(evaluationsList[0].Results.First().Passed);
             Assert.IsFalse(evaluationsList[1].Results.First().Passed);
 
-            Assert.AreEqual(evaluationsList[0].RuleName, evaluationsList[1].RuleName);
+            Assert.AreEqual(evaluationsList[0].RuleId, evaluationsList[1].RuleId);
             Assert.AreNotEqual(evaluationsList[0].RuleDescription, evaluationsList[1].RuleDescription);
         }
 

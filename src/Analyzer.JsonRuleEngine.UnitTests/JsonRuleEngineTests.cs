@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             for (int i = 0; i < ruleEvaluationDefinitions.Length; i++)
             {
                 var evaluation = evaluationResults[i];
-                Assert.AreEqual($"RuleName {i}", evaluation.RuleName);
+                Assert.AreEqual($"RuleId {i}", evaluation.RuleId);
                 Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
                 foreach (var result in evaluation.Results)
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow(@"[{
-                ""name"": ""RuleName 0"",
+                ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Single allOf expression")]
         [DataRow(@"[{
-                ""name"": ""RuleName 0"",
+                ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Nested allOf expression")]
         [DataRow(@"[{
-                ""name"": ""RuleName 0"",
+                ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(1, evaluationResults.Count(evaluation => evaluation.Passed));
 
             var evaluation = evaluationResults[0];
-            Assert.AreEqual($"RuleName 0", evaluation.RuleName);
+            Assert.AreEqual($"RuleId 0", evaluation.RuleId);
             Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
             Assert.AreEqual(0, evaluation.Results.Count());
@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow(@"[{
-                ""name"": ""Invalid Rule"",
+                ""id"": ""Invalid Rule"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Invalid JSON")]
         [DataRow(@"[{
-                ""name"": ""Invalid Rule"",
+                ""id"": ""Invalid Rule"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -318,7 +318,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         private string CreateRulesFromEvaluationDefinitions(string[] ruleEvaluationDefinitions)
         {
             string ruleSkeleton = @"{{
-                ""name"": ""RuleName {0}"",
+                ""id"": ""RuleId {0}"",
                 ""description"": ""Rule description {0}"",
                 ""recommendation"": ""Recommendation {0}"",
                 ""helpUri"": ""Uri {0}"",
