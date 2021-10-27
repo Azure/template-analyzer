@@ -717,7 +717,7 @@
               },
               {
                 "path": "name",
-                "regex": "default|\\/default"
+                "regex": "^default$|/default$"
               }
             ]
           },
