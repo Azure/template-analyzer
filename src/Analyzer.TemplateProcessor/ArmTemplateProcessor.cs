@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     // Processing stops when the error is found: some resources could be missing
                     // information that is needed for the remaining template processing,
                     // like updated values in their DependsOn and Name properties
-                    throw ex;
+                    throw;
                 }
 
                 // Do not throw if there was another issue with evaluating language expressions
