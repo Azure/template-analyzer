@@ -128,20 +128,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
             };
 
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "deployment", deployment },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" },
-                { "providers", providers },
-                { "environment", JObject.Parse(@"{
+            var environment = JObject.Parse(@"{
                     ""name"": ""AzureCloud"",
                     ""gallery"": ""https://gallery.azure.com/"",
                     ""graph"": ""https://graph.windows.net/"",
@@ -170,7 +157,22 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         ""sqlServerHostname"": "".database.windows.net"",
                         ""storage"": ""core.windows.net""
                     }                    
-                }") }
+                }");
+
+            var metadata = new InsensitiveDictionary<JToken>
+            {
+                { "subscription", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
+                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                { "resourceGroup", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
+                    new JProperty("location", "westus2"),
+                    new JProperty("name", "resource-group")) },
+                { "deployment", deployment },
+                { "tenantId", "00000000-0000-0000-0000-000000000000" },
+                { "providers", providers },
+                { "environment", environment }
             };
 
             return metadata;
