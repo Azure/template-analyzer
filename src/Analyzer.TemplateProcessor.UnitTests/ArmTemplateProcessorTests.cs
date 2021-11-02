@@ -982,6 +982,37 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }
         }
 
+        [TestMethod]
+        public void ProcessTemplate_ValidTemplateUsingEnvironmentFunction_ProcessTemplateFunction()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {
+                    ""privateDbDnsZoneName"": {
+                        ""type"": ""string"",
+                        ""defaultValue"": ""[concat('privatelink', environment().suffixes.sqlServerHostname)]"",
+                        ""metadata"": {
+                            ""description"": ""Private DNS zone name for database.""
+                        }
+                    }
+                },
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Network/privateDnsZones"",
+                        ""apiVersion"": ""2020-06-01"",
+                        ""name"": ""[parameters('privateDbDnsZoneName')]""
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            armTemplateProcessor.ProcessTemplate();
+
+            // This test only validates that the call to ProcessTemplate does not throw
+        }
+
         private string GenerateTemplateWithOutputs(string outputValue)
         {
             return string.Format(@"{{
