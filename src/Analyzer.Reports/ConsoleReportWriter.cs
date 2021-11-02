@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
         /// <inheritdoc/>
-        public void WriteResults(FileInfo templateFile, IEnumerable<Types.IEvaluation> evaluations)
+        public void WriteResults(IFileInfo templateFile, IEnumerable<Types.IEvaluation> evaluations)
         {
             OutputToConsole(evaluations);
         }

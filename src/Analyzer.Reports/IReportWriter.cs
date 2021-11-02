@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Text;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
@@ -18,6 +19,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="templateFile">template file to be analyzed</param>
         /// <param name="evaluations">evaluation list</param>
-        void WriteResults(FileInfo templateFile, IEnumerable<Types.IEvaluation> evaluations);
+        void WriteResults(IFileInfo templateFile, IEnumerable<Types.IEvaluation> evaluations);
     }
 }

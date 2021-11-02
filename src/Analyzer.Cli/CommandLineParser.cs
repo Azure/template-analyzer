@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Reports;
@@ -140,12 +141,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     using (IReportWriter reportWriter = GetReportWriter(reportFormat.ToString(), outputFilePath))
                     {
-                        reportWriter.WriteResults(templateFilePath, evaluations);
+                        reportWriter.WriteResults((FileInfoBase)templateFilePath, evaluations);
                     }
                 }
                 else
                 {
-                    writer.WriteResults(templateFilePath, evaluations);
+                    writer.WriteResults((FileInfoBase)templateFilePath, evaluations);
                 }
 
                 return 1;
@@ -265,7 +266,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 switch (format)
                 {
                     case ReportFormat.Sarif:
-                        return new SarifReportWriter(outputFile, rootFolder);
+                        return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
                     case ReportFormat.Console:
                     default:
                         return new ConsoleReportWriter();

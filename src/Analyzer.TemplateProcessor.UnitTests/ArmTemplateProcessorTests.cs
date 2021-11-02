@@ -943,6 +943,45 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
+        [TestMethod]
+        public void ProcessTemplate_ResourceNameWithIncorrectSegmentLength_ThrowsExpectedException()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2020-12-01"",
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""vms"",
+                        ""properties"": {
+                        },
+                        ""resources"": [
+                            {
+                                ""type"": ""extensions"",
+                                ""name"": ""vms/InstallDomainController"",
+                                ""apiVersion"": ""2020-12-01"",
+                                ""properties"": {
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }";
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            try
+            {
+                var template = armTemplateProcessor.ProcessTemplate();
+                Assert.Fail("No exception was thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("incorrect segment lengths"));
+            }
+        }
+
         private string GenerateTemplateWithOutputs(string outputValue)
         {
             return string.Format(@"{{

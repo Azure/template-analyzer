@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Templates.Analyzer.Types;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.CodeAnalysis.Sarif.Writers;
 using Newtonsoft.Json;
@@ -6,8 +9,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
-using System.Text;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -17,14 +20,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     public class SarifReportWriter : IReportWriter
     {
         // may define the const values in common place
-        private const string ToolName = "ARM BPA";
-        private const string ToolFullName = "ARM Template Best Practice Analyzer";
-        private const string ToolVersion = "0.0.2-alpha";
-        private const string Organization = "Microsoft";
-        private const string InformationUri = "https://github.com/Azure/template-analyzer";
-        private const string UriBaseIdString = "ROOTPATH";
+        internal const string ToolName = "ARM BPA";
+        internal const string ToolFullName = "ARM Template Best Practice Analyzer";
+        internal const string ToolVersion = "0.0.2-alpha";
+        internal const string Organization = "Microsoft";
+        internal const string InformationUri = "https://github.com/Azure/template-analyzer";
+        internal const string UriBaseIdString = "ROOTPATH";
 
-        private FileInfo reportFile;
+        private IFileInfo reportFile;
         private Run sarifRun;
         private IList<Result> sarifResults;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
@@ -35,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="reportFile">report file</param>
         /// <param name="targetPath">the directory analyzer targets</param>
-        public SarifReportWriter(FileInfo reportFile, string targetPath = null)
+        public SarifReportWriter(IFileInfo reportFile, string targetPath = null)
         {
             this.reportFile = reportFile ?? throw new ArgumentException(nameof(reportFile));
             this.InitRun();
@@ -45,18 +48,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         }
 
         /// <inheritdoc/>
-        public void WriteResults(FileInfo templateFile, IEnumerable<IEvaluation> evaluations)
+        public void WriteResults(IFileInfo templateFile, IEnumerable<IEvaluation> evaluations)
         {
             this.rootPath ??= templateFile.DirectoryName;
-            foreach (var evaluation in evaluations)
+            foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
-                if (!evaluation.Passed)
-                {
-                    this.ExtractRule(evaluation);
-                    this.ExtractResult(evaluation, evaluation, templateFile.FullName);
-                }
+                // get rule definition from first level evaluation
+                ReportingDescriptor rule = this.ExtractRule(evaluation);
+                this.ExtractResult(evaluation, evaluation, templateFile.FullName); ;
             }
         }
+
+        internal Run SarifRun => this.sarifRun;
 
         private void InitRun()
         {
@@ -76,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             };
         }
 
-        private void ExtractRule(IEvaluation evaluation)
+        private ReportingDescriptor ExtractRule(IEvaluation evaluation)
         {
             if (!rulesDictionary.TryGetValue(evaluation.RuleId, out _))
             {
@@ -93,48 +96,42 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
                     });
             }
+            return rulesDictionary[evaluation.RuleId];
         }
 
-        private void ExtractResult(IEvaluation parentEval, IEvaluation evaluation, string filePath)
+        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath)
         {
-            foreach (var result in evaluation.Results)
+            foreach (var result in evaluation.Results.Where(r => !r.Passed))
             {
-                if (!result.Passed)
+                this.sarifResults.Add(new Result
                 {
-                    this.sarifResults.Add(
-                        new Result
+                    RuleId = rootEvaluation.RuleId,
+                    Level = GetLevelFromEvaluation(rootEvaluation),
+                    Message = new Message { Text = rootEvaluation.RuleDescription },
+                    Locations = new[]
+                    {
+                        new Location
                         {
-                            RuleId = parentEval.RuleId,
-                            Level = GetLevelFromEvaluation(parentEval),
-                            Message = new Message { Text = parentEval.RuleDescription },
-                            Locations = new List<Location>
+                            PhysicalLocation = new PhysicalLocation
                             {
-                            new Location
-                            {
-                                PhysicalLocation = new PhysicalLocation
+                                ArtifactLocation = new ArtifactLocation
                                 {
-                                    ArtifactLocation = new ArtifactLocation
-                                    {
-                                        Uri = new Uri(
-                                            UriHelper.MakeValidUri(
-                                                filePath.Replace(this.rootPath, string.Empty, StringComparison.OrdinalIgnoreCase)),
-                                            UriKind.Relative),
-                                        UriBaseId = UriBaseIdString,
-                                    },
-                                    Region = new Region { StartLine = result.LineNumber },
+                                    Uri = new Uri(
+                                    UriHelper.MakeValidUri(
+                                        filePath.Replace(this.rootPath, string.Empty, StringComparison.OrdinalIgnoreCase)),
+                                    UriKind.Relative),
+                                    UriBaseId = UriBaseIdString,
                                 },
+                                Region = new Region { StartLine = result.LineNumber },
                             },
-                            },
-                        });
-                }
+                        },
+                    }
+                });
             }
 
-            foreach (var eval in evaluation.Evaluations)
+            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                if (!eval.Passed)
-                {
-                    this.ExtractResult(parentEval, eval, filePath);
-                }
+                this.ExtractResult(rootEvaluation, eval, filePath);
             }
         }
 
@@ -146,26 +143,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private void PersistReport()
         {
-            using (FileStream outputTextStream = this.reportFile.Create())
-            using (var outputTextWriter = new StreamWriter(outputTextStream))
-            using (var outputJsonWriter = new JsonTextWriter(outputTextWriter) { Formatting = Formatting.Indented })
-            using (var output = new ResultLogJsonWriter(outputJsonWriter))
+            using Stream outputTextStream = this.reportFile.Create();
+            using var outputTextWriter = new StreamWriter(outputTextStream);
+            using var outputJsonWriter = new JsonTextWriter(outputTextWriter) { Formatting = Formatting.Indented };
+            using var output = new ResultLogJsonWriter(outputJsonWriter);
+
+            output.Initialize(this.sarifRun);
+
+            this.sarifRun.Tool.Driver.Rules = this.rulesDictionary.Select(r => r.Value).ToList();
+            this.sarifRun.Results = this.sarifResults;
+            this.sarifRun.OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>
             {
-                output.Initialize(this.sarifRun);
+                [UriBaseIdString] = new ArtifactLocation { Uri = new Uri(UriHelper.MakeValidUri(this.rootPath), UriKind.RelativeOrAbsolute) },
+            };
 
-                this.sarifRun.Tool.Driver.Rules = this.rulesDictionary.Select(r => r.Value).ToList();
-                this.sarifRun.Results = this.sarifResults;
-                this.sarifRun.OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>
-                {
-                    [UriBaseIdString] = new ArtifactLocation { Uri = new Uri(UriHelper.MakeValidUri(this.rootPath), UriKind.RelativeOrAbsolute) },
-                };
-
-                if (sarifRun.Results != null)
-                {
-                    output.OpenResults();
-                    output.WriteResults(sarifRun.Results);
-                    output.CloseResults();
-                }
+            if (sarifRun.Results != null)
+            {
+                output.OpenResults();
+                output.WriteResults(sarifRun.Results);
+                output.CloseResults();
             }
         }
 
