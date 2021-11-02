@@ -1008,9 +1008,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
 
-            armTemplateProcessor.ProcessTemplate();
+            JToken template = armTemplateProcessor.ProcessTemplate();
 
-            // This test only validates that the call to ProcessTemplate does not throw
+            Assert.AreEqual("privatelink.database.windows.net", template["resources"][0]["name"]);
         }
 
         private string GenerateTemplateWithOutputs(string outputValue)
