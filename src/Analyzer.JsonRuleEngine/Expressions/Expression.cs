@@ -52,27 +52,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// determining all paths to run against.
         /// </summary>
         /// <param name="jsonScope">The scope being evaluated.</param>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
-        /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <param name="getResult">A delegate for logic specific to the child <see cref="Expression"/>, which
         /// generates a <see cref="JsonRuleResult"/> for the specified <paramref name="jsonScope"/>.</param>
         /// <returns>A <see cref="JsonRuleEvaluation"/> populated with the results generated from <paramref name="getResult"/>.</returns>
-        protected JsonRuleEvaluation EvaluateInternal(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver,  Func<IJsonPathResolver, JsonRuleResult> getResult) =>
-            EvaluateInternal(jsonScope, jsonLineNumberResolver, getResult: getResult, getEvaluation: null);
+        protected JsonRuleEvaluation EvaluateInternal(IJsonPathResolver jsonScope, Func<IJsonPathResolver, JsonRuleResult> getResult) =>
+            EvaluateInternal(jsonScope, getResult: getResult, getEvaluation: null);
 
         /// <summary>
         /// Performs tasks common across <see cref="Expression"/> implementations, such as
         /// determining all paths to run against.
         /// </summary>
         /// <param name="jsonScope">The scope being evaluated.</param>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
-        /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <param name="getEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
         /// generates a <see cref="JsonRuleEvaluation"/> for the specified <paramref name="jsonScope"/>.</param>
         /// <returns>A <see cref="JsonRuleEvaluation"/>, either populated with the evaluations generated from <paramref name="getEvaluation"/>,
         /// or the single <see cref="JsonRuleEvaluation"/> if only one was generated from <paramref name="getEvaluation"/>.</returns>
-        protected JsonRuleEvaluation EvaluateInternal(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver, Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation) =>
-            EvaluateInternal(jsonScope, jsonLineNumberResolver, getEvaluation: getEvaluation, getResult: null);
+        protected JsonRuleEvaluation EvaluateInternal(IJsonPathResolver jsonScope, Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation) =>
+            EvaluateInternal(jsonScope, getEvaluation: getEvaluation, getResult: null);
 
         /// <summary>
         /// Performs tasks common across <see cref="Expression"/> implementations, such as
@@ -80,8 +76,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// or <paramref name="getResult"/> should be populated, not both.
         /// </summary>
         /// <param name="jsonScope">The scope being evaluated.</param>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
-        /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <param name="getEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
         /// generates a <see cref="JsonRuleEvaluation"/> for the specified <paramref name="jsonScope"/>.</param>
         /// <param name="getResult">A delegate for logic specific to the child <see cref="Expression"/>, which
@@ -89,7 +83,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <returns>The results of the evaluation.</returns>
         private JsonRuleEvaluation EvaluateInternal(
             IJsonPathResolver jsonScope,
-            ILineNumberResolver jsonLineNumberResolver,
             Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation,
             Func<IJsonPathResolver, JsonRuleResult> getResult)
         {

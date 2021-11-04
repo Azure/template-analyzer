@@ -97,7 +97,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
-        public void Create_MissingOrMalformedRulesFile_ThrowsException()
+        [ExpectedException(typeof(TemplateAnalyzerException))]
+        public void Create_MissingRulesFile_ThrowsException()
         {
             var rulesDir = Path.Combine(
                     Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
@@ -111,32 +112,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             try
             {
                 TemplateAnalyzer.Create();
-
-                // Test failed - move file back
-                File.Move(movedFile, rulesFile);
-                Assert.Fail("Create() method did not throw exception when Rules file is missing.");
-            }
-            catch (Exception e)
-            {
-                if (typeof(TemplateAnalyzerException) != e.GetType())
-                {
-                    // Test failed - move file back
-                    File.Move(movedFile, rulesFile);
-                    Assert.AreEqual(typeof(TemplateAnalyzerException), e.GetType(), "Exception thrown is not of expected type.");
-                }
-            }
-
-            // Create new empty file
-            File.Create(rulesFile).Close();
-
-            try
-            {
-                TemplateAnalyzer.Create();
-                Assert.Fail("Create() method did not throw exception when Rules file is missing.");
-            }
-            catch (Exception e)
-            {
-                Assert.AreEqual(typeof(TemplateAnalyzerException), e.GetType(), "Exception thrown is not of expected type.");
             }
             finally
             {

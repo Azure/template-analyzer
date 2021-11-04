@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// and if the path contains any wildcards.</returns>
         public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
         {
-            return EvaluateInternal(jsonScope, jsonLineNumberResolver, scope =>
+            return EvaluateInternal(jsonScope, scope =>
             {
                 List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
                 bool? evaluationPassed = null;

@@ -151,21 +151,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
         /// </summary>
         private class MockExpression : Expression
         {
-            // Mock ILineNumberResolver for testing
-            private class MockLineNumberResolver : ILineNumberResolver { public int ResolveLineNumber(string path) => 0; }
-            private ILineNumberResolver lineNumberResolver;
-
             public Action<IJsonPathResolver> EvaluationCallback { get; set; }
 
             public MockExpression(ExpressionCommonProperties commonProperties)
                 : base(commonProperties)
-            {
-                this.lineNumberResolver = new MockLineNumberResolver();
-            }
+            { }
 
             public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver = null)
             {
-                return base.EvaluateInternal(jsonScope, this.lineNumberResolver, scope =>
+                return base.EvaluateInternal(jsonScope, scope =>
                 {
                     EvaluationCallback(scope);
                     return new JsonRuleResult();

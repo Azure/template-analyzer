@@ -151,7 +151,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
 
-
             bool lineNumberResolverWasAlwaysNull = true;
 
             var whereExpression = new Mock<Expression>(new ExpressionCommonProperties());
@@ -197,8 +196,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         public void EvaluateInternalGetResult_NullScope_ThrowsException()
         {
             // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleResult>
-            var expression = new MockExpression(new ExpressionCommonProperties { Path = "path" });
-            expression.ResultsCallback = r => (JsonRuleResult)null;
+            var expression = new MockExpression(new ExpressionCommonProperties { Path = "path" })
+            {
+                ResultsCallback = r => (JsonRuleResult)null
+            };
             expression.Evaluate(null, new Mock<ILineNumberResolver>().Object);
         }
 

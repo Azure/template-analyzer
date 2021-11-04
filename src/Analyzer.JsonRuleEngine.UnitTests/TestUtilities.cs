@@ -50,8 +50,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver)
             {
                 return ResultsCallback != null
-                    ? base.EvaluateInternal(jsonScope, lineNumberResolver, ResultsCallback)
-                    : base.EvaluateInternal(jsonScope, lineNumberResolver, EvaluationCallback);
+                    ? base.EvaluateInternal(jsonScope, ResultsCallback)
+                    : base.EvaluateInternal(jsonScope, EvaluationCallback);
             }
         }
     }

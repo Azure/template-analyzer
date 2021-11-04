@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <returns>A <see cref="JsonRuleEvaluation"/> with the results of the evaluation.</returns>
         public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
         {
-            return EvaluateInternal(jsonScope, jsonLineNumberResolver, scope =>
+            return EvaluateInternal(jsonScope, scope =>
             {
                 var evaluation = ExpressionToNegate.Evaluate(scope, jsonLineNumberResolver);
 

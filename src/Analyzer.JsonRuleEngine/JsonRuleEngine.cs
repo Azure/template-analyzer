@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -43,16 +42,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// processed template to the line number of the equivalent location in the original template.</param>
         public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder)
         {
+            if (rawRuleDefinitions == null) throw new ArgumentNullException(nameof(rawRuleDefinitions));
+            if (string.IsNullOrWhiteSpace(rawRuleDefinitions)) throw new ArgumentException("String cannot be only whitespace.", nameof(rawRuleDefinitions));
             if (jsonLineNumberResolverBuilder == null) throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
 
-            try
-            {
-                return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
-            }
-            catch (Exception e)
-            {
-                throw new JsonRuleEngineException($"Failed to parse rules.", e);
-            }
+            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
         }
 
         /// <summary>
@@ -84,9 +78,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <returns>A list of <see cref="RuleDefinition"/>s.</returns>
         private static List<RuleDefinition> ParseRuleDefinitions(string rawRuleDefinitions)
         {
-            if (rawRuleDefinitions == null) throw new ArgumentNullException(nameof(rawRuleDefinitions));
-            if (string.IsNullOrWhiteSpace(rawRuleDefinitions)) throw new ArgumentException("String cannot be only whitespace.", nameof(rawRuleDefinitions));
-
             List<RuleDefinition> rules;
 
             try

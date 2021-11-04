@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow("error_with_line_number.json", 1, new int[] { 9 }, DisplayName = "Template with an error reported with a line number")]
         [DataRow("warning.json", 1, new int[] { 0 }, DisplayName = "Template with a warning")]
         [DataRow("repeated_error_same_message_same_lines.json", 1, new int[] { 0 }, DisplayName = "Template with an error found in multiple places, reported with the same message and line number for each")]
-        public void EvaluateRules_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
+        public void EvaluateTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
             var templateContext = new TemplateContext { TemplateIdentifier = templatesFolder + templateFileName };
             var powerShellRuleEngine = new PowerShellRuleEngine();
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         }
 
         [TestMethod]
-        public void EvaluateRules_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
+        public void EvaluateTemplate_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
         {
             var templateContext = new TemplateContext { TemplateIdentifier = templatesFolder + "repeated_error_same_message_different_lines.json" };
             var powerShellRuleEngine = new PowerShellRuleEngine();
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         }
 
         [TestMethod]
-        public void EvaluateRules_RepeatedErrorDifferentMessage_ReturnsExpectedEvaluations()
+        public void EvaluateTemplate_RepeatedErrorDifferentMessage_ReturnsExpectedEvaluations()
         {
             var templateContext = new TemplateContext { TemplateIdentifier = templatesFolder + "repeated_error_different_message.json" };
             var powerShellRuleEngine = new PowerShellRuleEngine();
@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         }
 
         [TestMethod]
-        public void EvaluateRules_MissingTTKRepository_DoesNotThrowAnException()
+        public void EvaluateTemplate_MissingTTKRepository_DoesNotThrowAnException()
         {
             var TTKFolderName = "TTK";
             var wrongTTKFolderName = TTKFolderName + "2";
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void EvaluateRules_NullTemplateIdentifier_ThrowsException()
+        public void EvaluateTemplate_NullTemplateIdentifier_ThrowsException()
         {
             new PowerShellRuleEngine().EvaluateTemplate(new TemplateContext());
         }

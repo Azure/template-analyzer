@@ -46,25 +46,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 throw new TemplateAnalyzerException($"Failed to read rules.", e);
             }
 
-            JsonRuleEngine ruleEngine;
-            try
-            {
-                ruleEngine = JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext));
-            }
-            catch (Exception e)
-            {
-                throw new TemplateAnalyzerException($"Failed to create a JsonRuleEngine instance.", e);
-            }
-
-            return new TemplateAnalyzer(ruleEngine);
+            return new TemplateAnalyzer(
+                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)));
         }
 
         /// <summary>
         /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
-        /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
-        /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param>
+        /// <param name="template">The ARM Template JSON</param>
+        /// <param name="parameters">The parameters for the ARM Template JSON</param>
+        /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {

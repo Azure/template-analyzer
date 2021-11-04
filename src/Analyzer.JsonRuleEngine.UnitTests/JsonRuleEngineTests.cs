@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }"
             },
             1, DisplayName = "2 Rules, 1 Passes, 1 Fails")]
-        public void EvaluateRules_ValidLeafExpression_ReturnsExpectedEvaluations(string[] ruleEvaluationDefinitions, int numberOfExpectedPassedResults)
+        public void EvaluateTemplate_ValidLeafExpression_ReturnsExpectedEvaluations(string[] ruleEvaluationDefinitions, int numberOfExpectedPassedResults)
         {
             // Arrange
             var template =
@@ -58,7 +58,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             int expectedLineNumber = 5;
 
             var rules = CreateRulesFromEvaluationDefinitions(ruleEvaluationDefinitions);
-
 
             TemplateContext templateContext = new TemplateContext { 
                 OriginalTemplate = template, 
@@ -88,7 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var evaluationResults = ruleEngine.EvaluateTemplate(templateContext).ToList();
 
             // Assert
-            Assert.AreEqual(ruleEvaluationDefinitions.Length, evaluationResults.Count());
+            Assert.AreEqual(ruleEvaluationDefinitions.Length, evaluationResults.Count);
             Assert.AreEqual(numberOfExpectedPassedResults, evaluationResults.Count(result => result.Passed));
             for (int i = 0; i < ruleEvaluationDefinitions.Length; i++)
             {
@@ -170,7 +169,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     ]
                 }
             }]", DisplayName = "Single anyOf expression")]
-        public void EvaluateRules_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
+        public void EvaluateTemplate_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
         {
             // Arrange
             var template =
@@ -219,7 +218,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var evaluationResults = ruleEngine.EvaluateTemplate(templateContext).ToList();
 
-            Assert.AreEqual(1, evaluationResults.Count());
+            Assert.AreEqual(1, evaluationResults.Count);
             Assert.AreEqual(1, evaluationResults.Count(evaluation => evaluation.Passed));
 
             var evaluation = evaluationResults[0];
