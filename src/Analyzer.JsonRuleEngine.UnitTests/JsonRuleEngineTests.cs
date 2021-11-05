@@ -111,6 +111,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
+                ""severity"": ""someInt"",
                 ""evaluation"": {
                     ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
                     ""allOf"": [

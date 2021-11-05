@@ -29,11 +29,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
+        /// <param name="configurations">The configurations for the Template Analyzer <c>JSON</c></param>
         /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param>
-        public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null)
+        public TemplateAnalyzer(string template, string parameters = null, string configurations = null, string templateFilePath = null)
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
+            this.Configurations = configurations; //me added
             this.TemplateFilePath = templateFilePath;
         }
 
@@ -63,6 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 var rules = LoadRules();
+                var filteredRules = FilterRules(rules);
                 var jsonRuleEngine = new JsonRuleEngine(context => new JsonLineNumberResolver(context));
 
                 IEnumerable<IEvaluation> evaluations = jsonRuleEngine.EvaluateRules(
@@ -71,11 +74,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ExpandedTemplate = templatejObject,
                         IsMainTemplate = true,
                         ResourceMappings = armTemplateProcessor.ResourceMappings },
-                    rules);
+                    filteredRules);
 
                 if (TemplateFilePath != null)
                 {
-                    var powerShellRuleEngine = new PowerShellRuleEngine();
+                    var powerShellRuleEngine = new PowerShellRuleEngine(); //ttk
                     evaluations = evaluations.Concat(powerShellRuleEngine.EvaluateRules(TemplateFilePath));
                 }
 
@@ -92,6 +95,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             return File.ReadAllText(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
                 "/Rules/BuiltInRules.json");
+        }
+
+        private static string FilterRules(string rules)
+        {
+            this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
+            this.Configurations = configurations;
+            // if configurations == null, check in default directory. if nothing, return rules
+            if (!Configurations)
+            {
+                var defaultPatuh = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+                "/Configurations/Configuration.json";
+                if (defaultPath)
+                    Configurations = defaultPath;
+                else
+                    return rules;
+            }
+            //read file
+
+            //eliminated rules
+            return rules;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             rootCommand = new RootCommand();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
 
-            // Setup analyze-template w/ template file argument and parameter file option
+            // Setup analyze-template w/ template file argument, parameter file option, and configuration file option
             Command analyzeTemplateCommand = new Command(
                 "analyze-template",
                 "Analyze a singe template");
@@ -57,11 +57,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                  "--parameters-file-path",
                  "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
-            analyzeTemplateCommand.AddOption(parameterOption);            
-            
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath));
+            analyzeTemplateCommand.AddOption(parameterOption);
 
-            // Setup analyze-directory w/ directory argument 
+            Option<FileInfo> configurationOption = new Option<FileInfo>(
+                 "--config-file-path",
+                 "The configuration file to use when parsing the specified ARM template");
+            configurationOption.AddAlias("-c");
+            analyzeTemplateCommand.AddOption(configurationOption);
+
+            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo>((templateFilePath, parametersFilePath, configurationsFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath));
+
+            // Setup analyze-directory w/ directory argument and configuration file option
             Command analyzeDirectoryCommand = new Command(
                 "analyze-directory", 
                 "Analyze all templates within a directory");
@@ -71,7 +77,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "The directory to find ARM templates");
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo>((directoryPath) => this.AnalyzeDirectory(directoryPath));
+            analyzeDirectoryCommand.AddOption(configurationOption);
+
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo>((directoryPath, configurationsFilePath) => this.AnalyzeDirectory(directoryPath, configurationsFilePath));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -80,7 +88,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool printMessageIfNotTemplate = true)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, bool printMessageIfNotTemplate = true)
         {
             try
             {
@@ -93,6 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
+                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName); //TODO make null an option
 
                 // Check that the schema is valid
                 if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
@@ -110,14 +119,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
                 }
+                if (configurationsFilePath != null)
+                {
+                    fileMetadata += Environment.NewLine + $"Configurations File: {configurationsFilePath}";
+                }
                 Console.WriteLine(fileMetadata);
 
-                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, configurationFileContents, templateFilePath.FullName);
                 IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
                 var passedEvaluations = 0;
 
-                foreach (var evaluation in evaluations)
+                foreach (var evaluation in evaluations) //todo: some sort here
                 {
                     string resultString = GenerateResultString(evaluation);
 
@@ -145,7 +158,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath)
+        private void AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath)
         {
             try
             {
@@ -155,12 +168,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return;
                 }
 
+                string configurationFileContents = configuratioinsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
+
                 // Find files to analyze
                 List<FileInfo> filesToAnalyze = new List<FileInfo>();
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
-                // Log root directory
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
+                // Log root directory info to be analyzed
+                string directoryMetadata = Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}";
+                if (configurationsFilePath != null)
+                {
+                    directoryMetadata += Environment.NewLine + $"Configurations File: {configurationsFilePath}";
+                }
+                Console.WriteLine(directoryMetadata);
 
                 int numOfSuccesses = 0;
                 List<FileInfo> filesFailed = new List<FileInfo>();

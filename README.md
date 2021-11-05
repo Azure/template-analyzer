@@ -17,11 +17,13 @@ After ensuring the .NET Runtime is installed, download the latest Template BPA r
 To preview the rules that come bundled with the Template BPA, explore [the built-in rules](docs/built-in-bpa-rules.md).
 
 ## Using the Template BPA
-The Template BPA is executed via a command line.  Here are the formats to invoke it:
+The Template BPA is executed via a command line.  There are two formats to invoke it:
 
-`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>]`
+`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path> -c <config-path>]`
 
-`TemplateAnalyzer.exe analyze-directory <directory-path>`
+or
+
+`TemplateAnalyzer.exe analyze-directory <directory-path> [-c <config-path>]`
 
 ### Input
 The Template BPA accepts the following inputs:
@@ -31,6 +33,7 @@ Argument | Description
 `<template-path>` | The ARM template to analyze
 `<directory-path>` | The directory to find ARM templates (recursively finds all templates in the directory and its subdirectories.)
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
+**(Optional)** `-c` or `--config-file-path` | A custom [configuration file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files) with custom settings
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
 
