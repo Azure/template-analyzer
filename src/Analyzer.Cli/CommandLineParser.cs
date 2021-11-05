@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     if (!evaluation.Passed)
                     {
-                        var output = $"{IndentedNewLine}{evaluation.RuleName}: {evaluation.RuleDescription}" +
+                        var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                         $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                         $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                         Console.WriteLine(output);
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+                Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
                 return -1;
             }
         }
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occured: {GetAllExceptionMessages(exp)}");
+                Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
             }
 
         }

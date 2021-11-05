@@ -14,15 +14,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
     {
 
         [TestMethod]
-        public void GetRuleName_ReturnsNameFromRule()
+        public void GetRuleId_ReturnsIdFromRule()
         {
             Assert.AreEqual(
                 "testRule",
                 new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
                 {
-                    RuleDefinition = new RuleDefinition { Name = "testRule" }
+                    RuleDefinition = new RuleDefinition { Id = "testRule" }
                 }
-                .RuleName);
+                .RuleId);
         }
 
         [TestMethod]
