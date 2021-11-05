@@ -84,12 +84,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.EvaluateTemplate(templateContext);
+                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
 
                 if (templateContext.TemplateIdentifier != null)
                 {
                     var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.EvaluateTemplate(templateContext));
+                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
 
                 return evaluations;

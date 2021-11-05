@@ -50,11 +50,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
-        /// Evaluates a template using rules defined in JSON.
+        /// Analyzes a template using rules defined in JSON.
         /// </summary>
-        /// <param name="templateContext">The template context to evaluate.</param>
+        /// <param name="templateContext">The template context to analyze.</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IEvaluation> EvaluateTemplate(TemplateContext templateContext)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }"
             },
             1, DisplayName = "2 Rules, 1 Passes, 1 Fails")]
-        public void EvaluateTemplate_ValidLeafExpression_ReturnsExpectedEvaluations(string[] ruleEvaluationDefinitions, int numberOfExpectedPassedResults)
+        public void AnalyzeTemplate_ValidLeafExpression_ReturnsExpectedEvaluations(string[] ruleEvaluationDefinitions, int numberOfExpectedPassedResults)
         {
             // Arrange
             var template =
@@ -84,7 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 });
 
             // Act
-            var evaluationResults = ruleEngine.EvaluateTemplate(templateContext).ToList();
+            var evaluationResults = ruleEngine.AnalyzeTemplate(templateContext).ToList();
 
             // Assert
             Assert.AreEqual(ruleEvaluationDefinitions.Length, evaluationResults.Count);
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     ]
                 }
             }]", DisplayName = "Single anyOf expression")]
-        public void EvaluateTemplate_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
+        public void AnalyzeTemplate_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
         {
             // Arrange
             var template =
@@ -216,7 +217,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 return null;
             });
 
-            var evaluationResults = ruleEngine.EvaluateTemplate(templateContext).ToList();
+            var evaluationResults = ruleEngine.AnalyzeTemplate(templateContext).ToList();
 
             Assert.AreEqual(1, evaluationResults.Count);
             Assert.AreEqual(1, evaluationResults.Count(evaluation => evaluation.Passed));
@@ -280,28 +281,32 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             JsonRuleEngine.Create(invalidRule, t => null);
         }
 
-        [ExpectedException(typeof(JsonRuleEngineException))]
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void Create_NullRules_ExceptionIsThrown()
         {
             // Act
             JsonRuleEngine.Create(null, t => null);
         }
 
-        [ExpectedException(typeof(JsonRuleEngineException))]
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
         public void Create_EmptyRules_ExceptionIsThrown()
         {
             // Act
             JsonRuleEngine.Create("", t => null);
         }
 
-        [ExpectedException(typeof(JsonRuleEngineException))]
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
         public void Create_WhitespaceRules_ExceptionIsThrown()
         {
             // Act
             JsonRuleEngine.Create("  \t", t => null);
         }
 
-        [ExpectedException(typeof(JsonRuleEngineException))]
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void Create_NullLineNumberResolver_ExceptionIsThrown()
         {
             // Act

@@ -44,13 +44,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         }
 
         /// <summary>
-        /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
+        /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
         /// <param name="templateContext">The context of the template under analysis.
         /// <see cref="TemplateContext.TemplateIdentifier"/> must be the file path of the template to evaluate.</param>
-        public IEnumerable<IEvaluation> EvaluateTemplate(TemplateContext templateContext)
+        /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
-            if (templateContext.TemplateIdentifier == null)
+            if (templateContext?.TemplateIdentifier == null)
             {
                 throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
             }

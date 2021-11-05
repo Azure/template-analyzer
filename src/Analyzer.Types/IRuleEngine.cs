@@ -11,10 +11,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
     public interface IRuleEngine
     {
         /// <summary>
-        /// Evaluates a template using the specified rules.
+        /// Analyzes a template using the rules this <see cref="IRuleEngine"/> supports.
         /// </summary>
-        /// <param name="templateContext">The template context to evaluate.</param>
-        /// <returns>The evaluations of the rules against the template.</returns>
-        public IEnumerable<IEvaluation> EvaluateTemplate(TemplateContext templateContext);
+        /// <param name="templateContext">The template context to analyze.</param>
+        /// <returns>The <see cref="IEvaluation"/>s of this engine's rules against the template.</returns>
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext);
     }
 }
