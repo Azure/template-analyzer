@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -15,12 +12,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     /// </summary>
     public class ConsoleReportWriter : IReportWriter
     {
-        private readonly string IndentedNewLine = Environment.NewLine + "\t";
-        private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
+        internal static string IndentedNewLine = Environment.NewLine + "\t";
+        internal static string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
         /// <inheritdoc/>
-        public void WriteResults(IFileInfo templateFile, IEnumerable<Types.IEvaluation> evaluations)
+        public void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null)
         {
+            // Log info on file to be analyzed
+            string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile}";
+            if (parametersFile != null)
+            {
+                fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile}";
+            }
+            Console.WriteLine(fileMetadata);
+
             OutputToConsole(evaluations);
         }
 
@@ -30,10 +35,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var evaluation in evaluations)
             {
-                string resultString = GenerateResultString(evaluation);
-
                 if (!evaluation.Passed)
                 {
+                    string resultString = GenerateResultString(evaluation);
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                     $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                     $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";

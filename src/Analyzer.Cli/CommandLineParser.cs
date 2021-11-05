@@ -126,14 +126,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 0;
                 }
 
-                // Log info on file to be analyzed
-                string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
-                if (parametersFilePath != null)
-                {
-                    fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
-                }
-                Console.WriteLine(fileMetadata);
-
                 var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
                 IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
@@ -141,12 +133,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     using (IReportWriter reportWriter = GetReportWriter(reportFormat.ToString(), outputFilePath))
                     {
-                        reportWriter.WriteResults((FileInfoBase)templateFilePath, evaluations);
+                        reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
                     }
                 }
                 else
                 {
-                    writer.WriteResults((FileInfoBase)templateFilePath, evaluations);
+                    writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
                 }
 
                 return 1;

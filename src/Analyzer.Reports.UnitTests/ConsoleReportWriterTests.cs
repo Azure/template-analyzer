@@ -2,10 +2,8 @@
 // Licensed under the MIT License.
 
 using FluentAssertions;
-using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -15,80 +13,10 @@ using System.Text;
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
     [TestClass]
-    public class SarifReportWriterTests
+    public class ConsoleReportWriterTests
     {
-        private SarifReportWriter SetupWriter(Stream stream)
-        {
-            var mockFileSystem = new Mock<IFileInfo>();
-            mockFileSystem
-                .Setup(x => x.Create())
-                .Returns(() => stream);
-            return new SarifReportWriter(mockFileSystem.Object);
-        }
-
-        private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
-        {
-            foreach (var result in evaluation.Results.Where(r => !r.Passed))
-            {
-                results.Add(result);
-            }
-            foreach (var child in evaluation.Evaluations.Where(r => !r.Passed))
-            {
-                TraverseResults(results, child);
-            }
-        }
-
-        private void AssertSarifLog(SarifLog sarifLog, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
-        {
-            sarifLog.Should().NotBeNull();
-
-            Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Name.Should().BeEquivalentTo(SarifReportWriter.ToolName);
-            run.Tool.Driver.FullName.Should().BeEquivalentTo(SarifReportWriter.ToolFullName);
-            run.Tool.Driver.Version.Should().BeEquivalentTo(SarifReportWriter.ToolVersion);
-            run.Tool.Driver.Organization.Should().BeEquivalentTo(SarifReportWriter.Organization);
-            run.Tool.Driver.InformationUri.OriginalString.Should().BeEquivalentTo(SarifReportWriter.InformationUri);
-
-            IList<ReportingDescriptor> rules = run.Tool.Driver.Rules;
-            int ruleCount = testcases.Count(t => !t.Passed);
-            if (ruleCount == 0)
-            {
-                rules.Should().BeNull();
-            }
-            else
-            {
-                rules.Count.Should().Be(ruleCount);
-                foreach (var testcase in testcases)
-                {
-                    var rule = rules.FirstOrDefault(r => r.Id.Equals(testcase.RuleId));
-                    rule.Should().NotBeNull();
-                    rule.Id.Should().BeEquivalentTo(testcase.RuleId);
-                    rule.FullDescription.Text.Should().BeEquivalentTo(testcase.RuleDescription);
-                    rule.Help.Text.Should().BeEquivalentTo(testcase.Recommendation);
-                    rule.HelpUri.OriginalString.Should().BeEquivalentTo(testcase.HelpUri);
-                }
-            }
-
-            IList<Result> results = run.Results;
-            int i = 0;
-            foreach (var testcase in testcases)
-            {
-                var evalResults = new List<Types.IResult>();
-                TraverseResults(evalResults, testcase);
-                foreach (var res in evalResults)
-                {
-                    results[i].RuleId.Should().BeEquivalentTo(testcase.RuleId);
-                    results[i].Message.Text.Should().BeEquivalentTo(testcase.RuleDescription);
-                    results[i].Level = res.Passed ? FailureLevel.Note : FailureLevel.Error;
-                    results[i].Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("/" + templateFilePath.Name);
-                    results[i].Locations.First().PhysicalLocation.Region.StartLine.Should().Be(res.LineNumber);
-                    i++;
-                }
-            }
-        }
-
         [TestMethod]
-        public void SarifReportWriter_SingleEvaluationSingleFailedResult()
+        public void ConsoleReportWriter_SingleEvaluationSingleFailedResult()
         {
             // arrange
             var testcases = new[]
@@ -110,15 +38,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -146,15 +74,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -196,15 +124,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -256,15 +184,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -366,15 +294,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -477,15 +405,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -578,15 +506,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
         }
 
         [TestMethod]
@@ -609,15 +537,50 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
             {
                 writer.WriteResults(testcases, (FileInfoBase)templateFilePath);
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            AssertSarifLog(sarifLog, testcases, templateFilePath);
+            AssertConsoleLog(output, testcases, templateFilePath);
+        }
+
+        private void AssertConsoleLog(StringWriter output, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
+        {
+            string outputString = output.ToString();
+            StringBuilder expected = new StringBuilder();
+            expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {templateFilePath}{Environment.NewLine}");
+
+            foreach (var evaluation in testcases.Where(e => !e.Passed))
+            {
+                expected.Append($"{ConsoleReportWriter.IndentedNewLine}{(!string.IsNullOrEmpty(evaluation.RuleId) ? $"{evaluation.RuleId}: " : string.Empty)}{evaluation.RuleDescription}");
+                expected.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}More information: {evaluation.HelpUri}");
+                expected.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} ");
+                expected.Append(GetLineNumbers(evaluation));
+                expected.Append(Environment.NewLine);
+            }
+            expected.Append($"{ConsoleReportWriter.IndentedNewLine}Rules passed: {testcases.Count(e => e.Passed)}{Environment.NewLine}");
+            outputString.Should().BeEquivalentTo(expected.ToString());
+        }
+        private string GetLineNumbers(Types.IEvaluation evaluation)
+        {
+            StringBuilder resultString = new StringBuilder();
+            if (!evaluation.Passed)
+            {
+                foreach (var result in evaluation.Results.Where(r => !r.Passed))
+                {
+                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {result.LineNumber}");
+                }
+
+                foreach (var innerEvaluation in evaluation.Evaluations)
+                {
+                    resultString.Append(GetLineNumbers(innerEvaluation));
+                }
+            }
+            return resultString.ToString();
         }
     }
 }

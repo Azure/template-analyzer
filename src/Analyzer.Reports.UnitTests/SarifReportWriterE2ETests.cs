@@ -1,4 +1,7 @@
-﻿using FluentAssertions;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using FluentAssertions;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -31,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var memStream = new MemoryStream();
             using (var writer = SetupWriter(memStream))
             {
-                writer.WriteResults((FileInfoBase)templateFilePath, results);
+                writer.WriteResults(results, (FileInfoBase)templateFilePath);
             }
 
             // assert
@@ -70,7 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     parameters: null,
                     templateFilePath: templateFilePath.FullName);
                 var results = templateAnalyzer.EvaluateRulesAgainstTemplate();
-                writer.WriteResults((FileInfoBase)templateFilePath, results);
+                writer.WriteResults(results, (FileInfoBase)templateFilePath);
 
                 templateFilePath = new FileInfo($"{targetDirectory}\\SQLServerAuditingSettings.json");
                 templateAnalyzer = new TemplateAnalyzer(
@@ -78,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     parameters: null,
                     templateFilePath: templateFilePath.FullName);
                 results = templateAnalyzer.EvaluateRulesAgainstTemplate();
-                writer.WriteResults((FileInfoBase)templateFilePath, results);
+                writer.WriteResults(results, (FileInfoBase)templateFilePath);
             }
 
             // assert

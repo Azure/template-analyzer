@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         internal const string Organization = "Microsoft";
         internal const string InformationUri = "https://github.com/Azure/template-analyzer";
         internal const string UriBaseIdString = "ROOTPATH";
+        internal const string PeriodString = ".";
 
         private IFileInfo reportFile;
         private Run sarifRun;
@@ -48,14 +49,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         }
 
         /// <inheritdoc/>
-        public void WriteResults(IFileInfo templateFile, IEnumerable<IEvaluation> evaluations)
+        public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
             this.rootPath ??= templateFile.DirectoryName;
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
                 // get rule definition from first level evaluation
                 ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, templateFile.FullName); ;
+                this.ExtractResult(evaluation, evaluation, templateFile.FullName);
             }
         }
 
@@ -89,10 +90,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     new ReportingDescriptor
                     {
                         Id = evaluation.RuleId,
-                        // Name = evaluation.RuleId, TBD
-                        FullDescription = new MultiformatMessageString { Text = evaluation.RuleDescription },
-                        Help = new MultiformatMessageString { Text = evaluation.Recommendation },
+                        // Name = evaluation.RuleId, TBD #183 guidance at https://github.com/microsoft/sarif-tutorials/blob/main/docs/Authoring-rule-metadata-and-result-messages.md#human-readable-identifier
+                        FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) },
+                        Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },
                         HelpUri = hasUri ? uri : null,
+                        MessageStrings = new Dictionary<string, MultiformatMessageString>()
+                        {
+                            { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) } }
+                        },
                         DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
                     });
             }
@@ -107,7 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     RuleId = rootEvaluation.RuleId,
                     Level = GetLevelFromEvaluation(rootEvaluation),
-                    Message = new Message { Text = rootEvaluation.RuleDescription },
+                    Message = new Message { Id = "default" }, // should be customized message for each result 
                     Locations = new[]
                     {
                         new Location
@@ -164,6 +169,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 output.CloseResults();
             }
         }
+
+        private static string AppendPeriod(string text) => 
+            text.EndsWith(PeriodString, StringComparison.OrdinalIgnoreCase) ? text : text + PeriodString;
 
         /// <inheritdoc/>
         public void Dispose()
