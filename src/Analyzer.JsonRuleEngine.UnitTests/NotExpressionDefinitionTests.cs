@@ -4,7 +4,6 @@
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
@@ -21,20 +20,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
             var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
             mockLeafExpressionOperator.IsNegative = true;
-            ILineNumberResolver mockResolver = new Mock<ILineNumberResolver>().Object;
-            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
-            var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockLeafExpressionOperator, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
+            var mockLeafExpression = new Mock<LeafExpression>(mockLeafExpressionOperator, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
             mockLeafExpressionDefinition
-                .Setup(s => s.ToExpression(mockResolver, true))
+                .Setup(s => s.ToExpression(true))
                 .Returns(mockLeafExpression.Object);
 
             var notExpressionDefinition = new NotExpressionDefinition { Not = mockLeafExpressionDefinition.Object };
 
             // Act
-            var notExpression = notExpressionDefinition.ToExpression(mockResolver) as NotExpression;
+            var notExpression = notExpressionDefinition.ToExpression() as NotExpression;
 
             // Assert
-            mockLeafExpressionDefinition.Verify(s => s.ToExpression(mockResolver, true), Times.Once);
+            mockLeafExpressionDefinition.Verify(s => s.ToExpression(true), Times.Once);
             Assert.AreEqual(notExpression.ExpressionToNegate, mockLeafExpression.Object);
             Assert.IsTrue(mockLeafExpression.Object.Operator.IsNegative);
         }
@@ -45,10 +42,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Arrange
             var mockLeafExpressionDefinition = new Mock<LeafExpressionDefinition>();
             var mockLeafExpressionOperator = new Mock<LeafExpressionOperator>().Object;
-            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
-            var mockLeafExpression = new Mock<LeafExpression>(mockLineResolver, mockLeafExpressionOperator, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
+            var mockLeafExpression = new Mock<LeafExpression>(mockLeafExpressionOperator, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
             mockLeafExpressionDefinition
-                .Setup(s => s.ToExpression(mockLineResolver, true))
+                .Setup(s => s.ToExpression(true))
                 .Returns(mockLeafExpression.Object);
 
             var mockAllOfExpressionDefinition = new Mock<AllOfExpressionDefinition>();
@@ -56,16 +52,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var mockAllOfExpression = new Mock<AllOfExpression>(new Expression[] { mockLeafExpression.Object, mockLeafExpression.Object }, new ExpressionCommonProperties());
             mockAllOfExpressionDefinition
-                .Setup(s => s.ToExpression(mockLineResolver, true))
+                .Setup(s => s.ToExpression(true))
                 .Returns(mockAllOfExpression.Object);
 
             var notExpressionDefinition = new NotExpressionDefinition { Not = mockAllOfExpressionDefinition.Object };
 
             // Act
-            var notExpression = notExpressionDefinition.ToExpression(mockLineResolver) as NotExpression;
+            var notExpression = notExpressionDefinition.ToExpression() as NotExpression;
 
             // Assert
-            mockAllOfExpressionDefinition.Verify(s => s.ToExpression(mockLineResolver, true), Times.Once);
+            mockAllOfExpressionDefinition.Verify(s => s.ToExpression(true), Times.Once);
             Assert.AreEqual(notExpression.ExpressionToNegate, mockAllOfExpression.Object);
         }
 

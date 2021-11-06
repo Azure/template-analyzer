@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
@@ -31,12 +32,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Evaluates all expression and negates it in a final <see cref="JsonRuleEvaluation"/>.
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
+        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <returns>A <see cref="JsonRuleEvaluation"/> with the results of the evaluation.</returns>
-        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
+        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
         {
             return EvaluateInternal(jsonScope, scope =>
             {
-                var evaluation = ExpressionToNegate.Evaluate(scope);
+                var evaluation = ExpressionToNegate.Evaluate(scope, jsonLineNumberResolver);
 
                 return evaluation;
             });

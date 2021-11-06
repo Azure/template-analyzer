@@ -9,6 +9,8 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Azure.Templates.Analyzer.Core;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Newtonsoft.Json.Linq;
 
@@ -18,12 +20,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     {
         RootCommand rootCommand;
 
+        private readonly TemplateAnalyzer templateAnalyzer;
+
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
         /// </summary>
         public CommandLineParser()
         {
             SetupCommandLineAPI();
+            templateAnalyzer = TemplateAnalyzer.Create();
         }
 
         /// <summary>
@@ -125,8 +130,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 0;
                 }
 
-                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, templateFilePath.FullName);
-                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
 
                 if (writer == null)
                 {

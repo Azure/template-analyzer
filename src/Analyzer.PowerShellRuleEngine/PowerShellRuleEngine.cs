@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     /// <summary>
     /// Executes template analysis encoded in PowerShell
     /// </summary>
-    public class PowerShellRuleEngine
+    public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
         /// Execution environment for PowerShell
@@ -44,14 +44,21 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         }
 
         /// <summary>
-        /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
+        /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
-        /// <param name="templateFilePath">The file path of the template under analysis.</param>
-        public IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
+        /// <param name="templateContext">The context of the template under analysis.
+        /// <see cref="TemplateContext.TemplateIdentifier"/> must be the file path of the template to evaluate.</param>
+        /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
+            if (templateContext?.TemplateIdentifier == null)
+            {
+                throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
+            }
+
             this.powerShell.Commands.AddCommand("Test-AzTemplate")
                 .AddParameter("Test", "deploymentTemplate")
-                .AddParameter("TemplatePath", templateFilePath);
+                .AddParameter("TemplatePath", templateContext.TemplateIdentifier);
 
             var executionResults = this.powerShell.Invoke();
 
