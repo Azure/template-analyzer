@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 {
@@ -32,16 +33,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             : base(commonProperties)
         {
             Expressions = expressions ?? throw new ArgumentNullException(nameof(expressions));
-            Operation = operation;
+            Operation = operation ?? throw new ArgumentNullException(nameof(operation));
         }
 
         /// <summary>
         /// Evaluates all expressions provided and aggregates them in a final <see cref="JsonRuleEvaluation"/>
         /// </summary>
         /// <param name="jsonScope">The json to evaluate.</param>
+        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <returns>A <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
         /// and if the path contains any wildcards.</returns>
-        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
+        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
         {
             return EvaluateInternal(jsonScope, scope =>
             {
@@ -50,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 
                 foreach (var expression in Expressions)
                 {
-                    var evaluation = expression.Evaluate(scope);
+                    var evaluation = expression.Evaluate(scope, jsonLineNumberResolver);
 
                     // Add evaluations if scopes were found to evaluate
                     if (evaluation.HasResults)

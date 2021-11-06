@@ -16,67 +16,80 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Core
 {
     /// <summary>
-    /// This class runs the TemplateAnalyzer logic given the template and parameters passed to it
+    /// This class runs the TemplateAnalyzer logic given the template and parameters passed to it.
     /// </summary>
     public class TemplateAnalyzer
     {
-        private string TemplateFilePath { get; }
-        private string Template { get; }
-        private string Parameters { get; }
+        private JsonRuleEngine jsonRuleEngine { get; }
 
         /// <summary>
-        /// Creates a new instance of a TemplateAnalyzer
+        /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
         /// </summary>
-        /// <param name="template">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
-        /// <param name="parameters">The parameters for the ARM Template <c>JSON</c></param>
-        /// <param name="templateFilePath">The ARM Template file path. Needed to run arm-ttk checks.</param>
-        public TemplateAnalyzer(string template, string parameters = null, string templateFilePath = null)
+        /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
+        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine)
         {
-            this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
-            this.Parameters = parameters;
-            this.TemplateFilePath = templateFilePath;
+            this.jsonRuleEngine = jsonRuleEngine;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
+        /// </summary>
+        public static TemplateAnalyzer Create()
+        {
+            string rules;
+            try
+            {
+                rules = LoadRules();
+            }
+            catch (Exception e)
+            {
+                throw new TemplateAnalyzerException($"Failed to read rules.", e);
+            }
+
+            return new TemplateAnalyzer(
+                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)));
         }
 
         /// <summary>
         /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
+        /// <param name="template">The ARM Template JSON</param>
+        /// <param name="parameters">The parameters for the ARM Template JSON</param>
+        /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> EvaluateRulesAgainstTemplate()
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
+            if (template == null) throw new ArgumentNullException(nameof(template));
+
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(Template);
+            var armTemplateProcessor = new ArmTemplateProcessor(template);
 
             try
             {
-                templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
+                templatejObject = armTemplateProcessor.ProcessTemplate(parameters);
             }
             catch (Exception e)
             {
                 throw new TemplateAnalyzerException("Error while processing template.", e);
             }
 
-            if (templatejObject == null)
+            var templateContext = new TemplateContext
             {
-                throw new TemplateAnalyzerException("Processed Template cannot be null.");
-            }
+                OriginalTemplate = JObject.Parse(template),
+                ExpandedTemplate = templatejObject,
+                IsMainTemplate = true,
+                ResourceMappings = armTemplateProcessor.ResourceMappings,
+                TemplateIdentifier = templateFilePath
+            };
 
             try
             {
-                var rules = LoadRules();
-                var jsonRuleEngine = new JsonRuleEngine(context => new JsonLineNumberResolver(context));
+                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
 
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.EvaluateRules(
-                    new TemplateContext {
-                        OriginalTemplate = JObject.Parse(Template),
-                        ExpandedTemplate = templatejObject,
-                        IsMainTemplate = true,
-                        ResourceMappings = armTemplateProcessor.ResourceMappings },
-                    rules);
-
-                if (TemplateFilePath != null)
+                if (templateContext.TemplateIdentifier != null)
                 {
                     var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.EvaluateRules(TemplateFilePath));
+                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
 
                 return evaluations;
@@ -90,8 +103,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         private static string LoadRules()
         {
             return File.ReadAllText(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
-                "/Rules/BuiltInRules.json");
+                Path.Combine(
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    "Rules/BuiltInRules.json"));
         }
     }
 }

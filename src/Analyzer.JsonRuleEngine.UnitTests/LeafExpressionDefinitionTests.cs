@@ -5,9 +5,7 @@ using System;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
@@ -130,14 +128,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(NotImplementedException))]
         public void ToExpression_NoOperators_ThrowsException()
         {
-            new LeafExpressionDefinition().ToExpression(new Mock<ILineNumberResolver>().Object);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ToExpression_NullLineNumberResolver_ThrowsException()
-        {
-            new LeafExpressionDefinition { Exists = true }.ToExpression(null);
+            new LeafExpressionDefinition().ToExpression();
         }
 
         private LeafExpression GenerateLeafExpression(Action<LeafExpressionDefinition> propertySetter)
@@ -149,7 +140,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
             propertySetter(leaf);
             
-            var expression = leaf.ToExpression(new Mock<ILineNumberResolver>().Object) as LeafExpression;
+            var expression = leaf.ToExpression() as LeafExpression;
             Assert.AreEqual("json.path", expression.Path);
             Assert.AreEqual("Namespace/ResourceType", expression.ResourceType);
 
