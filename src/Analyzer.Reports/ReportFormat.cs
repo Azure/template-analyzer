@@ -9,12 +9,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     public enum ReportFormat
     {
         /// <summary>
-        /// output to console
+        /// Output to console
         /// </summary>
         Console = 0,
 
         /// <summary>
-        /// output to sarif report
+        /// Output to SARIF report
         /// </summary>
         Sarif
     }

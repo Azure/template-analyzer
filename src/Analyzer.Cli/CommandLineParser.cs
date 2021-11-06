@@ -69,7 +69,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "The report file path");
             analyzeTemplateCommand.AddOption(outputFileOption);
 
-
             analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo>((templateFilePath, parametersFilePath, reportFormat, outputFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath));
 
             // Setup analyze-directory w/ directory argument 
@@ -107,9 +106,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 // Check that output file path provided for sarif report
-                if (writer == null && reportFormat != ReportFormat.Console && outputFilePath == null)
+                if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
-                    Console.WriteLine($"Output file path is not provided.");
+                    Console.WriteLine($"Output file path was not provided.");
                     return 0;
                 }
 

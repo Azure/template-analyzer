@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         // may define the const values in common place
         internal const string ToolName = "ARM BPA";
         internal const string ToolFullName = "ARM Template Best Practice Analyzer";
-        internal const string ToolVersion = "0.0.2-alpha";
+        internal const string ToolVersion = "0.0.2-alpha"; // should not be hardcoded
         internal const string Organization = "Microsoft";
         internal const string InformationUri = "https://github.com/Azure/template-analyzer";
         internal const string UriBaseIdString = "ROOTPATH";
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private FailureLevel GetLevelFromEvaluation(IEvaluation evaluation)
         {
-            //rule severity in designing https://github.com/Azure/template-analyzer/issues/177
+            // The rule severity definition work item: https://github.com/Azure/template-analyzer/issues/177
             return evaluation.Passed ? FailureLevel.Note : FailureLevel.Error;
         }
 
@@ -150,27 +150,30 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         {
             using Stream outputTextStream = this.reportFile.Create();
             using var outputTextWriter = new StreamWriter(outputTextStream);
-            using var outputJsonWriter = new JsonTextWriter(outputTextWriter) { Formatting = Formatting.Indented };
-            using var output = new ResultLogJsonWriter(outputJsonWriter);
-
-            output.Initialize(this.sarifRun);
-
-            this.sarifRun.Tool.Driver.Rules = this.rulesDictionary.Select(r => r.Value).ToList();
-            this.sarifRun.Results = this.sarifResults;
-            this.sarifRun.OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>
+            using var sarifLogger = new SarifLogger(
+                textWriter: outputTextWriter,
+                logFilePersistenceOptions: LogFilePersistenceOptions.PrettyPrint | LogFilePersistenceOptions.OverwriteExistingOutputFile,
+                tool: this.sarifRun.Tool,
+                run: this.sarifRun,
+                levels: new List<FailureLevel> { FailureLevel.Warning, FailureLevel.Error, FailureLevel.Note },
+                kinds: new List<ResultKind> { ResultKind.Fail, ResultKind.Pass });
             {
-                [UriBaseIdString] = new ArtifactLocation { Uri = new Uri(UriHelper.MakeValidUri(this.rootPath), UriKind.RelativeOrAbsolute) },
-            };
+                this.sarifRun.OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>
+                {
+                    [UriBaseIdString] = new ArtifactLocation { Uri = new Uri(UriHelper.MakeValidUri(this.rootPath), UriKind.RelativeOrAbsolute) },
+                };
 
-            if (sarifRun.Results != null)
-            {
-                output.OpenResults();
-                output.WriteResults(sarifRun.Results);
-                output.CloseResults();
+                if (this.sarifResults != null)
+                {
+                    foreach (var result in this.sarifResults)
+                    {
+                        sarifLogger.Log(this.rulesDictionary[result.RuleId], result);
+                    }
+                }
             }
         }
 
-        private static string AppendPeriod(string text) => 
+        internal static string AppendPeriod(string text) => 
             text.EndsWith(PeriodString, StringComparison.OrdinalIgnoreCase) ? text : text + PeriodString;
 
         /// <inheritdoc/>

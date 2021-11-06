@@ -17,76 +17,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     [TestClass]
     public class SarifReportWriterTests
     {
-        private SarifReportWriter SetupWriter(Stream stream)
-        {
-            var mockFileSystem = new Mock<IFileInfo>();
-            mockFileSystem
-                .Setup(x => x.Create())
-                .Returns(() => stream);
-            return new SarifReportWriter(mockFileSystem.Object);
-        }
-
-        private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
-        {
-            foreach (var result in evaluation.Results.Where(r => !r.Passed))
-            {
-                results.Add(result);
-            }
-            foreach (var child in evaluation.Evaluations.Where(r => !r.Passed))
-            {
-                TraverseResults(results, child);
-            }
-        }
-
-        private void AssertSarifLog(SarifLog sarifLog, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
-        {
-            sarifLog.Should().NotBeNull();
-
-            Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Name.Should().BeEquivalentTo(SarifReportWriter.ToolName);
-            run.Tool.Driver.FullName.Should().BeEquivalentTo(SarifReportWriter.ToolFullName);
-            run.Tool.Driver.Version.Should().BeEquivalentTo(SarifReportWriter.ToolVersion);
-            run.Tool.Driver.Organization.Should().BeEquivalentTo(SarifReportWriter.Organization);
-            run.Tool.Driver.InformationUri.OriginalString.Should().BeEquivalentTo(SarifReportWriter.InformationUri);
-
-            IList<ReportingDescriptor> rules = run.Tool.Driver.Rules;
-            int ruleCount = testcases.Count(t => !t.Passed);
-            if (ruleCount == 0)
-            {
-                rules.Should().BeNull();
-            }
-            else
-            {
-                rules.Count.Should().Be(ruleCount);
-                foreach (var testcase in testcases)
-                {
-                    var rule = rules.FirstOrDefault(r => r.Id.Equals(testcase.RuleId));
-                    rule.Should().NotBeNull();
-                    rule.Id.Should().BeEquivalentTo(testcase.RuleId);
-                    rule.FullDescription.Text.Should().BeEquivalentTo(testcase.RuleDescription);
-                    rule.Help.Text.Should().BeEquivalentTo(testcase.Recommendation);
-                    rule.HelpUri.OriginalString.Should().BeEquivalentTo(testcase.HelpUri);
-                }
-            }
-
-            IList<Result> results = run.Results;
-            int i = 0;
-            foreach (var testcase in testcases)
-            {
-                var evalResults = new List<Types.IResult>();
-                TraverseResults(evalResults, testcase);
-                foreach (var res in evalResults)
-                {
-                    results[i].RuleId.Should().BeEquivalentTo(testcase.RuleId);
-                    results[i].Message.Text.Should().BeEquivalentTo(testcase.RuleDescription);
-                    results[i].Level = res.Passed ? FailureLevel.Note : FailureLevel.Error;
-                    results[i].Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("/" + templateFilePath.Name);
-                    results[i].Locations.First().PhysicalLocation.Region.StartLine.Should().Be(res.LineNumber);
-                    i++;
-                }
-            }
-        }
-
         [TestMethod]
         public void SarifReportWriter_SingleEvaluationSingleFailedResult()
         {
@@ -619,5 +549,89 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
             AssertSarifLog(sarifLog, testcases, templateFilePath);
         }
+
+        private SarifReportWriter SetupWriter(Stream stream)
+        {
+            var mockFileSystem = new Mock<IFileInfo>();
+            mockFileSystem
+                .Setup(x => x.Create())
+                .Returns(() => stream);
+            return new SarifReportWriter(mockFileSystem.Object);
+        }
+
+        private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
+        {
+            foreach (var result in evaluation.Results.Where(r => !r.Passed))
+            {
+                results.Add(result);
+            }
+            foreach (var child in evaluation.Evaluations.Where(r => !r.Passed))
+            {
+                TraverseResults(results, child);
+            }
+        }
+
+        private int GetResultsCount(IEnumerable<Types.IEvaluation> evaluations)
+        {
+            int count = 0;
+            foreach (var eval in evaluations.Where(r => !r.Passed))
+            {
+                count += eval.Results.Count(r => !r.Passed);
+                count += GetResultsCount(eval.Evaluations);
+            }
+
+            return count;
+        }
+
+        private void AssertSarifLog(SarifLog sarifLog, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
+        {
+            sarifLog.Should().NotBeNull();
+
+            Run run = sarifLog.Runs.First();
+            run.Tool.Driver.Name.Should().BeEquivalentTo(SarifReportWriter.ToolName);
+            run.Tool.Driver.FullName.Should().BeEquivalentTo(SarifReportWriter.ToolFullName);
+            run.Tool.Driver.Version.Should().BeEquivalentTo(SarifReportWriter.ToolVersion);
+            run.Tool.Driver.Organization.Should().BeEquivalentTo(SarifReportWriter.Organization);
+            run.Tool.Driver.InformationUri.OriginalString.Should().BeEquivalentTo(SarifReportWriter.InformationUri);
+
+            IList<ReportingDescriptor> rules = run.Tool.Driver.Rules;
+            int ruleCount = testcases.Count(t => !t.Passed);
+            int resultCount = GetResultsCount(testcases);
+            if (ruleCount == 0 || resultCount == 0)
+            {
+                rules.Should().BeNull();
+            }
+            else
+            {
+                rules.Count.Should().Be(ruleCount);
+                foreach (var testcase in testcases)
+                {
+                    var rule = rules.FirstOrDefault(r => r.Id.Equals(testcase.RuleId));
+                    rule.Should().NotBeNull();
+                    rule.Id.Should().BeEquivalentTo(testcase.RuleId);
+                    rule.FullDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(testcase.RuleDescription));
+                    rule.Help.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(testcase.Recommendation));
+                    rule.HelpUri.OriginalString.Should().BeEquivalentTo(testcase.HelpUri);
+                }
+            }
+
+            IList<Result> results = run.Results;
+            int i = 0;
+            foreach (var testcase in testcases)
+            {
+                var evalResults = new List<Types.IResult>();
+                TraverseResults(evalResults, testcase);
+                foreach (var res in evalResults)
+                {
+                    results[i].RuleId.Should().BeEquivalentTo(testcase.RuleId);
+                    results[i].Message.Id.Should().BeEquivalentTo("default");
+                    results[i].Level = res.Passed ? FailureLevel.Note : FailureLevel.Error;
+                    results[i].Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("/" + templateFilePath.Name);
+                    results[i].Locations.First().PhysicalLocation.Region.StartLine.Should().Be(res.LineNumber);
+                    i++;
+                }
+            }
+        }
+
     }
 }
