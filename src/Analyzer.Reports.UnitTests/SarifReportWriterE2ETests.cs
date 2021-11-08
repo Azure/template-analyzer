@@ -24,11 +24,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             // arrange
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\SQLServerAuditingSettings.json");
 
-            var templateAnalyzer = new TemplateAnalyzer(
+            var results = TemplateAnalyzer.Create().AnalyzeTemplate(
                 template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
                 parameters: null,
                 templateFilePath: templateFilePath.FullName);
-            var results = templateAnalyzer.EvaluateRulesAgainstTemplate();
 
             // act
             var memStream = new MemoryStream();
@@ -67,20 +66,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var memStream = new MemoryStream();
             using (var writer = SetupWriter(memStream, targetDirectory))
             {
+                var analyzer = TemplateAnalyzer.Create();
                 var templateFilePath = new FileInfo($"{targetDirectory}\\RedisCache.json");
-                var templateAnalyzer = new TemplateAnalyzer(
+                var results = analyzer.AnalyzeTemplate(
                     template: ReadTemplate("RedisCache.badtemplate"),
                     parameters: null,
                     templateFilePath: templateFilePath.FullName);
-                var results = templateAnalyzer.EvaluateRulesAgainstTemplate();
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
 
                 templateFilePath = new FileInfo($"{targetDirectory}\\SQLServerAuditingSettings.json");
-                templateAnalyzer = new TemplateAnalyzer(
+                results = analyzer.AnalyzeTemplate(
                     template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
                     parameters: null,
                     templateFilePath: templateFilePath.FullName);
-                results = templateAnalyzer.EvaluateRulesAgainstTemplate();
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
             }
 

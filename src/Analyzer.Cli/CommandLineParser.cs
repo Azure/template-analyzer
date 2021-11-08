@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 // Check that output file path provided for sarif report
-                if (reportFormat != ReportFormat.Console && outputFilePath == null)
+                if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     Console.WriteLine($"Output file path is not provided.");
                     return;
@@ -204,13 +204,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         }
                     }
                 }
-
             }
             catch (Exception exp)
             {
                 Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
             }
-
         }
 
         private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 

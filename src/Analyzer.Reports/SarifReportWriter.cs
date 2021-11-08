@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 tool: this.sarifRun.Tool,
                 run: this.sarifRun,
                 levels: new List<FailureLevel> { FailureLevel.Warning, FailureLevel.Error, FailureLevel.Note },
-                kinds: new List<ResultKind> { ResultKind.Fail, ResultKind.Pass });
+                kinds: new List<ResultKind> { ResultKind.Fail });
             {
                 this.sarifRun.OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>
                 {
