@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -35,14 +36,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         internal class MockExpression : Expression
         {
             public Func<IJsonPathResolver, JsonRuleEvaluation> EvaluationCallback { get; set; }
+            public Func<IJsonPathResolver, JsonRuleResult> ResultsCallback { get; set; }
 
             public MockExpression(ExpressionCommonProperties commonProperties)
                 : base(commonProperties)
             { }
 
-            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
+            /// <summary>
+            /// Calls <see cref="Expression.EvaluateInternal(IJsonPathResolver, ILineNumberResolver, Func{IJsonPathResolver, JsonRuleEvaluation})"/> with <see cref="EvaluationCallback"/>,
+            /// or <see cref="Expression.EvaluateInternal(IJsonPathResolver, ILineNumberResolver, Func{IJsonPathResolver, JsonRuleResult})"/> with <see cref="ResultsCallback"/>.
+            /// <see cref="ResultsCallback"/> is used if it is not null.  Otherwise, <see cref="EvaluationCallback"/> is used.
+            /// </summary>
+            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver)
             {
-                return base.EvaluateInternal(jsonScope, EvaluationCallback);
+                return ResultsCallback != null
+                    ? base.EvaluateInternal(jsonScope, ResultsCallback)
+                    : base.EvaluateInternal(jsonScope, EvaluationCallback);
             }
         }
     }
