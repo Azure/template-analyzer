@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Text;
 using FluentAssertions;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using System;
-using System.IO;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
@@ -106,7 +105,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 }
                 else
                 {
-                    throw new Exception("Unexpected result found.");
+                    Assert.Fail("Unexpected result found.");
                 }
 
                 result.Level.Should().Be(FailureLevel.Error);

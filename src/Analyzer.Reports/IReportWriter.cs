@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
-using System.Text;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
-    /// interface for analyzer reporting modules
+    /// Interface for the reporting modules
     /// </summary>
     public interface IReportWriter : IDisposable
     {

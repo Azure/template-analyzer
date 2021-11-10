@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 // Find files to analyze
-                List<FileInfo> filesToAnalyze = new List<FileInfo>();
+                var filesToAnalyze = new List<FileInfo>();
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
                 // Log root directory
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 int numOfSuccesses = 0;
                 using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
                 {
-                    List<FileInfo> filesFailed = new List<FileInfo>();
+                    var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
                         int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, false, reportWriter);
@@ -261,7 +261,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     case ReportFormat.Sarif:
                         return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
                     case ReportFormat.Console:
-                    default:
                         return new ConsoleReportWriter();
                 }
             }

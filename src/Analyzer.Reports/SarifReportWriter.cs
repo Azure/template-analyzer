@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Azure.Templates.Analyzer.Types;
-using Microsoft.CodeAnalysis.Sarif;
-using Microsoft.CodeAnalysis.Sarif.Writers;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.CodeAnalysis.Sarif;
+using Microsoft.CodeAnalysis.Sarif.Writers;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -19,12 +18,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     /// </summary>
     public class SarifReportWriter : IReportWriter
     {
-        // may define the const values in common place
-        internal const string ToolName = "ARM BPA";
-        internal const string ToolFullName = "ARM Template Best Practice Analyzer";
-        internal const string ToolVersion = "0.0.2-alpha"; // should not be hardcoded
-        internal const string Organization = "Microsoft";
-        internal const string InformationUri = "https://github.com/Azure/template-analyzer";
         internal const string UriBaseIdString = "ROOTPATH";
         internal const string PeriodString = ".";
 
@@ -35,10 +28,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         private string rootPath;
 
         /// <summary>
-        /// constructor of SarifReportWriter class
+        /// Constructor of the SarifReportWriter class
         /// </summary>
-        /// <param name="reportFile">report file</param>
-        /// <param name="targetPath">the directory analyzer targets</param>
+        /// <param name="reportFile">File where the report will be written</param>
+        /// <param name="targetPath">The directory that will be analyzed</param>
         public SarifReportWriter(IFileInfo reportFile, string targetPath = null)
         {
             this.reportFile = reportFile ?? throw new ArgumentException(nameof(reportFile));
@@ -70,11 +63,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     Driver = new ToolComponent
                     {
-                        Name = ToolName,
-                        FullName = ToolFullName,
-                        Version = ToolVersion,
-                        InformationUri = new Uri(InformationUri),
-                        Organization = Organization,
+                        Name = Constants.ToolName,
+                        FullName = Constants.ToolFullName,
+                        Version = Constants.ToolVersion,
+                        InformationUri = new Uri(Constants.InformationUri),
+                        Organization = Constants.Organization,
                     }
                 }
             };
@@ -90,7 +83,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     new ReportingDescriptor
                     {
                         Id = evaluation.RuleId,
-                        // Name = evaluation.RuleId, TBD #183 guidance at https://github.com/microsoft/sarif-tutorials/blob/main/docs/Authoring-rule-metadata-and-result-messages.md#human-readable-identifier
+                        // Name = evaluation.RuleId, TBD issue #198
                         FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) },
                         Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },
                         HelpUri = hasUri ? uri : null,
