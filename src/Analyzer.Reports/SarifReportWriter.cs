@@ -199,8 +199,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="disposing"></param>
         public void Dispose(bool disposing)
         {
-            this.sarifLogger.Dispose();
-            this.outputTextWriter.Dispose();
+            this.sarifLogger?.Dispose();
+            this.outputTextWriter?.Dispose();
             this.reportFileStream?.Dispose();
         }
     }
