@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
-    /// enumeration of report types supported
+    /// Enumeration of report types supported
     /// </summary>
     public enum ReportFormat
     {
@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         Console = 0,
 
         /// <summary>
-        /// Output to SARIF report
+        /// Output to file in SARIF format
         /// </summary>
         Sarif
     }
