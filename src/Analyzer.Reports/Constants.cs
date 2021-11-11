@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Reflection;
+
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
@@ -21,7 +23,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <summary>
         /// Tool version to be displayed in the report.
         /// </summary>
-        public const string ToolVersion = "0.0.2-alpha"; // Should use dynamic version string. issue #197
+        public static string ToolVersion =
+            ((AssemblyInformationalVersionAttribute)
+                Assembly.GetExecutingAssembly()
+                .GetCustomAttribute(typeof(AssemblyInformationalVersionAttribute))
+            ).InformationalVersion;
 
         /// <summary>
         /// Organization name to be displayed in the report.

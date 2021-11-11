@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         internal const string PeriodString = ".";
 
         private IFileInfo reportFile;
+        private Stream reportFileStream;
         private Run sarifRun;
         private IList<Result> sarifResults;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
@@ -35,6 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public SarifReportWriter(IFileInfo reportFile, string targetPath = null)
         {
             this.reportFile = reportFile ?? throw new ArgumentException(nameof(reportFile));
+            this.reportFileStream = this.reportFile.Create();
             this.InitRun();
             this.rulesDictionary = new ConcurrentDictionary<string, ReportingDescriptor>();
             this.sarifResults = new List<Result>();
@@ -75,26 +77,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private ReportingDescriptor ExtractRule(IEvaluation evaluation)
         {
-            if (!rulesDictionary.TryGetValue(evaluation.RuleId, out _))
+            if (!rulesDictionary.TryGetValue(evaluation.RuleId, out ReportingDescriptor rule))
             {
                 var hasUri = Uri.TryCreate(evaluation.HelpUri, UriKind.RelativeOrAbsolute, out Uri uri);
-                rulesDictionary.Add(
-                    evaluation.RuleId,
-                    new ReportingDescriptor
+                rule = new ReportingDescriptor
+                {
+                    Id = evaluation.RuleId,
+                    // Name = evaluation.RuleId, TBD issue #198
+                    FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) },
+                    Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },
+                    HelpUri = hasUri ? uri : null,
+                    MessageStrings = new Dictionary<string, MultiformatMessageString>()
                     {
-                        Id = evaluation.RuleId,
-                        // Name = evaluation.RuleId, TBD issue #198
-                        FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) },
-                        Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },
-                        HelpUri = hasUri ? uri : null,
-                        MessageStrings = new Dictionary<string, MultiformatMessageString>()
-                        {
-                            { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) } }
-                        },
-                        DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
-                    });
+                        { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) } }
+                    },
+                    DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
+                };
+                rulesDictionary.Add(evaluation.RuleId, rule);
             }
-            return rulesDictionary[evaluation.RuleId];
+            return rule;
         }
 
         private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath)
@@ -114,10 +115,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                             {
                                 ArtifactLocation = new ArtifactLocation
                                 {
-                                    Uri = new Uri(
-                                    UriHelper.MakeValidUri(
-                                        filePath.Replace(this.rootPath, string.Empty, StringComparison.OrdinalIgnoreCase)),
-                                    UriKind.Relative),
+                                    Uri = new Uri
+                                    (
+                                        UriHelper.MakeValidUri(filePath.Replace(this.rootPath, string.Empty, StringComparison.OrdinalIgnoreCase)),
+                                        UriKind.Relative
+                                    ),
                                     UriBaseId = UriBaseIdString,
                                 },
                                 Region = new Region { StartLine = result.LineNumber },
@@ -141,8 +143,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private void PersistReport()
         {
-            using Stream outputTextStream = this.reportFile.Create();
-            using var outputTextWriter = new StreamWriter(outputTextStream);
+            using var outputTextWriter = new StreamWriter(this.reportFileStream);
             using var sarifLogger = new SarifLogger(
                 textWriter: outputTextWriter,
                 logFilePersistenceOptions: LogFilePersistenceOptions.PrettyPrint | LogFilePersistenceOptions.OverwriteExistingOutputFile,
@@ -183,6 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public void Dispose(bool disposing)
         {
             this.PersistReport();
+            this.reportFileStream?.Dispose();
         }
     }
 }

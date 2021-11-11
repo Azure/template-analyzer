@@ -8,7 +8,7 @@ using System.IO.Abstractions;
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
-    /// Class for output report to console.
+    /// An <see cref="IReportWriter"/> for writing results to the console.
     /// </summary>
     public class ConsoleReportWriter : IReportWriter
     {

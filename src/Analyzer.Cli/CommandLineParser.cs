@@ -72,6 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             Option<FileInfo> outputFileOption = new Option<FileInfo>(
                 "--output-file-path",
                 "The report file path");
+            outputFileOption.AddAlias("-o");
             analyzeTemplateCommand.AddOption(outputFileOption);
 
             analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo>((templateFilePath, parametersFilePath, reportFormat, outputFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath));
@@ -101,6 +102,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
         {
+            bool disposeWriter = false;
             try
             {
                 // Check that template file paths exist
@@ -134,15 +136,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 if (writer == null)
                 {
-                    using (IReportWriter reportWriter = GetReportWriter(reportFormat.ToString(), outputFilePath))
-                    {
-                        reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
-                    }
+                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
+                    disposeWriter = true;
                 }
-                else
-                {
-                    writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
-                }
+
+                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
                 return 1;
             }
@@ -150,6 +148,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
                 return -1;
+            }
+            finally
+            {
+                if (disposeWriter && writer != null)
+                {
+                    writer.Dispose();
+                }
             }
         }
 
