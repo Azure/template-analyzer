@@ -23,8 +23,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private IFileInfo reportFile;
         private Stream reportFileStream;
+        private StreamWriter outputTextWriter;
+        private SarifLogger sarifLogger;
         private Run sarifRun;
-        private IList<Result> sarifResults;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
         private string rootPath;
 
@@ -37,21 +38,49 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         {
             this.reportFile = reportFile ?? throw new ArgumentException(nameof(reportFile));
             this.reportFileStream = this.reportFile.Create();
-            this.InitRun();
+            this.outputTextWriter = new StreamWriter(this.reportFileStream);
             this.rulesDictionary = new ConcurrentDictionary<string, ReportingDescriptor>();
-            this.sarifResults = new List<Result>();
-            this.rootPath = targetPath;
+            this.InitRun();
+            this.RootPath = targetPath;
+
+            this.sarifLogger = new SarifLogger(
+                textWriter: this.outputTextWriter,
+                logFilePersistenceOptions: LogFilePersistenceOptions.PrettyPrint | LogFilePersistenceOptions.OverwriteExistingOutputFile,
+                tool: this.sarifRun.Tool,
+                run: this.sarifRun,
+                levels: new List<FailureLevel> { FailureLevel.Warning, FailureLevel.Error, FailureLevel.Note },
+                kinds: new List<ResultKind> { ResultKind.Fail });
         }
 
         /// <inheritdoc/>
         public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
-            this.rootPath ??= templateFile.DirectoryName;
+            this.RootPath ??= templateFile.DirectoryName;
+            var sarifResults = new List<Result>();
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
                 // get rule definition from first level evaluation
                 ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, templateFile.FullName);
+                this.ExtractResult(evaluation, evaluation, templateFile.FullName, sarifResults);
+            }
+            this.PersistReport(sarifResults);
+        }
+
+        internal String RootPath
+        { 
+            get => this.rootPath; 
+            set
+            {
+                if (string.IsNullOrWhiteSpace(rootPath) && !string.IsNullOrWhiteSpace(value))
+                {
+                    this.rootPath = value;
+                    if (!this.sarifRun.OriginalUriBaseIds.ContainsKey(UriBaseIdString))
+                    {
+                        this.sarifRun.OriginalUriBaseIds.Add(
+                            UriBaseIdString,
+                            new ArtifactLocation { Uri = new Uri(UriHelper.MakeValidUri(rootPath), UriKind.RelativeOrAbsolute) });
+                    }
+                }
             }
         }
 
@@ -71,7 +100,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         InformationUri = new Uri(Constants.InformationUri),
                         Organization = Constants.Organization,
                     }
-                }
+                },
+                OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>(),
             };
         }
 
@@ -98,11 +128,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return rule;
         }
 
-        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath)
+        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath, IList<Result> sarifResults)
         {
             foreach (var result in evaluation.Results.Where(r => !r.Passed))
             {
-                this.sarifResults.Add(new Result
+                sarifResults.Add(new Result
                 {
                     RuleId = rootEvaluation.RuleId,
                     Level = GetLevelFromEvaluation(rootEvaluation),
@@ -131,7 +161,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                this.ExtractResult(rootEvaluation, eval, filePath);
+                this.ExtractResult(rootEvaluation, eval, filePath, sarifResults);
             }
         }
 
@@ -141,29 +171,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return evaluation.Passed ? FailureLevel.Note : FailureLevel.Error;
         }
 
-        private void PersistReport()
+        private void PersistReport(IList<Result> sarifResults)
         {
-            using var outputTextWriter = new StreamWriter(this.reportFileStream);
-            using var sarifLogger = new SarifLogger(
-                textWriter: outputTextWriter,
-                logFilePersistenceOptions: LogFilePersistenceOptions.PrettyPrint | LogFilePersistenceOptions.OverwriteExistingOutputFile,
-                tool: this.sarifRun.Tool,
-                run: this.sarifRun,
-                levels: new List<FailureLevel> { FailureLevel.Warning, FailureLevel.Error, FailureLevel.Note },
-                kinds: new List<ResultKind> { ResultKind.Fail });
+            if (sarifResults != null)
             {
-                this.sarifRun.OriginalUriBaseIds = new Dictionary<string, ArtifactLocation>
+                foreach (var result in sarifResults)
                 {
-                    [UriBaseIdString] = new ArtifactLocation { Uri = new Uri(UriHelper.MakeValidUri(this.rootPath), UriKind.RelativeOrAbsolute) },
-                };
-
-                if (this.sarifResults != null)
-                {
-                    foreach (var result in this.sarifResults)
-                    {
-                        sarifLogger.Log(this.rulesDictionary[result.RuleId], result);
-                    }
+                    sarifLogger.Log(this.rulesDictionary[result.RuleId], result);
                 }
+                sarifResults.Clear();
             }
         }
 
@@ -183,7 +199,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="disposing"></param>
         public void Dispose(bool disposing)
         {
-            this.PersistReport();
+            this.sarifLogger.Dispose();
+            this.outputTextWriter.Dispose();
             this.reportFileStream?.Dispose();
         }
     }
