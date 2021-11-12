@@ -122,19 +122,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             //this.Template =template ?? throw new ArgumentNullException(paramName: nameof(template));
             //this.Configurations = configurations;
 
-            // Check in default directory if no configurations parameter was passed
-            if (Configurations == null)
-            {
-                var defaultPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
-                    "/Configurations/Configuration.json";
-                if (Path.GetFileName(defaultPath) != null)
-                    Configurations = defaultPath;
-                else
-                    return rules;
-            }
+            //// Check in default directory if no configurations parameter was passed
+            //if (Configurations == null)
+            //{
+            //    var defaultPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+            //        "/Configurations/Configuration.json";
+            //    if (Path.GetFileName(defaultPath) != null)
+            //        Configurations = defaultPath;
+            //    else
+            //        return rules;
+            //}
 
-            // Read file and filter rules
-            var inputs = File.ReadAllText(Configurations);
+            //// Read file and filter rules
+            //var inputs = File.ReadAllText(Configurations);
 
             ////if there is a filter or a change value
            // jsonRuleEngine.FilterRules();// create
