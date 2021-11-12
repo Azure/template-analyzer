@@ -55,8 +55,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockOperator1 = new Mock<LeafExpressionOperator>().Object;
             var mockOperator2 = new Mock<LeafExpressionOperator>().Object;
 
-            var mockLeafExpression1 = new Mock<LeafExpression>(mockLineResolver, mockOperator1, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
-            var mockLeafExpression2 = new Mock<LeafExpression>(mockLineResolver, mockOperator2, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
+            var mockLeafExpression1 = new Mock<LeafExpression>(mockOperator1, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
+            var mockLeafExpression2 = new Mock<LeafExpression>(mockOperator2, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
 
             var jsonRuleResult1 = new JsonRuleResult
             {
@@ -83,11 +83,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var results2 = new JsonRuleResult[] { jsonRuleResult2 };
 
             mockLeafExpression1
-                .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
+                .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
                 .Returns(new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, results1));
 
             mockLeafExpression2
-                .Setup(s => s.Evaluate(mockJsonPathResolver.Object))
+                .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
                 .Returns(new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, results2));
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var structuredExpression = new StructuredExpression(expressionArray, operation, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object);
+            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object, mockLineResolver);
 
             // Assert
             bool expectedCompoundEvaluation = operation(evaluation1, evaluation2);
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(null, false, false, DisplayName = "First expression not evaluated, second expression fails, overall result is fail")]
         [DataRow(true, null, true, DisplayName = "First expression passes, second expression not evaluated, overall result is pass")]
         [DataRow(null, null, true, DisplayName = "All expressions not evaluated, overall result is pass")]
-        public void Evaluate_SubResourceScopeNotFound_ExpectedResultIsReturned(bool? firstExpressionPass, bool? secondExpressionPass, bool overallPass)
+        public void Evaluate_OneExpressionNotEvaluated_ResultIsTakenFromOtherExpression(bool? firstExpressionPass, bool? secondExpressionPass, bool overallPass)
         {
             string evaluatedPath = "some.evaluated.path";
             string notEvaluatedPath = "path.not.evaluated";
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var expectedResults = new[] { firstExpressionPass, secondExpressionPass };
 
             // Act
-            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object);
+            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object, mockLineResolver);
 
             // Assert
             Assert.AreEqual(overallPass, structuredEvaluation.Passed);
@@ -174,16 +174,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void Evaluate_NullScope_ThrowsException()
+        public void Constructor_NullExpressions_ThrowsException()
         {
-            new StructuredExpression(Array.Empty<Expression>(), DummyOperation, new ExpressionCommonProperties()).Evaluate(jsonScope: null);
+            new StructuredExpression(null, DummyOperation, new ExpressionCommonProperties());
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void Constructor_NullExpressions_ThrowsException()
+        public void Constructor_NullOperation_ThrowsException()
         {
-            new StructuredExpression(null, DummyOperation, new ExpressionCommonProperties());
+            new StructuredExpression(Array.Empty<Expression>(), null, new ExpressionCommonProperties());
         }
     }
 }

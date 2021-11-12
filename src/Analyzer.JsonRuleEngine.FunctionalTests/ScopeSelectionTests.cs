@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
                 : base(commonProperties)
             { }
 
-            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope)
+            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver = null)
             {
                 return base.EvaluateInternal(jsonScope, scope =>
                 {

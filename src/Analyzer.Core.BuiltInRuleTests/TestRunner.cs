@@ -16,6 +16,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
     public class TestRunner
     {
         Dictionary<string, IEnumerable<IEvaluation>> templateEvaluations = new();
+        static TemplateAnalyzer templateAnalyzer;
+
+        [ClassInitialize]
+        public static void Initialize(TestContext testContext)
+        {
+            templateAnalyzer = TemplateAnalyzer.Create();
+        }
 
         /// <summary>
         /// Runs a test defined in a test configuration file in the Tests directory.
@@ -32,15 +39,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             // If not already analyzed, analyze it and store evaluations
             if (!templateEvaluations.TryGetValue(testTemplatePath, out var results))
             {
-                var templateAnalyzer = new TemplateAnalyzer(testTemplate);
-                results = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                results = templateAnalyzer.AnalyzeTemplate(testTemplate);
                 templateEvaluations[testTemplatePath] = results;
             }
 
             // Find any instances of the rule being tested
             // Exception containing "Sequence contains no elements" likely means you did 
             // not name the test file the same name as the rule
-            var thisRuleEvaluation = results.ToList().Where(e => e.RuleName.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
+            var thisRuleEvaluation = results.ToList().Where(e => e.RuleId.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
 
             // If there are no expected failures, the evaluation should have passed
             Assert.AreEqual(ruleExpectations.ReportedFailures.Length == 0, thisRuleEvaluation.Passed);

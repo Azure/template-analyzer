@@ -128,6 +128,38 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
             };
 
+            var environment = JObject.Parse(@"
+            {
+                ""name"": ""AzureCloud"",
+                ""gallery"": ""https://gallery.azure.com/"",
+                ""graph"": ""https://graph.windows.net/"",
+                ""portal"": ""https://portal.azure.com"",
+                ""graphAudience"": ""https://graph.windows.net/"",
+                ""activeDirectoryDataLake"": ""https://datalake.azure.net/"",
+                ""batch"": ""https://batch.core.windows.net/"",
+                ""media"": ""https://rest.media.azure.net"",
+                ""sqlManagement"": ""https://management.core.windows.net:8443/"",
+                ""vmImageAliasDoc"": ""https://raw.githubusercontent.com/Azure/azure-rest-api-specs/master/arm-compute/quickstart-templates/aliases.json"",
+                ""resourceManager"": ""https://management.azure.com/"",
+                ""authentication"": {
+                    ""loginEndpoint"": ""https://login.windows.net/"",
+                    ""audiences"": [
+                        ""https://management.core.windows.net/"",
+                        ""https://management.azure.com/""
+                    ],
+                    ""tenant"": ""common"",
+                    ""identityProvider"": ""AAD""
+                },
+                ""suffixes"": {
+                    ""acrLoginServer"": "".azurecr.io"",
+                    ""azureDatalakeAnalyticsCatalogAndJob"": ""azuredatalakeanalytics.net"",
+                    ""azureDatalakeStoreFileSystem"": ""azuredatalakestore.net"",
+                    ""keyvaultDns"": "".vault.azure.net"",
+                    ""sqlServerHostname"": "".database.windows.net"",
+                    ""storage"": ""core.windows.net""
+                }                    
+            }");
+
             var metadata = new InsensitiveDictionary<JToken>
             {
                 { "subscription", new JObject(
@@ -140,7 +172,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     new JProperty("name", "resource-group")) },
                 { "deployment", deployment },
                 { "tenantId", "00000000-0000-0000-0000-000000000000" },
-                { "providers", providers }
+                { "providers", providers },
+                { "environment", environment }
             };
 
             return metadata;

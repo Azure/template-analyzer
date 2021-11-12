@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }"
             },
             1, DisplayName = "2 Rules, 1 Passes, 1 Fails")]
-        public void EvaluateRules_ValidLeafExpression_ReturnsExpectedEvaluations(string[] ruleEvaluationDefinitions, int numberOfExpectedPassedResults)
+        public void AnalyzeTemplate_ValidLeafExpression_ReturnsExpectedEvaluations(string[] ruleEvaluationDefinitions, int numberOfExpectedPassedResults)
         {
             // Arrange
             var template =
@@ -60,7 +60,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var rules = CreateRulesFromEvaluationDefinitions(ruleEvaluationDefinitions);
 
-
             TemplateContext templateContext = new TemplateContext { 
                 OriginalTemplate = template, 
                 ExpandedTemplate = template, 
@@ -75,27 +74,26 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     It.IsAny<string>()))
                 .Returns(expectedLineNumber);
 
-            var ruleEngine = new JsonRuleEngine(t =>
-            {
-                // Verify the test context was passed
-                if (t == templateContext)
-                {
-                    return mockLineResolver.Object;
-                }
-                Assert.Fail("Expected template context was not passed to LineNumberResolver.");
-                return null;
-            });
+            var ruleEngine = JsonRuleEngine.Create(rules, t => {
+                    // Verify the test context was passed
+                    if (t == templateContext)
+                    {
+                        return mockLineResolver.Object;
+                    }
+                    Assert.Fail("Expected template context was not passed to LineNumberResolver.");
+                    return null;
+                });
 
             // Act
-            var evaluationResults = ruleEngine.EvaluateRules(templateContext, rules).ToList();
+            var evaluationResults = ruleEngine.AnalyzeTemplate(templateContext).ToList();
 
             // Assert
-            Assert.AreEqual(ruleEvaluationDefinitions.Length, evaluationResults.Count());
+            Assert.AreEqual(ruleEvaluationDefinitions.Length, evaluationResults.Count);
             Assert.AreEqual(numberOfExpectedPassedResults, evaluationResults.Count(result => result.Passed));
             for (int i = 0; i < ruleEvaluationDefinitions.Length; i++)
             {
                 var evaluation = evaluationResults[i];
-                Assert.AreEqual($"RuleName {i}", evaluation.RuleName);
+                Assert.AreEqual($"RuleId {i}", evaluation.RuleId);
                 Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
                 foreach (var result in evaluation.Results)
@@ -107,7 +105,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow(@"[{
-                ""name"": ""RuleName 0"",
+                ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -127,7 +125,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Single allOf expression")]
         [DataRow(@"[{
-                ""name"": ""RuleName 0"",
+                ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -155,7 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Nested allOf expression")]
         [DataRow(@"[{
-                ""name"": ""RuleName 0"",
+                ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -173,7 +171,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     ]
                 }
             }]", DisplayName = "Single anyOf expression")]
-        public void EvaluateRules_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
+        public void AnalyzeTemplate_ValidStructuredExpression_ReturnsExpectedEvaluations(string rules)
         {
             // Arrange
             var template =
@@ -209,7 +207,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     It.IsAny<string>()))
                 .Returns(expectedLineNumber);
 
-            var ruleEngine = new JsonRuleEngine(t =>
+            var ruleEngine = JsonRuleEngine.Create(rules, t =>
             {
                 // Verify the test context was passed
                 if (t == templateContext)
@@ -220,13 +218,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 return null;
             });
 
-            var evaluationResults = ruleEngine.EvaluateRules(templateContext, rules).ToList();
+            var evaluationResults = ruleEngine.AnalyzeTemplate(templateContext).ToList();
 
-            Assert.AreEqual(1, evaluationResults.Count());
+            Assert.AreEqual(1, evaluationResults.Count);
             Assert.AreEqual(1, evaluationResults.Count(evaluation => evaluation.Passed));
 
             var evaluation = evaluationResults[0];
-            Assert.AreEqual($"RuleName 0", evaluation.RuleName);
+            Assert.AreEqual($"RuleId 0", evaluation.RuleId);
             Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
             Assert.AreEqual(0, evaluation.Results.Count());
@@ -254,7 +252,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
         [DataTestMethod]
         [DataRow(@"[{
-                ""name"": ""Invalid Rule"",
+                ""id"": ""Invalid Rule"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -267,7 +265,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Invalid JSON")]
         [DataRow(@"[{
-                ""name"": ""Invalid Rule"",
+                ""id"": ""Invalid Rule"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
@@ -278,63 +276,54 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 }
             }]", DisplayName = "Invalid regex pattern")]
         [ExpectedException(typeof(JsonRuleEngineException))]
-        public void EvaluateRules_InvalidRule_ExceptionIsThrown(string invalidRule)
+        public void Create_InvalidRules_ExceptionIsThrown(string invalidRule)
         {
-            // Arrange
-            var template =
-                JObject.Parse(
-                @"{
-                    ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
-                    ""resources"": [
-                        {
-                            ""type"": ""Microsoft.ResourceProvider/resource0"",
-                            ""properties"": {
-                                ""somePath"": ""someValue"",
-                                ""someOtherPath"": ""someOtherValue""
-                            }
-                        }
-                    ]
-                }");
-
-            string expectedFileId = "MyTemplate";
-
-            TemplateContext templateContext = new TemplateContext
-            {
-                OriginalTemplate = template,
-                ExpandedTemplate = template,
-                IsMainTemplate = true,
-                TemplateIdentifier = expectedFileId
-            };
-
-            // Setup mock line number resolver
-            var mockLineResolver = new Mock<ILineNumberResolver>();
-
-            var ruleEngine = new JsonRuleEngine(t =>
-            {
-                // Verify the test context was passed
-                if (t == templateContext)
-                {
-                    return mockLineResolver.Object;
-                }
-                Assert.Fail("Expected template context was not passed to LineNumberResolver.");
-                return null;
-            });
-
             // Act
-            ruleEngine.EvaluateRules(templateContext, invalidRule).ToList();
+            JsonRuleEngine.Create(invalidRule, t => null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void Constructor_NullLineNumberResolver_ThrowsException()
+        public void Create_NullRules_ExceptionIsThrown()
         {
-            new JsonRuleEngine(null);
+            // Act
+            JsonRuleEngine.Create(null, t => null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Create_EmptyRules_ExceptionIsThrown()
+        {
+            // Act
+            JsonRuleEngine.Create("", t => null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Create_WhitespaceRules_ExceptionIsThrown()
+        {
+            // Act
+            JsonRuleEngine.Create("  \t", t => null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void Create_NullLineNumberResolver_ExceptionIsThrown()
+        {
+            // Act
+            JsonRuleEngine.Create(CreateRulesFromEvaluationDefinitions(
+                new[] {
+                    @"{
+                        ""path"": ""$schema"",
+                        ""hasValue"": true
+                    }"}),
+                null);
         }
 
         private string CreateRulesFromEvaluationDefinitions(string[] ruleEvaluationDefinitions)
         {
             string ruleSkeleton = @"{{
-                ""name"": ""RuleName {0}"",
+                ""id"": ""RuleId {0}"",
                 ""description"": ""Rule description {0}"",
                 ""recommendation"": ""Recommendation {0}"",
                 ""helpUri"": ""Uri {0}"",

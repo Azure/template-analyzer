@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     /// <summary>
     /// Executes template analysis encoded in PowerShell
     /// </summary>
-    public class PowerShellRuleEngine
+    public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
         /// Execution environment for PowerShell
@@ -37,21 +37,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             this.powerShell = Powershell.Create();
 
             powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time
             powerShell.AddStatement();
 
             powerShell.Invoke();
         }
 
         /// <summary>
-        /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
+        /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
-        /// <param name="templateFilePath">The file path of the template under analysis.</param>
-        public IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
+        /// <param name="templateContext">The context of the template under analysis.
+        /// <see cref="TemplateContext.TemplateIdentifier"/> must be the file path of the template to evaluate.</param>
+        /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
+            if (templateContext?.TemplateIdentifier == null)
+            {
+                throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
+            }
+
             this.powerShell.Commands.AddCommand("Test-AzTemplate")
                 .AddParameter("Test", "deploymentTemplate")
-                .AddParameter("TemplatePath", templateFilePath);
+                .AddParameter("TemplatePath", templateContext.TemplateIdentifier);
 
             var executionResults = this.powerShell.Invoke();
 
@@ -63,12 +70,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 foreach (dynamic warning in executionResult.Warnings)
                 {
-                    AddErrorToDictionary(warning, ref uniqueErrors);
+                    PreProcessErrors(warning, uniqueErrors);
                 }
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    AddErrorToDictionary(error, ref uniqueErrors);
+                    PreProcessErrors(error, uniqueErrors);
                 }
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
@@ -78,14 +85,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    evaluations.Add(new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults));
+                    var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
+                    evaluations.Add(new PowerShellRuleEvaluation("", ruleDescription, false, evaluationResults));
                 }
             }
 
             return evaluations;
         }
 
-        private void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
+        private void PreProcessErrors(dynamic error, Dictionary<string, SortedSet<int>> uniqueErrors)
         {
             var lineNumber = 0;
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Extensions;
 using Azure.Deployments.Core.Json;
@@ -18,6 +19,158 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
     public class ArmTemplateProcessorTests
     {
         private static ArmTemplateProcessor _armTemplateProcessor;
+        private static InsensitiveDictionary<JToken> _templateMetadata;
+        private static InsensitiveDictionary<JToken> _templateParameters;
+        private Func<string, TemplateResource> _getTemplateFromString = templateString => JObject.Parse(templateString).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+
+        /// <summary>
+        /// Test data for tests that verify behavior for copied resources with dependencies
+        /// Index 1: Template resouces
+        /// Index 2: Expected resource mapping
+        /// Index 3: Expected resource names in the final template
+        /// Index 4: Array containing an array of internal resource names for each resource in the final template
+        /// Index 5: Test display name, this is just so GetDisplayName() can do a lookup, and is not used in the test itself
+        /// </summary>
+        public static IReadOnlyList<object[]> ScenariosOfCopiesWithDependencies { get; } = new List<object[]>
+        {
+            new object[] {
+                new string[] {
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""[concat('vmName', copyIndex())]"",
+                        ""apiVersion"": ""2020-12-01"",
+                        ""copy"": {
+                            ""name"": ""virtualMachineLoop"",
+                            ""count"": 2
+                        },
+                        ""dependsOn"": [
+                            ""storageAccountName"",
+                            ""asName""
+                        ],
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/availabilitySets"",
+                        ""name"": ""asName"",
+                        ""apiVersion"": ""2020-12-01"",
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Storage/storageAccounts"",
+                        ""name"": ""storageAccountName"",
+                        ""apiVersion"": ""2020-12-01"",
+                        ""properties"": {
+                        }
+                    }"
+                },
+                new Dictionary<string, string> {
+                    { "resources[0]", "resources[1]" },
+                    { "resources[1]", "resources[2]" },
+                    { "resources[2]", "resources[0]" },
+                    { "resources[3]", "resources[0]" },
+                    { "resources[0].resources[0]", "resources[0]" },
+                    { "resources[0].resources[1]", "resources[0]" },
+                    { "resources[1].resources[0]", "resources[0]" },
+                    { "resources[1].resources[1]", "resources[0]" }
+                },
+                new string[] { "asName", "storageAccountName", "vmName0", "vmName1" },
+                new string[][] { new string[] { "vmName0", "vmName1" }, new string[] { "vmName0", "vmName1" }, new string[] { }, new string[] { } },
+                "Copied resource that depends on others"
+            },
+            new object[] {
+                new string[] {
+                    @"{
+                        ""type"": ""Microsoft.Network/networkInterfaces"",
+                        ""name"": ""[concat('ni', copyindex())]"",
+                        ""apiVersion"": ""2016-03-30"",
+                        ""dependsOn"": [
+                        ],
+                        ""copy"": {
+                            ""name"": ""WebTierNicLoop"",
+                            ""count"": 2
+                        },
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""[concat('vm', copyindex())]"",
+                        ""apiVersion"": ""2017-03-30"",
+                        ""dependsOn"": [
+                            ""[resourceId('Microsoft.Network/networkInterfaces/', concat('ni', copyindex()))]""
+                        ],
+                        ""copy"": {
+                            ""name"": ""WebTierVMLoop"",
+                            ""count"": 2
+                        },
+                        ""properties"": {
+                        }
+                    }"
+                },
+                new Dictionary<string, string> {
+                    { "resources[0]", "resources[0]" },
+                    { "resources[1]", "resources[0]" },
+                    { "resources[2]", "resources[1]" },
+                    { "resources[3]", "resources[1]" },
+                    { "resources[0].resources[0]", "resources[1]" },
+                    { "resources[1].resources[0]", "resources[1]" }
+                },
+                new string[] { "ni0", "ni1", "vm0", "vm1" },
+                new string[][] { new string[] { "vm0" }, new string[] { "vm1" }, new string[] { }, new string[] { } },
+                "Copied resources where index 0 depends on the other index 0, and index 1 on index 1"
+            },
+            new object[] {
+                new string[] {
+                    @"{
+                        ""type"": ""Microsoft.Compute/availabilitySets"",
+                        ""name"": ""[concat('as', copyindex(1))]"",
+                        ""apiVersion"": ""2017-12-01"",
+                        ""copy"": {
+                            ""name"": ""availSetLoop"",
+                            ""count"": 2
+                        },
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""vms0"",
+                        ""apiVersion"": ""2017-03-30"",
+                        ""dependsOn"": [
+                            ""as1""
+                        ],
+                        ""properties"": {
+                        }
+                    }",
+                    @"{
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""vms1"",
+                        ""apiVersion"": ""2017-03-30"",
+                        ""dependsOn"": [
+                            ""as2""
+                        ],
+                        ""properties"": {
+                        }
+                    }"
+                },
+                new Dictionary<string, string> {
+                    { "resources[0]", "resources[1]" },
+                    { "resources[1]", "resources[2]" },
+                    { "resources[2]", "resources[0]" },
+                    { "resources[3]", "resources[0]" },
+                    { "resources[2].resources[0]", "resources[1]" },
+                    { "resources[3].resources[0]", "resources[2]" }
+                },
+                new string[] { "vms0", "vms1", "as1", "as2" },
+                new string[][] { new string[] { }, new string[] { }, new string[] { "vms0" }, new string[] { "vms1" } },
+                "Copied resource with different resources depending on each copy"
+            },
+        }.AsReadOnly();
+
+        // Just returns the element in the last index of the array from ScenariosOfCopiesWithDependencies
+        public static string GetDisplayName(MethodInfo _, object[] data) => (string)data[^1];
 
         [TestInitialize]
         public void TestInit()
@@ -44,6 +197,21 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ],
                 ""outputs"": {}
             }");
+
+            _templateMetadata = new InsensitiveDictionary<JToken>
+            {
+                { "subscription", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
+                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                { "resourceGroup", new JObject(
+                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
+                    new JProperty("location", "westus2"),
+                    new JProperty("name", "resource-group")) },
+                { "tenantId", "00000000-0000-0000-0000-000000000000" }
+            };
+
+            _templateParameters = new InsensitiveDictionary<JToken>();
         }
 
         [TestMethod]
@@ -214,26 +382,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         [TestMethod]
         public void ParseAndValidateTemplate_ValidTemplateWithExpressionInResourceProperties_ProcessResourceProperyLanguageExpressions()
         {
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[0]" }
             };
 
-            Template template = _armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = _armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.IsTrue(template.Resources.First().Properties.Value.InsensitiveToken("dnsSettings.domainNameLabel").Value<string>().StartsWith("linux-vm-"));
 
@@ -307,22 +460,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
-
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
+            
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[1]" },
                 { "resources[1]", "resources[0]" },
@@ -331,7 +469,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[4]", "resources[2]" },
             };
 
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.AreEqual(expectedMapping.Count, template.Resources.Length);
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
@@ -370,28 +508,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
-
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
+            
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[0]" },
                 { "resources[1]", "resources[0]" }
             };
 
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.AreEqual(2, template.Resources.Length);
 
@@ -430,25 +553,50 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
 
-            var parameters = new InsensitiveDictionary<JToken>();
-
-            var metadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
-
-            Template template = armTemplateProcessor.ParseAndValidateTemplate(parameters, metadata);
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
 
             Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("startDate").Type);
             Assert.AreEqual(JTokenType.String, template.Resources.First().Properties.Value.InsensitiveToken("endDate").Type);
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(ScenariosOfCopiesWithDependencies), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void ParseAndValidateTemplate_ValidTemplatesWithCopiesAndDependencies_ProcessResourceCopies(
+            string[] stringResources, Dictionary<string, string> expectedResourceMapping,
+            string[] resourceNames, string[][] internalResources, string _)
+        {
+            var resources = new TemplateResource[] { };
+            foreach (string resourceString in stringResources)
+            {
+                resources = resources.ConcatArray(new TemplateResource[] { _getTemplateFromString(resourceString) });
+            }
+
+            var armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(resources));
+
+            Template template = armTemplateProcessor.ParseAndValidateTemplate(_templateParameters, _templateMetadata);
+
+            Assert.AreEqual(resourceNames.Length, internalResources.Length);
+            Assert.AreEqual(resourceNames.Length, template.Resources.Length);
+
+            for (int resourceNumber = 0; resourceNumber < internalResources.Length; resourceNumber++)
+            {
+                Assert.AreEqual(resourceNames[resourceNumber], template.Resources[resourceNumber].Name.Value);
+
+                if (internalResources[resourceNumber].Length == 0)
+                {
+                    Assert.AreEqual(null, template.Resources[resourceNumber].Resources);
+                } 
+                else
+                {
+                    for (int internalResourceNumber = 0; internalResourceNumber < internalResources[resourceNumber].Length; internalResourceNumber++)
+                    {
+                        Assert.AreEqual(internalResources[resourceNumber][internalResourceNumber],
+                            template.Resources[resourceNumber].Resources[internalResourceNumber].Name.Value);
+                    }
+                }
+            }
+
+            AssertDictionariesAreEqual(expectedResourceMapping, armTemplateProcessor.ResourceMappings);
         }
 
         [TestMethod]
@@ -507,10 +655,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""properties"": { }
             }";
 
-            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource1 = JObject.Parse(parentTemplateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource2 = JObject.Parse(parentTemplateResource2Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource3 = JObject.Parse(parentTemplateResource3Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource childTemplateResource = _getTemplateFromString(childTemplateResourceJson);
+            TemplateResource parentTemplateResource1 = _getTemplateFromString(parentTemplateResource1Json);
+            TemplateResource parentTemplateResource2 = _getTemplateFromString(parentTemplateResource2Json);
+            TemplateResource parentTemplateResource3 = _getTemplateFromString(parentTemplateResource3Json);
 
             Template template = new Template { Resources = new TemplateResource[] { childTemplateResource, parentTemplateResource1, parentTemplateResource2, parentTemplateResource3 } };
 
@@ -581,8 +729,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> { { "resources[0]", "resources[0]" }, { "resources[1]", "resources[1]" } };
 
-            TemplateResource templateResource0 = JObject.Parse(templateResource0Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource templateResource1 = JObject.Parse(templateResource1Json).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource templateResource0 = _getTemplateFromString(templateResource0Json);
+            TemplateResource templateResource1 = _getTemplateFromString(templateResource1Json);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { templateResource0, templateResource1 }));
 
@@ -645,8 +793,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[1].resources[0].resources[0]", "resources[0]" }
             };
 
-            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource childTemplateResource = _getTemplateFromString(childTemplateResourceJson);
+            TemplateResource parentTemplateResource = _getTemplateFromString(parentTemplateResourceJson);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { childTemplateResource, parentTemplateResource }));
 
@@ -707,7 +855,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[0].resources[0].resources[0]", "resources[0].resources[0].resources[0]" }
             };
 
-            TemplateResource templateResource = JObject.Parse(resourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource templateResource = _getTemplateFromString(resourceJson);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { templateResource }));
 
@@ -770,9 +918,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 { "resources[2]", "resources[2]" }
             };
 
-            TemplateResource parentTemplateResource = JObject.Parse(parentTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource childTemplateResource = JObject.Parse(childTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
-            TemplateResource grandchildTemplateResource = JObject.Parse(grandchildTemplateResourceJson).ToObject<TemplateResource>(SerializerSettings.SerializerWithObjectTypeSettings);
+            TemplateResource parentTemplateResource = _getTemplateFromString(parentTemplateResourceJson);
+            TemplateResource childTemplateResource = _getTemplateFromString(childTemplateResourceJson);
+            TemplateResource grandchildTemplateResource = _getTemplateFromString(grandchildTemplateResourceJson);
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { parentTemplateResource, childTemplateResource, grandchildTemplateResource }));
 
@@ -793,6 +941,76 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourcesArray));
 
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+        }
+
+        [TestMethod]
+        public void ProcessTemplate_ResourceNameWithIncorrectSegmentLength_ThrowsExpectedException()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2020-12-01"",
+                        ""type"": ""Microsoft.Compute/virtualMachines"",
+                        ""name"": ""vms"",
+                        ""properties"": {
+                        },
+                        ""resources"": [
+                            {
+                                ""type"": ""extensions"",
+                                ""name"": ""vms/InstallDomainController"",
+                                ""apiVersion"": ""2020-12-01"",
+                                ""properties"": {
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }";
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            try
+            {
+                var template = armTemplateProcessor.ProcessTemplate();
+                Assert.Fail("No exception was thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("incorrect segment lengths"));
+            }
+        }
+
+        [TestMethod]
+        public void ProcessTemplate_ValidTemplateUsingEnvironmentFunction_ProcessTemplateFunction()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {
+                    ""privateDbDnsZoneName"": {
+                        ""type"": ""string"",
+                        ""defaultValue"": ""[concat('privatelink', environment().suffixes.sqlServerHostname)]"",
+                        ""metadata"": {
+                            ""description"": ""Private DNS zone name for database.""
+                        }
+                    }
+                },
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Network/privateDnsZones"",
+                        ""apiVersion"": ""2020-06-01"",
+                        ""name"": ""[parameters('privateDbDnsZoneName')]""
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            JToken template = armTemplateProcessor.ProcessTemplate();
+
+            Assert.AreEqual("privatelink.database.windows.net", template["resources"][0]["name"]);
         }
 
         private string GenerateTemplateWithOutputs(string outputValue)
