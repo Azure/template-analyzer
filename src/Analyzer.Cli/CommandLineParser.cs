@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return;
                 }
 
-                string configurationFileContents = configuratioinsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
+                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
 
                 // Find files to analyze
                 List<FileInfo> filesToAnalyze = new List<FileInfo>();
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 List<FileInfo> filesFailed = new List<FileInfo>();
                 foreach (FileInfo file in filesToAnalyze)
                 {
-                    int res = AnalyzeTemplate(file, null, false);
+                    int res = AnalyzeTemplate(file, null, configurationsFilePath, false);
                     if (res == 1) 
                     {
                         numOfSuccesses++;

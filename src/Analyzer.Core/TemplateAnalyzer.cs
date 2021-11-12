@@ -11,6 +11,7 @@ using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     public class TemplateAnalyzer
     {
         private string TemplateFilePath { get; }
+        private string Configurations { get; set; }
         private string Template { get; }
         private string Parameters { get; }
 
@@ -35,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
             this.Parameters = parameters;
-            this.Configurations = configurations; //me added
+            this.Configurations = configurations;
             this.TemplateFilePath = templateFilePath;
         }
 
@@ -65,8 +67,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 var rules = LoadRules();
-                var filteredRules = FilterRules(rules);
+                
                 var jsonRuleEngine = new JsonRuleEngine(context => new JsonLineNumberResolver(context));
+                var filteredRules = FilterRules(rules, jsonRuleEngine);
 
                 IEnumerable<IEvaluation> evaluations = jsonRuleEngine.EvaluateRules(
                     new TemplateContext {
@@ -97,23 +100,68 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 "/Rules/BuiltInRules.json");
         }
 
-        private static string FilterRules(string rules)
+        /// <summary>
+        /// Filters the rules based on the configurations file.
+        /// </summary>
+        /// <param name="rules">The ARM Template unfiltered rules.</param>
+        /// <param name="jsonRuleEngine">The jsonRuleEngine</param>
+        /// <returns>The ARM Template filtered rules based on the configurations file.</returns>
+        private string FilterRules(string rules, JsonRuleEngine jsonRuleEngine)
         {
-            this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
-            this.Configurations = configurations;
-            // if configurations == null, check in default directory. if nothing, return rules
-            if (!Configurations)
+            //this.Template =template ?? throw new ArgumentNullException(paramName: nameof(template));
+            //this.Configurations = configurations;
+
+            // Check in default directory if no configurations parameter was passed
+            if (Configurations == null)
             {
-                var defaultPatuh = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
-                "/Configurations/Configuration.json";
-                if (defaultPath)
+                var defaultPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
+                    "/Configurations/Configuration.json";
+                if (Path.GetFileName(defaultPath) != null)
                     Configurations = defaultPath;
                 else
                     return rules;
             }
-            //read file
 
-            //eliminated rules
+            // Read file and filter rules
+            var inputs = File.ReadAllText(Configurations);
+
+            ////if there is a filter or a change value
+           // jsonRuleEngine.FilterRules();// create
+            //List<RuleDefinition> rules2;
+            //try
+            //{
+            //    rules2 = JsonConvert.DeserializeObject<List<RuleDefinition>>(rules);
+            //}
+            //catch (Exception e)
+            //{
+            //    throw new JsonRuleEngineException($"Failed to parse rules.", e);
+            //}
+
+            //foreach (RuleDefinition rule in rules)
+            //{
+            //    Expression ruleExpression;
+
+            //    try
+            //    {
+            //        ruleExpression = rule.ExpressionDefinition.ToExpression(BuildLineNumberResolver(templateContext));
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        throw new JsonRuleEngineException($"Failed to parse rule {rule.Name}.", e);
+            //    }
+
+            //    JsonRuleEvaluation evaluation = ruleExpression.Evaluate(
+            //        new JsonPathResolver(
+            //            templateContext.ExpandedTemplate,
+            //            templateContext.ExpandedTemplate.Path));
+
+            //    evaluation.RuleDefinition = rule;
+            //    evaluation.FileIdentifier = templateContext.TemplateIdentifier;
+
+            //    yield return evaluation;
+            //}
+
+            // Return eliminated rules
             return rules;
         }
     }
