@@ -130,8 +130,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
                 Console.WriteLine(fileMetadata);
 
-                var templateAnalyzer = new Core.TemplateAnalyzer(templateFileContents, parameterFileContents, configurationFileContents, templateFilePath.FullName);
-                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+                IEnumerable<Types.IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, configurationFileContents, templateFilePath.FullName);
 
                 var passedEvaluations = 0;
 
