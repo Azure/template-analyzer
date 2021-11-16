@@ -32,6 +32,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public string HelpUri { get; }
 
         /// <summary>
+        /// Gets the Severity of the rule this evaluation is for.
+        /// </summary>
+        public int Severity { get; }
+
+        /// <summary>
         /// Gets the identifier of the file this evaluation is for.
         /// </summary>
         public string FileIdentifier { get; }
