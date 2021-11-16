@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
         private readonly BuildILineNumberResolver BuildLineNumberResolver;
-        internal readonly IReadOnlyList<RuleDefinition> RuleDefinitions;
+        internal IList<RuleDefinition> RuleDefinitions;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
@@ -47,6 +47,51 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             if (jsonLineNumberResolverBuilder == null) throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
 
             return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
+        }
+
+        /// <summary>
+        /// Modifies the rules to run based on values defined in the configurations file.
+        /// </summary>
+        /// <param name="configuration">The template configurations to filter and analyze.</param>
+        public void FilterRules(string configuration)
+        {
+            var result = new List<RuleDefinition>();
+
+            ConfigurationsDefinition contents;
+            try
+            {
+                contents = JsonConvert.DeserializeObject<ConfigurationsDefinition>(configuration);
+            }
+            catch (Exception e)
+            {
+                throw new JsonRuleEngineException($"Failed to parse configurations file.", e);
+            }
+
+            if (contents.InclusionsConfigurationsDefinition != null)
+            {
+                var includeRuleIds = contents.InclusionsConfigurationsDefinition.RuleIds;
+                foreach (RuleDefinition rule in RuleDefinitions)
+                {
+                    if (includeRuleIds.Contains(rule.Id))
+                    {
+                        result.Add(rule);
+                    }
+                }
+            }
+            else if (contents.ExclusionsConfigurationsDefinition != null)
+            {
+                var excludeSeverities = contents.ExclusionsConfigurationsDefinition.Severity;
+                var excludeRuleIds = contents.ExclusionsConfigurationsDefinition.RuleIds;
+
+                foreach (RuleDefinition rule in RuleDefinitions)
+                {
+                    if (!excludeSeverities.Contains(rule.Severity) || !excludeRuleIds.Contains(rule.Id))
+                        result.Add(rule);
+                }
+            }
+            
+            // Update rules to select desired rules
+            RuleDefinitions = result;
         }
 
         /// <summary>

@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
-                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName); //TODO make null an option
+                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
 
                 // Check that the schema is valid
                 if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 var passedEvaluations = 0;
 
-                foreach (var evaluation in evaluations) //todo: some sort here
+                foreach (var evaluation in evaluations)
                 {
                     string resultString = GenerateResultString(evaluation);
 

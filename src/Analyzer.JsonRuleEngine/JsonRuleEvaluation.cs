@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public string HelpUri => RuleDefinition.HelpUri;
 
         /// <inheritdoc/>
-        public string Severity => RuleDefinition.Severity;
+        public int Severity => RuleDefinition.Severity;
 
         /// <inheritdoc/>
         public string FileIdentifier { get; internal set; }

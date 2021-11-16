@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// Gets or sets the severity of the rule.
         /// </summary>
         [JsonProperty]
-        public string Severity { get; set; }
+        public int Severity { get; set; }
 
         /// <summary>
         /// Gets or sets the expression details of the rule.

@@ -61,6 +61,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .HelpUri);
         }
 
+        [TestMethod]
+        public void GetSeverity_ReturnsSeverityFromRule()
+        {
+            Assert.AreEqual(
+                1,
+                new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
+                {
+                    RuleDefinition = new RuleDefinition { Severity = 1 }
+                }
+                .Severity);
+        }
+
         [DataTestMethod]
         [DataRow(3, 3, DisplayName = "3/3 results are true")]
         [DataRow(3, 2, DisplayName = "2/3 results are true")]

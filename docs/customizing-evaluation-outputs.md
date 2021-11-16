@@ -16,25 +16,27 @@ Here are the fields that make up a custom configuration file.
 ```
 
 ### Guidelines for exclusions object
-The `exclusions` is comprised of the following optional properties.
+The `exclusions` is compromised of the following optional properties.
 ```javascript
 "exclusions": {
     "severity": [int], // Means don't include rule with servities that are in this list in the BPA execution
     "ruleIds": ["ruleId"] // Means don't include rules that are in this list in the BPA execution
 }
 ```
+If the inclusions object contains values, then the exclusions object will be ignored. 
 
 ### Guidelines for inclusions object
-The `inclusions` is comprised of the following optional properties.
+The `inclusions` is compromised of the following optional properties.
 ```javascript
 "inclusions": {
     "ruleIds": ["ruleId"] // Means only include rules that are in this list in the BPA execution
 }
 ```
+If the inclusions object contains values, then the exclusions object will be ignored. 
 
 ### Guidelines for output object [[*]](#note)
 **NOTE: `Output` is not yet supported. 
-The `output` is comprised of the following optional properties.
+The `output` is compromised of the following optional properties.
 ```javascript
 "output" : {
     "file": boolean, 

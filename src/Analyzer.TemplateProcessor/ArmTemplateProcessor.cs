@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <returns>The processed template as a <c>JSON</c> object.</returns>
         public JToken ProcessTemplate(string parameters)
         {
-            return ProcessTemplate(parameters, null); //TODO logic ended here
+            return ProcessTemplate(parameters, null);
         }
 
         /// <summary>
