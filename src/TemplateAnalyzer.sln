@@ -11,11 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TemplateProcessor", "Templa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D1F6F2B9-6B3A-4023-B6C3-A8F15539737D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reports", "Reports", "{9BE28F9E-17E2-42E9-9A0A-9AFF60F6176B}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Core", "Analyzer.Core\Analyzer.Core.csproj", "{DDE76F8B-C579-4D16-A29A-4C5AC7B33AF1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Core.UnitTests", "Analyzer.Core.UnitTests\Analyzer.Core.UnitTests.csproj", "{C8A44B67-BCBF-44B5-85E6-CD9BF6241AAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.Core.BuiltInRuleTests", "Analyzer.Core.BuiltInRuleTests\Analyzer.Core.BuiltInRuleTests.csproj", "{2CCAFD07-C1C2-46CA-9776-70F902956DC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Core.BuiltInRuleTests", "Analyzer.Core.BuiltInRuleTests\Analyzer.Core.BuiltInRuleTests.csproj", "{2CCAFD07-C1C2-46CA-9776-70F902956DC3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.JsonRuleEngine", "Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj", "{3D5A0DC7-2C6D-456F-A4B2-64D73C137F4D}"
 EndProject
@@ -39,7 +41,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerShellRuleEngine", "Pow
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.PowerShellRuleEngine", "Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj", "{520EF22F-A694-4B09-94C7-2CCC47B0653F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.PowerShellRuleEngine.UnitTests", "Analyzer.PowerShellRuleEngine.UnitTests\Analyzer.PowerShellRuleEngine.UnitTests.csproj", "{D6664E6D-827C-49BE-AD94-49977605E780}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.PowerShellRuleEngine.UnitTests", "Analyzer.PowerShellRuleEngine.UnitTests\Analyzer.PowerShellRuleEngine.UnitTests.csproj", "{D6664E6D-827C-49BE-AD94-49977605E780}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Reports", "Analyzer.Reports\Analyzer.Reports.csproj", "{A4314EC1-8A28-40C6-B5BB-9F8906A020FA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Reports.UnitTests", "Analyzer.Reports.UnitTests\Analyzer.Reports.UnitTests.csproj", "{58F5C921-D639-4962-858F-BCD5C85C16D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +109,14 @@ Global
 		{D6664E6D-827C-49BE-AD94-49977605E780}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6664E6D-827C-49BE-AD94-49977605E780}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6664E6D-827C-49BE-AD94-49977605E780}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4314EC1-8A28-40C6-B5BB-9F8906A020FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4314EC1-8A28-40C6-B5BB-9F8906A020FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4314EC1-8A28-40C6-B5BB-9F8906A020FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4314EC1-8A28-40C6-B5BB-9F8906A020FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58F5C921-D639-4962-858F-BCD5C85C16D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58F5C921-D639-4962-858F-BCD5C85C16D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58F5C921-D639-4962-858F-BCD5C85C16D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58F5C921-D639-4962-858F-BCD5C85C16D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,6 +134,8 @@ Global
 		{8E491ED0-D7DE-4F89-8AC9-B5220E728A97} = {44123AF8-5D5B-4C69-B1CB-BB8C7868E010}
 		{520EF22F-A694-4B09-94C7-2CCC47B0653F} = {EE9E18BC-5112-4981-8CD9-0CCEF29ADFEA}
 		{D6664E6D-827C-49BE-AD94-49977605E780} = {EE9E18BC-5112-4981-8CD9-0CCEF29ADFEA}
+		{A4314EC1-8A28-40C6-B5BB-9F8906A020FA} = {9BE28F9E-17E2-42E9-9A0A-9AFF60F6176B}
+		{58F5C921-D639-4962-858F-BCD5C85C16D5} = {9BE28F9E-17E2-42E9-9A0A-9AFF60F6176B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C716DF78-13EF-44A1-8E2E-CFF3746128CE}

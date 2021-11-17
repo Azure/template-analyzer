@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Reports;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -17,8 +19,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     internal class CommandLineParser
     {
         RootCommand rootCommand;
-        private readonly string IndentedNewLine = Environment.NewLine + "\t";
-        private readonly string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
         private readonly TemplateAnalyzer templateAnalyzer;
 
@@ -62,9 +62,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                  "--parameters-file-path",
                  "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
-            analyzeTemplateCommand.AddOption(parameterOption);            
-            
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo>((templateFilePath, parametersFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath));
+            analyzeTemplateCommand.AddOption(parameterOption);
+
+            Option<ReportFormat> reportFormatOption = new Option<ReportFormat>(
+                "--report-format",
+                "Format of report to be generated");
+            analyzeTemplateCommand.AddOption(reportFormatOption);
+
+            Option<FileInfo> outputFileOption = new Option<FileInfo>(
+                "--output-file-path",
+                "The report file path");
+            outputFileOption.AddAlias("-o");
+            analyzeTemplateCommand.AddOption(outputFileOption);
+
+            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo>((templateFilePath, parametersFilePath, reportFormat, outputFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath));
 
             // Setup analyze-directory w/ directory argument 
             Command analyzeDirectoryCommand = new Command(
@@ -76,7 +87,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "The directory to find ARM templates");
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo>((directoryPath) => this.AnalyzeDirectory(directoryPath));
+            analyzeDirectoryCommand.AddOption(reportFormatOption);
+
+            analyzeDirectoryCommand.AddOption(outputFileOption);
+
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo>((directoryPath, reportFormat, outputFilePath) => this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -85,14 +100,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, bool printMessageIfNotTemplate = true)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
         {
+            bool disposeWriter = false;
             try
             {
                 // Check that template file paths exist
                 if (!templateFilePath.Exists)
                 {
                     Console.WriteLine($"Invalid template file path ({templateFilePath})");
+                    return 0;
+                }
+
+                // Check that output file path provided for sarif report
+                if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
+                {
+                    Console.WriteLine($"Output file path was not provided.");
                     return 0;
                 }
 
@@ -109,36 +132,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 0;
                 }
 
-                // Log info on file to be analyzed
-                string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFilePath}";
-                if (parametersFilePath != null)
-                {
-                    fileMetadata += Environment.NewLine + $"Parameters File: {parametersFilePath}";
-                }
-                Console.WriteLine(fileMetadata);
-
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
 
-                var passedEvaluations = 0;
-
-                foreach (var evaluation in evaluations)
+                if (writer == null)
                 {
-                    string resultString = GenerateResultString(evaluation);
-
-                    if (!evaluation.Passed)
-                    {
-                        var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
-                        $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
-                        $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
-                        Console.WriteLine(output);
-                    }
-                    else
-                    {
-                        passedEvaluations++;
-                    }
+                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
+                    disposeWriter = true;
                 }
 
-                Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
+                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
                 return 1;
             }
@@ -147,9 +149,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
                 return -1;
             }
+            finally
+            {
+                if (disposeWriter && writer != null)
+                {
+                    writer.Dispose();
+                }
+            }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath)
+        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath)
         {
             try
             {
@@ -159,44 +168,52 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return;
                 }
 
+                // Check that output file path provided for sarif report
+                if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
+                {
+                    Console.WriteLine($"Output file path is not provided.");
+                    return;
+                }
+
                 // Find files to analyze
-                List<FileInfo> filesToAnalyze = new List<FileInfo>();
+                var filesToAnalyze = new List<FileInfo>();
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
                 // Log root directory
                 Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
                 int numOfSuccesses = 0;
-                List<FileInfo> filesFailed = new List<FileInfo>();
-                foreach (FileInfo file in filesToAnalyze)
+                using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
                 {
-                    int res = AnalyzeTemplate(file, null, false);
-                    if (res == 1) 
+                    var filesFailed = new List<FileInfo>();
+                    foreach (FileInfo file in filesToAnalyze)
                     {
-                        numOfSuccesses++;
+                        int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, false, reportWriter);
+                        if (res == 1)
+                        {
+                            numOfSuccesses++;
+                        }
+                        else if (res == -1)
+                        {
+                            filesFailed.Add(file);
+                        }
                     }
-                    else if (res == -1) 
+
+                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
+                    if (filesFailed.Count > 0)
                     {
-                        filesFailed.Add(file);
+                        Console.WriteLine($"Unable to analyze {filesFailed.Count} file(s):");
+                        foreach (FileInfo failedFile in filesFailed)
+                        {
+                            Console.WriteLine($"\t{failedFile}");
+                        }
                     }
                 }
-
-                Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
-                if (filesFailed.Count > 0) 
-                {
-                    Console.WriteLine($"Unable to analyze {filesFailed.Count} file(s):");
-                    foreach (FileInfo failedFile in filesFailed)
-                    {
-                        Console.WriteLine($"\t{failedFile}");
-                    }
-                }
-
             }
             catch (Exception exp)
             {
                 Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
             }
-
         }
 
         private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
@@ -240,27 +257,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return exceptionMessage;
         }
 
-        private string GenerateResultString(Types.IEvaluation evaluation)
+        private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)
         {
-            string resultString = "";
-
-            if (!evaluation.Passed)
+            if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase:true, out ReportFormat format))
             {
-                foreach (var result in evaluation.Results)
+                switch (format)
                 {
-                    if (!result.Passed)
-                    {
-                        resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
-                    }
-                }
-
-                foreach (var innerEvaluation in evaluation.Evaluations)
-                {
-                    resultString += GenerateResultString(innerEvaluation);
+                    case ReportFormat.Sarif:
+                        return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
+                    case ReportFormat.Console:
+                        return new ConsoleReportWriter();
                 }
             }
-
-            return resultString;
+            return new ConsoleReportWriter();
         }
     }
 }
