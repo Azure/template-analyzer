@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Newtonsoft.Json;
 using System;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 {
@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public InclusionsConfigurationsDefinition InclusionsConfigurationsDefinition { get; set; }
 
         /// <summary>
-        /// Gets or sets the severityReMapping property
+        /// Gets or sets the severity remapping of the configuration
         /// </summary>
-        public String severityReMapping { get; set; }
+        public String SeverityReMapping { get; set; }
     }
 }

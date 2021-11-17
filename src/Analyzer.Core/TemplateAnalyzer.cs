@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             string rules;
             try
             {
-                rules = LoadRules();                
+                rules = LoadRules();
             }
             catch (Exception e)
             {
