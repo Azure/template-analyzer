@@ -6,12 +6,15 @@ on:
   pull_request:
     branches: [ main ]
 
+defaults:
+  run:
+    working-directory: src
+
 env:
   Configuration: Release
 
 jobs:
   build:
-    name: Build ${{ matrix.osLabel }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
@@ -20,7 +23,8 @@ jobs:
           osLabel: Windows
         - os: ubuntu-latest
           osLabel: Linux
-          
+    
+    name: Build ${{ matrix.osLabel }}
     runs-on: ${{ matrix.os }}
 
     steps:
