@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 }
             },
-            // single nested evaluation
+            // Single nested evaluation
             new[]
             {
                 new MockEvaluation
@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     },
                 }
             },
-            // evaluation without results
+            // Evaluation without results
             new[]
             {
                 new MockEvaluation
