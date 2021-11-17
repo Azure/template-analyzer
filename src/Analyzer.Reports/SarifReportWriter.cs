@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             {
                 // get rule definition from first level evaluation
                 ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, templateFile.FullName, sarifResults);
+                this.ExtractResult(evaluation, evaluation, templateFile.Name, sarifResults);
             }
             this.PersistReport(sarifResults);
         }
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                                 {
                                     Uri = new Uri
                                     (
-                                        UriHelper.MakeValidUri(filePath.Replace(this.rootPath, string.Empty, StringComparison.OrdinalIgnoreCase)),
+                                        UriHelper.MakeValidUri(filePath),
                                         UriKind.Relative
                                     ),
                                     UriBaseId = UriBaseIdString,

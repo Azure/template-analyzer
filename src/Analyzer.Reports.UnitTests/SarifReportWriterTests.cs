@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     results[i].RuleId.Should().BeEquivalentTo(testcase.RuleId);
                     results[i].Message.Id.Should().BeEquivalentTo("default");
                     results[i].Level = res.Passed ? FailureLevel.Note : FailureLevel.Error;
-                    results[i].Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("/" + templateFilePath.Name);
+                    results[i].Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
                     results[i].Locations.First().PhysicalLocation.Region.StartLine.Should().Be(res.LineNumber);
                     i++;
                 }

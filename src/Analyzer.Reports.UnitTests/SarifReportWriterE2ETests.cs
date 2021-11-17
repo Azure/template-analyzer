@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // assert
             string ruleId = "TA-000028";
-            string artifactUriString = $"/{templateFilePath.Name}";
+            string artifactUriString = templateFilePath.Name;
             SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
             sarifLog.Should().NotBeNull();
 
@@ -99,11 +99,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             {
                 if (result.RuleId == "TA-000022")
                 {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("/RedisCache.json");
+                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("RedisCache.json");
                 }
                 else if (result.RuleId == "TA-000028")
                 {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("/SQLServerAuditingSettings.json");
+                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("SQLServerAuditingSettings.json");
                 }
                 else
                 {
