@@ -8,7 +8,7 @@ on:
 
 env:
   SlnFile: src/TemplateAnalyzer.sln
-  Configuration: Relesae
+  Configuration: Release
 
 jobs:
   build:
