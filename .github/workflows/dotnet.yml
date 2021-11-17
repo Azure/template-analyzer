@@ -1,0 +1,45 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+defaults:
+  run:
+    working-directory: src
+
+env:
+  Configuration: Release
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+        - os: windows-latest
+          osLabel: Windows
+        - os: ubuntu-latest
+          osLabel: Linux
+    
+    name: Build ${{ matrix.osLabel }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration ${{ env.Configuration }} --no-restore
+      
+    - name: Test
+      run: dotnet test --no-build --configuration ${{ env.Configuration }} --verbosity normal
