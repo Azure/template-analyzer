@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -20,7 +21,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [TestMethod]
         public void WriteResults_Evalutions_ReturnExpectedSarifLog()
         {
-            var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
+            string currentFolder = Path.Combine(Directory.GetCurrentDirectory(), "testRepo");
+            var templateFilePath = new FileInfo(Path.Combine(currentFolder, "AppServices.json"));
             foreach (var evaluations in TestCases.UnitTestCases)
             {
                 var memStream = new MemoryStream();
@@ -78,6 +80,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.Tool.Driver.Version.Should().BeEquivalentTo(Constants.ToolVersion);
             run.Tool.Driver.Organization.Should().BeEquivalentTo(Constants.Organization);
             run.Tool.Driver.InformationUri.OriginalString.Should().BeEquivalentTo(Constants.InformationUri);
+            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(templateFilePath.DirectoryName, UriKind.Absolute));
 
             IList<ReportingDescriptor> rules = run.Tool.Driver.Rules;
             int ruleCount = testcases.Count(t => !t.Passed);

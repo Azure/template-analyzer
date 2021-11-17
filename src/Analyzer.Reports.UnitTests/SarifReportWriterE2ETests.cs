@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -21,7 +22,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         public void AnalyzeTemplateTests()
         {
             // arrange
-            var templateFilePath = new FileInfo(@"C:\Users\User\Azure\SQLServerAuditingSettings.json");
+            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Azure");
+            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
 
             var results = TemplateAnalyzer.Create().AnalyzeTemplate(
                 template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
@@ -45,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.Tool.Driver.Rules.Count.Should().Be(1);
             run.Tool.Driver.Rules.First().Id.Should().BeEquivalentTo(ruleId);
             run.OriginalUriBaseIds.Count.Should().Be(1);
-            run.OriginalUriBaseIds["ROOTPATH"].Uri.OriginalString.Should().BeEquivalentTo("file:///c:/Users/User/Azure");
+            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
             run.Results.Count.Should().Be(8);
             foreach (Result result in run.Results)
             {
@@ -59,21 +61,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         public void AnalyzeDirectoryTests()
         {
             // arrange
-            string targetDirectory = @"e:\github\repo\Azure";
+            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
 
             // act
             var memStream = new MemoryStream();
             using (var writer = SetupWriter(memStream, targetDirectory))
             {
                 var analyzer = TemplateAnalyzer.Create();
-                var templateFilePath = new FileInfo($"{targetDirectory}\\RedisCache.json");
+                var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
                 var results = analyzer.AnalyzeTemplate(
                     template: ReadTemplate("RedisCache.badtemplate"),
                     parameters: null,
                     templateFilePath: templateFilePath.FullName);
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
 
-                templateFilePath = new FileInfo($"{targetDirectory}\\SQLServerAuditingSettings.json");
+                templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
                 results = analyzer.AnalyzeTemplate(
                     template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
                     parameters: null,
@@ -90,7 +92,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
             run.OriginalUriBaseIds.Count.Should().Be(1);
-            run.OriginalUriBaseIds["ROOTPATH"].Uri.OriginalString.Should().BeEquivalentTo("file:///e:/github/repo/Azure");
+            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
 
             run.Results.Count.Should().Be(9);
             foreach (Result result in run.Results)
@@ -114,7 +116,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         private string ReadTemplate(string templateFileName)
         {
-            return File.ReadAllText($"TestTemplates\\{templateFileName}");
+            return File.ReadAllText(Path.Combine("TestTemplates", templateFileName));
         }
 
         private SarifReportWriter SetupWriter(Stream stream, string targetDirectory = null)
