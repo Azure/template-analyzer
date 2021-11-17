@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Also update version in nuspec files for Analyzer.Core and Analyzer.Cli. -->
-    <Version>0.0.2-alpha</Version>
+    <Version>0.1.0</Version>
     <Authors>Microsoft</Authors>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
   </PropertyGroup>
