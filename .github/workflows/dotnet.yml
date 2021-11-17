@@ -1,0 +1,42 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  SlnFile: src/TemplateAnalyzer.sln
+  Configuration: Relesae
+
+jobs:
+  build:
+    name: Build ${{ matrix.osLabel }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+        - os: windows-latest
+          osLabel: Windows
+        - os: ubuntu-latest
+          osLabel: Linux
+          
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SlnFile }}
+      
+    - name: Build
+      run: dotnet build ${{ env.SlnFile }} --configuration ${{ env.Configuration }} --no-restore
+      
+    - name: Test
+      run: dotnet test **/*Tests.csproj --no-build --configuration ${{ env.Configuration }} --verbosity normal
