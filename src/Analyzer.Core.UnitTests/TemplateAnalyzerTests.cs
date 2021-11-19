@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -69,18 +70,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             };
             string template = GenerateTemplate(resourceProperties);
 
+            // Analyze with PowerShell disabled
             var evaluations = templateAnalyzer.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from TTK rules
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
                 usePowerShell: false);
 
-            var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
+            // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
+            Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
 
-            // There should be no evaluations with failures because TTK should not have run
-            foreach(IEvaluation evaluation in evaluationsWithResults)
-            {
-                Assert.IsTrue(evaluation.Passed);
-            }
+            // Analyze with PowerShell enabled
+            evaluations = templateAnalyzer.AnalyzeTemplate(
+                template,
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
+                usePowerShell: true);
+
+            // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
+            Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
         }
 
         private string GenerateTemplate(string[] resourceProperties)
