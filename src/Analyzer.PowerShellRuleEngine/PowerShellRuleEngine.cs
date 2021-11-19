@@ -85,8 +85,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
+
+                    var ruleId = (executionResult.Name as string)?.Replace(" ", "") ?? string.Empty;
                     var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
-                    evaluations.Add(new PowerShellRuleEvaluation("", ruleDescription, false, evaluationResults));
+                    evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, false, evaluationResults));
                 }
             }
 

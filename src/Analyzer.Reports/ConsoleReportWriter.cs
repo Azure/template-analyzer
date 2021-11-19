@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     string resultString = GenerateResultString(evaluation);
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
+                    (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                     $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                     $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                     Console.WriteLine(output);

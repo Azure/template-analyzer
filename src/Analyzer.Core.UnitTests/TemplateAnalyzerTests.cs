@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -56,6 +57,36 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             {
                 Assert.AreEqual(expectedEvaluationPassed, evaluation.Passed);
             }
+        }
+
+        [TestMethod]
+        public void AnalyzeTemplate_NotUsingPowerShell_NoPowerShellViolations()
+        {
+            // Arrange
+            string[] resourceProperties = {
+                GenerateResource(
+                    @"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantIdValue"" } }",
+                    "Microsoft.ServiceFabric/clusters", "resource1")
+            };
+            string template = GenerateTemplate(resourceProperties);
+
+            // Analyze with PowerShell disabled
+            var evaluations = templateAnalyzer.AnalyzeTemplate(
+                template,
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
+                usePowerShell: false);
+
+            // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
+            Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
+
+            // Analyze with PowerShell enabled
+            evaluations = templateAnalyzer.AnalyzeTemplate(
+                template,
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
+                usePowerShell: true);
+
+            // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
+            Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
         }
 
         private string GenerateTemplate(string[] resourceProperties)
