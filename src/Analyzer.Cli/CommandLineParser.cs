@@ -75,7 +75,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             outputFileOption.AddAlias("-o");
             analyzeTemplateCommand.AddOption(outputFileOption);
 
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo>((templateFilePath, parametersFilePath, reportFormat, outputFilePath) => this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath));
+            // Temporary PowerShell rule suppression until it will work nicely with SARIF
+            Option ttkOption = new Option(
+                "--run-ttk",
+                "Run TTK against templates");
+            analyzeTemplateCommand.AddOption(ttkOption);
+
+            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo, bool>(
+                (templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk) =>
+                this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk));
 
             // Setup analyze-directory w/ directory argument 
             Command analyzeDirectoryCommand = new Command(
@@ -91,7 +99,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             analyzeDirectoryCommand.AddOption(outputFileOption);
 
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo>((directoryPath, reportFormat, outputFilePath) => this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath));
+            analyzeDirectoryCommand.AddOption(ttkOption);
+
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo, bool>(
+                (directoryPath, reportFormat, outputFilePath, runTtk) =>
+                this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath, runTtk));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -100,7 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
         {
             bool disposeWriter = false;
             try
@@ -132,7 +144,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 0;
                 }
 
-                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk);
 
                 if (writer == null)
                 {
@@ -158,7 +170,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath)
+        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk)
         {
             try
             {
@@ -188,7 +200,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
-                        int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, false, reportWriter);
+                        int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, runTtk, false, reportWriter);
                         if (res == 1)
                         {
                             numOfSuccesses++;

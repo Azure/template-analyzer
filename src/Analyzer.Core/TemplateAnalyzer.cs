@@ -56,8 +56,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
+        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
@@ -86,7 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
 
-                if (templateContext.TemplateIdentifier != null)
+                if (usePowerShell && templateContext.TemplateIdentifier != null)
                 {
                     var powerShellRuleEngine = new PowerShellRuleEngine();
                     evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));

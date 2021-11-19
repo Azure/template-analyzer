@@ -58,6 +58,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             }
         }
 
+        [TestMethod]
+        public void AnalyzeTemplate_NotUsingPowerShell_NoPowerShellViolations()
+        {
+            // Arrange
+            string[] resourceProperties = {
+                GenerateResource(
+                    @"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantIdValue"" } }",
+                    "Microsoft.ServiceFabric/clusters", "resource1")
+            };
+            string template = GenerateTemplate(resourceProperties);
+
+            var evaluations = templateAnalyzer.AnalyzeTemplate(
+                template,
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from TTK rules
+                usePowerShell: false);
+
+            var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
+
+            // There should be no evaluations with failures because TTK should not have run
+            foreach(IEvaluation evaluation in evaluationsWithResults)
+            {
+                Assert.IsTrue(evaluation.Passed);
+            }
+        }
+
         private string GenerateTemplate(string[] resourceProperties)
         {
             return string.Format(@"{{
