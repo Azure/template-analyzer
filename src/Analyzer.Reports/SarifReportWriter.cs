@@ -183,7 +183,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             }
         }
 
-        internal static string AppendPeriod(string text) => 
+        internal static string AppendPeriod(string text) =>
+            text == null ? string.Empty :
             text.EndsWith(PeriodString, StringComparison.OrdinalIgnoreCase) ? text : text + PeriodString;
 
         /// <inheritdoc/>
