@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             RuleId = ruleId;
             RuleDescription = ruleDescription;
+            Recommendation = string.Empty;
             Passed = passed;
             Results = results;
             Evaluations = new List<IEvaluation>();

@@ -3,7 +3,7 @@
   <metadata>
     <id>Azure.Templates.Analyzer.Core</id>
     <!-- Also update version in Analyzer.Cli nuspec and Directory.Build.props. -->
-    <version>0.0.2-alpha</version>
+    <version>0.1.1</version>
     <authors>Microsoft</authors>
     <description>ARM Template scanner for security misconfiguration and best practices</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>

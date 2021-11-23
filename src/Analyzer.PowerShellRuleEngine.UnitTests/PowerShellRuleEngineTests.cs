@@ -49,6 +49,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             foreach (PowerShellRuleEvaluation evaluation in evaluations)
             {
+                Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleId));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleDescription));
+                Assert.IsNotNull(evaluation.Recommendation);
+
                 if (evaluation.Passed)
                 {
                     Assert.IsFalse(evaluation.HasResults);
@@ -131,13 +135,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             var powerShellRuleEngineWrongPath = new PowerShellRuleEngine();
             var evaluations = powerShellRuleEngineWrongPath.AnalyzeTemplate(templateContext);
-            Assert.AreEqual(0, evaluations.Count());
 
-            System.IO.Directory.Move(wrongTTKFolderName, TTKFolderName);
-
-            var powerShellRuleEngine = new PowerShellRuleEngine();
-            evaluations = powerShellRuleEngine.AnalyzeTemplate(templateContext);
-            Assert.AreEqual(1, evaluations.Count());
+            try
+            {
+                Assert.AreEqual(0, evaluations.Count());
+            }
+            finally
+            {
+                // Ensure directory is moved back in case of test failure
+                System.IO.Directory.Move(wrongTTKFolderName, TTKFolderName);
+            }
         }
 
         [TestMethod]
