@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, bool runTtk, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
         {
             bool disposeWriter = false;
             try
@@ -151,16 +151,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                
-                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, configurationFileContents, usePowerShell: runTtk);
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, configurationFileContents, templateFilePath.FullName, usePowerShell: runTtk);
 
-                var passedEvaluations = 0;
-
-                foreach (var evaluation in evaluations)
+                if (writer == null)
                 {
-                    
-
-                    
-                    
+                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
+                    disposeWriter = true;
                 }
 
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
