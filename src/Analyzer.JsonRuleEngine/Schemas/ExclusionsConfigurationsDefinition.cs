@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public List<int> Severity { get; set; }
 
         /// <summary>
-        /// Gets or sets the RuleIds property.
+        /// Gets or sets the Ids property.
         /// </summary>
         [JsonProperty]
-        public List<string> RuleIds { get; set; }
+        public List<string> Ids { get; set; }
     }
 }

@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         }
 
         /// <inheritdoc/>
-        public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
+        public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null, IFileInfo configurationsFile = null)
         {
             this.RootPath ??= templateFile.DirectoryName;
             var sarifResults = new List<Result>();

@@ -11,7 +11,7 @@ Here are the fields that make up a custom configuration file:
     "exclusions": { … }, // Parameters that are excluded from the BPA execution. More details below.
     "inclusions": { … }, // Only parameters that will be included in the BPA execution. More details below.
     "output": { … }, // How the BPA execution output will be displayed to the user. More details below.
-    "severityReMapping": { … } // Tuple of ruleId and new severity value. Can change a rule's severity.
+    "severityReMapping": { … } // Tuple of Id and new severity value. Can change a rule's severity.
 }
 ```
 
@@ -20,7 +20,7 @@ The `exclusions` object is compromised of the following optional properties:
 ```javascript
 "exclusions": {
     "severity": [int], // Means don't include rules with severities that are in this list in the BPA execution
-    "ruleIds": ["ruleId"] // Means don't include rules that are in this list in the BPA execution
+    "ids": ["Id"] // Means don't include rules that are in this list in the BPA execution
 }
 ```
 If the inclusions object contains values, then the exclusions object will be ignored. 
@@ -29,7 +29,7 @@ If the inclusions object contains values, then the exclusions object will be ign
 The `inclusions` object is compromised of the following optional properties:
 ```javascript
 "inclusions": {
-    "ruleIds": ["ruleId"] // Means only include rules that are in this list in the BPA execution
+    "ids": ["Id"] // Means only include rules that are in this list in the BPA execution
 }
 ```
 If the inclusions object contains values, then the exclusions object will be ignored. 
@@ -45,8 +45,8 @@ The `output` object is compromised of the following optional properties:
 ```
 
 ### Guidelines for severityReMapping tuple [[*]](#note)
-**NOTE: `Output` is not yet supported. 
-The `severityReMapping` is composed of a tuple of rule id and a new severity value. Below is an example of changing the severities on two rules:
+**NOTE: `SeverityReMapping` is not yet supported. 
+The `severityReMapping` is composed of a tuple of id and a new severity value. Below is an example of changing the severities on two rules:
 ```javascript
 "severityReMapping": {
     "TA-000001": 3,

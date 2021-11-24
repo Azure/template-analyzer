@@ -16,13 +16,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         internal static string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
         /// <inheritdoc/>
-        public void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null)
+        public void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null, IFileInfo configurationsFile = null)
         {
             // Log info on file to be analyzed
             string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile}";
             if (parametersFile != null)
             {
                 fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile}";
+            }
+            if (configurationsFile != null)
+            {
+                fileMetadata += Environment.NewLine + $"Configurations File: {configurationsFile}";
             }
             Console.WriteLine(fileMetadata);
 
@@ -39,6 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     string resultString = GenerateResultString(evaluation);
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
+                        $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
                     (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                     $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                     $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";

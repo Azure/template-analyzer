@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     disposeWriter = true;
                 }
 
-                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
+                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath, (FileInfoBase)configurationsFilePath);
 
                 return 1;
             }

@@ -69,10 +69,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
             if (contents.InclusionsConfigurationsDefinition != null)
             {
-                var includeRuleIds = contents.InclusionsConfigurationsDefinition.RuleIds;
+                var includeIds = contents.InclusionsConfigurationsDefinition.Ids;
                 foreach (RuleDefinition rule in RuleDefinitions)
                 {
-                    if (includeRuleIds.Contains(rule.Id))
+                    if (includeIds.Contains(rule.Id))
                     {
                         result.Add(rule);
                     }
@@ -81,11 +81,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             else if (contents.ExclusionsConfigurationsDefinition != null)
             {
                 var excludeSeverities = contents.ExclusionsConfigurationsDefinition.Severity;
-                var excludeRuleIds = contents.ExclusionsConfigurationsDefinition.RuleIds;
+                var excludeIds = contents.ExclusionsConfigurationsDefinition.Ids;
 
                 foreach (RuleDefinition rule in RuleDefinitions)
                 {
-                    if (!excludeSeverities.Contains(rule.Severity) || !excludeRuleIds.Contains(rule.Id))
+                    if (!excludeSeverities.Contains(rule.Severity) || !excludeIds.Contains(rule.Id))
                         result.Add(rule);
                 }
             }
@@ -141,6 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                 {
                     currentRule = rule.Id;
                     rule.Expression = rule.ExpressionDefinition.ToExpression();
+                    rule.Severity = rule.Severity == default ? 2 : rule.Severity;
                 }
             }
             catch (Exception e)
