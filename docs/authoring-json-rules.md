@@ -21,7 +21,7 @@ Here are the fields that make up a rule definition.
 - The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md).
 - The `recommendation` should provide clear but concise guidance on how to modify a template if the rule fails.  If some details are somewhat complex, or the rule takes a bit more to understand, add those details to a guide accessible at the URI in `helpUri`.
 - The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository.
-- The `severity` is optional. If no severity is provided, it evalutes to 2 by default.
+- The `severity` is optional. If no severity is provided, it defaults to a severity of 2.
 
 ## Evaluation Object
 The `Evaluation` is comprised of the following basic properties.

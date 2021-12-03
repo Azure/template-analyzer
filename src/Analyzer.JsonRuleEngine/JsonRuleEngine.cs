@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
         private readonly BuildILineNumberResolver BuildLineNumberResolver;
-        internal IList<RuleDefinition> RuleDefinitions;
+        internal IReadOnlyList<RuleDefinition> RuleDefinitions;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
@@ -57,19 +57,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             var result = new List<RuleDefinition>();
 
-            ConfigurationsDefinition contents;
+            ConfigurationDefinition contents;
             try
             {
-                contents = JsonConvert.DeserializeObject<ConfigurationsDefinition>(configuration);
+                contents = JsonConvert.DeserializeObject<ConfigurationDefinition>(configuration);
             }
             catch (Exception e)
             {
                 throw new JsonRuleEngineException($"Failed to parse configurations file.", e);
             }
 
-            if (contents.InclusionsConfigurationsDefinition != null)
+            if (contents.InclusionsConfigurationDefinition != null)
             {
-                var includeIds = contents.InclusionsConfigurationsDefinition.Ids;
+                var includeIds = contents.InclusionsConfigurationDefinition.Ids;
                 foreach (RuleDefinition rule in RuleDefinitions)
                 {
                     if (includeIds.Contains(rule.Id))
@@ -78,16 +78,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                     }
                 }
             }
-            else if (contents.ExclusionsConfigurationsDefinition != null)
+            else if (contents.ExclusionsConfigurationDefinition != null)
             {
-                var excludeSeverities = contents.ExclusionsConfigurationsDefinition.Severity;
-                var excludeIds = contents.ExclusionsConfigurationsDefinition.Ids;
+                var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
+                var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
 
                 foreach (RuleDefinition rule in RuleDefinitions)
                 {
                     if (!excludeSeverities.Contains(rule.Severity) || !excludeIds.Contains(rule.Id))
                         result.Add(rule);
                 }
+            }
+            else
+            {
+                return;
             }
             
             // Update rules to select desired rules

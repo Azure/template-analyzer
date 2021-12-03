@@ -119,15 +119,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="configurations">Optional Command-line Configurations paramater.</param>
         /// <returns>Configurations file path if exists.</returns>
-        private string LoadConfiguration(string configurations)
+        public string LoadConfiguration(string configurations)
         {
             try
             {
                 if (configurations == null)
                 {
-                    var defaultPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) +
-                        "/Configurations/Configuration.json";
-                    if (Path.GetFileName(defaultPath) != null)
+                    var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        "/Configurations/Configuration.json");
+                    if (File.Exists(defaultPath))
                         return File.ReadAllText(defaultPath);
                     else
                         return null;

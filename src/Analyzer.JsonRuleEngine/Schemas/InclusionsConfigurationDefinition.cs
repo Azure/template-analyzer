@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 {
-    class InclusionsConfigurationsDefinition
+    internal class InclusionsConfigurationDefinition
     {
         /// <summary>
         /// Gets or sets the Ids property.

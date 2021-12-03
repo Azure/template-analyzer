@@ -7,9 +7,9 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
 {
     /// <summary>
-    /// The base class for all Exclusions schemas in JSON configurations.
+    /// The base class for all Exclusions schemas in JSON configuration.
     /// </summary>
-    internal abstract class ExclusionsConfigurationsDefinition
+    internal class ExclusionsConfigurationDefinition
     {
         /// <summary>
         /// Gets or sets the Severity property.
