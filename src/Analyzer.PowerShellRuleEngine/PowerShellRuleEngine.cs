@@ -7,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using System.Management.Automation.Runspaces;
 
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
@@ -22,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Execution environment for PowerShell
         /// </summary>
-        private readonly Powershell powerShell;
+        private readonly Runspace runspace;
 
         /// <summary>
         /// Regex that matches a string like: " on line: aNumber"
@@ -34,13 +36,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// </summary>
         public PowerShellRuleEngine()
         {
-            this.powerShell = Powershell.Create();
+            var initialState = InitialSessionState.CreateDefault();
 
-            powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time
-            powerShell.AddStatement();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Ensure we can execute the signed bundled scripts.
+                // (This sets the policy at the Process scope.)
+                // When custom PS rules are supported, we may need to update this to be more relaxed.
+                initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
+            }
 
-            powerShell.Invoke();
+            // Import ARM-TTK module.
+            // It's copied to the bin directory as part of the build process.
+            var powershell = Powershell.Create(initialState);
+            powershell.AddCommand("Import-Module")
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1")
+                .Invoke();
+
+            if (!powershell.HadErrors)
+            {
+                // Save the runspace with TTK loaded
+                this.runspace = powershell.Runspace; 
+            }
         }
 
         /// <summary>
@@ -56,11 +73,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
             }
 
-            this.powerShell.Commands.AddCommand("Test-AzTemplate")
-                .AddParameter("Test", "deploymentTemplate")
-                .AddParameter("TemplatePath", templateContext.TemplateIdentifier);
+            if (runspace == null)
+            {
+                // There was an error loading the TTK module.  Return an empty collection.
+                return Enumerable.Empty<IEvaluation>();
+            }
 
-            var executionResults = this.powerShell.Invoke();
+            var executionResults = Powershell.Create(runspace)
+                .AddCommand("Test-AzTemplate")
+                .AddParameter("Test", "deploymentTemplate")
+                .AddParameter("TemplatePath", templateContext.TemplateIdentifier)
+                .Invoke();
 
             var evaluations = new List<PowerShellRuleEvaluation>();
 
