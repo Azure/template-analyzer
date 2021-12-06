@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="configuration">The template configurations to filter and analyze.</param>
         public void FilterRules(string configuration)
         {
-            var result = new List<RuleDefinition>();
+            var filteredRules = new List<RuleDefinition>();
 
             ConfigurationDefinition contents;
             try
@@ -69,12 +69,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
             if (contents.InclusionsConfigurationDefinition != null)
             {
+                var includeSeverities = contents.InclusionsConfigurationDefinition.Severity;
                 var includeIds = contents.InclusionsConfigurationDefinition.Ids;
                 foreach (RuleDefinition rule in RuleDefinitions)
                 {
-                    if (includeIds.Contains(rule.Id))
+                    if (includeSeverities.Contains(rule.Severity) || includeIds.Contains(rule.Id))
                     {
-                        result.Add(rule);
+                        filteredRules.Add(rule);
                     }
                 }
             }
@@ -86,16 +87,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                 foreach (RuleDefinition rule in RuleDefinitions)
                 {
                     if (!excludeSeverities.Contains(rule.Severity) || !excludeIds.Contains(rule.Id))
-                        result.Add(rule);
+                        filteredRules.Add(rule);
                 }
             }
             else
             {
+                // Return original rule set - Configurations File does not have (supported) filters
                 return;
             }
             
             // Update rules to select desired rules
-            RuleDefinitions = result;
+            RuleDefinitions = filteredRules;
         }
 
         /// <summary>

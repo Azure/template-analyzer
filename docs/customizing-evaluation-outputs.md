@@ -28,7 +28,8 @@ If the inclusions object contains values, then the exclusions object will be ign
 The `inclusions` object is comprised of the following optional properties:
 ```javascript
 "inclusions": {
-    "ids": ["Id"] // List of ids to only include in results. Any ids not in the list will be omitted from results
+    "severity": [int], // List of severities to include in results. Any rules with matching severities will be included in results
+    "ids": ["Id"] // List of ids to include in results. Any rules with matching ids will be included in results
 }
 ```
 If the inclusions object contains values, then the exclusions object will be ignored. 

@@ -4,12 +4,12 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
+namespace Microsoft.Azure.Templates.Analyzer.Types
 {
     /// <summary>
-    /// The base class for all Exclusions schemas in JSON configuration.
+    /// Gets or sets the InclusionsConfigurationDefinition.
     /// </summary>
-    internal class ExclusionsConfigurationDefinition
+    public class InclusionsConfigurationDefinition
     {
         /// <summary>
         /// Gets or sets the Severity property.

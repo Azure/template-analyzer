@@ -4,12 +4,12 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
+namespace Microsoft.Azure.Templates.Analyzer.Types
 {
     /// <summary>
     /// Represents a configuration file written in JSON.
     /// </summary>
-    internal class ConfigurationDefinition
+    public class ConfigurationDefinition
     {
         /// <summary>
         /// Gets or sets the exclusion details of the configuration.
