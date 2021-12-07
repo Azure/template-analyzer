@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,20 +15,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
     public class PowerShellRuleEngineTests
     {
         private readonly string templatesFolder = @"templates\";
+        private static PowerShellRuleEngine powerShellRuleEngine;
 
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var powerShell = Powershell.Create();
-
-                powerShell.Commands.AddCommand("Set-ExecutionPolicy")
-                    .AddParameter("Scope", "Process") // Affects only the current PowerShell session
-                    .AddParameter("ExecutionPolicy", "Unrestricted");
-
-                powerShell.Invoke();
-            }
+            powerShellRuleEngine = new PowerShellRuleEngine();
         }
 
         [DataTestMethod]
@@ -41,7 +32,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
             var templateContext = new TemplateContext { TemplateIdentifier = templatesFolder + templateFileName };
-            var powerShellRuleEngine = new PowerShellRuleEngine();
 
             var evaluations = powerShellRuleEngine.AnalyzeTemplate(templateContext);
 
@@ -82,7 +72,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         public void AnalyzeTemplate_RepeatedErrorSameMessage_ReturnsExpectedEvaluations()
         {
             var templateContext = new TemplateContext { TemplateIdentifier = templatesFolder + "repeated_error_same_message_different_lines.json" };
-            var powerShellRuleEngine = new PowerShellRuleEngine();
 
             var evaluations = powerShellRuleEngine.AnalyzeTemplate(templateContext);
 
@@ -104,7 +93,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         public void AnalyzeTemplate_RepeatedErrorDifferentMessage_ReturnsExpectedEvaluations()
         {
             var templateContext = new TemplateContext { TemplateIdentifier = templatesFolder + "repeated_error_different_message.json" };
-            var powerShellRuleEngine = new PowerShellRuleEngine();
 
             var evaluations = powerShellRuleEngine.AnalyzeTemplate(templateContext);
 
@@ -134,11 +122,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             System.IO.Directory.Move(TTKFolderName, wrongTTKFolderName);
 
-            var powerShellRuleEngineWrongPath = new PowerShellRuleEngine();
-            var evaluations = powerShellRuleEngineWrongPath.AnalyzeTemplate(templateContext);
-
             try
             {
+                var powerShellRuleEngineWrongPath = new PowerShellRuleEngine();
+                var evaluations = powerShellRuleEngineWrongPath.AnalyzeTemplate(templateContext);
+
                 Assert.AreEqual(0, evaluations.Count());
             }
             finally
@@ -152,14 +140,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [ExpectedException(typeof(ArgumentException))]
         public void AnalyzeTemplate_NullTemplateContext_ThrowsException()
         {
-            new PowerShellRuleEngine().AnalyzeTemplate(null);
+            powerShellRuleEngine.AnalyzeTemplate(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void AnalyzeTemplate_NullTemplateIdentifier_ThrowsException()
         {
-            new PowerShellRuleEngine().AnalyzeTemplate(new TemplateContext());
+            powerShellRuleEngine.AnalyzeTemplate(new TemplateContext());
         }
     }
 }
