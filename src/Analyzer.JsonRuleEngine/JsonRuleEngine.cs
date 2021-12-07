@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -52,11 +53,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <summary>
         /// Modifies the rules to run based on values defined in the configurations file.
         /// </summary>
-        /// <param name="configuration">The template configurations to filter and analyze.</param>
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
         public void FilterRules(string configuration)
         {
-            var filteredRules = new List<RuleDefinition>();
-
             ConfigurationDefinition contents;
             try
             {
@@ -71,33 +70,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             {
                 var includeSeverities = contents.InclusionsConfigurationDefinition.Severity;
                 var includeIds = contents.InclusionsConfigurationDefinition.Ids;
-                foreach (RuleDefinition rule in RuleDefinitions)
-                {
-                    if (includeSeverities.Contains(rule.Severity) || includeIds.Contains(rule.Id))
-                    {
-                        filteredRules.Add(rule);
-                    }
-                }
+                RuleDefinitions = RuleDefinitions.Where(r => includeSeverities.Contains(r.Severity) || includeIds.Contains(r.Id)).ToList().AsReadOnly();
             }
             else if (contents.ExclusionsConfigurationDefinition != null)
             {
                 var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
                 var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
 
-                foreach (RuleDefinition rule in RuleDefinitions)
-                {
-                    if (!excludeSeverities.Contains(rule.Severity) || !excludeIds.Contains(rule.Id))
-                        filteredRules.Add(rule);
-                }
+                RuleDefinitions = RuleDefinitions.Where(r => !excludeSeverities.Contains(r.Severity) || !excludeIds.Contains(r.Id)).ToList().AsReadOnly();
             }
-            else
-            {
-                // Return original rule set - Configurations File does not have (supported) filters
-                return;
-            }
-            
-            // Update rules to select desired rules
-            RuleDefinitions = filteredRules;
         }
 
         /// <summary>
@@ -147,7 +128,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                 {
                     currentRule = rule.Id;
                     rule.Expression = rule.ExpressionDefinition.ToExpression();
-                    rule.Severity = rule.Severity == default ? 2 : rule.Severity;
                 }
             }
             catch (Exception e)

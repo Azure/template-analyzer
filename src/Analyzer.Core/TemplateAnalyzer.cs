@@ -55,11 +55,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
-        /// <param name="configurations">The configurations for the Template Analyzer <c>JSON</c></param>
+        /// <param name="configuration">The configuration file for the Template Analyzer <c>JSON</c></param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string configurations = null, string templateFilePath = null, bool usePowerShell = true)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string configuration = null, string templateFilePath = null, bool usePowerShell = true)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
@@ -86,9 +86,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                var configuration = LoadConfiguration(configurations);
-                if (configuration != null)
-                    jsonRuleEngine.FilterRules(configuration);
+                var config = GetConfigurationFileContents(configuration);
+                if (config != null)
+                    jsonRuleEngine.FilterRules(config);
 
                 IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
 
@@ -115,15 +115,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
-        /// Loads the configurations file from default directory if no file was passed as an optional parameter.
+        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
         /// </summary>
-        /// <param name="configurations">Optional Command-line Configurations paramater.</param>
-        /// <returns>Configurations file path if exists.</returns>
-        public string LoadConfiguration(string configurations)
+        /// <param name="configuration">The path to a configuration file to read.</param>
+        /// <returns>Configuration file path contents if a file exists.</returns>
+        public string GetConfigurationFileContents(string configuration)
         {
             try
             {
-                if (configurations == null)
+                if (configuration == null)
                 {
                     var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                         "/Configurations/Configuration.json");
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         return null;
                 }
 
-                return File.ReadAllText(configurations);
+                return File.ReadAllText(configuration);
             }
             catch (Exception e)
             {

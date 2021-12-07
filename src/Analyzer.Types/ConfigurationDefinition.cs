@@ -22,10 +22,5 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         [JsonProperty(PropertyName = "inclusions")]
         public InclusionsConfigurationDefinition InclusionsConfigurationDefinition { get; set; }
-
-        /// <summary>
-        /// Gets or sets the severity overrides of the configuration
-        /// </summary>
-        public String SeverityOverrides { get; set; }
     }
 }

@@ -18,8 +18,8 @@ Here are the fields that make up a custom configuration file:
 The `exclusions` object is comprised of the following optional properties:
 ```javascript
 "exclusions": {
-    "severity": [int], // List of severities to not include in results. Any rules with matching severities will be omitted from results
-    "ids": ["Id"] // List of ids to not include in results. Any rules with matching ids will be omitted from results
+    "severity": [int], // List of severities to exclude from results. Any rules with matching severities will be omitted from results.
+    "ids": ["Id"] // List of ids to exclude from results. Any rules with matching ids will be omitted from results.
 }
 ```
 If the inclusions object contains values, then the exclusions object will be ignored. 
@@ -28,13 +28,13 @@ If the inclusions object contains values, then the exclusions object will be ign
 The `inclusions` object is comprised of the following optional properties:
 ```javascript
 "inclusions": {
-    "severity": [int], // List of severities to include in results. Any rules with matching severities will be included in results
-    "ids": ["Id"] // List of ids to include in results. Any rules with matching ids will be included in results
+    "severity": [int], // List of severities to include in results.
+    "ids": ["Id"] // List of ids to include in results. 
 }
 ```
-If the inclusions object contains values, then the exclusions object will be ignored. 
+Only rules with matching severities and ids will be included in results. If the inclusions object contains values, then the exclusions object will be ignored. 
 
-### SeverityOverrides Tuple [[*]](#note)
+### SeverityOverrides Object [[*]](#note)
 **NOTE: `severityOverrides` is not yet supported. 
 The `severityOverrides` is composed of a key-value pairs of id and a new severity value. Below is an example of changing the severities on two rules:
 ```javascript

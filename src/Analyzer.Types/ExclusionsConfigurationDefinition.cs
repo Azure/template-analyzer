@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
     /// <summary>
-    /// Gets or sets the ExclusionsConfigurationDefinition.
+    /// The exclusions defined in a <see cref="ConfigurationDefinition"/>.
     /// </summary>
     public class ExclusionsConfigurationDefinition
     {
