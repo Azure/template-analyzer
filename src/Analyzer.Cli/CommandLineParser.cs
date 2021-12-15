@@ -13,6 +13,7 @@ using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -64,16 +65,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             parameterOption.AddAlias("-p");
             analyzeTemplateCommand.AddOption(parameterOption);
 
-            Option<ReportFormat> reportFormatOption = new Option<ReportFormat>(
-                "--report-format",
-                "Format of report to be generated");
-            analyzeTemplateCommand.AddOption(reportFormatOption);
-
             Option<FileInfo> configurationOption = new Option<FileInfo>(
                  "--config-file-path",
                  "The configuration file to use when parsing the specified ARM template");
             configurationOption.AddAlias("-c");
             analyzeTemplateCommand.AddOption(configurationOption);
+
+            Option<ReportFormat> reportFormatOption = new Option<ReportFormat>(
+                "--report-format",
+                "Format of report to be generated");
+            analyzeTemplateCommand.AddOption(reportFormatOption);
 
             Option<FileInfo> outputFileOption = new Option<FileInfo>(
                 "--output-file-path",
@@ -101,14 +102,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "The directory to find ARM templates");
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
+            analyzeDirectoryCommand.AddOption(configurationOption);
             analyzeDirectoryCommand.AddOption(reportFormatOption);
             analyzeDirectoryCommand.AddOption(outputFileOption);
-            analyzeDirectoryCommand.AddOption(configurationOption);
             analyzeDirectoryCommand.AddOption(ttkOption);
 
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo, FileInfo, bool>(
-                (directoryPath, reportFormat, outputFilePath, configurationsFilePath, runTtk) =>
-                this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath, configurationsFilePath, runTtk));
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo, ReportFormat, FileInfo, bool>(
+                (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk) =>
+                this.AnalyzeDirectory(directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -117,7 +118,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true)
         {
             bool disposeWriter = false;
             try
@@ -138,7 +139,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
-                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
+
+                if (readConfigurationFile)
+                {
+                    var configuration = GetConfigurationFileContents(configurationsFilePath);
+                    if (configuration != null)
+                        templateAnalyzer.FilterRules(configuration);
+                }
 
                 // Check that the schema is valid
                 if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
@@ -149,9 +156,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     }
                     return 0;
                 }
-
                
-                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, configurationFileContents, templateFilePath.FullName, usePowerShell: runTtk);
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk);
 
                 if (writer == null)
                 {
@@ -177,7 +183,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, FileInfo configurationsFilePath, bool runTtk)
+        private void AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk)
         {
             try
             {
@@ -194,16 +200,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return;
                 }
 
-                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
+                var configuration = GetConfigurationFileContents(configurationsFilePath);
+                if (configuration != null)
+                    templateAnalyzer.FilterRules(configuration);
 
                 // Find files to analyze
                 var filesToAnalyze = new List<FileInfo>();
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
                 // Log root directory info to be analyzed
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
-                if (configurationsFilePath != null)
-                    Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {configurationsFilePath}");    
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");   
 
                 int numOfSuccesses = 0;
                 using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
@@ -211,7 +217,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
-                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, false, reportWriter);
+                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, false, reportWriter, false);
                         if (res == 1)
                         {
                             numOfSuccesses++;
@@ -293,6 +299,40 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             }
             return new ConsoleReportWriter();
+        }
+
+        /// <summary>
+        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
+        /// </summary>
+        /// <param name="configurationsFilePath">The path to a configuration file to read.</param>
+        /// <returns>Configuration file path contents if a file exists.</returns>
+        private string GetConfigurationFileContents(FileInfo configurationsFilePath)
+        {
+            try
+            {
+                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
+                if (configurationFileContents == null)
+                {
+                    var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        "/Configurations/Configuration.json");
+                    if (File.Exists(defaultPath))
+                    {
+                        Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {defaultPath}");
+                        return File.ReadAllText(defaultPath);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {configurationsFilePath}");
+                return File.ReadAllText(configurationFileContents);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed to read configurations file.", e);
+            }
         }
     }
 }

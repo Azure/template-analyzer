@@ -1,11 +1,13 @@
-# Test Project for Built-in Rules
-This project is designed for quickly adding tests to verify the correctness of built-in rules.  When new rules are added, tests should be added here to make sure the rule is written correctly and help protect against incorrect changes to the rule.
+# Test Project for the Configuration File
+This project is designed for quickly adding tests to verify the correctness of the configuration file.  When new properties are added to the configuration file, tests should be added here to make sure the configuration file is written correctly and help protect against incorrect changes to the configuration file.
 
 ## Test Setup
-A test (or tests) for a given rule consists of 2 parts (each part is described in more detail below):
+A test (or tests) for a given configuration file consists of 2 parts (each part is described in more detail below):
 1. A JSON configuration describing the test(s).  This configuration is in the *Tests* directory.
-2. One or more test ARM templates to analyze.  These templates are in the *TestTemplates* directory.
-The Template Analyzer is run against the test ARM templates. The results of the analysis are compared with the test configuration to assert correctness of the rule.
+2. One or more test JSON configuration files to analyze.  These files are in the *TestFiles* directory.
+The Template Analyzer is run against the test configuration files. The results of the analysis are compared with the test configuration to assert correctness of the configuration file analyzer.
+
+# TODO update below
 
 ### JSON Configuration
 To create a set of tests for a rule, a new JSON file is created in the *Tests* directory.  **The name of the file must be the same as the `name` property of the JSON rule**, with ".json" as the file extension.

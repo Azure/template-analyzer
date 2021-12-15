@@ -55,11 +55,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
-        /// <param name="configuration">The configuration file for the Template Analyzer <c>JSON</c></param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string configuration = null, string templateFilePath = null, bool usePowerShell = true)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
@@ -86,10 +85,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                var config = GetConfigurationFileContents(configuration);
-                if (config != null)
-                    jsonRuleEngine.FilterRules(config);
-
                 IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
 
                 if (usePowerShell && templateContext.TemplateIdentifier != null)
@@ -115,30 +110,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
-        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
+        /// Modifies the rules to run based on values defined in the configurations file.
         /// </summary>
-        /// <param name="configuration">The path to a configuration file to read.</param>
-        /// <returns>Configuration file path contents if a file exists.</returns>
-        public string GetConfigurationFileContents(string configuration)
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(string configuration)
         {
-            try
-            {
-                if (configuration == null)
-                {
-                    var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "/Configurations/Configuration.json");
-                    if (File.Exists(defaultPath))
-                        return File.ReadAllText(defaultPath);
-                    else
-                        return null;
-                }
-
-                return File.ReadAllText(configuration);
-            }
-            catch (Exception e)
-            {
-                throw new TemplateAnalyzerException($"Failed to read configurations file.", e);                
-            } 
+            jsonRuleEngine.FilterRules(configuration);
         }
     }
 }
