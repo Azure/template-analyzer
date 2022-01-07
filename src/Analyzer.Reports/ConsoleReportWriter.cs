@@ -15,8 +15,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         internal static string IndentedNewLine = Environment.NewLine + "\t";
         internal static string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
+        private IFileInfo configurationsFile;
+
+        /// <summary>
+        /// Constructor of the SarifReportWriter class
+        /// </summary>
+        /// <param name="configurationsFilePath">The configuration file that will be used</param>
+        public ConsoleReportWriter(IFileInfo configurationsFilePath = null)
+        {
+            this.configurationsFile = configurationsFilePath;
+        }
+
         /// <inheritdoc/>
-        public void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null, IFileInfo configurationsFile = null)
+        public void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null)
         {
             // Log info on file to be analyzed
             string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile}";

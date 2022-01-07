@@ -42,7 +42,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleId));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleDescription));
                 Assert.IsNotNull(evaluation.Recommendation);
-                Assert.IsNotNull(evaluation.Severity);
 
                 if (evaluation.Passed)
                 {
