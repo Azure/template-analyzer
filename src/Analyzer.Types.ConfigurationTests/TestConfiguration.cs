@@ -3,8 +3,6 @@
 
 using Newtonsoft.Json;
 
-//TODO : Update
-
 namespace Analyzer.Types.ConfigurationTests
 {
     [JsonObject]
@@ -12,6 +10,9 @@ namespace Analyzer.Types.ConfigurationTests
     {
         [JsonProperty]
         public string Template;
+
+        [JsonProperty]
+        public string Configuration;
 
         [JsonProperty]
         public ExpectedRuleFailure[] ReportedFailures;
@@ -23,6 +24,9 @@ namespace Analyzer.Types.ConfigurationTests
     public class ExpectedRuleFailure
     {
         [JsonProperty]
-        public int LineNumber;
+        public string Id;
+
+        [JsonProperty]
+        public int Severity;
     }
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "Template": "AppServicesFTPS",
+    "Configuration": "SeverityOneOnly",
+    "ReportedFailures": [
+      {
+        "Id": "TA-000003",
+        "Severity": 1
+      }
+    ]
+  }
+]

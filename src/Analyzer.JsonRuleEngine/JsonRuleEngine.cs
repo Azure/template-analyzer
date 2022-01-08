@@ -70,14 +70,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             {
                 var includeSeverities = contents.InclusionsConfigurationDefinition.Severity;
                 var includeIds = contents.InclusionsConfigurationDefinition.Ids;
-                RuleDefinitions = RuleDefinitions.Where(r => includeSeverities.Contains(r.Severity) || includeIds.Contains(r.Id)).ToList().AsReadOnly();
+
+                RuleDefinitions = RuleDefinitions.Where(r => (includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
+                    (includeIds != null && includeIds.Contains(r.Id))).ToList().AsReadOnly();
             }
             else if (contents.ExclusionsConfigurationDefinition != null)
             {
                 var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
                 var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
 
-                RuleDefinitions = RuleDefinitions.Where(r => !excludeSeverities.Contains(r.Severity) || !excludeIds.Contains(r.Id)).ToList().AsReadOnly();
+                RuleDefinitions = RuleDefinitions.Where(r => (excludeSeverities != null && !excludeSeverities.Contains(r.Severity)) ||
+                    (excludeIds != null && !excludeIds.Contains(r.Id))).ToList().AsReadOnly();
             }
         }
 

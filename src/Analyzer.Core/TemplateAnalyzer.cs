@@ -110,12 +110,48 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
+        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
+        /// </summary>
+        /// <param name="configurationsFilePath">The path to a configuration file to read.</param>
+        /// <returns>Configuration file path contents if a file exists.</returns>
+        private string GetConfigurationFileContents(FileInfo configurationsFilePath)
+        {
+            try
+            {
+                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
+                if (configurationFileContents == null)
+                {
+                    var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        "/Configurations/Configuration.json");
+                    if (File.Exists(defaultPath))
+                    {
+                        Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {defaultPath}");
+                        return File.ReadAllText(defaultPath);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {configurationsFilePath}");
+                return configurationFileContents;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed to read configurations file.", e);
+            }
+        }
+
+        /// <summary>
         /// Modifies the rules to run based on values defined in the configurations file.
         /// </summary>
-        /// <param name="configuration">The configuration specifying rule modifications.</param>
-        public void FilterRules(string configuration)
+        /// <param name="configurationsFilePath">The configuration specifying rule modifications.</param>
+        public void FilterRules(FileInfo configurationsFilePath)
         {
-            jsonRuleEngine.FilterRules(configuration);
+            var configuration = GetConfigurationFileContents(configurationsFilePath);
+            if (configuration != null)
+                jsonRuleEngine.FilterRules(configuration);
         }
     }
 }

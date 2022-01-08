@@ -142,9 +142,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 if (readConfigurationFile)
                 {
-                    var configuration = GetConfigurationFileContents(configurationsFilePath);
-                    if (configuration != null)
-                        templateAnalyzer.FilterRules(configuration);
+                    templateAnalyzer.FilterRules(configurationsFilePath);
                 }
 
                 // Check that the schema is valid
@@ -200,9 +198,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return;
                 }
 
-                var configuration = GetConfigurationFileContents(configurationsFilePath);
-                if (configuration != null)
-                    templateAnalyzer.FilterRules(configuration);
+                templateAnalyzer.FilterRules(configurationsFilePath);
 
                 // Find files to analyze
                 var filesToAnalyze = new List<FileInfo>();
@@ -299,40 +295,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             }
             return new ConsoleReportWriter();
-        }
-
-        /// <summary>
-        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
-        /// </summary>
-        /// <param name="configurationsFilePath">The path to a configuration file to read.</param>
-        /// <returns>Configuration file path contents if a file exists.</returns>
-        private string GetConfigurationFileContents(FileInfo configurationsFilePath)
-        {
-            try
-            {
-                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
-                if (configurationFileContents == null)
-                {
-                    var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "/Configurations/Configuration.json");
-                    if (File.Exists(defaultPath))
-                    {
-                        Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {defaultPath}");
-                        return File.ReadAllText(defaultPath);
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {configurationsFilePath}");
-                return File.ReadAllText(configurationFileContents);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to read configurations file.", e);
-            }
         }
     }
 }

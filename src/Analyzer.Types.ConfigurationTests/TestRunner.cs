@@ -11,14 +11,11 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-//TODO : Update
-
 namespace Analyzer.Types.ConfigurationTests
 {
     [TestClass]
     public class TestRunner
     {
-        Dictionary<string, IEnumerable<IEvaluation>> templateEvaluations = new();
         static TemplateAnalyzer templateAnalyzer;
 
         [ClassInitialize]
@@ -35,47 +32,31 @@ namespace Analyzer.Types.ConfigurationTests
         [DynamicData(nameof(GetTests), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
         public void TestRule(TestConfiguration ruleExpectations)
         {
+            // Get configuration to analyze
+            var testConfigurationPath = Path.Combine("TestConfigurations", $"{ruleExpectations.Configuration}.testconfiguration");
+
             // Get template to analyze
             var testTemplatePath = Path.Combine("TestTemplates", $"{ruleExpectations.Template}.badtemplate");
             var testTemplate = File.ReadAllText(testTemplatePath);
 
-            // If not already analyzed, analyze it and store evaluations
-            if (!templateEvaluations.TryGetValue(testTemplatePath, out var results))
-            {
-                results = templateAnalyzer.AnalyzeTemplate(testTemplate);
-                templateEvaluations[testTemplatePath] = results;
-            }
+            // Run the analyzer
+            templateAnalyzer.FilterRules(new FileInfo(testConfigurationPath));
+            var results = templateAnalyzer.AnalyzeTemplate(testTemplate);
 
-            // Find any instances of the rule being tested
-            // Exception containing "Sequence contains no elements" likely means you did 
-            // not name the test file the same name as the rule
-            var thisRuleEvaluation = results.ToList().Where(e => e.RuleId.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
+            // Extract Id and Severity list
+            var thisRuleEvaluationIds = results.ToList().Where(e => !e.Passed).Select(e => e.RuleId).ToHashSet();
+            var thisRuleEvaluationSeverities = results.ToList().Where(e => !e.Passed).Select(e => e.Severity).ToHashSet();
 
-            // If there are no expected failures, the evaluation should have passed
-            Assert.AreEqual(ruleExpectations.ReportedFailures.Length == 0, thisRuleEvaluation.Passed);
+            // Verify all expected lines are reported
+            var expectedIds = ruleExpectations.ReportedFailures.Select(failure => failure.Id).ToHashSet();
+            var expectedSeverities = ruleExpectations.ReportedFailures.Select(failure => failure.Severity).ToHashSet();
 
-            if (!thisRuleEvaluation.Passed)
-            {
-                // Get all lines reported as failed
-                var failingLines = thisRuleEvaluation.Evaluations
-                    .Where(e => !e.Passed)
-                    .Select(e => GetAllResults(e))
-                    .SelectMany(rs => rs.Where(r => !r.Passed)
-                                    .Select(r => r.LineNumber)
-                                    .ToList())
-                    .ToHashSet();
-
-                failingLines.UnionWith(thisRuleEvaluation.Results
-                    .Where(r => !r.Passed)
-                    .Select(r => r.LineNumber)
-                    .ToHashSet());
-
-                // Verify all expected lines are reported
-                var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
-                Assert.IsTrue(failingLines.SetEquals(expectedLines),
-                    "Expected failing lines do not match actual failed lines.  " +
-                    $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]");
-            }
+            Assert.IsTrue(thisRuleEvaluationIds.SetEquals(expectedIds),
+                "Expected failing rule Ids do not match actual failed lines.  " +
+                $"Expected: [{string.Join(",", expectedIds)}]  Actual: [{string.Join(",", thisRuleEvaluationIds)}]");
+            Assert.IsTrue(thisRuleEvaluationSeverities.SetEquals(expectedSeverities),
+                "Expected failing rule Severities do not match actual failed lines.  " +
+                $"Expected: [{string.Join(",", expectedSeverities)}]  Actual: [{string.Join(",", thisRuleEvaluationSeverities)}]");
         }
 
         /// <summary>
