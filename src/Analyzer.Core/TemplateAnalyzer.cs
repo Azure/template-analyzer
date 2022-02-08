@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 else
                 {
                     path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "/Configurations/Configuration.json");
+                        "Configurations", "Configuration.json");
                     if (!File.Exists(path))
                     {
                         return null;
