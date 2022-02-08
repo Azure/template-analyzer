@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 if (configurationFileContents == null)
                 {
                     var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "/Configurations/Configuration.json");
+                        "Configurations", "Configuration.json");
                     if (File.Exists(defaultPath))
                     {
                         Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {defaultPath}");
