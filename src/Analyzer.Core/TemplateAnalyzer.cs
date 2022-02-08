@@ -118,28 +118,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             try
             {
-                string configurationFileContents = configurationsFilePath == null ? null : File.ReadAllText(configurationsFilePath.FullName);
-                if (configurationFileContents == null)
+                string path;
+                if (configurationsFilePath != null)
                 {
-                    var defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    path = configurationsFilePath.FullName;
+                }
+                else
+                {
+                    path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                         "/Configurations/Configuration.json");
-                    if (File.Exists(defaultPath))
-                    {
-                        Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {defaultPath}");
-                        return File.ReadAllText(defaultPath);
-                    }
-                    else
+                    if (!File.Exists(path))
                     {
                         return null;
                     }
                 }
 
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {configurationsFilePath}");
-                return configurationFileContents;
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {path}");
+                return File.ReadAllText(path);
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed to read configurations file.", e);
+                throw new TemplateAnalyzerException($"Failed to read configurations file.", e);
             }
         }
 

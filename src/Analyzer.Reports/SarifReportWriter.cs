@@ -33,9 +33,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// Constructor of the SarifReportWriter class
         /// </summary>
         /// <param name="reportFile">File where the report will be written</param>
-        /// <param name="configurationsFilePath">The configuration file that will be used</param>
         /// <param name="targetPath">The directory that will be analyzed</param>
-        public SarifReportWriter(IFileInfo reportFile, IFileInfo configurationsFilePath = null, string targetPath = null)
+        public SarifReportWriter(IFileInfo reportFile, string targetPath = null)
         {
             this.reportFile = reportFile ?? throw new ArgumentException(nameof(reportFile));
             this.reportFileStream = this.reportFile.Create();

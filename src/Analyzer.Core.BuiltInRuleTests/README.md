@@ -3,9 +3,8 @@ This project is designed for quickly adding tests to verify the correctness of b
 
 ## Test Setup
 A test (or tests) for a given rule consists of 2 parts (each part is described in more detail below):
-1. A JSON configuration describing the test(s).  This configuration is in the *Tests* directory.
-2. One or more test ARM templates to analyze.  These templates are in the *TestTemplates* directory.
-The Template Analyzer is run against the test ARM templates. The results of the analysis are compared with the test configuration to assert correctness of the rule.
+1. A JSON configuration describing the test(s).
+2. One or more test ARM templates to analyze.  These templates are in a directory specifically for testing.  The results of the analysis are compared with the test configuration to assert correctness of the rule.
 
 ### JSON Configuration
 To create a set of tests for a rule, a new JSON file is created in the *Tests* directory.  **The name of the file must be the same as the `name` property of the JSON rule**, with ".json" as the file extension.
@@ -22,7 +21,7 @@ For example, a JSON rule like the following:
     }
 }
 ```
-... would have tests defined in a configuration file named *"Tests/SuperSecurityCheck.json"*.
+... would have tests defined in a configuration file named **"Tests/SuperSecurityCheck.json"**.
 
 The JSON test configuration has the following schema:
 ``` js
@@ -45,7 +44,7 @@ For each template file referenced in a `Template` property of a test configurati
 
 For example, if the value of `Template` is "SuperSecurityCheck_failure", there is expected to be a template file at path *TestTemplates/SuperSecurityCheck_failure.badtemplate*.
 
-The template can define anything needed to test the rule, but it must at least be a valid ARM template that can be parsed so the analyzer can run on it.
+The template can define anything needed to test the rule, but it must at least be a valid ARM template that can be parsed so analysis can be run on it.
 
 ## Test Execution
 If running tests in Visual Studio Code, these tests will execute as part of running the 'test' task.  They also run as part of executing `dotnet test`.  This test project can be executed by itself with `dotnet test Analyzer.Core.JsonRuleTests\Analyzer.Core.JsonRuleTests.csproj`.

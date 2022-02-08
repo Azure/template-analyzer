@@ -13,7 +13,6 @@ using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Newtonsoft.Json.Linq;
-using System.Reflection;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -289,7 +288,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 switch (format)
                 {
                     case ReportFormat.Sarif:
-                        return new SarifReportWriter((FileInfoBase)outputFile, (FileInfoBase)configurationsFilePath, rootFolder);
+                        return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
                     case ReportFormat.Console:
                         return new ConsoleReportWriter((FileInfoBase)configurationsFilePath);
                 }

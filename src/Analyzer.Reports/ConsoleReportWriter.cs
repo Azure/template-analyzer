@@ -35,10 +35,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             {
                 fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile}";
             }
-            if (configurationsFile != null)
-            {
-                fileMetadata += Environment.NewLine + $"Configurations File: {configurationsFile}";
-            }
             Console.WriteLine(fileMetadata);
 
             OutputToConsole(evaluations);
@@ -55,9 +51,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     string resultString = GenerateResultString(evaluation);
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                         $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
-                    (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
-                    $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
-                    $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
+                        (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
+                        $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
+                        $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                     Console.WriteLine(output);
                 }
                 else

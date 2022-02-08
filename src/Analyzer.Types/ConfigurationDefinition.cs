@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
 {
     /// <summary>
     /// Represents a configuration file written in JSON.
+    /// * severityOverride is not yet implemented.
     /// </summary>
     public class ConfigurationDefinition
     {
