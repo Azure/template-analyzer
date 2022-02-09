@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json;
 
 namespace Analyzer.Types.ConfigurationTests
@@ -27,6 +28,6 @@ namespace Analyzer.Types.ConfigurationTests
         public string Id;
 
         [JsonProperty]
-        public int Severity;
+        public Severity Severity;
     }
 }

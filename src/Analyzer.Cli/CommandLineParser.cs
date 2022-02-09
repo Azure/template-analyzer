@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 if (writer == null)
                 {
-                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath, configurationsFilePath);
+                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
                     disposeWriter = true;
                 }
 
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");   
 
                 int numOfSuccesses = 0;
-                using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, configurationsFilePath, directoryPath.FullName))
+                using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
                 {
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return exceptionMessage;
         }
 
-        private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, FileInfo configurationsFilePath = null, string rootFolder = null)
+        private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)
         {
             if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase:true, out ReportFormat format))
             {
@@ -290,7 +290,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     case ReportFormat.Sarif:
                         return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
                     case ReportFormat.Console:
-                        return new ConsoleReportWriter((FileInfoBase)configurationsFilePath);
+                        return new ConsoleReportWriter();
                 }
             }
             return new ConsoleReportWriter();

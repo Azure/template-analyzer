@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var evaluation = evaluationResults[0];
             Assert.AreEqual($"RuleId 0", evaluation.RuleId);
             Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
-            Assert.AreEqual(2, evaluation.Severity); //Default value
+            Assert.AreEqual(Severity.Medium, evaluation.Severity); //Default value
 
             Assert.AreEqual(0, evaluation.Results.Count());
 

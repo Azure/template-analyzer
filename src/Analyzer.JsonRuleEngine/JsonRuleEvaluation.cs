@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using static Microsoft.Azure.Templates.Analyzer.Types.IEvaluation;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 {
@@ -44,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public string HelpUri => RuleDefinition.HelpUri;
 
         /// <inheritdoc/>
-        public int Severity => RuleDefinition.Severity;
+        public Severity Severity => RuleDefinition.Severity;
 
         /// <inheritdoc/>
         public string FileIdentifier { get; internal set; }

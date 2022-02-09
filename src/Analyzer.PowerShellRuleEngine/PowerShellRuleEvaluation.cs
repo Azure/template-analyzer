@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public string HelpUri { get; }
 
         /// <inheritdoc/>
-        public int Severity { get; }
+        public Severity Severity { get; }
 
         /// <inheritdoc/>
         public string FileIdentifier { get; }

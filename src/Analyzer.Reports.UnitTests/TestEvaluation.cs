@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Azure.Templates.Analyzer.Types;
 using System.Collections.Generic;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
@@ -15,7 +16,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public string HelpUri { get; set; }
 
-        public int Severity { get; set; }
+        public Severity Severity { get; set; }
 
         public string FileIdentifier { get; set; }
 

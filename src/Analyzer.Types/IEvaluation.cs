@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Gets the Severity of the rule this evaluation is for.
         /// </summary>
-        public int Severity { get; }
+        public Severity Severity { get; }
 
         /// <summary>
         /// Gets the identifier of the file this evaluation is for.
