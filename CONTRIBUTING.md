@@ -40,7 +40,7 @@ The Template Analyzer solution is comprised of the following main components:
 3. Analyzer Core then calls the JSON Rule Engine and evaluates each rule against the template/parameter pairs.
 4. JSON Rule Engine evaluates the expressions specified in the `evaluation` section of the rule and generates results to identify the rule violation in the template.
  
-### Running the tests
+### Running the Tests
 * Use the `dotnet test` command to run the full Template BPA test suite.
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
 
@@ -83,12 +83,45 @@ Please follow the below conventions when contributing to this project.
 * Each .NET project should have its corresponding test project
 * Each class should have its corresponding test class
 * Each internal and public function in the class should be tested in the unit test class
-* Follow the below naming conventions
+* Follow the below naming conventions:
   * Test Project: *{project name}.(Unit/Functional)Tests* selecting the appropriate type of tests found in the project
   * Test Class: *{class name}Tests.cs*
   * Test methods:
     * (Data)TestMethod: `{method name}_{what is being tested}_{expected outcome}`
     * DataRow (display name): Short description that clearly differentiate between the DataRows
+
+## Code Review Process
+
+### Before Creating a Pull Request
+* The changes cannot break any existing functional/unit tests that are part of the central repository.
+  * This includes all tests, even those not associated with the given feature area.
+* Code submitted must have basic unit test coverage, and have all the unit tests pass. Functional tests are encouraged.
+* Code should be commented.
+* Code should be fully code reviewed.
+* Code should be able to merge without any conflicts into the `development` branch.
+* Code should pass all relevant static checks and coding guidelines.
+* All build warnings and code analysis warnings should be fixed prior to submission.
+
+### Creating a Pull Request
+* Target the `development` branch for your Pull Request.
+  * The `main` branch is used for library releases. A release is created off of the `development` branch.
+* Add a short description of what the change is adding/fixing/improving.
+* Add yourself as the 'assignee'.
+* Add 'linked issues' if relevant.
+
+### Pull Request Sign-off
+* Two approvals are required, including at least one Owner of this repository
+
+### Pull Request Etiquette and Best Practices
+* When to mark a PR as "Approved":
+  * You feel confident that the code meets a high quality bar, has adequate test coverage, is ready to merge.
+  * You have left comments that are uncontroversial and there is a shared understanding with the author that the comments can be addressed or resolved prior to being merged without significant discussion or significant change to the design or approach.
+* When to leave comments without approval:
+  * You do not feel confident that your review alone is sufficient to call the PR ready to merge.
+  * You have feedback that may require detailed discussion or may indicate a need to change the current design or approach in a non-trivial way.
+* When to mark a PR as "Request Changes":
+  * You have significant concerns that must be addressed before this PR should be merged such as unintentional breaking changes, security issues, or potential data loss.
+
 
 ## Contributor License Agreement (CLA)
 This project welcomes contributions and suggestions. Most contributions require you to
