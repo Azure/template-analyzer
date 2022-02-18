@@ -103,6 +103,7 @@ Please follow the below conventions when contributing to this project.
 * All build warnings and code analysis warnings should be fixed prior to submission.
 
 ### Creating a Pull Request
+The Pull Request Template for this repo can be found [here](https://github.com/Azure/template-analyzer/blob/development/.github/pull_request_template.md).
 * Target the `development` branch for your Pull Request.
   * The `main` branch is used for library releases. A release is created off of the `development` branch.
 * Add a short description of what the change is adding/fixing/improving.
