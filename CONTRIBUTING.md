@@ -95,7 +95,7 @@ Please follow the below conventions when contributing to this project.
 ### Before Creating a Pull Request
 * The changes cannot break any existing functional/unit tests that are part of the central repository.
   * This includes all tests, even those not associated with the given feature area.
-* Code submitted must have basic unit test coverage, and have all the unit tests pass. Functional tests are encouraged.
+* Code submitted must have [basic unit test coverage](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md#tests), and have all the unit tests pass. Functional tests are encouraged.
 * Code should be commented.
 * Code should be fully code reviewed.
 * Code should be able to merge without any conflicts into the `development` branch.
@@ -112,17 +112,6 @@ The Pull Request Template for this repo can be found [here](https://github.com/A
 
 ### Pull Request Sign-off
 * Two approvals are required, including at least one Owner of this repository
-
-### Pull Request Etiquette and Best Practices
-* When to mark a PR as "Approved":
-  * You feel confident that the code meets a high quality bar, has adequate test coverage, is ready to merge.
-  * You have left comments that are uncontroversial and there is a shared understanding with the author that the comments can be addressed or resolved prior to being merged without significant discussion or significant change to the design or approach.
-* When to leave comments without approval:
-  * You do not feel confident that your review alone is sufficient to call the PR ready to merge.
-  * You have feedback that may require detailed discussion or may indicate a need to change the current design or approach in a non-trivial way.
-* When to mark a PR as "Request Changes":
-  * You have significant concerns that must be addressed before this PR should be merged such as unintentional breaking changes, security issues, or potential data loss.
-
 
 ## Contributor License Agreement (CLA)
 This project welcomes contributions and suggestions. Most contributions require you to
