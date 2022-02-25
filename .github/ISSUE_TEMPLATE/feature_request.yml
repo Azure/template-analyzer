@@ -6,7 +6,7 @@ labels: ["enhancement", "🔍 needs-triage"]
 body:
   - type: markdown
     attributes:
-      value: Thanks for taking the time to fill out this feature request!
+      value: Thanks for taking the time to fill out this feature request! Contributing directly to this project is always encouraged. More details can be found in the [Contributing Guide](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md).
   - type: textarea
     id: description
     attributes:
