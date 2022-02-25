@@ -1,18 +1,18 @@
 name: Bug report
 description: File a bug report to help us improve
 title: "[BUG]"
-labels: ["bug", "needs-triage"]
+labels: ["bug", "🔍 needs-triage"]
 
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report! Contributing directly to this project is always encouraged. More details can be found in the [Contributing Guide](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md).
   - type: textarea
     id: description
     attributes:
       label: Describe the bug
-      description: Please provide a description of the issue you are seeing.
+      description: Please provide a description of the issue you are seeing. If applicable, please include any error messages, exception stacktraces, or memory dumps.
       placeholder: Description
     validations:
       required: true 
@@ -22,15 +22,6 @@ body:
       label: Expected behavior
       description: Provide a description of the expected behavior.
       placeholder: Expected behavior
-    validations:
-      required: true
-  - type: textarea
-    id: actual-behavior
-    attributes:
-      label: Actual behavior
-      description: |
-        Provide a description of the actual behavior observed. If applicable please include any error messages, exception stacktraces, or memory dumps.
-      placeholder: Actual behavior
     validations:
       required: true
   - type: textarea
