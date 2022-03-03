@@ -39,7 +39,7 @@ body:
       label: Environment
       description: |
         Please provide more information on your environment:
-          * Hosting platform or OS and Template Analyzer Version (`dotnet --info` output for .NET Core projects)
+          * Hosting platform or OS and Template Analyzer Version (`TemplateAnalyzer.exe --version`)
           * IDE and version : [e.g. Visual Studio 16.3]
       placeholder: Environment
     validations:
