@@ -114,6 +114,63 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             }
         }
 
+        [TestMethod]
+        public void AnalyzeDirectory_WithSubDirectoriesTests()
+        {
+            // arrange
+            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
+
+            // act
+            var memStream = new MemoryStream();
+            using (var writer = SetupWriter(memStream, targetDirectory))
+            {
+                var analyzer = TemplateAnalyzer.Create();
+                var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
+                var results = analyzer.AnalyzeTemplate(
+                    template: ReadTemplate("RedisCache.badtemplate"),
+                    parameters: null,
+                    templateFilePath: templateFilePath.FullName);
+                writer.WriteResults(results, (FileInfoBase)templateFilePath);
+
+                var templateFilePathInSubFolder = new FileInfo(Path.Combine(targetDirectory, "subfolder", "SQLServerAuditingSettings.json"));
+                results = analyzer.AnalyzeTemplate(
+                    template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
+                    parameters: null,
+                    templateFilePath: templateFilePathInSubFolder.FullName);
+                writer.WriteResults(results, (FileInfoBase)templateFilePathInSubFolder);
+            }
+
+            // assert
+            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
+            sarifLog.Should().NotBeNull();
+
+            Run run = sarifLog.Runs.First();
+            run.Tool.Driver.Rules.Count.Should().Be(2);
+            run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
+            run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
+            run.OriginalUriBaseIds.Count.Should().Be(1);
+            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
+
+            run.Results.Count.Should().Be(9);
+            foreach (Result result in run.Results)
+            {
+                if (result.RuleId == "TA-000022")
+                {
+                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("RedisCache.json");
+                }
+                else if (result.RuleId == "TA-000028")
+                {
+                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("subfolder/SQLServerAuditingSettings.json");
+                }
+                else
+                {
+                    Assert.Fail("Unexpected result found.");
+                }
+
+                result.Level.Should().Be(FailureLevel.Error);
+            }
+        }
+
         private string ReadTemplate(string templateFileName)
         {
             return File.ReadAllText(Path.Combine("TestTemplates", templateFileName));

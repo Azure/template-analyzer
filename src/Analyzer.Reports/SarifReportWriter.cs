@@ -56,12 +56,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
             this.RootPath ??= templateFile.DirectoryName;
+            // Path.GetRelativePath returns templateFile.FullName if the paths don't share the same root
+            string filePath = Path.GetRelativePath(this.RootPath, templateFile.FullName);
             var sarifResults = new List<Result>();
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
                 // get rule definition from first level evaluation
                 ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, templateFile.Name, sarifResults);
+                this.ExtractResult(evaluation, evaluation, filePath, sarifResults);
             }
             this.PersistReport(sarifResults);
         }
@@ -148,7 +150,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                                     Uri = new Uri
                                     (
                                         UriHelper.MakeValidUri(filePath),
-                                        UriKind.Relative
+                                        UriKind.RelativeOrAbsolute
                                     ),
                                     UriBaseId = UriBaseIdString,
                                 },
