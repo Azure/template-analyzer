@@ -103,8 +103,7 @@ Code submitted must have all the built-in rule tests pass. If applicable, new ru
 * All build warnings and code analysis warnings should be fixed prior to submission.
 
 ### Creating a Pull Request
-The Pull Request Template for this repo can be found [here](https://github.com/Azure/template-analyzer/blob/development/.github/pull_request_template.md).
-* Target the `development` branch for your Pull Request.
+* Target the `development` branch for your Pull Request. A Pull Request Template will be applied. Fill out the details inside.
 * Add a short description of what the change is adding/fixing/improving.
 * Add yourself as the 'assignee'.
 * Add 'linked issues' if relevant.
