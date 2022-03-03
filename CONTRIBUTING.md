@@ -96,7 +96,7 @@ Please follow the below conventions when contributing to this project.
 * The changes cannot break any existing functional/unit tests that are part of the central repository.
   * This includes all tests, even those not associated with the given feature area.
 * Code submitted must have [basic unit test coverage](#tests), and have all the unit tests pass. Functional tests are encouraged.
-* Code submitted must have all the built-in rule tests pass. If applicable, code submitted should add [built-in rule test coverage](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md#contributing-analyzer-rules).
+Code submitted must have all the built-in rule tests pass. If applicable, new rules should add [tests for built-in rules](#contributing-analyzer-rules).
 * Code should be commented.
 * Code should be fully code reviewed.
 * Code should be able to merge without any conflicts into the `development` branch.
