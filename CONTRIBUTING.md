@@ -40,7 +40,7 @@ The Template Analyzer solution is comprised of the following main components:
 3. Analyzer Core then calls the JSON Rule Engine and evaluates each rule against the template/parameter pairs.
 4. JSON Rule Engine evaluates the expressions specified in the `evaluation` section of the rule and generates results to identify the rule violation in the template.
  
-### Running the tests
+### Running the Tests
 * Use the `dotnet test` command to run the full Template BPA test suite.
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
 
@@ -83,12 +83,33 @@ Please follow the below conventions when contributing to this project.
 * Each .NET project should have its corresponding test project
 * Each class should have its corresponding test class
 * Each internal and public function in the class should be tested in the unit test class
-* Follow the below naming conventions
+* Follow the below naming conventions:
   * Test Project: *{project name}.(Unit/Functional)Tests* selecting the appropriate type of tests found in the project
   * Test Class: *{class name}Tests.cs*
   * Test methods:
     * (Data)TestMethod: `{method name}_{what is being tested}_{expected outcome}`
     * DataRow (display name): Short description that clearly differentiate between the DataRows
+
+## Code Review Process
+
+### Before Creating a Pull Request
+* Code changes should be made in a new branch off the `development` branch.  Pull requests must target `development`.
+* The changes cannot break any existing functional/unit tests that are part of the central repository.
+  * This includes all tests, even those not associated with the given feature area.
+* Code submitted must have [basic unit test coverage](#tests), and have all the unit tests pass. Functional tests are encouraged.
+* Code submitted must have all the built-in rule tests pass. If applicable, new rules should add [tests for built-in rules](#contributing-analyzer-rules).
+* Code should be commented.
+* Code should pass all relevant static checks and coding guidelines.
+* All build warnings and code analysis warnings should be fixed prior to submission.
+
+### Creating a Pull Request
+* Target the `development` branch for your Pull Request. A Pull Request Template will be applied. Fill out the details inside.
+* Add a short description of what the change is adding/fixing/improving.
+* Add yourself as the 'assignee'.
+* Add 'linked issues' if relevant.
+
+### Pull Request Sign-off
+* Two approvals are required, including at least one Owner of this repository
 
 ## Contributor License Agreement (CLA)
 This project welcomes contributions and suggestions. Most contributions require you to
