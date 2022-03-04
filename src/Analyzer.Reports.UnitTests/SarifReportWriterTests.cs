@@ -37,6 +37,29 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             }
         }
 
+        [TestMethod]
+        public void IsSubPath_Tests()
+        {
+            var testCases = new[]
+            {
+                new { FilePath = Path.Combine("c:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo"), Expected = true },
+                new { FilePath = Path.Combine("c:", "foo", "bar", "level2", "config.json"), RootPath = Path.Combine("c:", "foo"), Expected = true },
+                new { FilePath = Path.Combine("c:", "foo", "config.json"), RootPath = Path.Combine("c:", "foo", "bar"), Expected = false },
+                new { FilePath = Path.Combine("c:", "FOO", "BAR", "config.json"), RootPath = Path.Combine("C:", "foo"), Expected = true },
+                new { FilePath = Path.Combine("c:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo", ""), Expected = true },
+                new { FilePath = Path.Combine("c:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo", "BAR"), Expected = true },
+                new { FilePath = Path.Combine("d:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo"), Expected = false },
+                new { FilePath = "https://example.com", RootPath = Path.Combine("c:", "foo"), Expected = false },
+                new { FilePath = @"\\hostname\share\config.json", RootPath = Path.Combine("c:", "foo"), Expected = false },
+            };
+
+            foreach (var testCase in testCases)
+            {
+                bool result = SarifReportWriter.IsSubPath(testCase.RootPath, testCase.FilePath);
+                result.Should().Be(testCase.Expected);
+            }
+        }
+
         private SarifReportWriter SetupWriter(Stream stream)
         {
             var mockFileSystem = new Mock<IFileInfo>();
