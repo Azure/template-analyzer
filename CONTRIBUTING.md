@@ -93,12 +93,12 @@ Please follow the below conventions when contributing to this project.
 ## Code Review Process
 
 ### Before Creating a Pull Request
+* Code changes should be made in a new branch off the `development` branch.  Pull requests must target `development`.
 * The changes cannot break any existing functional/unit tests that are part of the central repository.
   * This includes all tests, even those not associated with the given feature area.
 * Code submitted must have [basic unit test coverage](#tests), and have all the unit tests pass. Functional tests are encouraged.
 * Code submitted must have all the built-in rule tests pass. If applicable, new rules should add [tests for built-in rules](#contributing-analyzer-rules).
 * Code should be commented.
-* Code changes should be made in a new branch off the `development` branch.  Pull requests must target `development`.
 * Code should pass all relevant static checks and coding guidelines.
 * All build warnings and code analysis warnings should be fixed prior to submission.
 
