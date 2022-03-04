@@ -6,14 +6,14 @@
 ---
 
 This checklist is used to make sure that common guidelines for a pull request are followed.
-- [ ] **I have read the [contribution guidelines](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md).**
+- [ ] **I have read the [contribution guidelines](../CONTRIBUTING.md).**
 - [ ] The pull request does not introduce breaking changes.
 
-### [General Guidelines](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md)
+### [General Guidelines](../CONTRIBUTING.md)
 - [ ] Title of the pull request is clear and informative.
 - [ ] Description of the pull request is clear and informative.
 - [ ] I have added myself to the 'assignees'.
 - [ ] I have added 'linked issues' if relevant.
 
-### [Testing Guidelines](https://github.com/Azure/template-analyzer/blob/development/CONTRIBUTING.md#tests)
+### [Testing Guidelines](../CONTRIBUTING.md#tests)
 - [ ] Pull request includes test coverage for the included changes.
