@@ -40,6 +40,7 @@ body:
       description: |
         Please provide more information on your environment:
           * Hosting platform or OS and Template Analyzer Version (`TemplateAnalyzer.exe --version`)
+          * .NET version (`dotnet --version`)
           * IDE and version : [e.g. Visual Studio 16.3]
       placeholder: Environment
     validations:
