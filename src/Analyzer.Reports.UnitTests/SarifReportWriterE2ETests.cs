@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         {
             // arrange
             string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
-            string anotherTemplateFilePath = Path.Combine("F:", "anotherRepo", "subfolder", "SQLServerAuditingSettings.json");
+            string anotherTemplateFilePath = Path.Combine(Directory.GetCurrentDirectory(), "anotherRepo", "subfolder", "SQLServerAuditingSettings.json");
             Uri anotherTemplateFileUri = new Uri(anotherTemplateFilePath);
 
             // act
