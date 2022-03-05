@@ -187,16 +187,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             }
         }
 
-        internal static bool IsSubPath(string rootPath, string childFilPath)
+        internal static bool IsSubPath(string rootPath, string childFilePath)
         {
             if (!rootPath.EndsWith(Path.DirectorySeparatorChar))
             {
                 rootPath += Path.DirectorySeparatorChar;
             }
 
-            return childFilPath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase);
+            return childFilePath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase);
         }
-
         internal static string AppendPeriod(string text) =>
             text == null ? string.Empty :
             text.EndsWith(PeriodString, StringComparison.OrdinalIgnoreCase) ? text : text + PeriodString;
