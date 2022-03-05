@@ -149,5 +149,40 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
                 File.Move(movedFile, rulesFile, overwrite: true);
             }
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(TemplateAnalyzerException))]
+        public void FilterRules_ConfigurationPathIsInvalid_ThrowTemplateAnalyzerException()
+        {
+            var erroredPath = new FileInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        "NoFile.json"));
+            templateAnalyzer.FilterRules(erroredPath);
+        }
+
+        //TBD
+        //[DataTestMethod]
+        //[DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "1 matching Resource with 1 passing evaluation")]
+        //[DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "1 matching Resource with 1 failing evaluation")]
+        //[DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.Storage/storageAccounts", 0, false, DisplayName = "0 matching Resources with no results")]
+        //[DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\success.json", DisplayName = "1 matching Resource with 1 passing evaluation, specifying a template file path")]
+        //[DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 2, false, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", DisplayName = "1 matching Resource with 2 failing evaluations, specifying a template file path")]
+        //public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string templateFilePath = null)
+        //{
+        //    // Arrange
+        //    string[] resourceProperties = { GenerateResource(resource1Properties, resourceType, "resource1") };
+        //    string template = GenerateTemplate(resourceProperties);
+
+        //    // Filter
+        //    var evaluations = templateAnalyzer.AnalyzeTemplate(template, templateFilePath: templateFilePath);
+        //    var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
+
+        //    // Compare
+        //    Assert.AreEqual(expectedEvaluationCount, evaluationsWithResults.Count);
+
+        //    foreach (IEvaluation evaluation in evaluationsWithResults)
+        //    {
+        //        Assert.AreEqual(expectedEvaluationPassed, evaluation.Passed);
+        //    }
+        //}
     }
 }

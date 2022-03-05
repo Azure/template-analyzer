@@ -339,5 +339,34 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             return $"[{string.Join(",", rules)}]";
         }
+
+        [DataTestMethod]
+        [DataRow(@"[{
+                ""id"": ""RuleId 0"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": ""Severity"",
+                ""evaluation"": {
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""allOf"": [
+                        {
+                            ""path"": ""properties.somePath"",
+                            ""hasValue"": true
+                        },
+                        {
+                            ""path"": ""properties.somePath"",
+                            ""equals"": ""someValue""
+                        }
+                    ]
+                }
+            }]", DisplayName = "Single allOf expression")]
+        [ExpectedException(typeof(JsonRuleEngineException))]
+        public void FilterRules_ConfigurationhIsInvalid_ExceptionIsThrown(string rules)
+        {
+            // Act
+            var jsonRuleEngine = JsonRuleEngine.Create(rules, t => null);
+            jsonRuleEngine.FilterRules("falsePath");
+        }
     }
 }
