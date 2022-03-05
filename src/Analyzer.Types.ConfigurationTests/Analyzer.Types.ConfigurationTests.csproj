@@ -17,25 +17,4 @@
     <ProjectReference Include="..\Analyzer.Core\Analyzer.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Tests\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="TestTemplates\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestConfigurations\ExcludeSeverityThree.testconfiguration">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="TestConfigurations\IncludeSpecificIds.testconfiguration">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="TestConfigurations\SeverityOneOnly.testconfiguration">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
