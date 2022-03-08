@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Sarif;
@@ -40,17 +41,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [TestMethod]
         public void IsSubPath_Tests()
         {
+            var rootDir = Path.GetTempPath();
             var testCases = new[]
             {
-                new { FilePath = Path.Combine("c:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo"), Expected = true },
-                new { FilePath = Path.Combine("c:", "foo", "bar", "level2", "config.json"), RootPath = Path.Combine("c:", "foo"), Expected = true },
-                new { FilePath = Path.Combine("c:", "foo", "config.json"), RootPath = Path.Combine("c:", "foo", "bar"), Expected = false },
-                new { FilePath = Path.Combine("c:", "FOO", "BAR", "config.json"), RootPath = Path.Combine("C:", "foo"), Expected = true },
-                new { FilePath = Path.Combine("c:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo", ""), Expected = true },
-                new { FilePath = Path.Combine("c:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo", "BAR"), Expected = true },
-                new { FilePath = Path.Combine("d:", "foo", "bar", "config.json"), RootPath = Path.Combine("c:", "foo"), Expected = false },
-                new { FilePath = "https://example.com", RootPath = Path.Combine("c:", "foo"), Expected = false },
-                new { FilePath = @"\\hostname\share\config.json", RootPath = Path.Combine("c:", "foo"), Expected = false },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = true },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "level2", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = true },
+                new { FilePath = Path.Combine(rootDir, "foo", "config.json"), RootPath = Path.Combine(rootDir, "foo", "bar"), Expected = false },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo", ""), Expected = true },
+                new { FilePath = Path.Combine(rootDir, "anotherPath", "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = false },
+                new { FilePath = "https://example.com/config.json", RootPath = Path.Combine(rootDir, "foo"), Expected = false },
+                new { FilePath = @"\\hostname\share\config.json", RootPath = Path.Combine(rootDir, "foo"), Expected = false },
             };
 
             foreach (var testCase in testCases)

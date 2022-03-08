@@ -189,12 +189,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         internal static bool IsSubPath(string rootPath, string childFilePath)
         {
-            if (!rootPath.EndsWith(Path.DirectorySeparatorChar))
-            {
-                rootPath += Path.DirectorySeparatorChar;
-            }
-
-            return childFilePath.StartsWith(rootPath, StringComparison.OrdinalIgnoreCase);
+            var relativePath = Path.GetRelativePath(rootPath, childFilePath);
+            return !relativePath.StartsWith('.') && !Path.IsPathRooted(relativePath);
         }
         internal static string AppendPeriod(string text) =>
             text == null ? string.Empty :
