@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using FluentAssertions;
 using Microsoft.CodeAnalysis.Sarif;
@@ -42,6 +41,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         public void IsSubPath_Tests()
         {
             var rootDir = Path.GetTempPath();
+            var isCaseSensitive = IsFileSystemCaseSensitive();
             var testCases = new[]
             {
                 new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = true },
@@ -49,6 +49,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 new { FilePath = Path.Combine(rootDir, "foo", "config.json"), RootPath = Path.Combine(rootDir, "foo", "bar"), Expected = false },
                 new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo", ""), Expected = true },
                 new { FilePath = Path.Combine(rootDir, "anotherPath", "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = false },
+                new { FilePath = Path.Combine(rootDir, "FOO", "BAR", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = !isCaseSensitive },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo", "BAR"), Expected = !isCaseSensitive },
                 new { FilePath = "https://example.com/config.json", RootPath = Path.Combine(rootDir, "foo"), Expected = false },
                 new { FilePath = @"\\hostname\share\config.json", RootPath = Path.Combine(rootDir, "foo"), Expected = false },
             };
@@ -144,5 +146,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             }
         }
 
+        private static bool IsFileSystemCaseSensitive()
+        {
+            var tmp = Path.GetTempPath();
+            return !Directory.Exists(tmp.ToUpper()) || !Directory.Exists(tmp.ToLower());
+        }
     }
 }
