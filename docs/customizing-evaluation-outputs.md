@@ -34,8 +34,7 @@ The `inclusions` object is comprised of the following optional properties:
 ```
 Only rules with matching severities and ids will be included in results. If the inclusions object contains values, then the exclusions object will be ignored. 
 
-### SeverityOverrides Object [[*]](#note)
-**NOTE: `severityOverrides` is not yet supported. 
+### SeverityOverrides Object 
 The `severityOverrides` is composed of key-value pairs of id and new severity value. Below is an example of changing the severities on two rules:
 ```javascript
 "severityOverrides": {

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
@@ -23,5 +24,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         [JsonProperty(PropertyName = "inclusions")]
         public InclusionsConfigurationDefinition InclusionsConfigurationDefinition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SeverityOverrides property of the configuration.
+        /// </summary>
+        [JsonProperty]
+        public Dictionary<string, Severity> SeverityOverrides { get; set; }
     }
 }

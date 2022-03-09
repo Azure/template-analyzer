@@ -386,7 +386,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         ""ids"": [""TA-000001""]
                     }
             }", 10, new int[] { 3 }, new string[] { "TA-000001" }, DisplayName = "Only Severity 3 and  Id TA-000001")]
-        public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, int expectedEvaluationCount, IEnumerable<Severity> includeSeverities = null, IEnumerable<string> includeIds = null, IEnumerable<Severity> excludeSeverities = null, IEnumerable<string> excludeIds = null)
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""ids"": [""TA-000001""]
+                    }, 
+                ""severityOverrides"": {
+                    ""TA-000001"": 3
+                    }
+                }", 1, null, new string[] { "TA-000001" }, null, null, DisplayName = "Only Id TA-000001, change Severity to 3")]
+        public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, int expectedEvaluationCount, 
+            IEnumerable<Severity> includeSeverities = null, IEnumerable<string> includeIds = null, 
+            IEnumerable<Severity> excludeSeverities = null, IEnumerable<string> excludeIds = null)
         {
             // Arrange
             var jsonRuleEngine = JsonRuleEngine.Create(TemplateAnalyzer.LoadRules(), t => null);
@@ -401,14 +411,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             {
                 foreach (var r in jsonRuleEngine.RuleDefinitions)
                 {
-                    Assert.IsTrue((includeSeverities != null && includeSeverities.Contains(r.Severity)) || (includeIds != null && includeIds.Contains(r.Id)));
+                    Assert.IsTrue((includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
+                        (includeIds != null && includeIds.Contains(r.Id)));
                 }
             }
             if (excludeSeverities != null || excludeIds != null)
             {
                 foreach (var r in jsonRuleEngine.RuleDefinitions)
                 {
-                    Assert.IsTrue((excludeSeverities != null && !excludeSeverities.Contains(r.Severity)) || (excludeIds!= null && !excludeIds.Contains(r.Id)));
+                    Assert.IsTrue((excludeSeverities != null && !excludeSeverities.Contains(r.Severity)) ||
+                        (excludeIds!= null && !excludeIds.Contains(r.Id)));
                 }
             }
         }
