@@ -101,7 +101,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
         }
 
-        private static string LoadRules()
+        /// <summary>
+        /// Loads rules.
+        /// </summary>
+        /// <returns>Loaded rules.</returns>
+        public static string LoadRules()
         {
             return File.ReadAllText(
                 Path.Combine(

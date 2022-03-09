@@ -56,6 +56,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="configuration">The configuration specifying rule modifications.</param>
         public void FilterRules(string configuration)
         {
+            if (string.IsNullOrEmpty(configuration))
+                return;
+
             ConfigurationDefinition contents;
             try
             {
