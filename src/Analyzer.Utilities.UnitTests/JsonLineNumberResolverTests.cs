@@ -16,47 +16,55 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
     {
         #region Test Template Context
 
-        private readonly TemplateContext templateContext = new TemplateContext
+        private static readonly TemplateContext templateContext = new TemplateContext
         {
             OriginalTemplate = JObject.Parse(
             @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                 ""parameters"": {
                     ""parameter1"": {
-                        ""type"": ""integer"",
+                        ""type"": ""int"",
                         ""minValue"": 0
                     }
                 },
                 ""resources"": [
                     {
                         ""type"": ""Microsoft.ResourceProvider/resource0"",
+                        ""name"": ""resource0"",
                         ""properties"": {
-                            ""somePath"": ""someValue"",
-                            ""anotherProperty"": true
-                        },
-                        ""copy"": {
-                            ""name"": ""copyLoop"",
-                            ""count"": 3
+                            ""somePath"": ""someValue""
                         }
                     },
                     {
                         ""type"": ""Microsoft.ResourceProvider/resource1"",
                         ""name"": ""resource1"",
                         ""properties"": {
-                            ""somePath"": ""someValue""
+                            ""somePath"": ""someValue"",
+                            ""anotherProperty"": true
+                        },
+                        ""copy"": {
+                            ""name"": ""copyLoop"",
+                            ""count"": 2
                         }
                     },
                     {
                         ""type"": ""Microsoft.ResourceProvider/resource2"",
                         ""name"": ""resource2"",
-                        ""dependsOn"": [ ""resource1"" ],
+                        ""properties"": {
+                            ""somePath"": ""someValue""
+                        }
+                    },
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource3"",
+                        ""name"": ""resource3"",
+                        ""dependsOn"": [ ""resource2"" ],
                         ""properties"": {
                             ""somePath"": ""someValue""
                         },
                         ""resources"": [
                             {
-                                ""type"": ""Microsoft.ResourceProvider/resource2-0"",
-                                ""name"": ""resource2-0"",
+                                ""type"": ""Microsoft.ResourceProvider/resource3-0"",
+                                ""name"": ""resource3-0"",
                                 ""properties"": {
                                     ""somePath"": ""someValue""
                                 }
@@ -64,8 +72,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         ]
                     },
                     {
-                        ""type"": ""Microsoft.ResourceProvider/resource3"",
-                        ""name"": ""resource3"",
+                        ""type"": ""Microsoft.ResourceProvider/resource4"",
+                        ""name"": ""resource4"",
                         ""dependsOn"": [ ""resource2"" ],
                         ""properties"": {
                             ""somePath"": ""someValue""
@@ -79,13 +87,88 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                 ""parameters"": {
                     ""parameter1"": {
-                        ""type"": ""integer"",
+                        ""type"": ""int"",
                         ""minValue"": 0
                     }
                 },
                 ""resources"": [
                     {
                         ""type"": ""Microsoft.ResourceProvider/resource0"",
+                        ""name"": ""resource0"",
+                        ""properties"": {
+                            ""somePath"": ""someValue""
+                        }
+                    },
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource2"",
+                        ""name"": ""resource2"",
+                        ""properties"": {
+                            ""somePath"": ""someValue""
+                        },
+                        ""resources"": [
+                            {
+                                ""type"": ""Microsoft.ResourceProvider/resource3"",
+                                ""name"": ""resource3"",
+                                ""dependsOn"": [ ""resource2"" ],
+                                ""properties"": {
+                                    ""somePath"": ""someValue""
+                                },
+                                ""resources"": [
+                                    {
+                                        ""type"": ""Microsoft.ResourceProvider/resource3-0"",
+                                        ""name"": ""resource3-0"",
+                                        ""properties"": {
+                                            ""somePath"": ""someValue""
+                                        }
+                                    },
+                                    {
+                                        ""type"": ""Microsoft.ResourceProvider/resource4"",
+                                        ""name"": ""resource4"",
+                                        ""dependsOn"": [ ""resource3"" ],
+                                        ""properties"": {
+                                            ""somePath"": ""someValue""
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource3"",
+                        ""name"": ""resource3"",
+                        ""dependsOn"": [ ""resource2"" ],
+                        ""properties"": {
+                            ""somePath"": ""someValue""
+                        },
+                        ""resources"": [
+                            {
+                                ""type"": ""Microsoft.ResourceProvider/resource3-0"",
+                                ""name"": ""resource3-0"",
+                                ""properties"": {
+                                    ""somePath"": ""someValue""
+                                }
+                            },
+                            {
+                                ""type"": ""Microsoft.ResourceProvider/resource4"",
+                                ""name"": ""resource4"",
+                                ""dependsOn"": [ ""resource3"" ],
+                                ""properties"": {
+                                    ""somePath"": ""someValue""
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource4"",
+                        ""name"": ""resource4"",
+                        ""dependsOn"": [ ""resource3"" ],
+                        ""properties"": {
+                            ""somePath"": ""someValue""
+                        }
+                    },
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource1"",
+                        ""name"": ""resource1.0"",
                         ""properties"": {
                             ""somePath"": ""someValue"",
                             ""anotherProperty"": true
@@ -98,73 +181,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                     },
                     {
                         ""type"": ""Microsoft.ResourceProvider/resource1"",
-                        ""name"": ""resource1"",
-                        ""properties"": {
-                            ""somePath"": ""someValue""
-                        },
-                        ""resources"": [
-                            {
-                                ""type"": ""Microsoft.ResourceProvider/resource2"",
-                                ""name"": ""resource2"",
-                                ""dependsOn"": [ ""resource1"" ],
-                                ""properties"": {
-                                    ""somePath"": ""someValue""
-                                },
-                                ""resources"": [
-                                    {
-                                        ""type"": ""Microsoft.ResourceProvider/resource2-0"",
-                                        ""name"": ""resource2-0"",
-                                        ""properties"": {
-                                            ""somePath"": ""someValue""
-                                        }
-                                    },
-                                    {
-                                        ""type"": ""Microsoft.ResourceProvider/resource3"",
-                                        ""name"": ""resource3"",
-                                        ""dependsOn"": [ ""resource2"" ],
-                                        ""properties"": {
-                                            ""somePath"": ""someValue""
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        ""type"": ""Microsoft.ResourceProvider/resource2"",
-                        ""name"": ""resource2"",
-                        ""dependsOn"": [ ""resource1"" ],
-                        ""properties"": {
-                            ""somePath"": ""someValue""
-                        },
-                        ""resources"": [
-                            {
-                                ""type"": ""Microsoft.ResourceProvider/resource2-0"",
-                                ""name"": ""resource2-0"",
-                                ""properties"": {
-                                    ""somePath"": ""someValue""
-                                }
-                            },
-                            {
-                                ""type"": ""Microsoft.ResourceProvider/resource3"",
-                                ""name"": ""resource3"",
-                                ""dependsOn"": [ ""resource2"" ],
-                                ""properties"": {
-                                    ""somePath"": ""someValue""
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        ""type"": ""Microsoft.ResourceProvider/resource3"",
-                        ""name"": ""resource3"",
-                        ""dependsOn"": [ ""resource2"" ],
-                        ""properties"": {
-                            ""somePath"": ""someValue""
-                        }
-                    },
-                    {
-                        ""type"": ""Microsoft.ResourceProvider/resource0"",
+                        ""name"": ""resource1.1"",
                         ""properties"": {
                             ""somePath"": ""someValue"",
                             ""anotherProperty"": true
@@ -190,15 +207,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             ResourceMappings = new Dictionary<string, string>
             {
                 { "resources[0]", "resources[0]" },
-                { "resources[1]", "resources[1]" },
-                { "resources[1].resources[0]", "resources[2]" },
-                { "resources[1].resources[0].resources[0]", "resources[2].resources[0]" },
-                { "resources[1].resources[0].resources[1]", "resources[3]" },
-                { "resources[2]", "resources[2]" },
-                { "resources[2].resources[0]", "resources[2].resources[0]" },
-                { "resources[2].resources[1]", "resources[3]" },
-                { "resources[3]", "resources[3]" },
-                { "resources[4]", "resources[0]" }
+                { "resources[1]", "resources[2]" },
+                { "resources[1].resources[0]", "resources[3]" },
+                { "resources[1].resources[0].resources[0]", "resources[3].resources[0]" },
+                { "resources[1].resources[0].resources[1]", "resources[4]" },
+                { "resources[2]", "resources[3]" },
+                { "resources[2].resources[0]", "resources[3].resources[0]" },
+                { "resources[2].resources[1]", "resources[4]" },
+                { "resources[3]", "resources[4]" },
+                { "resources[4]", "resources[1]" },
+                { "resources[5]", "resources[1]" }
             }
         };
 
@@ -213,14 +231,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             new object[] { "resources[0].properties.somePath", new object[] { "resources", 0, "properties", "somePath" }, "Path matches original template exactly" },
             new object[] { "parameters.parameter1.maxValue", new object[] { "parameters", "parameter1" }, "Beginning of path matches original template parameters, but has missing property" },
             new object[] { "resources[0].anExpandedProperty", new object[] { "resources", 0 }, "Beginning of path matches original template resources array, but has missing property" },
-            new object[] { "resources[4].properties.anotherProperty", new object[] { "resources", 0, "properties", "anotherProperty" }, "Path is in a copied resource" },
-            new object[] { "resources[4].properties.missingProperty", new object[] { "resources", 0, "properties" }, "Path is in a copied resource and has missing property" },
+            new object[] { "resources[4].properties.anotherProperty", new object[] { "resources", 1, "properties", "anotherProperty" }, "Path is in a moved (original from copy loop) resource" },
+            new object[] { "resources[5].properties.anotherProperty", new object[] { "resources", 1, "properties", "anotherProperty" }, "Path is in a new (copied/duplicated) resource" },
+            new object[] { "resources[5].properties.missingProperty", new object[] { "resources", 1, "properties" }, "Path is in a new/duplicated resource and has missing property" },
+            new object[] { "resources[4].properties.missingProperty", new object[] { "resources", 1, "properties" }, "Path is in a reordered resource from copying and has missing property" },
             new object[] { "resources[0].resources[0].someProperty", new object[] { }, "Path goes to a resource that's been copied into another resource from expansion, but resource does not exist" },
-            new object[] { "resources[1].resources[0].properties.somePath", new object[] { "resources", 2, "properties", "somePath" }, "Path goes to a resource that's been copied into another resource that was also copied in expansion" },
-            new object[] { "resources[1].resources[0].resources[1].properties.somePath", new object[] { "resources", 3, "properties", "somePath" }, "Path goes to a resource that's been copied into another resource as a grandchild" },
-            new object[] { "resources[1].resources[0].resources[0].properties.somePath", new object[] { "resources", 2, "resources", 0, "properties", "somePath" }, "Path goes to a resource that's been copied but was still originally a child resource" },
-            new object[] { "resources[1].resources[0].dependsOn[1]", new object[] { "resources", 2, "dependsOn" }, "Path goes to a property not specified in original template in a copied resource that is also an array" },
-            new object[] { "resources[2].dependsOn[1]", new object[] { "resources", 2, "dependsOn" }, "Path goes to a property not specified in original template in a non-copied resource that is also an array" }
+            new object[] { "resources[1].resources[0].properties.somePath", new object[] { "resources", 3, "properties", "somePath" }, "Path goes to a resource that's been copied into another resource that was also copied in expansion" },
+            new object[] { "resources[1].resources[0].resources[1].properties.somePath", new object[] { "resources", 4, "properties", "somePath" }, "Path goes to a resource that's been copied into another resource as a grandchild" },
+            new object[] { "resources[1].resources[0].resources[0].properties.somePath", new object[] { "resources", 3, "resources", 0, "properties", "somePath" }, "Path goes to a resource that's been copied but was still originally a child resource" },
+            new object[] { "resources[1].resources[0].dependsOn[1]", new object[] { "resources", 3, "dependsOn" }, "Path goes to a property not specified in original template in a copied resource that is also an array" },
+            new object[] { "resources[2].dependsOn[1]", new object[] { "resources", 3, "dependsOn" }, "Path goes to a property not specified in original template in a non-copied resource that is also an array" }
         }.AsReadOnly();
 
         // Just returns the element in the last index of the array from TestScenarios
@@ -247,8 +267,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
-        [DataRow("resources[6].type", DisplayName = "Extra resource")]
-        [DataRow("resources[5].type", DisplayName = "Extra copied resource with missing source copy loop")]
+        [DataRow("resources[7].type", DisplayName = "Extra resource")]
+        [DataRow("resources[6].type", DisplayName = "Extra copied resource with missing source copy loop")]
         public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns1(string path)
         {
             Assert.AreEqual(
