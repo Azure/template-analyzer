@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     RuleId = evaluation.RuleId,
                     Level = GetLevelFromEvaluation(evaluation),
                     Message = new Message { Id = "default" }, // should be customized message for each result 
-                    Locations = ExtractLocations(evaluation, templateFile.Name, isFileInRootPath, new Dictionary<int, List<Location>>()).Values.SelectMany(l => l).ToArray()
+                    Locations = ExtractLocations(evaluation, filePath, isFileInRootPath, new Dictionary<int, List<Location>>()).Values.SelectMany(l => l).ToArray()
                 });
             }
         }
