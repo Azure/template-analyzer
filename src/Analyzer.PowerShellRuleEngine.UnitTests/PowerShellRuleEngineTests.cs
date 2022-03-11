@@ -74,18 +74,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             var evaluations = powerShellRuleEngine.AnalyzeTemplate(templateContext);
 
-            Assert.AreEqual(1, evaluations.Count());
-            Assert.IsFalse(evaluations.First().Passed);
+            var evaluationsList = evaluations.ToList();
+            Assert.AreEqual(2, evaluationsList.Count);
 
-            var resultsList = evaluations.First().Results.ToList();
+            foreach (var evaluation in evaluationsList)
+            {
+                Assert.IsFalse(evaluation.Passed);
 
-            Assert.AreEqual(2, resultsList.Count);
+                var resultsList = evaluation.Results.ToList();
+                Assert.AreEqual(1, resultsList.Count);
+                Assert.IsFalse(resultsList[0].Passed);
+            }
 
-            Assert.IsFalse(resultsList[0].Passed);
-            Assert.IsFalse(resultsList[1].Passed);
-
-            Assert.AreEqual(9, resultsList[0].LineNumber);
-            Assert.AreEqual(13, resultsList[1].LineNumber);
+            Assert.AreEqual(9, evaluationsList[0].Results.First().LineNumber);
+            Assert.AreEqual(13, evaluationsList[1].Results.First().LineNumber);
         }
 
         [TestMethod]

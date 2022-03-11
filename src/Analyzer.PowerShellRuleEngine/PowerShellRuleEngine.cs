@@ -103,15 +103,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
                 {
-                    var evaluationResults = new List<PowerShellRuleResult>();
-                    foreach (int lineNumber in uniqueError.Value)
-                    {
-                        evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
-                    }
-
                     var ruleId = (executionResult.Name as string)?.Replace(" ", "") ?? string.Empty;
                     var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
-                    evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, false, evaluationResults));
+
+                    foreach (int lineNumber in uniqueError.Value)
+                    {
+                        evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, false, new[] { new PowerShellRuleResult(false, lineNumber) }));
+                    }
                 }
             }
 
