@@ -15,22 +15,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     [TestClass]
     public class ConsoleReportWriterTests
     {
-        [TestMethod]
-        public void WriteResults_Evalutions_ReturnExpectedSarifLog()
+        [DataTestMethod]
+        [DynamicData("UnitTestCases", typeof(TestCases), DynamicDataSourceType.Property, DynamicDataDisplayName = "GetTestCaseName", DynamicDataDisplayNameDeclaringType = typeof(TestCases))]
+        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string _, MockEvaluation[] evaluations)
         {
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            foreach (var evaluations in TestCases.UnitTestCases)
-            {
-                var output = new StringWriter();
-                Console.SetOut(output);
-                using (var writer = new ConsoleReportWriter())
-                {
-                    writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
-                }
 
-                // assert
-                AssertConsoleLog(output, evaluations, templateFilePath);
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
+            {
+                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
             }
+
+            // assert
+            AssertConsoleLog(output, evaluations, templateFilePath);
         }
 
         private void AssertConsoleLog(StringWriter output, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)

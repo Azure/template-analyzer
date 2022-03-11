@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 EvaluationCallback = pathResolver =>
                 {
                     whereConditionWasEvaluated = true;
-                    return new JsonRuleEvaluation(null, passed: false, results: new[] { new JsonRuleResult() });
+                    return new[] { new JsonRuleEvaluation(null, passed: false, results: new[] { new JsonRuleResult() }) };
                 }
             };
 
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 EvaluationCallback = pathResolver =>
                 {
                     whereConditionWasEvaluated = true;
-                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                    return new[] { new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>()) };
                 }
             };
 
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 EvaluationCallback = pathResolver =>
                 {
                     whereConditionWasEvaluated = true;
-                    return new JsonRuleEvaluation(null, passed: true, results: new[] { new JsonRuleResult() });
+                    return new[] { new JsonRuleEvaluation(null, passed: true, results: new[] { new JsonRuleResult() }) };
                 }
             };
 
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 {
                     // Track whether this was evaluated or not.
                     topLevelExpressionWasEvaluated = true;
-                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                    return new[] { new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>()) };
                 }
             };
 
@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 {
                     // If a non-null ILineNumberResolver was passed to this Where condition, record it to assert later.
                     lineNumberResolverWasAlwaysNull &= lineNumberResolver == null;
-                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                    return new[] { new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>()) };
                 });
 
             // A top level mocked expression that contains a Where condition.
@@ -168,15 +168,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             {
                 EvaluationCallback = pathResolver =>
                 {
-                    return new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>());
+                    return new[] { new JsonRuleEvaluation(null, passed: true, results: Array.Empty<JsonRuleResult>()) };
                 }
             };
 
             // Evaluate scope - line number resolver should not be passed into Where condition
-            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
-
-            // Set up a Result Callback to exercise both EvaluateInternal methods
-            mockExpression.ResultsCallback = resolver => new JsonRuleResult();
             mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
 
             Assert.IsTrue(lineNumberResolverWasAlwaysNull, "A non-null ILineNumberResolver was passed to a Where condition when it shouldn't have.");
@@ -189,18 +185,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleEvaluation>
             new MockExpression(new ExpressionCommonProperties { Path = "path" })
                 .Evaluate(null, new Mock<ILineNumberResolver>().Object);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void EvaluateInternalGetResult_NullScope_ThrowsException()
-        {
-            // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleResult>
-            var expression = new MockExpression(new ExpressionCommonProperties { Path = "path" })
-            {
-                ResultsCallback = r => (JsonRuleResult)null
-            };
-            expression.Evaluate(null, new Mock<ILineNumberResolver>().Object);
         }
 
         [TestMethod]

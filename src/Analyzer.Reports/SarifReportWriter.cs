@@ -56,14 +56,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
             this.RootPath ??= templateFile.DirectoryName;
-            var sarifResults = new List<Result>();
+
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
                 // get rule definition from first level evaluation
-                ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, templateFile.Name, sarifResults);
+                this.ExtractRule(evaluation);
+
+                // Log result
+                sarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
+                {
+                    RuleId = evaluation.RuleId,
+                    Level = GetLevelFromEvaluation(evaluation),
+                    Message = new Message { Id = "default" }, // should be customized message for each result 
+                    Locations = ExtractLocations(evaluation, templateFile.Name, new Dictionary<int, List<Location>>()).Values.SelectMany(l => l).ToArray()
+                });
             }
-            this.PersistReport(sarifResults);
         }
 
         internal String RootPath
@@ -128,59 +135,45 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return rule;
         }
 
-        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath, IList<Result> sarifResults)
+        private Dictionary<int, List<Location>> ExtractLocations(IEvaluation evaluation, string filePath, Dictionary<int, List<Location>> locations)
         {
             foreach (var result in evaluation.Results.Where(r => !r.Passed))
             {
-                sarifResults.Add(new Result
+                var line = result.LineNumber;
+                if (!locations.TryGetValue(line, out List<Location> locationList))
                 {
-                    RuleId = rootEvaluation.RuleId,
-                    Level = GetLevelFromEvaluation(rootEvaluation),
-                    Message = new Message { Id = "default" }, // should be customized message for each result 
-                    Locations = new[]
+                    locationList = new List<Location>();
+                    locations[line] = locationList;
+                }
+
+                locationList.Add(new Location
+                {
+                    PhysicalLocation = new PhysicalLocation
                     {
-                        new Location
+                        ArtifactLocation = new ArtifactLocation
                         {
-                            PhysicalLocation = new PhysicalLocation
-                            {
-                                ArtifactLocation = new ArtifactLocation
-                                {
-                                    Uri = new Uri
-                                    (
-                                        UriHelper.MakeValidUri(filePath),
-                                        UriKind.Relative
-                                    ),
-                                    UriBaseId = UriBaseIdString,
-                                },
-                                Region = new Region { StartLine = result.LineNumber },
-                            },
+                            Uri = new Uri(
+                                UriHelper.MakeValidUri(filePath),
+                                UriKind.Relative),
+                            UriBaseId = UriBaseIdString,
                         },
-                    }
+                        Region = new Region { StartLine = line },
+                    },
                 });
             }
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                this.ExtractResult(rootEvaluation, eval, filePath, sarifResults);
+                this.ExtractLocations(eval, filePath, locations);
             }
+
+            return locations;
         }
 
         private FailureLevel GetLevelFromEvaluation(IEvaluation evaluation)
         {
             // The rule severity definition work item: https://github.com/Azure/template-analyzer/issues/177
             return evaluation.Passed ? FailureLevel.Note : FailureLevel.Error;
-        }
-
-        private void PersistReport(IList<Result> sarifResults)
-        {
-            if (sarifResults != null)
-            {
-                foreach (var result in sarifResults)
-                {
-                    sarifLogger.Log(this.rulesDictionary[result.RuleId], result);
-                }
-                sarifResults.Clear();
-            }
         }
 
         internal static string AppendPeriod(string text) =>

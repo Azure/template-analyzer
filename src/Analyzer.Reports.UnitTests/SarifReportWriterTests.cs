@@ -18,23 +18,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     [TestClass]
     public class SarifReportWriterTests
     {
-        [TestMethod]
-        public void WriteResults_Evalutions_ReturnExpectedSarifLog()
+        [DataTestMethod]
+        [DynamicData("UnitTestCases", typeof(TestCases), DynamicDataSourceType.Property, DynamicDataDisplayName = "GetTestCaseName", DynamicDataDisplayNameDeclaringType = typeof(TestCases))]
+        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string _, MockEvaluation[] evaluations)
         {
             string currentFolder = Path.Combine(Directory.GetCurrentDirectory(), "testRepo");
             var templateFilePath = new FileInfo(Path.Combine(currentFolder, "AppServices.json"));
-            foreach (var evaluations in TestCases.UnitTestCases)
+            
+            var memStream = new MemoryStream();
+            using (var writer = SetupWriter(memStream))
             {
-                var memStream = new MemoryStream();
-                using (var writer = SetupWriter(memStream))
-                {
-                    writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
-                }
-
-                // assert
-                SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-                AssertSarifLog(sarifLog, evaluations, templateFilePath);
+                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
             }
+
+            // assert
+            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
+            AssertSarifLog(sarifLog, evaluations, templateFilePath);
         }
 
         private SarifReportWriter SetupWriter(Stream stream)

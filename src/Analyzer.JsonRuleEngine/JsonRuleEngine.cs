@@ -58,16 +58,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {
-                JsonRuleEvaluation evaluation = rule.Expression.Evaluate(
+                var evaluations = rule.Expression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,
                         templateContext.ExpandedTemplate.Path),
                     this.BuildLineNumberResolver(templateContext));
 
-                 evaluation.RuleDefinition = rule;
-                 evaluation.FileIdentifier = templateContext.TemplateIdentifier;
-                    
-                yield return evaluation;
+                foreach (var evaluation in evaluations)
+                {
+                    evaluation.RuleDefinition = rule;
+                    evaluation.FileIdentifier = templateContext.TemplateIdentifier;
+
+                    yield return evaluation;
+                }
             }
         }
 

@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using Azure.Deployments.Core.Extensions;
 using FluentAssertions;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.CodeAnalysis.Sarif;
@@ -39,8 +41,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // assert
             string ruleId = "TA-000028";
+            List<List<int>> expectedLinesForRun = new List<List<int>>
+            {
+                new List<int> { 146, 147, 148, 148 },
+                new List<int> { 206, 207, 208, 208 }
+            };
+
             string artifactUriString = templateFilePath.Name;
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
+            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
@@ -48,13 +56,35 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.Tool.Driver.Rules.First().Id.Should().BeEquivalentTo(ruleId);
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-            run.Results.Count.Should().Be(8);
+            run.Results.Count.Should().Be(expectedLinesForRun.Count);
+
             foreach (Result result in run.Results)
             {
                 result.RuleId.Should().BeEquivalentTo(ruleId);
                 result.Level.Should().Be(FailureLevel.Error);
-                result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
+
+                var expectedLines = expectedLinesForRun.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
+                expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
+                expectedLinesForRun.Remove(expectedLines);
+
+                // Verify lines reported equal the expected lines
+                result.Locations.Count.Should().Be(expectedLines.Count);
+                foreach (var location in result.Locations)
+                {
+                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
+                    var line = location.PhysicalLocation.Region.StartLine;
+
+                    // Verify line is expected, and remove from the collection
+                    expectedLines.Contains(line).Should().BeTrue();
+                    expectedLines.Remove(line);
+                }
+
+                // Verify all lines were reported
+                expectedLines.Should().BeEmpty();
             }
+
+            // Verify all lines were reported
+            expectedLinesForRun.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -84,7 +114,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             }
 
             // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
+            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
@@ -94,32 +124,64 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
 
-            run.Results.Count.Should().Be(9);
+            var expectedLinesForRun = new Dictionary<string, (string file, List<List<int>> lines)>
+            {
+                { "TA-000022", ("RedisCache.json", new List<List<int>> {
+                    new List<int> { 28 } })
+                },
+                { "TA-000028", ("SQLServerAuditingSettings.json", new List<List<int>> {
+                    new List<int> { 146, 147, 148, 148 },
+                    new List<int> { 206, 207, 208, 208 } })
+                }
+            };
+
+            run.Results.Count.Should().Be(3);
             foreach (Result result in run.Results)
             {
-                if (result.RuleId == "TA-000022")
+                expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
+
+                result.Locations.Count.Should().BeGreaterThan(0);
+
+                // Find correct set of lines expected for result
+                (var fileName, var linesForResult) = expectedLinesForRun[result.RuleId];
+                var expectedLines = linesForResult.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
+                expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
+                linesForResult.Remove(expectedLines);
+
+                // Verify lines reported equal the expected lines
+                result.Locations.Count.Should().Be(expectedLines.Count);
+                foreach (var location in result.Locations)
                 {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("RedisCache.json");
+                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(fileName);
+                    var line = location.PhysicalLocation.Region.StartLine;
+
+                    // Verify line is expected, and remove from the collection
+                    expectedLines.Contains(line).Should().BeTrue();
+                    expectedLines.Remove(line);
                 }
-                else if (result.RuleId == "TA-000028")
+
+                // Verify all lines were reported
+                expectedLines.Should().BeEmpty();
+
+                // Remove record for rule if all lines have been reported
+                if (linesForResult.Count == 0)
                 {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("SQLServerAuditingSettings.json");
-                }
-                else
-                {
-                    Assert.Fail("Unexpected result found.");
+                    expectedLinesForRun.Remove(result.RuleId);
                 }
 
                 result.Level.Should().Be(FailureLevel.Error);
             }
+
+            // Verify all lines and results were reported
+            expectedLinesForRun.Should().BeEmpty();
         }
 
-        private string ReadTemplate(string templateFileName)
+        private static string ReadTemplate(string templateFileName)
         {
             return File.ReadAllText(Path.Combine("TestTemplates", templateFileName));
         }
 
-        private SarifReportWriter SetupWriter(Stream stream, string targetDirectory = null)
+        private static SarifReportWriter SetupWriter(Stream stream, string targetDirectory = null)
         {
             var mockFileSystem = new Mock<IFileInfo>();
             mockFileSystem
