@@ -32,7 +32,7 @@ The `inclusions` object is comprised of the following optional properties:
     "ids": ["Id"] // List of ids to include in results. 
 }
 ```
-Only rules with matching severities and ids will be included in results. If the inclusions object contains values, then the exclusions object will be ignored. 
+**Note**: Only rules with matching severities and ids will be included in results. _If the inclusions object contains values, then the exclusions object will be ignored._
 
 ### SeverityOverrides Object 
 The `severityOverrides` is composed of key-value pairs of id and new severity value. Below is an example of changing the severities on two rules:
