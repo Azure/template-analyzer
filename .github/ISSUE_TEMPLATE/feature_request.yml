@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an idea for this project.
+title: "[FEATURE REQ]"
+labels: ["enhancement", "🔍 needs-triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this feature request! Contributing directly to this project is always encouraged. More details can be found in the [Contributing Guide](../../CONTRIBUTING.md).
+  - type: textarea
+    id: description
+    attributes:
+      label: Please describe the feature.
+      description: What feature would you like to get added? What problem is it solving? What alternatives have you considered? 
+      placeholder: Feature description
+    validations:
+      required: true
+  - type: textarea
+    id: additional-details
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+      placeholder: Additional context
+    validations:
+      required: false

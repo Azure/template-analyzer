@@ -56,6 +56,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
             this.RootPath ??= templateFile.DirectoryName;
+            bool isFileInRootPath = IsSubPath(this.rootPath, templateFile.FullName);
+            string filePath = isFileInRootPath ?
+                Path.GetRelativePath(this.RootPath, templateFile.FullName) :
+                templateFile.FullName;
 
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
@@ -68,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     RuleId = evaluation.RuleId,
                     Level = GetLevelFromEvaluation(evaluation),
                     Message = new Message { Id = "default" }, // should be customized message for each result 
-                    Locations = ExtractLocations(evaluation, templateFile.Name, new Dictionary<int, List<Location>>()).Values.SelectMany(l => l).ToArray()
+                    Locations = ExtractLocations(evaluation, templateFile.Name, isFileInRootPath, new Dictionary<int, List<Location>>()).Values.SelectMany(l => l).ToArray()
                 });
             }
         }
@@ -135,7 +139,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return rule;
         }
 
-        private Dictionary<int, List<Location>> ExtractLocations(IEvaluation evaluation, string filePath, Dictionary<int, List<Location>> locations)
+        private Dictionary<int, List<Location>> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, List<Location>> locations)
         {
             foreach (var result in evaluation.Results.Where(r => !r.Passed))
             {
@@ -154,8 +158,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         {
                             Uri = new Uri(
                                 UriHelper.MakeValidUri(filePath),
-                                UriKind.Relative),
-                            UriBaseId = UriBaseIdString,
+                                UriKind.RelativeOrAbsolute),
+                            UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
                         },
                         Region = new Region { StartLine = line },
                     },
@@ -164,7 +168,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                this.ExtractLocations(eval, filePath, locations);
+                this.ExtractLocations(eval, filePath, pathBelongsToRoot, locations);
             }
 
             return locations;
@@ -174,6 +178,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         {
             // The rule severity definition work item: https://github.com/Azure/template-analyzer/issues/177
             return evaluation.Passed ? FailureLevel.Note : FailureLevel.Error;
+        }
+
+        internal static bool IsSubPath(string rootPath, string childFilePath)
+        {
+            var relativePath = Path.GetRelativePath(rootPath, childFilePath);
+            return !relativePath.StartsWith('.') && !Path.IsPathRooted(relativePath);
         }
 
         internal static string AppendPeriod(string text) =>

@@ -36,6 +36,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             AssertSarifLog(sarifLog, evaluations, templateFilePath);
         }
 
+        [TestMethod]
+        public void IsSubPath_Tests()
+        {
+            var rootDir = Path.GetTempPath();
+            var isCaseSensitive = IsFileSystemCaseSensitive();
+            var testCases = new[]
+            {
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = true },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "level2", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = true },
+                new { FilePath = Path.Combine(rootDir, "foo", "config.json"), RootPath = Path.Combine(rootDir, "foo", "bar"), Expected = false },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo", ""), Expected = true },
+                new { FilePath = Path.Combine(rootDir, "anotherPath", "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = false },
+                new { FilePath = Path.Combine(rootDir, "FOO", "BAR", "config.json"), RootPath = Path.Combine(rootDir, "foo"), Expected = !isCaseSensitive },
+                new { FilePath = Path.Combine(rootDir, "foo", "bar", "config.json"), RootPath = Path.Combine(rootDir, "foo", "BAR"), Expected = !isCaseSensitive },
+                new { FilePath = "https://example.com/config.json", RootPath = Path.Combine(rootDir, "foo"), Expected = false },
+                new { FilePath = @"\\hostname\share\config.json", RootPath = Path.Combine(rootDir, "foo"), Expected = false },
+            };
+
+            foreach (var testCase in testCases)
+            {
+                bool result = SarifReportWriter.IsSubPath(testCase.RootPath, testCase.FilePath);
+                result.Should().Be(testCase.Expected);
+            }
+        }
+
         private SarifReportWriter SetupWriter(Stream stream)
         {
             var mockFileSystem = new Mock<IFileInfo>();
@@ -120,5 +145,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             }
         }
 
+        private static bool IsFileSystemCaseSensitive()
+        {
+            var tmp = Path.GetTempPath();
+            return !Directory.Exists(tmp.ToUpper()) || !Directory.Exists(tmp.ToLower());
+        }
     }
 }
