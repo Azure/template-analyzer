@@ -87,11 +87,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             expectedLinesForRun.Should().BeEmpty();
         }
 
-        [TestMethod]
-        public void AnalyzeDirectoryTests()
+        [DataTestMethod]
+        [DataRow(true, DisplayName = "Templates in root directory")]
+        [DataRow(true, "subPath", DisplayName = "Template in subdirectory")]
+        [DataRow(false, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
+        public void AnalyzeDirectoryTests(bool secondTemplateUsesRelativePath, params string[] secondTemplatePathPieces)
         {
             // arrange
-            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
+            var targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
+            var secondTemplateName = "SQLServerAuditingSettings.json";
+            var secondTemplateDirectory = Path.Combine(secondTemplatePathPieces.Prepend(targetDirectory).ToArray());
+            var secondTemplatePath = Path.Combine(secondTemplateDirectory, secondTemplateName);
+            var secondTemplateFileInfo = new FileInfo(secondTemplatePath);
+            var expectedSecondTemplateFilePathInSarif = secondTemplateUsesRelativePath
+                ? UriHelper.MakeValidUri(Path.Combine(secondTemplatePathPieces.Append(secondTemplateName).ToArray()))
+                : new Uri(secondTemplatePath).AbsoluteUri;
 
             // act
             var memStream = new MemoryStream();
@@ -105,12 +115,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     templateFilePath: templateFilePath.FullName);
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
 
-                templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
                 results = analyzer.AnalyzeTemplate(
                     template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
                     parameters: null,
-                    templateFilePath: templateFilePath.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePath);
+                    templateFilePath: secondTemplateFileInfo.FullName);
+                writer.WriteResults(results, (FileInfoBase)secondTemplateFileInfo);
             }
 
             // assert
@@ -124,14 +133,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
 
-            var expectedLinesForRun = new Dictionary<string, (string file, List<List<int>> lines)>
+            var expectedLinesForRun = new Dictionary<string, (string file, string uriBase, List<List<int>> lines)>
             {
-                { "TA-000022", ("RedisCache.json", new List<List<int>> {
-                    new List<int> { 28 } })
+                { "TA-000022", (
+                    file: "RedisCache.json",
+                    uriBase: SarifReportWriter.UriBaseIdString,
+                    lines: new List<List<int>> {
+                        new List<int> { 28 }
+                    })
                 },
-                { "TA-000028", ("SQLServerAuditingSettings.json", new List<List<int>> {
-                    new List<int> { 146, 147, 148, 148 },
-                    new List<int> { 206, 207, 208, 208 } })
+                { "TA-000028", (
+                    file: expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        new List<int> { 146, 147, 148, 148 },
+                        new List<int> { 206, 207, 208, 208 }
+                    })
                 }
             };
 
@@ -143,7 +160,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 result.Locations.Count.Should().BeGreaterThan(0);
 
                 // Find correct set of lines expected for result
-                (var fileName, var linesForResult) = expectedLinesForRun[result.RuleId];
+                (var fileName, var uriBase, var linesForResult) = expectedLinesForRun[result.RuleId];
                 var expectedLines = linesForResult.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
                 expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
                 linesForResult.Remove(expectedLines);
@@ -153,7 +170,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 foreach (var location in result.Locations)
                 {
                     location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(fileName);
-                    location.PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(SarifReportWriter.UriBaseIdString);
+                    location.PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(uriBase);
                     var line = location.PhysicalLocation.Region.StartLine;
 
                     // Verify line is expected, and remove from the collection
@@ -175,127 +192,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // Verify all lines and results were reported
             expectedLinesForRun.Should().BeEmpty();
-        }
-
-        [TestMethod]
-        public void AnalyzeDirectory_WithSubDirectoriesTests()
-        {
-            // arrange
-            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
-
-            // act
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream, targetDirectory))
-            {
-                var analyzer = TemplateAnalyzer.Create();
-                var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
-                var results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("RedisCache.badtemplate"),
-                    parameters: null,
-                    templateFilePath: templateFilePath.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePath);
-
-                var templateFilePathInSubFolder = new FileInfo(Path.Combine(targetDirectory, "subfolder", "SQLServerAuditingSettings.json"));
-                results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
-                    parameters: null,
-                    templateFilePath: templateFilePathInSubFolder.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePathInSubFolder);
-            }
-
-            // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            sarifLog.Should().NotBeNull();
-
-            Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(2);
-            run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
-            run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
-            run.OriginalUriBaseIds.Count.Should().Be(1);
-            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-
-            run.Results.Count.Should().Be(9);
-            foreach (Result result in run.Results)
-            {
-                if (result.RuleId == "TA-000022")
-                {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("RedisCache.json");
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(SarifReportWriter.UriBaseIdString);
-                }
-                else if (result.RuleId == "TA-000028")
-                {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("subfolder/SQLServerAuditingSettings.json");
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(SarifReportWriter.UriBaseIdString);
-                }
-                else
-                {
-                    Assert.Fail("Unexpected result found.");
-                }
-
-                result.Level.Should().Be(FailureLevel.Error);
-            }
-        }
-
-        [TestMethod]
-        public void AnalyzeDirectory_TemplateFileNotInRootPathTests()
-        {
-            // arrange
-            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
-            string anotherTemplateFilePath = Path.Combine(Directory.GetCurrentDirectory(), "anotherRepo", "subfolder", "SQLServerAuditingSettings.json");
-            Uri anotherTemplateFileUri = new Uri(anotherTemplateFilePath);
-
-            // act
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream, targetDirectory))
-            {
-                var analyzer = TemplateAnalyzer.Create();
-                var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
-                var results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("RedisCache.badtemplate"),
-                    parameters: null,
-                    templateFilePath: templateFilePath.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePath);
-
-                var templateFilePathInAnotherPath = new FileInfo(anotherTemplateFilePath);
-                results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
-                    parameters: null,
-                    templateFilePath: templateFilePathInAnotherPath.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePathInAnotherPath);
-            }
-
-            // assert
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(ASCIIEncoding.UTF8.GetString(memStream.ToArray()));
-            sarifLog.Should().NotBeNull();
-
-            Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(2);
-            run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
-            run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
-            run.OriginalUriBaseIds.Count.Should().Be(1);
-            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-
-            run.Results.Count.Should().Be(9);
-            foreach (Result result in run.Results)
-            {
-                if (result.RuleId == "TA-000022")
-                {
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo("RedisCache.json");
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(SarifReportWriter.UriBaseIdString);
-                }
-                else if (result.RuleId == "TA-000028")
-                {
-                    // template file is not in scanned directory
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(anotherTemplateFileUri.AbsoluteUri);
-                    result.Locations.First().PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeNull();
-                }
-                else
-                {
-                    Assert.Fail("Unexpected result found.");
-                }
-
-                result.Level.Should().Be(FailureLevel.Error);
-            }
         }
 
         private static string ReadTemplate(string templateFileName)
