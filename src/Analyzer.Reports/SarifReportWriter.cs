@@ -56,12 +56,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
             this.RootPath ??= templateFile.DirectoryName;
+            bool isFileInRootPath = IsSubPath(this.rootPath, templateFile.FullName);
+            string filePath = isFileInRootPath ?
+                Path.GetRelativePath(this.RootPath, templateFile.FullName) :
+                templateFile.FullName;
             var sarifResults = new List<Result>();
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
                 // get rule definition from first level evaluation
                 ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, templateFile.Name, sarifResults);
+                this.ExtractResult(evaluation, evaluation, filePath, isFileInRootPath, sarifResults);
             }
             this.PersistReport(sarifResults);
         }
@@ -128,7 +132,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return rule;
         }
 
-        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath, IList<Result> sarifResults)
+        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath, bool pathBelongsToRoot, IList<Result> sarifResults)
         {
             foreach (var result in evaluation.Results.Where(r => !r.Passed))
             {
@@ -148,9 +152,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                                     Uri = new Uri
                                     (
                                         UriHelper.MakeValidUri(filePath),
-                                        UriKind.Relative
+                                        UriKind.RelativeOrAbsolute
                                     ),
-                                    UriBaseId = UriBaseIdString,
+                                    UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
                                 },
                                 Region = new Region { StartLine = result.LineNumber },
                             },
@@ -161,7 +165,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                this.ExtractResult(rootEvaluation, eval, filePath, sarifResults);
+                this.ExtractResult(rootEvaluation, eval, filePath, pathBelongsToRoot, sarifResults);
             }
         }
 
@@ -183,6 +187,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             }
         }
 
+        internal static bool IsSubPath(string rootPath, string childFilePath)
+        {
+            var relativePath = Path.GetRelativePath(rootPath, childFilePath);
+            return !relativePath.StartsWith('.') && !Path.IsPathRooted(relativePath);
+        }
         internal static string AppendPeriod(string text) =>
             text == null ? string.Empty :
             text.EndsWith(PeriodString, StringComparison.OrdinalIgnoreCase) ? text : text + PeriodString;
