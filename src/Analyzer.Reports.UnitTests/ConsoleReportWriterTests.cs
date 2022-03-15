@@ -56,9 +56,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var resultString = new StringBuilder();
             if (!evaluation.Passed)
             {
-                foreach (var result in evaluation.Results.Where(r => !r.Passed))
+                if (!evaluation.Result?.Passed ?? false)
                 {
-                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {result.LineNumber}");
+                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {evaluation.Result.LineNumber}");
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)

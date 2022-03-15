@@ -79,16 +79,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     .Returns(new List<IJsonPathResolver> { mockJsonPathResolver.Object });
             }
 
-            var results1 = new JsonRuleResult[] { jsonRuleResult1 };
-            var results2 = new JsonRuleResult[] { jsonRuleResult2 };
-
             mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, results1) });
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, jsonRuleResult1) });
 
             mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, results2) });
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, jsonRuleResult2) });
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
@@ -118,7 +115,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 // Assert all leaf expressions have results and no evaluations
                 Assert.IsTrue(evaluation.HasResults);
                 Assert.AreEqual(0, evaluation.Evaluations.Count());
-                Assert.AreEqual(1, evaluation.Results.Count());
             }
         }
 
@@ -146,14 +142,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpression1 = new MockExpression(new ExpressionCommonProperties { Path = firstExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => firstExpressionPass.HasValue
-                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new[] { new JsonRuleResult { Passed = firstExpressionPass.Value } }) }
+                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new JsonRuleResult { Passed = firstExpressionPass.Value }) }
                         : Enumerable.Empty<JsonRuleEvaluation>()
             };
 
             var mockLeafExpression2 = new MockExpression(new ExpressionCommonProperties { Path = secondExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => secondExpressionPass.HasValue
-                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new[] { new JsonRuleResult { Passed = secondExpressionPass.Value } }) }
+                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new JsonRuleResult { Passed = secondExpressionPass.Value }) }
                         : Enumerable.Empty<JsonRuleEvaluation>()
             };
 

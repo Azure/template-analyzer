@@ -141,9 +141,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private Dictionary<int, List<Location>> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, List<Location>> locations)
         {
-            foreach (var result in evaluation.Results.Where(r => !r.Passed))
+            if (evaluation.Result != null && !evaluation.Result.Passed)
             {
-                var line = result.LineNumber;
+                var line = evaluation.Result.LineNumber;
                 if (!locations.TryGetValue(line, out List<Location> locationList))
                 {
                     locationList = new List<Location>();

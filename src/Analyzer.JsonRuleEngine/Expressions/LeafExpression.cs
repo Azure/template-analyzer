@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     Expression = this
                 };
 
-                return new JsonRuleEvaluation(this, result.Passed, new[] { result });
+                return new JsonRuleEvaluation(this, result.Passed, result);
             });
         }
     }

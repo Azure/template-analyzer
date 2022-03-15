@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                     foreach (int lineNumber in uniqueError.Value)
                     {
-                        evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, false, new[] { new PowerShellRuleResult(false, lineNumber) }));
+                        evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, false, new PowerShellRuleResult(false, lineNumber)));
                     }
                 }
             }

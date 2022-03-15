@@ -37,42 +37,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             var testTemplate = File.ReadAllText(testTemplatePath);
 
             // If not already analyzed, analyze it and store evaluations
-            if (!templateEvaluations.TryGetValue(testTemplatePath, out var results))
+            if (!templateEvaluations.TryGetValue(testTemplatePath, out var evaluations))
             {
-                results = templateAnalyzer.AnalyzeTemplate(testTemplate);
-                templateEvaluations[testTemplatePath] = results;
+                evaluations = templateAnalyzer.AnalyzeTemplate(testTemplate);
+                templateEvaluations[testTemplatePath] = evaluations;
             }
 
             // Find any instances of the rule being tested
             // Exception containing "Sequence contains no elements" likely means you did 
             // not name the test file the same name as the rule
-            var thisRuleEvaluation = results.ToList().Where(e => e.RuleId.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).First();
+            var thisRuleEvaluations = evaluations.Where(e => e.RuleId.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).ToList();
 
-            // If there are no expected failures, the evaluation should have passed
-            Assert.AreEqual(ruleExpectations.ReportedFailures.Length == 0, thisRuleEvaluation.Passed);
+            // Get all lines reported as failed
+            var failingLines = thisRuleEvaluations
+                .Where(e => !e.Passed)
+                .SelectMany(e => GetAllFailedLines(e))
+                .ToHashSet();
 
-            if (!thisRuleEvaluation.Passed)
-            {
-                // Get all lines reported as failed
-                var failingLines = thisRuleEvaluation.Evaluations
-                    .Where(e => !e.Passed)
-                    .Select(e => GetAllResults(e))
-                    .SelectMany(rs => rs.Where(r => !r.Passed)
-                                    .Select(r => r.LineNumber)
-                                    .ToList())
-                    .ToHashSet();
-
-                failingLines.UnionWith(thisRuleEvaluation.Results
-                    .Where(r => !r.Passed)
-                    .Select(r => r.LineNumber)
-                    .ToHashSet());
-
-                // Verify all expected lines are reported
-                var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
-                Assert.IsTrue(failingLines.SetEquals(expectedLines),
-                    "Expected failing lines do not match actual failed lines.  " +
-                    $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]");
-            }
+            // Verify all expected lines are reported
+            var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
+            Assert.IsTrue(failingLines.SetEquals(expectedLines),
+                "Expected failing lines do not match actual failed lines.  " +
+                $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]");
         }
 
         /// <summary>
@@ -80,17 +66,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         /// </summary>
         /// <param name="evaluation">The <see cref="IEvaluation"/> to get the <see cref="IResult"/> from.</param>
         /// <returns>All <see cref="IResult"/>s in the <see cref="IEvaluation"/>.</returns>
-        private IEnumerable<IResult> GetAllResults(IEvaluation evaluation)
+        private IEnumerable<int> GetAllFailedLines(IEvaluation evaluation)
         {
-            foreach (var result in evaluation.Results)
+            if (!evaluation.Result?.Passed ?? false)
             {
-                yield return result;
+                yield return evaluation.Result.LineNumber;
             }
-            foreach (var subEvaluation in evaluation.Evaluations)
+            foreach (var subEvaluation in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                foreach (var subResult in GetAllResults(subEvaluation))
+                foreach (var line in GetAllFailedLines(subEvaluation))
                 {
-                    yield return subResult;
+                    yield return line;
                 }
             }
         }

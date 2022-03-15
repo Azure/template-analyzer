@@ -72,11 +72,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
         {
-            foreach (var result in evaluation.Results.Where(r => !r.Passed))
+            if (!evaluation.Result?.Passed ?? false)
             {
-                results.Add(result);
+                results.Add(evaluation.Result);
             }
-            foreach (var child in evaluation.Evaluations.Where(r => !r.Passed))
+            foreach (var child in evaluation.Evaluations.Where(e => !e.Passed))
             {
                 TraverseResults(results, child);
             }
@@ -85,16 +85,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         private int GetResultsCount(IEnumerable<Types.IEvaluation> evaluations)
         {
             int count = 0;
-            foreach (var eval in evaluations.Where(r => !r.Passed))
+            foreach (var eval in evaluations.Where(e => !e.Passed))
             {
-                count += eval.Results.Count(r => !r.Passed);
+                count += eval.Result?.Passed ?? true ? 0 : 1;
                 count += GetResultsCount(eval.Evaluations);
             }
 
             return count;
         }
 
-        private void AssertSarifLog(SarifLog sarifLog, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
+        private void AssertSarifLog(SarifLog sarifLog, IEnumerable<Types.IEvaluation> evaluations, FileInfo templateFilePath)
         {
             sarifLog.Should().NotBeNull();
 
@@ -107,40 +107,52 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(templateFilePath.DirectoryName, UriKind.Absolute));
 
             IList<ReportingDescriptor> rules = run.Tool.Driver.Rules;
-            int ruleCount = testcases.Count(t => !t.Passed);
-            int resultCount = GetResultsCount(testcases);
-            if (ruleCount == 0 || resultCount == 0)
+            var failedEvaluations = evaluations.Where(e => !e.Passed).ToList();
+            int expectedRuleCount = failedEvaluations
+                .Select(e => e.RuleId)
+                .Distinct()
+                .Count();
+            int resultCount = GetResultsCount(evaluations);
+            if (expectedRuleCount == 0 || resultCount == 0)
             {
                 rules.Should().BeNull();
+                run.Results.Should().BeNull();
             }
             else
             {
-                rules.Count.Should().Be(ruleCount);
-                foreach (var testcase in testcases)
+                rules.Count.Should().Be(expectedRuleCount);
+                foreach (var evaluation in evaluations)
                 {
-                    var rule = rules.FirstOrDefault(r => r.Id.Equals(testcase.RuleId));
-                    rule.Should().NotBeNull();
-                    rule.Id.Should().BeEquivalentTo(testcase.RuleId);
-                    rule.FullDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(testcase.RuleDescription));
-                    rule.Help.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(testcase.Recommendation));
-                    rule.HelpUri.OriginalString.Should().BeEquivalentTo(testcase.HelpUri);
+                    var rule = rules.SingleOrDefault(r => r.Id.Equals(evaluation.RuleId));
+                    if (evaluation.Passed) rule.Should().BeNull();
+                    else
+                    {
+                        rule.Should().NotBeNull();
+                        rule.Id.Should().BeEquivalentTo(evaluation.RuleId);
+                        rule.FullDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.RuleDescription));
+                        rule.Help.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.Recommendation));
+                        rule.HelpUri.OriginalString.Should().BeEquivalentTo(evaluation.HelpUri);
+                    }
                 }
-            }
 
-            IList<Result> results = run.Results;
-            int i = 0;
-            foreach (var testcase in testcases)
-            {
-                var evalResults = new List<Types.IResult>();
-                TraverseResults(evalResults, testcase);
-                foreach (var res in evalResults)
+                run.Results.Count.Should().Be(failedEvaluations.Count);
+
+                for (int i = 0; i < failedEvaluations.Count; i++)
                 {
-                    results[i].RuleId.Should().BeEquivalentTo(testcase.RuleId);
-                    results[i].Message.Id.Should().BeEquivalentTo("default");
-                    results[i].Level = res.Passed ? FailureLevel.Note : FailureLevel.Error;
-                    results[i].Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
-                    results[i].Locations.First().PhysicalLocation.Region.StartLine.Should().Be(res.LineNumber);
-                    i++;
+                    var evaluation = failedEvaluations[i];
+                    var result = run.Results[i];
+                    result.RuleId.Should().BeEquivalentTo(evaluation.RuleId);
+                    result.Message.Id.Should().BeEquivalentTo("default");
+                    result.Level.Should().Be(FailureLevel.Error);
+
+                    var evalResults = new List<Types.IResult>();
+                    TraverseResults(evalResults, evaluation);
+                    result.Locations.Count.Should().Be(evalResults.Count);
+                    for (int j = 0; j < evalResults.Count; j++)
+                    {
+                        result.Locations[j].PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
+                        result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalResults[j].LineNumber);
+                    }
                 }
             }
         }

@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Gets the collections of results from this evaluation.
         /// </summary>
-        public IEnumerable<IResult> Results { get; }
+        public IResult Result { get; }
 
         /// <summary>
         /// Gets wether this evaluation has corresponding results.

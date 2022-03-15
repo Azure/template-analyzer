@@ -58,12 +58,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             if (!evaluation.Passed)
             {
-                foreach (var result in evaluation.Results)
+                if (!evaluation.Result?.Passed ?? false)
                 {
-                    if (!result.Passed)
-                    {
-                        resultString += $"{TwiceIndentedNewLine}Line: {result.LineNumber}";
-                    }
+                    resultString += $"{TwiceIndentedNewLine}Line: {evaluation.Result.LineNumber}";
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)
