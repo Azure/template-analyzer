@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using static Microsoft.Azure.Templates.Analyzer.Types.IEvaluation;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
