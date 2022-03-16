@@ -1,0 +1,25 @@
+name: Built-in rule request
+description: Suggest an idea for this project.
+title: "[RULE REQ]"
+labels: ["built-in rule", "🔍 needs-triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this built-in rule request! Contributing directly to this project is always encouraged. More details can be found in the [Contributing Guide](../../CONTRIBUTING.md).
+  - type: textarea
+    id: description
+    attributes:
+      label: Please describe the new rule.
+      description: What rule would you like to get added? What does it check?
+      placeholder: Rule description
+    validations:
+      required: true
+  - type: textarea
+    id: additional-details
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the rule request here.
+      placeholder: Additional context
+    validations:
+      required: false
