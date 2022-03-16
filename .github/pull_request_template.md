@@ -3,7 +3,6 @@
 ## Description
 <!-- Please add an informative description that covers the changes made by the pull request. -->
 
-<!--Extra space for formatting. Don't delete. -->
 
 ---
 
