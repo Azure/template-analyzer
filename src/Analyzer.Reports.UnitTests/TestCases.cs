@@ -633,6 +633,71 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         },
                     }
                 }
+            },
+            new object[]
+            {
+                "Evaluations with same line flagged multiple times",
+                new[]
+                {
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 9 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 9 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 15 }
+                            }
+                        },
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 45 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 45 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 50 }
+                            }
+                        }
+                    }
+                }
             }
         }.AsReadOnly();
     }

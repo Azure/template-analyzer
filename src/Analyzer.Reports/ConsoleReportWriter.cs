@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -37,7 +39,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             {
                 if (!evaluation.Passed)
                 {
-                    string resultString = GenerateResultString(evaluation);
+                    string resultString = string.Concat(
+                        GetFailedLines(evaluation)
+                        .Select(l => $"{TwiceIndentedNewLine}Line: {l}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                     (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                     $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
@@ -52,24 +56,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
         }
 
-        private string GenerateResultString(Types.IEvaluation evaluation)
+        private HashSet<int> GetFailedLines(IEvaluation evaluation, HashSet<int> failedLines = null)
         {
-            string resultString = "";
+            failedLines ??= new HashSet<int>();
 
-            if (!evaluation.Passed)
+            if (!evaluation.Result?.Passed ?? false)
             {
-                if (!evaluation.Result?.Passed ?? false)
-                {
-                    resultString += $"{TwiceIndentedNewLine}Line: {evaluation.Result.LineNumber}";
-                }
-
-                foreach (var innerEvaluation in evaluation.Evaluations)
-                {
-                    resultString += GenerateResultString(innerEvaluation);
-                }
+                failedLines.Add(evaluation.Result.LineNumber);
             }
 
-            return resultString;
+            foreach(var eval in evaluation.Evaluations.Where(e => !e.Passed))
+            {
+                GetFailedLines(eval, failedLines);
+            }
+
+            return failedLines;
         }
 
         /// <inheritdoc/>

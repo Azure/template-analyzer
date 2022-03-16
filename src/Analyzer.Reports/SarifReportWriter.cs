@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     RuleId = evaluation.RuleId,
                     Level = GetLevelFromEvaluation(evaluation),
                     Message = new Message { Id = "default" }, // should be customized message for each result 
-                    Locations = ExtractLocations(evaluation, filePath, isFileInRootPath, new Dictionary<int, List<Location>>()).Values.SelectMany(l => l).ToArray()
+                    Locations = ExtractLocations(evaluation, filePath, isFileInRootPath).Values.ToArray()
                 });
             }
         }
@@ -139,31 +139,29 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return rule;
         }
 
-        private Dictionary<int, List<Location>> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, List<Location>> locations)
+        private Dictionary<int, Location> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, Location> locations = null)
         {
+            locations ??= new Dictionary<int, Location>();
             if (evaluation.Result != null && !evaluation.Result.Passed)
             {
                 var line = evaluation.Result.LineNumber;
-                if (!locations.TryGetValue(line, out List<Location> locationList))
+                if (!locations.ContainsKey(line))
                 {
-                    locationList = new List<Location>();
-                    locations[line] = locationList;
-                }
-
-                locationList.Add(new Location
-                {
-                    PhysicalLocation = new PhysicalLocation
+                    locations[line] = new Location
                     {
-                        ArtifactLocation = new ArtifactLocation
+                        PhysicalLocation = new PhysicalLocation
                         {
-                            Uri = new Uri(
-                                UriHelper.MakeValidUri(filePath),
-                                UriKind.RelativeOrAbsolute),
-                            UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
+                            ArtifactLocation = new ArtifactLocation
+                            {
+                                Uri = new Uri(
+                                    UriHelper.MakeValidUri(filePath),
+                                    UriKind.RelativeOrAbsolute),
+                                UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
+                            },
+                            Region = new Region { StartLine = line },
                         },
-                        Region = new Region { StartLine = line },
-                    },
-                });
+                    };
+                }
             }
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))

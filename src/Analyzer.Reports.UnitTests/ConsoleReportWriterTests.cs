@@ -51,19 +51,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             outputString.Should().BeEquivalentTo(expected.ToString());
         }
 
-        private string GetLineNumbers(Types.IEvaluation evaluation)
+        private string GetLineNumbers(Types.IEvaluation evaluation, HashSet<int> failedLines = null)
         {
+            failedLines ??= new HashSet<int>();
             var resultString = new StringBuilder();
             if (!evaluation.Passed)
             {
-                if (!evaluation.Result?.Passed ?? false)
+                if ((!evaluation.Result?.Passed ?? false) && !failedLines.Any(l => l == evaluation.Result.LineNumber))
                 {
+                    failedLines.Add(evaluation.Result.LineNumber);
                     resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {evaluation.Result.LineNumber}");
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)
                 {
-                    resultString.Append(GetLineNumbers(innerEvaluation));
+                    resultString.Append(GetLineNumbers(innerEvaluation, failedLines));
                 }
             }
             return resultString.ToString();

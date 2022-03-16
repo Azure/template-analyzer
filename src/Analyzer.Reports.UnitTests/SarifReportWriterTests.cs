@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
         {
-            if (!evaluation.Result?.Passed ?? false)
+            if ((!evaluation.Result?.Passed ?? false) && !results.Any(r => r.LineNumber == evaluation.Result.LineNumber))
             {
                 results.Add(evaluation.Result);
             }
