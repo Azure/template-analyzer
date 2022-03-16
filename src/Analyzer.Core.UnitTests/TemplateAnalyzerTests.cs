@@ -158,5 +158,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
                         "NoFile.json"));
             templateAnalyzer.FilterRules(erroredPath);
         }
+
+        [TestMethod]
+        public void FilterRules_ConfigurationPathIsNull_NoErrorsThrown()
+        {
+            templateAnalyzer.FilterRules(null);
+        }
     }
 }
