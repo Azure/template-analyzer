@@ -1,4 +1,4 @@
-name: Feature request
+name: Feature request/Improvement suggestion
 description: Suggest an idea for this project.
 title: "[FEATURE REQ]"
 labels: ["enhancement", "🔍 needs-triage"]
@@ -6,13 +6,13 @@ labels: ["enhancement", "🔍 needs-triage"]
 body:
   - type: markdown
     attributes:
-      value: Thanks for taking the time to fill out this feature request! Contributing directly to this project is always encouraged. More details can be found in the [Contributing Guide](../../CONTRIBUTING.md).
+      value: Thanks for taking the time to fill out this feature request or provide a suggestion! Contributing directly to this project is always encouraged. More details can be found in the [Contributing Guide](../../CONTRIBUTING.md).
   - type: textarea
     id: description
     attributes:
-      label: Please describe the feature.
-      description: What feature would you like to get added? What problem is it solving? What alternatives have you considered? 
-      placeholder: Feature description
+      label: Please describe the feature or suggestion.
+      description: What feature would you like to get added? What is the improvement that can be made? What problem is it solving? What alternatives have you considered? 
+      placeholder: Feature/improvement description
     validations:
       required: true
   - type: textarea
