@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read configurations file.", e);
+                throw new TemplateAnalyzerException($"Failed to read configurations file, but path exists.", e);
             }
         }
 
