@@ -39,7 +39,7 @@ Argument | Description
 **Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
 ### Output
-Results can be output in plan text to the console, or output to a file in SARIF format.
+Results can be output in plain text to the console, or output to a file in SARIF format. Template BPA will exit with an error code if any errors or violations are found during a scan.
 
 #### Console
 The Template BPA outputs the results of violated rules, the corresponding line numbers where rules failed, and a recommendation to remediate each violation.
@@ -61,7 +61,15 @@ File: C:\Templates\azuredeploy.json
 #### SARIF
 Results are written to the file specified (with the `-o` or `--output-file-path` argument) in [SARIF](https://sarifweb.azurewebsites.net) format.
 
-### Understanding and Customizing Rules
+#### Error codes
+| Scenario      | Exit Code |
+| ----------- | ----------- |
+| Error: GenericError | -1 |
+| Error: invalid path | -2 |
+| Error: missing path | -3 |
+| Error: invalid ARM Template | -4 |
+
+### Understanding and customizing rules
 The analysis rules used by the Template BPA are written in JSON, located in *Rules/BuiltInRules.json* (starting from the directory *TemplateAnalyzer.exe* is in). This file can be added to and/or modified to change the rules that are run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md).
 
 ## Contributing

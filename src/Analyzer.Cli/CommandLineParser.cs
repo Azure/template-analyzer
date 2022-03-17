@@ -121,14 +121,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!templateFilePath.Exists)
                 {
                     Console.WriteLine($"Invalid template file path ({templateFilePath})");
-                    return 0;
+                    return -2;
                 }
 
                 // Check that output file path provided for sarif report
                 if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     Console.WriteLine($"Output file path was not provided.");
-                    return 0;
+                    return -3;
                 }
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         Console.WriteLine("File is not a valid ARM Template.");
                     }
-                    return 0;
+                    return -4;
                 }
 
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk);
