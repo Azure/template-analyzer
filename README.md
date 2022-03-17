@@ -33,8 +33,8 @@ Argument | Description
 `<template-path>` | The ARM template to analyze
 `<directory-path>` | The directory to find ARM templates (recursively finds all templates in the directory and its subdirectories.)
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
-**(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer. If the configuration file path argument is not provided, the analyzer will check to see if a configuration file is in the default location "<_ExecutablePath_>/Configurations/Configuration.json".
-**(Optional)** `--report-format` | <p>*Console*: output results to the console in plain text. **(default)**</p>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
+**(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer.<br/>If argument is not provided, the default configuration will be used (*<_ExecutablePath_>/Configurations/Configuration.json*).
+**(Optional)** `--report-format` | *Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
