@@ -3,14 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Azure.Deployments.Core.Collections;
-using Azure.Deployments.Core.Extensions;
+using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Json;
 using Azure.Deployments.Templates.Engines;
-using Azure.Deployments.Templates.Schema;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
+using Microsoft.WindowsAzure.ResourceStack.Common.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests

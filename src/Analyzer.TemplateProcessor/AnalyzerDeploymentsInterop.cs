@@ -13,6 +13,14 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
         }
 
+        int IDeploymentsInterop.DeploymentNameLengthLimit => throw new System.NotImplementedException();
+
+        int IDeploymentsInterop.DeploymentKeyVaultReferenceLimit => throw new System.NotImplementedException();
+
+        int IDeploymentsInterop.DeploymentResourceGroupLimit => throw new System.NotImplementedException();
+
+        bool IDeploymentsInterop.KeyVaultDeploymentEnabled => throw new System.NotImplementedException();
+
         public static void Initialize()
             => DeploymentsInterop.Initialize(new AnalyzerDeploymentsInterop());
 

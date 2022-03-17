@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
-using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Entities;
 using Newtonsoft.Json.Linq;
+using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 {
