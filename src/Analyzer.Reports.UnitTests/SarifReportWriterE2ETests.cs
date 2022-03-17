@@ -43,8 +43,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             string ruleId = "TA-000028";
             List<List<int>> expectedLinesForRun = new List<List<int>>
             {
-                new List<int> { 146, 147, 148, 148 },
-                new List<int> { 206, 207, 208, 208 }
+                new List<int> { 146, 147, 148 },
+                new List<int> { 206, 207, 208 }
             };
 
             string artifactUriString = templateFilePath.Name;
@@ -146,8 +146,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 146, 147, 148, 148 },
-                        new List<int> { 206, 207, 208, 208 }
+                        new List<int> { 146, 147, 148 },
+                        new List<int> { 206, 207, 208 }
                     })
                 }
             };
