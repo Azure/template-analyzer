@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
+                Console.WriteLine(GetExceptionMessage(exp));
                 return -1;
             }
             finally
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine($"An exception occurred: {GetAllExceptionMessages(exp)}");
+                Console.WriteLine(GetExceptionMessage(exp));
             }
         }
 
@@ -256,14 +256,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return validSchemas.Contains(schema);
         }
 
-        private static string GetAllExceptionMessages(Exception exception)
+        private static string GetExceptionMessage(Exception exception)
         {
-            string exceptionMessage = exception.Message;
+            Func<Exception, string> getExceptionInfo = (exception) => "\n\n" + exception.Message + "\n" + exception.StackTrace;
+            
+            string exceptionMessage = "An exception occurred:" + getExceptionInfo(exception);
 
             while (exception.InnerException != null)
             {
                 exception = exception.InnerException;
-                exceptionMessage += " - " + exception.Message;
+                exceptionMessage += getExceptionInfo(exception);
             }
 
             return exceptionMessage;
