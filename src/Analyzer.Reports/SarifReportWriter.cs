@@ -116,12 +116,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             };
         }
 
-        private ReportingDescriptor ExtractRule(IEvaluation evaluation)
+        private void ExtractRule(IEvaluation evaluation)
         {
-            if (!rulesDictionary.TryGetValue(evaluation.RuleId, out ReportingDescriptor rule))
+            if (!rulesDictionary.ContainsKey(evaluation.RuleId))
             {
                 var hasUri = Uri.TryCreate(evaluation.HelpUri, UriKind.RelativeOrAbsolute, out Uri uri);
-                rule = new ReportingDescriptor
+                rulesDictionary.Add(evaluation.RuleId, new ReportingDescriptor
                 {
                     Id = evaluation.RuleId,
                     // Name = evaluation.RuleId, TBD issue #198
@@ -133,10 +133,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) } }
                     },
                     DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
-                };
-                rulesDictionary.Add(evaluation.RuleId, rule);
+                });
             }
-            return rule;
         }
 
         private Dictionary<int, Location> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, Location> locations = null)

@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
-        /// Creates an <see cref="JsonRuleEvaluation"/> that represents a structured expression.
+        /// Creates a <see cref="JsonRuleEvaluation"/> that represents a structured expression.
         /// </summary>
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
-        /// Creates an <see cref="JsonRuleEvaluation"/> that represents a leaf expression.
+        /// Creates a <see cref="JsonRuleEvaluation"/> that represents a leaf expression.
         /// </summary>
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>

@@ -103,7 +103,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
                 {
-                    var ruleId = (executionResult.Name as string)?.Replace(" ", "") ?? string.Empty;
+                    var ruleId = (executionResult.Name as string)?.Replace(" ", "");
+                    ruleId = !String.IsNullOrEmpty(ruleId) ? ruleId : "TTK";
                     var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
 
                     foreach (int lineNumber in uniqueError.Value)

@@ -124,7 +124,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 foreach (var evaluation in evaluations)
                 {
                     var rule = rules.SingleOrDefault(r => r.Id.Equals(evaluation.RuleId));
-                    if (evaluation.Passed) rule.Should().BeNull();
+                    if (evaluation.Passed)
+                    {
+                        rule.Should().BeNull();
+                    }
                     else
                     {
                         rule.Should().NotBeNull();

@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public IResult Result { get; }
 
         /// <summary>
-        /// Gets wether this evaluation has corresponding results.
+        /// Gets whether this evaluation has corresponding results.
         /// </summary>
         /// <returns>Whether this evaluation has corresponding results</returns>
         public bool HasResults { get; }
