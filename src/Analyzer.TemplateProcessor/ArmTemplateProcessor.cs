@@ -209,9 +209,28 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // If the dependsOn references the resourceId
                 if (parentResourceIds.Value.StartsWith("/subscriptions"))
                 {
+                    string parentResourceType;
                     string parentResourceId = IResourceIdentifiableExtensions.GetUnqualifiedResourceId(parentResourceIds.Value);
-                    parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
-                    string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
+                    if (parentResourceId != "")
+                    {
+                        parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
+                        parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
+                    }
+                    else
+                    {
+                        // When there's no provider segment, GetUnqualifiedResourceId returns an empty string
+                        // and GetFullyQualifiedResourceId returns invalid values.
+                        // If the parent resource is defined as "/subscriptions/<anID>/resourceGroups/<aName>",
+                        // or the TemplateEngine reduces it to that shape (for example if the parent resource is specified as subscriptionResourceId('Microsoft.Resources/resourceGroups', <aName>)),
+                        // then there won't be any provider segment:
+                        parentResourceType = "Microsoft.Resources/resourceGroups";
+                        parentResourceName = IResourceIdentifiableExtensions.GetResourceGroup(parentResourceIds.Value);
+
+                        if (parentResourceName == "")
+                        {
+                            throw new Exception("Parent resource name was not found");
+                        }
+                    }
 
                     this.flattenedResources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResourceInfo);
                 }
