@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         parentResourceType = "Microsoft.Resources/resourceGroups";
                         parentResourceName = IResourceIdentifiableExtensions.GetResourceGroup(parentResourceIds.Value);
 
-                        if (parentResourceName == "")
+                        if (parentResourceName == null)
                         {
                             throw new Exception("Parent resource name was not found");
                         }

@@ -950,8 +950,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""type"": ""Microsoft.Resources/deployments"",
                 ""apiVersion"": ""2019-10-01"",
                 ""name"": ""aDeploymentName"",
-                ""properties"": {
-                },
+                ""properties"": {},
                 ""dependsOn"": [
                     ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/aResourceName""
                 ]
@@ -960,8 +959,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""type"": ""Microsoft.Resources/deployments"",
                 ""apiVersion"": ""2019-10-01"",
                 ""name"": ""aDeploymentName"",
-                ""properties"": {
-                },
+                ""properties"": {},
                 ""dependsOn"": [
                     ""[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'aResourceName')]""
                 ]
@@ -989,6 +987,38 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             armTemplateProcessor.ProcessTemplate();
 
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+        }
+
+        [TestMethod]
+        public void CopyResourceDependants_DependsOnDoesNotSpecifyResourceGroup_ThrowsExpectedException()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2019-10-01"",
+                        ""name"": ""aDeploymentName"",
+                        ""properties"": {},
+                        ""dependsOn"": [
+                            ""/subscriptions/00000000-0000-0000-0000-000000000000""
+                        ]
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            try
+            {
+                var template = armTemplateProcessor.ProcessTemplate();
+                Assert.Fail("No exception was thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Equals("Parent resource name was not found"));
+            }
         }
 
         [TestMethod]
