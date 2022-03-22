@@ -945,6 +945,52 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
+        [DataTestMethod]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Resources/deployments"",
+                ""apiVersion"": ""2019-10-01"",
+                ""name"": ""aDeploymentName"",
+                ""properties"": {
+                },
+                ""dependsOn"": [
+                    ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/aResourceName""
+                ]
+            }", DisplayName = "Child specifying the default subscription id")]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Resources/deployments"",
+                ""apiVersion"": ""2019-10-01"",
+                ""name"": ""aDeploymentName"",
+                ""properties"": {
+                },
+                ""dependsOn"": [
+                    ""[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'aResourceName')]""
+                ]
+            }", DisplayName = "Child using subscriptionResourceId(...)")]
+        public void CopyResourceDependants_DependsOnAResourceGroup(string childResourceJson)
+        {
+            var parentResourceJson = @"{
+                ""type"": ""Microsoft.Resources/resourceGroups"",
+                ""apiVersion"": ""2019-10-01"",
+                ""name"": ""aResourceName"",
+                ""properties"": {}
+            }";
+
+            var expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
+                { "resources[1]", "resources[1]" },
+                { "resources[0].resources[0]", "resources[1]" }
+            };
+
+            TemplateResource parentResource = _getTemplateFromString(parentResourceJson);
+            TemplateResource childResource = _getTemplateFromString(childResourceJson);
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { parentResource, childResource }));
+
+            armTemplateProcessor.ProcessTemplate();
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+        }
+
         [TestMethod]
         public void ProcessTemplate_ResourceNameWithIncorrectSegmentLength_ThrowsExpectedException()
         {
