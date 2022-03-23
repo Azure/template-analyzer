@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                         if (parentResourceName == null)
                         {
-                            throw new Exception("Parent resource name was not found");
+                            throw new Exception("Resource group name was not found on parent resource id: " + parentResourceIds.Value);
                         }
                     }
 

@@ -1017,7 +1017,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.Equals("Parent resource name was not found"));
+                Assert.IsTrue(ex.Message.Equals("Resource group name was not found on parent resource id: /subscriptions/00000000-0000-0000-0000-000000000000"));
             }
         }
 
