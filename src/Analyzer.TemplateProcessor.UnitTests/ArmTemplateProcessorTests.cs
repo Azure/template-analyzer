@@ -200,18 +200,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""outputs"": {}
             }");
 
-            _templateMetadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
+            _templateMetadata = PlaceholderInputGenerator.GeneratePlaceholderDeploymentMetadata();
 
             _templateParameters = new InsensitiveDictionary<JToken>();
         }

@@ -120,9 +120,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 if (resource.Copy != null) copyNameMap[resource.Copy.Name.Value] = (resource.OriginalName, i);
             }
 
+            var managementGroupName = metadata["managementGroup"]["name"].ToString();
+            var subscriptionId = metadata["subscription"]["subscriptionId"].ToString();
+            var resourceGroupName = metadata["resourceGroup"]["name"].ToString();
+
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions("", "", "", template, apiVersion);
+                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion);
             }
             catch (Exception ex)
             {
