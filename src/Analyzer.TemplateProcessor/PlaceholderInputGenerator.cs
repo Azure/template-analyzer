@@ -160,6 +160,27 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }                    
             }");
 
+            var managementGroupInfo = JObject.Parse(@"
+            {
+                ""id"": ""/providers/Microsoft.Management/managementGroups/examplemg1"",
+                ""name"": ""examplemg1"",
+                ""properties"": {
+                  ""details"": {
+                    ""parent"": {
+                      ""displayName"": ""Tenant Root Group"",
+                      ""id"": ""/providers/Microsoft.Management/managementGroups/00000000-0000-0000-0000-000000000000"",
+                      ""name"": ""00000000-0000-0000-0000-000000000000""
+                    },
+                    ""updatedBy"": ""00000000-0000-0000-0000-000000000000"",
+                    ""updatedTime"": ""2020-07-23T21:05:52.661306Z"",
+                    ""version"": ""1""
+                  },
+                  ""displayName"": ""Example MG 1"",
+                  ""tenantId"": ""00000000-0000-0000-0000-000000000000""
+                },
+                ""type"": ""/providers/Microsoft.Management/managementGroups""
+            }");
+
             var metadata = new InsensitiveDictionary<JToken>
             {
                 { "subscription", new JObject(
@@ -170,6 +191,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
                     new JProperty("location", "westus2"),
                     new JProperty("name", "resource-group")) },
+                { "managementGroup", managementGroupInfo },
                 { "deployment", deployment },
                 { "tenantId", "00000000-0000-0000-0000-000000000000" },
                 { "providers", providers },

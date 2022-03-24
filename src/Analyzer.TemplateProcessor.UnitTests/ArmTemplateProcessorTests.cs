@@ -1091,6 +1091,36 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Assert.AreEqual("privatelink.database.windows.net", template["resources"][0]["name"]);
         }
 
+        [TestMethod]
+        public void ProcessTemplate_ValidTemplateUsingManagementGroupFunction_ProcessTemplateFunction()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Management/managementGroups"",
+                        ""apiVersion"": ""2020-05-01"",
+                        ""scope"": ""/"",
+                        ""name"": ""aManagementGroupName"",
+                        ""properties"": {
+                            ""details"": {
+                                ""parent"": {
+                                    ""id"": ""[managementGroup().id]""
+                                }
+                            }
+                        }
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            JToken template = armTemplateProcessor.ProcessTemplate();
+
+            Assert.AreEqual("/providers/Microsoft.Management/managementGroups/examplemg1", template["resources"][0]["properties"]["details"]["parent"]["id"]);
+        }
+
         private string GenerateTemplateWithOutputs(string outputValue)
         {
             return string.Format(@"{{
