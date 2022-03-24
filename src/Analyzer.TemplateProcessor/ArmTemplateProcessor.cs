@@ -48,8 +48,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         {
             this.armTemplate = armTemplate;
             this.apiVersion = apiVersion;
-
-            AnalyzerDeploymentsInterop.Initialize();
         }
 
         /// <summary>
