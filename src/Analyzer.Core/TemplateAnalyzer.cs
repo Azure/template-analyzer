@@ -101,11 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
         }
 
-        /// <summary>
-        /// Loads rules.
-        /// </summary>
-        /// <returns>Loaded rules.</returns>
-        public static string LoadRules()
+        private static string LoadRules()
         {
             return File.ReadAllText(
                 Path.Combine(
@@ -142,7 +138,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read configurations file, but path exists.", e);
+                throw new TemplateAnalyzerException($"Failed to read configurations file, but path provided or file exists in default location.", e);
             }
         }
 

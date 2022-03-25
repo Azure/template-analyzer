@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -341,71 +340,141 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             return $"[{string.Join(",", rules)}]";
         }
 
-        [DataTestMethod]
-        [DataRow(@"[{
+        [TestMethod]
+        [ExpectedException(typeof(JsonRuleEngineException))]
+        public void FilterRules_ConfigurationIsInvalid_ExceptionIsThrown()
+        {
+            var rule = @"[{
                 ""id"": ""RuleId 0"",
                 ""description"": ""Rule description"",
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
                 ""severity"": 1,
                 ""evaluation"": { }
-            }]", DisplayName = "Single allOf expression")]
-        [ExpectedException(typeof(JsonRuleEngineException))]
-        public void FilterRules_ConfigurationhIsInvalid_ExceptionIsThrown(string rules)
-        {
+            }]";
             // Act
-            var jsonRuleEngine = JsonRuleEngine.Create(rules, t => null);
+            var jsonRuleEngine = JsonRuleEngine.Create(rule, t => null);
             jsonRuleEngine.FilterRules("falsePath");
         }
 
         [DataTestMethod]
-        [DataRow("", 28, DisplayName = "Entire RuleSet; Empty configuration")]
+        [DataRow("", 5, DisplayName = "Entire RuleSet; Empty configuration")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [3]
                     }
-            }", 9, new int[] { 3 }, DisplayName = "Only Severity 3")]
+            }", 3, new int[] { 3 }, DisplayName = "Only Severity 3")]
         [DataRow(@"{
                 ""exclusions"": {
                         ""severity"": [3]
                     }
-            }", 19, null, null, new int[] { 3 }, DisplayName = "Excludes Severity 3")]
+            }", 2, null, null, new int[] { 3 }, DisplayName = "Excludes Severity 3")]
         [DataRow(@"{
                 ""inclusions"": {
-                        ""ids"": [""TA-000001""]
+                        ""ids"": [""RuleId0""]
                     }
-            }", 1, null, new string[] { "TA-000001" }, DisplayName = "Only Id TA-000001")]
+            }", 1, null, new string[] { "RuleId0" }, DisplayName = "Only Id RuleId0")]
         [DataRow(@"{
                 ""exclusions"": {
-                        ""ids"": [""TA-000001""]
+                        ""ids"": [""RuleId0""]
                     }
-            }", 27, null, null, null, new string[] { "TA-000001" }, DisplayName = "All rules except Id TA-000001")]
+            }", 4, null, null, null, new string[] { "TA-000001" }, DisplayName = "All rules except Id RuleId0")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [3],
-                        ""ids"": [""TA-000001""]
+                        ""ids"": [""RuleId0""]
                     }
-            }", 10, new int[] { 3 }, new string[] { "TA-000001" }, DisplayName = "Only Severity 3 and  Id TA-000001")]
+            }", 4, new int[] { 3 }, new string[] { "RuleId0" }, DisplayName = "Only Severity 3 and  Id RuleId0")]
         [DataRow(@"{
                 ""inclusions"": {
-                        ""ids"": [""TA-000001""]
+                        ""ids"": [""RuleId0""]
                     }, 
                 ""severityOverrides"": {
-                    ""TA-000001"": 3
+                    ""RuleId0"": 3
                     }
-                }", 1, null, new string[] { "TA-000001" }, null, null, DisplayName = "Only Id TA-000001, change Severity to 3")]
-        public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, int expectedEvaluationCount, 
+                }", 1, null, new string[] { "RuleId0" }, null, null, DisplayName = "Only Id RuleId0, change Severity to 3")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [3]
+                    },
+                ""exclusions"": {
+                        ""severity"": [3]
+                    }
+            }", 3, new int[] { 3 }, DisplayName = "Only Severity 3 from inclusions object; Exclusions object is ignored")]
+        public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, int expectedRuleCount, 
             IEnumerable<Severity> includeSeverities = null, IEnumerable<string> includeIds = null, 
             IEnumerable<Severity> excludeSeverities = null, IEnumerable<string> excludeIds = null)
         {
+            // Setup mock Rules
+            var mockRules = @"[{
+                ""id"": ""RuleId0"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 1,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId1"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 2,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId2"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 3,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId3"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 3,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId4"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 3,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            }]";
+
             // Arrange
-            var jsonRuleEngine = JsonRuleEngine.Create(TemplateAnalyzer.LoadRules(), t => null);
+            var jsonRuleEngine = JsonRuleEngine.Create(mockRules, t => null);
 
             // Filter
             jsonRuleEngine.FilterRules(configuration);
 
             // Compare
-            Assert.AreEqual(expectedEvaluationCount, jsonRuleEngine.RuleDefinitions.Count);
+            Assert.AreEqual(expectedRuleCount, jsonRuleEngine.RuleDefinitions.Count);
 
             if (includeSeverities != null || includeIds != null)
             {
@@ -420,7 +489,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 foreach (var r in jsonRuleEngine.RuleDefinitions)
                 {
                     Assert.IsTrue((excludeSeverities != null && !excludeSeverities.Contains(r.Severity)) ||
-                        (excludeIds!= null && !excludeIds.Contains(r.Id)));
+                        (excludeIds != null && !excludeIds.Contains(r.Id)));
                 }
             }
         }

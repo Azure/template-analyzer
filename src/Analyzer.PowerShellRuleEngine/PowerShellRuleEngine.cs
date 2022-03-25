@@ -61,6 +61,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         }
 
         /// <summary>
+        /// Modifies the rules to run based on values defined in the configurations file.
+        /// </summary>
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(string configuration) { }
+
+        /// <summary>
         /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
         /// <param name="templateContext">The context of the template under analysis.

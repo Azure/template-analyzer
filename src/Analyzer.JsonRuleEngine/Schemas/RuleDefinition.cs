@@ -36,12 +36,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         [JsonProperty]
         public string HelpUri { get; set; }
 
-        ///// <summary>
-        ///// Gets or sets the severity of the rule.
-        ///// </summary>
-        //[JsonProperty]
-        //public int Severity { get; set; } = 2;
-
         /// <summary> 
         /// Gets or sets the severity of the rule. 
         /// </summary> 
