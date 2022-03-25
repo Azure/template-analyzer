@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     }
                     return 0;
                 }
-               
+
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk);
 
                 if (writer == null)
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
                 // Log root directory info to be analyzed
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");   
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
                 int numOfSuccesses = 0;
                 using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
