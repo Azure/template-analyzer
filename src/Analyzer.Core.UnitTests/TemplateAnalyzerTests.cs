@@ -7,9 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
-using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
@@ -165,9 +163,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         public void FilterRules_ConfigurationPath_NoErrorsThrownAndJsonRuleEngineInvoked()
         {
             var emptyConfigurationFile = Path.GetTempFileName();
+            var templateAnalyzer = TemplateAnalyzer.Create();
             templateAnalyzer.FilterRules(new FileInfo(emptyConfigurationFile));
-
-            var mockJsonRuleEngine = new Mock<IRuleEngine>(); // Not complete
         }
     }
 }

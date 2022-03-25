@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""severityOverrides"": {
                     ""RuleId0"": 3
                     }
-                }", 1, null, new string[] { "RuleId0" }, null, null, DisplayName = "Only Id RuleId0, change Severity to 3")]
+                }", 1, new int[] { 3 }, new string[] { "RuleId0" }, null, null, DisplayName = "Only Id RuleId0, change Severity to 3")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [3]
