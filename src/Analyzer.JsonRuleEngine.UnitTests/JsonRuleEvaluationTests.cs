@@ -67,109 +67,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 Severity.High,
-                new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
                 {
                     RuleDefinition = new RuleDefinition { Severity = Severity.High }
                 }
                 .Severity);
-        }
-
-        [DataTestMethod]
-        [DataRow(3, 3, DisplayName = "3/3 results are true")]
-        [DataRow(3, 2, DisplayName = "2/3 results are true")]
-        [DataRow(3, 0, DisplayName = "0/3 results are true")]
-        [DataRow(0, 0, DisplayName = "No results")]
-        public void GetResultsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfResultsReturned(int totalResults, int expectedTrue)
-        {
-            // Arrange
-            int expectedFalse = totalResults - expectedTrue;
-
-            List<JsonRuleResult> results = new List<JsonRuleResult>();
-
-            for (int i = 0; i < expectedTrue; i++)
-            {
-                results.Add(new JsonRuleResult { Passed = true });
-            }
-
-            for (int i = 0; i < expectedFalse; i++)
-            {
-                results.Add(new JsonRuleResult { Passed = false });
-            }
-
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, results);
-
-            // Act
-            var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
-            var resultsEvaluatedFalse = jsonRuleEvaluation.ResultsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(totalResults, results.Count());
-            Assert.AreEqual(expectedTrue, resultsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedFalse, resultsEvaluatedFalse.Count());
-        }
-
-        [TestMethod]
-        public void GetResultsEvaluatedTrueFalse_ResultsNotSet_ReturnZeroResults()
-        {
-            // Arrange
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, new List<JsonRuleEvaluation>());
-
-            // Act
-            var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
-            var resultsEvaluatedFalse = jsonRuleEvaluation.ResultsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(0, resultsEvaluatedTrue.Count());
-            Assert.AreEqual(0, resultsEvaluatedFalse.Count());
-        }
-
-        [DataTestMethod]
-        [DataRow(3, 3, DisplayName = "3/3 evaluations are true")]
-        [DataRow(3, 2, DisplayName = "2/3 evaluations are true")]
-        [DataRow(3, 0, DisplayName = "0/3 evaluations are true")]
-        [DataRow(0, 0, DisplayName = "No evaluations")]
-        public void GetEvaluationsEvaluatedTrueFalse_ThreeEvaluations_ExpectedNumberOfEvaluationsReturned(int totalEvaluations, int expectedTrue)
-        {
-            // Arrange
-            int expectedFalse = totalEvaluations - expectedTrue;
-
-            List<JsonRuleEvaluation> evaluations = new List<JsonRuleEvaluation>();
-
-            for (int i = 0; i < expectedTrue; i++)
-            {
-                evaluations.Add(new JsonRuleEvaluation(null, true, new JsonRuleResult[0]));
-            }
-
-            for (int i = 0; i < expectedFalse; i++)
-            {
-                evaluations.Add(new JsonRuleEvaluation(null, false, new JsonRuleResult[0]));
-            }
-
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, evaluations);
-
-            // Act
-            var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
-            var evaluationsEvaluatedFalse = jsonRuleEvaluation.EvaluationsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(totalEvaluations, evaluations.Count());
-            Assert.AreEqual(expectedTrue, evaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedFalse, evaluationsEvaluatedFalse.Count());
-        }
-
-        [TestMethod]
-        public void GetEvaluationsEvaluatedTrueFalse_EvaluationsNotSet_ReturnZeroEvaluations()
-        {
-            // Arrange
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, new List<JsonRuleResult>());
-
-            // Act
-            var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
-            var evaluationsEvaluatedFalse = jsonRuleEvaluation.EvaluationsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(0, evaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(0, evaluationsEvaluatedFalse.Count());
         }
 
         [TestMethod]
