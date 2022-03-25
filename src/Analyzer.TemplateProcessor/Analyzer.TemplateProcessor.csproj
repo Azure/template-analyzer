@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Deployments.Core" Version="1.0.112" />
-    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.112" />
-    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.112" />
+    <PackageReference Include="Azure.Deployments.Core" Version="1.0.568" />
+    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.568" />
+    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.568" />
   </ItemGroup>
 
   <ItemGroup>
