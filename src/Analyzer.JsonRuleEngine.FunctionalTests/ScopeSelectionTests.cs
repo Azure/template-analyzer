@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -157,12 +158,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
                 : base(commonProperties)
             { }
 
-            public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver = null)
+            public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver = null)
             {
                 return base.EvaluateInternal(jsonScope, scope =>
                 {
                     EvaluationCallback(scope);
-                    return new JsonRuleResult();
+                    return new JsonRuleEvaluation(this, true, Enumerable.Empty<JsonRuleEvaluation>());
                 });
             }
         }

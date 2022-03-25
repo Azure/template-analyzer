@@ -96,10 +96,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 Assert.AreEqual($"RuleId {i}", evaluation.RuleId);
                 Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
-                foreach (var result in evaluation.Results)
-                {
-                    Assert.AreEqual(expectedLineNumber, result.LineNumber);
-                }
+                Assert.AreEqual(expectedLineNumber, evaluation.Result.LineNumber);
             }
         }
 
@@ -227,7 +224,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
             Assert.AreEqual(Severity.Medium, evaluation.Severity); //Default value
 
-            Assert.AreEqual(0, evaluation.Results.Count());
+            Assert.IsNull(evaluation.Result);
 
             AssertEvaluationsAndResultsAreAsExpected(evaluation, expectedLineNumber);
         }
@@ -238,10 +235,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             {
                 if ((evaluationResult as JsonRuleEvaluation).Expression is LeafExpression)
                 {
-                    foreach (var result in evaluationResult.Results)
-                    {
-                        Assert.AreEqual(expectedLineNumber, result.LineNumber);
-                    }
+                    Assert.AreEqual(expectedLineNumber, evaluationResult.Result.LineNumber);
                 }
                 else
                 {

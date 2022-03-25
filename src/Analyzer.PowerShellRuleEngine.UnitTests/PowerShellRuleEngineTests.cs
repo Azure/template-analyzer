@@ -7,8 +7,6 @@ using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
-
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTests
 {
     [TestClass]
@@ -50,8 +48,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 else
                 {
                     Assert.IsTrue(evaluation.HasResults);
-                    Assert.AreEqual(1, evaluation.Results.Count());
-                    Assert.IsFalse(evaluation.Results.First().Passed);
+                    Assert.IsFalse(evaluation.Result.Passed);
 
                     failedEvaluations.Add(evaluation);
                 }
@@ -62,7 +59,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.AreEqual(failedEvaluations.Count, lineNumbers.Length);
             for (int errorNumber = 0; errorNumber < lineNumbers.Length; errorNumber++)
             {
-                Assert.AreEqual(lineNumbers[errorNumber], failedEvaluations[errorNumber].Results.First().LineNumber);
+                Assert.AreEqual(lineNumbers[errorNumber], failedEvaluations[errorNumber].Result.LineNumber);
                 Assert.IsFalse(failedEvaluations[errorNumber].RuleDescription.Contains(" on line: "));
             }
         }
@@ -74,18 +71,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             var evaluations = powerShellRuleEngine.AnalyzeTemplate(templateContext);
 
-            Assert.AreEqual(1, evaluations.Count());
-            Assert.IsFalse(evaluations.First().Passed);
+            var evaluationsList = evaluations.ToList();
+            Assert.AreEqual(2, evaluationsList.Count);
 
-            var resultsList = evaluations.First().Results.ToList();
+            foreach (var evaluation in evaluationsList)
+            {
+                Assert.IsFalse(evaluation.Passed);
+                Assert.IsFalse(evaluation.Result.Passed);
+            }
 
-            Assert.AreEqual(2, resultsList.Count);
-
-            Assert.IsFalse(resultsList[0].Passed);
-            Assert.IsFalse(resultsList[1].Passed);
-
-            Assert.AreEqual(9, resultsList[0].LineNumber);
-            Assert.AreEqual(13, resultsList[1].LineNumber);
+            Assert.AreEqual(9, evaluationsList[0].Result.LineNumber);
+            Assert.AreEqual(13, evaluationsList[1].Result.LineNumber);
         }
 
         [TestMethod]
@@ -102,11 +98,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.IsFalse(evaluationsList[0].Passed);
             Assert.IsFalse(evaluationsList[1].Passed);
 
-            Assert.AreEqual(1, evaluationsList[0].Results.Count());
-            Assert.AreEqual(1, evaluationsList[1].Results.Count());
-
-            Assert.IsFalse(evaluationsList[0].Results.First().Passed);
-            Assert.IsFalse(evaluationsList[1].Results.First().Passed);
+            Assert.IsFalse(evaluationsList[0].Result.Passed);
+            Assert.IsFalse(evaluationsList[1].Result.Passed);
 
             Assert.AreEqual(evaluationsList[0].RuleId, evaluationsList[1].RuleId);
             Assert.AreNotEqual(evaluationsList[0].RuleDescription, evaluationsList[1].RuleDescription);

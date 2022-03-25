@@ -87,18 +87,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var leafExpression = new LeafExpression(mockLeafExpressionOperator.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var evaluation = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: mockLineResolver.Object);
-            var results = evaluation.Results.ToList();
+            var evaluationOutcome = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: mockLineResolver.Object).ToList();
 
             // Assert
+            Assert.AreEqual(1, evaluationOutcome.Count);
+
+            var iresult = evaluationOutcome[0].Result;
+
             // Verify actions on resolvers.
 
             // If a resource type is passed, it should resolve for the resource type, and the path should be resolved on the mock resource type.
             // If no resource type is passed, it should resolve the path directly and not use the mock resource type.
-            // ResolveResourceType should never be called on the mock returned from resolving resource types already.
             mockJsonPathResolver.Verify(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))), Times.Exactly(resourceType == null ? 1 : 0));
             mockJsonPathResolver.Verify(s => s.ResolveResourceType(It.Is<string>(r => string.Equals(r, resourceType))), Times.Exactly(resourceType == null ? 0 : 1));
             mockResourcesResolved.Verify(s => s.Resolve(It.Is<string>(p => string.Equals(p, path))), Times.Exactly(resourceType == null ? 0 : 1));
+
+            // ResolveResourceType should never be called on the mock returned from resolving resource types already.
             mockResourcesResolved.Verify(s => s.ResolveResourceType(It.IsAny<string>()), Times.Never);
 
             // The original mock is returned from both mocks when calling Resolve for a path, so the JToken should always come from it.
@@ -107,12 +111,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             mockLeafExpressionOperator.Verify(o => o.EvaluateExpression(It.Is<JToken>(token => token == jsonToEvaluate)), Times.Once);
 
-            Assert.AreEqual(expectedEvaluationResult, evaluation.Passed);
+            Assert.AreEqual(expectedEvaluationResult, evaluationOutcome[0].Passed);
 
-            Assert.AreEqual(1, results.Count);
-            Assert.AreEqual(expectedEvaluationResult, results.First().Passed);
+            Assert.AreEqual(expectedEvaluationResult, iresult.Passed);
 
-            var result = results.First() as JsonRuleResult;
+            var result = iresult as JsonRuleResult;
             Assert.AreEqual(expectedPathEvaluated, result.JsonPath);
             Assert.AreEqual(lineNumber, result.LineNumber);
         }
@@ -131,10 +134,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Returns(false);
 
             var leafExpression = new LeafExpression(mockLeafExpressionOperator.Object, new ExpressionCommonProperties { Path = "" });
-            var results = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: null).Results.ToList();
+            var evaluationOutcome = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: null).ToList();
 
-            Assert.AreEqual(1, results.Count);
-            Assert.AreEqual(0, results[0].LineNumber);
+            Assert.AreEqual(1, evaluationOutcome.Count);
+
+            Assert.AreEqual(0, evaluationOutcome[0].Result.LineNumber);
         }
 
         [TestMethod]

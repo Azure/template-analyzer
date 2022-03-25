@@ -405,11 +405,12 @@ In contrast to the first example, the `allOf` operator in the example above woul
 **NOTE:** In both examples above, `"path": "properties.osProfile.computerName"` is specified *inside* the `allOf` operators.  This is important because of how [scopes](#scopes) are determined.  If it was instead specified outside the operator (as a sibling to `where`), it would narrow the **outer** scope to that path.  That path would then be passed into `where`, resulting in `"path": "apiVersion"` and `"path": "name"` (inside `where` in the examples) being appended to *properties.osProfile.computerName* in the outer scope, which is not the intent.
 
 ## Wildcard Behavior
-The `path` in an `Evaluation` can specify the '\*' character as a wildcard.  '\*' can be used to match any full property name or as the index into an array (selecting all elements of the array).  When a wildcard is used, zero or more paths in the template will be found that match `path`.  If zero are found, the operator in the `Evaluation` is skipped, as there is nothing to evaluate.  If two or more are found, the operator evaluates each path individually and the results are logically 'and'ed together.
+The `path` in an `Evaluation` can specify the '\*' character as a wildcard.  '\*' can be used to match any full property name or as the index into an array (selecting all elements of the array).  When a wildcard is used, zero or more paths in the template will be found that match `path`.  If zero paths are found, the operator in the `Evaluation` is skipped, as there is nothing to evaluate.  If two or more paths are found, the operator evaluates each path individually and treats each path as its own result; then, if the operator evaluating the path(s) is contained within an `allOf` or `anyOf`, the results will be combined according to those operators - otherwise, they will be reported individually.
 
 When using a wildcard for a property name, '\*' must replace the entire name of a property (such as *property.\** or *property.\*.otherProperty*), being the only character between the periods.  Wildcards for partial property names (e.g. *property.\*id*) are **not** supported.  When using a wildcard as an index into an array (such as *property[\*]*), '\*' must be the only character between the '[]' characters.
 
 Examples:
+
 ``` js
 {
     "resourceType": "Microsoft.Compute/virtualMachines",
@@ -419,6 +420,7 @@ Examples:
         // resources[0].properties.osProfile.adminPassword
 }
 ```
+
 ``` js
 {
     "resourceType": "Microsoft.Compute/virtualMachines",
@@ -426,12 +428,14 @@ Examples:
         // resources[0].properties.networkProfile.networkInterfaces[0]
 }
 ```
+
 ``` js
 {
     "path": "resources[*]" // Returns all resources (only one resource is defined):
         // resources[0]
 }
 ```
+
 ``` js
 {
     "path": "outputs.*" // Returns all outputs:
@@ -439,6 +443,7 @@ Examples:
         // outputs.customOutput
 }
 ```
+
 ``` js
 {
     "resourceType": "Microsoft.Compute/virtualMachines",
