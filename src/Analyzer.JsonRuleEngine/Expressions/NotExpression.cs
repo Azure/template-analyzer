@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 
@@ -34,15 +35,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="jsonScope">The json to evaluate.</param>
         /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
         /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
-        /// <returns>A <see cref="JsonRuleEvaluation"/> with the results of the evaluation.</returns>
-        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
+        /// <returns>An <see cref="IEnumerable{JsonRuleEvaluation}"/> with the results of the evaluation.</returns>
+        public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
         {
-            return EvaluateInternal(jsonScope, scope =>
-            {
-                var evaluation = ExpressionToNegate.Evaluate(scope, jsonLineNumberResolver);
-
-                return evaluation;
-            });
+            return EvaluateInternal(jsonScope, scope => ExpressionToNegate.Evaluate(scope, jsonLineNumberResolver));
         }
     }
 }

@@ -15,22 +15,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     [TestClass]
     public class ConsoleReportWriterTests
     {
-        [TestMethod]
-        public void WriteResults_Evalutions_ReturnExpectedSarifLog()
+        [DataTestMethod]
+        [DynamicData("UnitTestCases", typeof(TestCases), DynamicDataSourceType.Property, DynamicDataDisplayName = "GetTestCaseName", DynamicDataDisplayNameDeclaringType = typeof(TestCases))]
+        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string _, MockEvaluation[] evaluations)
         {
             var templateFilePath = new FileInfo(@"C:\Users\User\Azure\AppServices.json");
-            foreach (var evaluations in TestCases.UnitTestCases)
-            {
-                var output = new StringWriter();
-                Console.SetOut(output);
-                using (var writer = new ConsoleReportWriter())
-                {
-                    writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
-                }
 
-                // assert
-                AssertConsoleLog(output, evaluations, templateFilePath);
+            var output = new StringWriter();
+            Console.SetOut(output);
+            using (var writer = new ConsoleReportWriter())
+            {
+                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
             }
+
+            // assert
+            AssertConsoleLog(output, evaluations, templateFilePath);
         }
 
         private void AssertConsoleLog(StringWriter output, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
@@ -52,19 +51,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             outputString.Should().BeEquivalentTo(expected.ToString());
         }
 
-        private string GetLineNumbers(Types.IEvaluation evaluation)
+        private string GetLineNumbers(Types.IEvaluation evaluation, HashSet<int> failedLines = null)
         {
+            failedLines ??= new HashSet<int>();
             var resultString = new StringBuilder();
             if (!evaluation.Passed)
             {
-                foreach (var result in evaluation.Results.Where(r => !r.Passed))
+                if ((!evaluation.Result?.Passed ?? false) && !failedLines.Any(l => l == evaluation.Result.LineNumber))
                 {
-                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {result.LineNumber}");
+                    failedLines.Add(evaluation.Result.LineNumber);
+                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {evaluation.Result.LineNumber}");
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)
                 {
-                    resultString.Append(GetLineNumbers(innerEvaluation));
+                    resultString.Append(GetLineNumbers(innerEvaluation, failedLines));
                 }
             }
             return resultString.ToString();

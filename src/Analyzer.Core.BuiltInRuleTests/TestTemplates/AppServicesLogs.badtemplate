@@ -71,6 +71,34 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites",
       "kind": "app",
+      "name": "diagLogsDisabledInSiteConfigPropertyAndDependentConfig",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": false,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "diagLogsDisabledInSiteConfigPropertyButEnabledInDependentConfig",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": false,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
       "name": "diagLogsEnabledInSiteConfigProperty",
       "location": "[parameters('location')]",
       "properties": {
@@ -88,7 +116,7 @@
       "name": "sitesConfig/diagLogsDisabled",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
+        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigPropertyAndDependentConfig')]"
       ],
       "properties": {
         "detailedErrorLoggingEnabled": false,
@@ -103,7 +131,7 @@
       "name": "sitesConfig/diagLogsEnabled",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
+        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigPropertyButEnabledInDependentConfig')]"
       ],
       "properties": {
         "detailedErrorLoggingEnabled": true,
