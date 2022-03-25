@@ -42,9 +42,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="jsonScope">The json to evaluate.</param>
         /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
         /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
-        /// <returns>A <see cref="JsonRuleEvaluation"/> with zero or more results of the evaluation, depending on whether there are any/multiple resources of the given type,
-        /// and if the path contains any wildcards.</returns>
-        public override JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
+        /// <returns>An <see cref="IEnumerable{JsonRuleEvaluation}"/> with the results of the evaluation.</returns>
+        public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
         {
             return EvaluateInternal(jsonScope, scope =>
             {
@@ -53,22 +52,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
 
                 foreach (var expression in Expressions)
                 {
-                    var evaluation = expression.Evaluate(scope, jsonLineNumberResolver);
-
-                    // Add evaluations if scopes were found to evaluate
-                    if (evaluation.HasResults)
+                    foreach (var evaluation in expression.Evaluate(scope, jsonLineNumberResolver))
                     {
-                        // if no value, this is the first expression evaluated so set the inital value of result
-                        if (!evaluationPassed.HasValue)
+                        // Add evaluations if scopes were found to evaluate
+                        if (evaluation.HasResults)
                         {
-                            evaluationPassed = evaluation.Passed;
+                            evaluationPassed = !evaluationPassed.HasValue
+                                // if no value, this is the first expression evaluated so set the inital value of result
+                                ? evaluation.Passed
+                                // otherwise use defined operation to calculate intermediate expression result
+                                : Operation(evaluationPassed.Value, evaluation.Passed);
+
+                            jsonRuleEvaluations.Add(evaluation);
                         }
-                        // otherwise use defined operation to calculate intermediate expression result
-                        else
-                        {
-                            evaluationPassed = Operation(evaluationPassed.Value, evaluation.Passed);
-                        }
-                        jsonRuleEvaluations.Add(evaluation);
                     }
                 }
 

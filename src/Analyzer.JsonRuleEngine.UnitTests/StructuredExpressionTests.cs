@@ -79,26 +79,27 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     .Returns(new List<IJsonPathResolver> { mockJsonPathResolver.Object });
             }
 
-            var results1 = new JsonRuleResult[] { jsonRuleResult1 };
-            var results2 = new JsonRuleResult[] { jsonRuleResult2 };
-
             mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, results1));
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, jsonRuleResult1) });
 
             mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, results2));
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, jsonRuleResult2) });
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
             var structuredExpression = new StructuredExpression(expressionArray, operation, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
+            bool expectedCompoundEvaluation = operation(evaluation1, evaluation2);
+
             // Act
-            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object, mockLineResolver);
+            var structuredEvaluationOutcome = structuredExpression.Evaluate(mockJsonPathResolver.Object, mockLineResolver).ToList();
 
             // Assert
-            bool expectedCompoundEvaluation = operation(evaluation1, evaluation2);
+            Assert.AreEqual(1, structuredEvaluationOutcome.Count);
+
+            var structuredEvaluation = structuredEvaluationOutcome[0];
             Assert.AreEqual(expectedCompoundEvaluation, structuredEvaluation.Passed);
             Assert.AreEqual(2, structuredEvaluation.Evaluations.Count());
             Assert.IsTrue(structuredEvaluation.HasResults);
@@ -114,7 +115,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 // Assert all leaf expressions have results and no evaluations
                 Assert.IsTrue(evaluation.HasResults);
                 Assert.AreEqual(0, evaluation.Evaluations.Count());
-                Assert.AreEqual(1, evaluation.Results.Count());
             }
         }
 
@@ -142,15 +142,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpression1 = new MockExpression(new ExpressionCommonProperties { Path = firstExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => firstExpressionPass.HasValue
-                        ? new JsonRuleEvaluation(null, firstExpressionPass.Value, new[] { new JsonRuleResult { Passed = firstExpressionPass.Value } })
-                        : null
+                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new JsonRuleResult { Passed = firstExpressionPass.Value }) }
+                        : Enumerable.Empty<JsonRuleEvaluation>()
             };
 
             var mockLeafExpression2 = new MockExpression(new ExpressionCommonProperties { Path = secondExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => secondExpressionPass.HasValue
-                        ? new JsonRuleEvaluation(null, secondExpressionPass.Value, new[] { new JsonRuleResult { Passed = secondExpressionPass.Value } })
-                        : null
+                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new JsonRuleResult { Passed = secondExpressionPass.Value }) }
+                        : Enumerable.Empty<JsonRuleEvaluation>()
             };
 
             var structuredExpression = new StructuredExpression(
@@ -161,9 +161,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var expectedResults = new[] { firstExpressionPass, secondExpressionPass };
 
             // Act
-            var structuredEvaluation = structuredExpression.Evaluate(mockJsonPathResolver.Object, mockLineResolver);
+            var structuredEvaluationOutcome = structuredExpression.Evaluate(mockJsonPathResolver.Object, mockLineResolver).ToList();
 
             // Assert
+            Assert.AreEqual(1, structuredEvaluationOutcome.Count);
+
+            var structuredEvaluation = structuredEvaluationOutcome[0];
             Assert.AreEqual(overallPass, structuredEvaluation.Passed);
             Assert.AreEqual(expectedResults.Count(r => r.HasValue), structuredEvaluation.Evaluations.Count());
             Assert.AreEqual(expectedResults.Any(r => r.HasValue), structuredEvaluation.HasResults);
