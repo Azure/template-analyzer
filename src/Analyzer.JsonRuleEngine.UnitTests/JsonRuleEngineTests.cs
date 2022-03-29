@@ -415,6 +415,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""severityOverrides"": {
                     ""RuleId0"": 1
                     }
+            }", "RuleId0", DisplayName = "Include Severity 1; override severity to same value as present produces no error")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [1]
+                    }, 
+                ""severityOverrides"": {
+                    ""RuleId1"": 1
+                    }
             }", "RuleId0", DisplayName = "Include Severity 1; override severity on a not-include rule, rule still not included")]
         public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, params string[] expectedRules)
         {
