@@ -82,8 +82,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                 var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
                 var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
 
-                RuleDefinitions = RuleDefinitions.Where(r => (excludeSeverities != null && !excludeSeverities.Contains(r.Severity)) ||
-                    (excludeIds != null && !excludeIds.Contains(r.Id))).ToList().AsReadOnly();
+                RuleDefinitions = RuleDefinitions.Where(r => !(excludeSeverities != null && excludeSeverities.Contains(r.Severity)) &&
+                    !(excludeIds != null && excludeIds.Contains(r.Id))).ToList().AsReadOnly();
             }
 
             if (contents.SeverityOverrides != null)
