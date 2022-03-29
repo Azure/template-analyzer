@@ -357,28 +357,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""inclusions"": {
                         ""severity"": [3]
                     }
-            }", 3, new int[] { 3 }, DisplayName = "Only Severity 3")]
+            }", 3, new int[] { 3 }, new string[] { "RuleId2", "RuleId3", "RuleId4" }, DisplayName = "Only Severity 3")]
         [DataRow(@"{
                 ""exclusions"": {
                         ""severity"": [3]
                     }
-            }", 2, null, null, new int[] { 3 }, DisplayName = "Excludes Severity 3")]
+            }", 2, null, null, new int[] { 3 }, new string[] { "RuleId2", "RuleId3", "RuleId4" }, DisplayName = "Excludes Severity 3")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""ids"": [""RuleId0""]
                     }
-            }", 1, null, new string[] { "RuleId0" }, DisplayName = "Only Id RuleId0")]
+            }", 1, new int[] { 1 }, new string[] { "RuleId0" }, DisplayName = "Only Id RuleId0")]
         [DataRow(@"{
                 ""exclusions"": {
                         ""ids"": [""RuleId0""]
                     }
-            }", 4, null, null, null, new string[] { "TA-000001" }, DisplayName = "All rules except Id RuleId0")]
+            }", 4, null, null, null, new string[] { "RuleId0" }, DisplayName = "All rules except Id RuleId0")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [3],
                         ""ids"": [""RuleId0""]
                     }
-            }", 4, new int[] { 3 }, new string[] { "RuleId0" }, DisplayName = "Only Severity 3 and  Id RuleId0")]
+            }", 4, new int[] { 1, 3 }, new string[] { "RuleId0", "RuleId2", "RuleId3", "RuleId4" }, DisplayName = "Only Severity 3 and Id RuleId0")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""ids"": [""RuleId0""]
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""severityOverrides"": {
                     ""RuleId0"": 3
                     }
-                }", 1, new int[] { 3 }, new string[] { "RuleId0" }, null, null, DisplayName = "Only Id RuleId0, change Severity to 3")]
+                }", 1, new int[] { 3 }, new string[] { "RuleId0" }, DisplayName = "Only Id RuleId0, change Severity to 3")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [3]
@@ -394,7 +394,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""exclusions"": {
                         ""severity"": [3]
                     }
-            }", 3, new int[] { 3 }, DisplayName = "Only Severity 3 from inclusions object; Exclusions object is ignored")]
+            }", 3, new int[] { 3 }, new string[] { "RuleId2", "RuleId3", "RuleId4" }, DisplayName = "Only Severity 3 from inclusions object; Exclusions object is ignored")]
         public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, int expectedRuleCount, 
             IEnumerable<Severity> includeSeverities = null, IEnumerable<string> includeIds = null, 
             IEnumerable<Severity> excludeSeverities = null, IEnumerable<string> excludeIds = null)
@@ -470,20 +470,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Compare
             Assert.AreEqual(expectedRuleCount, jsonRuleEngine.RuleDefinitions.Count);
 
-            if (includeSeverities != null || includeIds != null)
+            if (includeSeverities != null && includeIds != null)
             {
                 foreach (var r in jsonRuleEngine.RuleDefinitions)
                 {
-                    Assert.IsTrue((includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
-                        (includeIds != null && includeIds.Contains(r.Id)));
+                    Assert.IsTrue(includeSeverities.Contains(r.Severity));
+                    Assert.IsTrue(includeIds.Contains(r.Id));
                 }
             }
-            if (excludeSeverities != null || excludeIds != null)
+            else if (excludeSeverities != null && excludeIds != null)
             {
                 foreach (var r in jsonRuleEngine.RuleDefinitions)
                 {
-                    Assert.IsTrue((excludeSeverities != null && !excludeSeverities.Contains(r.Severity)) ||
-                        (excludeIds != null && !excludeIds.Contains(r.Id)));
+                    Assert.IsTrue(!excludeSeverities.Contains(r.Severity));
+                    Assert.IsTrue(!excludeIds.Contains(r.Id));
                 }
             }
         }
