@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 // Check that template file paths exist
                 if (!templateFilePath.Exists)
                 {
-                    Console.WriteLine($"Invalid template file path ({templateFilePath})");
+                    Console.WriteLine($"Invalid template file path: {templateFilePath}");
                     return 0;
                 }
 
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     if (printMessageIfNotTemplate)
                     {
-                        Console.WriteLine("File is not a valid ARM Template.");
+                        Console.WriteLine($"File is not a valid ARM Template. File path: {templateFilePath}");
                     }
                     return 0;
                 }
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 if (!directoryPath.Exists)
                 {
-                    Console.WriteLine($"Invalid directory ({directoryPath})");
+                    Console.WriteLine($"Invalid directory: {directoryPath}");
                     return;
                 }
 
