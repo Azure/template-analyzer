@@ -3,408 +3,702 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
     public class TestCases
     {
-        public static IEnumerable<IEnumerable<MockEvaluation>> UnitTestCases = new[]
+        public static string GetTestCaseName(MethodInfo _, object[] testData) => (string)testData[0];
+
+        public static IReadOnlyCollection<object[]> UnitTestCases => new List<object[]>
         {
-            // Single evaluation with single failed result
-            new []
+            new object[]
             {
-                new MockEvaluation
+                "Single evaluation with failed result",
+                new []
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                    Results = new[]
+                    new MockEvaluation
                     {
-                        new MockResult { Passed = false, LineNumber = 10 }
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult { Passed = false, LineNumber = 10 }
                     }
                 }
             },
-            // Single evaluation with multiple failed results
-            new[]
+            new object[]
             {
-                new MockEvaluation
+                "Multiple evaluations with failed results, different rules",
+                new []
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                    Results = new[]
+                    new MockEvaluation
                     {
-                        new MockResult { Passed = false, LineNumber = 10 },
-                        new MockResult { Passed = false, LineNumber = 22 },
-                        new MockResult { Passed = false, LineNumber = 65 },
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult { Passed = false, LineNumber = 65 }
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult { Passed = false, LineNumber = 120 }
                     }
                 }
             },
-            // Multiple evaluations with multiple failed results
-            new []
+            new object[]
             {
-                new MockEvaluation
+                "Multiple evaluations with failed results, duplicate rules",
+                new []
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                    Results = new[]
+                    new MockEvaluation
                     {
-                        new MockResult { Passed = false, LineNumber = 10 },
-                        new MockResult { Passed = false, LineNumber = 22 },
-                        new MockResult { Passed = false, LineNumber = 65 },
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult { Passed = false, LineNumber = 65 }
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult { Passed = false, LineNumber = 65 }
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult { Passed = false, LineNumber = 120 }
                     }
-                },
-                new MockEvaluation
+                }
+            },
+            new object[]
+            {
+                "Single evaluation with nested evaluations",
+                new[]
                 {
-                    RuleId = "TEST-000002",
-                    RuleDescription = "Test rule 0000002",
-                    Recommendation = "Recommendation 0000002",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                    Results = new[]
+                    new MockEvaluation
                     {
-                        new MockResult { Passed = false, LineNumber = 120 },
-                        new MockResult { Passed = false, LineNumber = 632 },
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 9 }
+                                    }
+                                }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 117 }
+                            },
+                        },
                     }
                 }
             },
-            // Single nested evaluation
-            new[]
+            new object[]
             {
-                new MockEvaluation
+                "Multiple nested evaluations",
+                new[]
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = false,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = false,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 9 },
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 9 }
                                     }
                                 }
-                            }
-                        },
-                        new MockEvaluation
-                        {
-                            Passed = false,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            },
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = false, LineNumber = 23 },
-                                new MockResult { Passed = false, LineNumber = 117 },
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 23 }
                             },
                         },
                     },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 25 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 245 }
+                                    }
+                                }
+                            },
+                        },
+                    }
                 }
             },
-            // Multiple nested evaluations
-            new[]
+            new object[]
             {
-                new MockEvaluation
+                "Multiple nested evaluations with duplicate rules",
+                new[]
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = false,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = false,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 9 },
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 9 }
                                     }
                                 }
-                            }
-                        },
-                        new MockEvaluation
-                        {
-                            Passed = false,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            },
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = false, LineNumber = 23 },
-                                new MockResult { Passed = false, LineNumber = 117 },
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 23 }
                             },
                         },
                     },
-                },
-                new MockEvaluation
-                {
-                    RuleId = "TEST-000002",
-                    RuleDescription = "Test rule 0000002",
-                    Recommendation = "Recommendation 0000002",
-                    HelpUri = "https://domain.com/help#0000002",
-                    Passed = false,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Passed = false,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = false, LineNumber = 25 },
-                                new MockResult { Passed = false, LineNumber = 72 },
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 25 }
                             },
-                        },
-                        new MockEvaluation
-                        {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = false,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = false,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 130 },
-                                        new MockResult { Passed = false, LineNumber = 199 },
-                                    }
-                                },
-                                new MockEvaluation
-                                {
-                                    Passed = false,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 245 },
-                                        new MockResult { Passed = false, LineNumber = 618 },
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 245 }
                                     }
                                 }
-                            }
+                            },
                         },
                     },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 25 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 245 }
+                                    }
+                                }
+                            },
+                        },
+                    }
                 }
             },
-            // Multiple nested evaluations with mixed pass/fail results
-            new[]
+            new object[]
             {
-                new MockEvaluation
+                "Multiple nested evaluations with mixed pass/fail results",
+                new[]
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = false,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = true,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 9 },
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 9 }
                                     }
                                 }
-                            }
-                        },
-                        new MockEvaluation
-                        {
-                            Passed = false,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            },
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = false, LineNumber = 23 },
-                                new MockResult { Passed = false, LineNumber = 117 },
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 117 }
                             },
                         },
                     },
-                },
-                new MockEvaluation
-                {
-                    RuleId = "TEST-000002",
-                    RuleDescription = "Test rule 0000002",
-                    Recommendation = "Recommendation 0000002",
-                    HelpUri = "https://domain.com/help#0000002",
-                    Passed = false,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Passed = true,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = true, LineNumber = 25 },
-                                new MockResult { Passed = true, LineNumber = 72 },
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 25 }
                             },
-                        },
-                        new MockEvaluation
-                        {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = false,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = true,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 130 },
-                                        new MockResult { Passed = false, LineNumber = 199 },
-                                    }
-                                },
-                                new MockEvaluation
-                                {
-                                    Passed = false,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = false, LineNumber = 245 },
-                                        new MockResult { Passed = false, LineNumber = 618 },
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 618 }
                                     }
                                 }
-                            }
+                            },
                         },
                     },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000003",
+                        RuleDescription = "Test rule 0000003",
+                        Recommendation = "Recommendation 0000003",
+                        HelpUri = "https://domain.com/help#0000003",
+                        Passed = true,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 25 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = true, LineNumber = 618 }
+                                    }
+                                }
+                            },
+                        },
+                    }
                 }
             },
-            // Multiple nested evaluations with all passed results
-            new[]
+            new object[]
             {
-                new MockEvaluation
+                "Multiple nested evaluations with mixed pass/fail results and repeated rules",
+                new[]
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = true,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = true,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = true,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = true, LineNumber = 9 },
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 9 }
                                     }
                                 }
-                            }
-                        },
-                        new MockEvaluation
-                        {
-                            Passed = true,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            },
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = true, LineNumber = 23 },
-                                new MockResult { Passed = true, LineNumber = 117 },
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 117 }
                             },
                         },
                     },
-                },
-                new MockEvaluation
-                {
-                    RuleId = "TEST-000002",
-                    RuleDescription = "Test rule 0000002",
-                    Recommendation = "Recommendation 0000002",
-                    HelpUri = "https://domain.com/help#0000002",
-                    Passed = true,
-                    Results = Enumerable.Empty<MockResult>(),
-                    Evaluations = new []
+                    new MockEvaluation
                     {
-                        new MockEvaluation
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = false,
+                        Evaluations = new []
                         {
-                            Passed = true,
-                            Evaluations = Enumerable.Empty<MockEvaluation>(),
-                            Results = new []
+                            new MockEvaluation
                             {
-                                new MockResult { Passed = true, LineNumber = 25 },
-                                new MockResult { Passed = true, LineNumber = 72 },
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 25 }
                             },
-                        },
-                        new MockEvaluation
-                        {
-                            Results = Enumerable.Empty<MockResult>(),
-                            Passed = true,
-                            Evaluations = new []
+                            new MockEvaluation
                             {
-                                new MockEvaluation
+                                Passed = false,
+                                Evaluations = new []
                                 {
-                                    Passed = true,
-                                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                    Results = new []
+                                    new MockEvaluation
                                     {
-                                        new MockResult { Passed = true, LineNumber = 130 },
-                                        new MockResult { Passed = true, LineNumber = 199 },
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 618 }
                                     }
                                 }
-                            }
+                            },
                         },
                     },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 25 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 618 }
+                                    }
+                                }
+                            },
+                        },
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000003",
+                        RuleDescription = "Test rule 0000003",
+                        Recommendation = "Recommendation 0000003",
+                        HelpUri = "https://domain.com/help#0000003",
+                        Passed = true,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 25 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = false, LineNumber = 130 }
+                                    },
+                                    new MockEvaluation
+                                    {
+                                        Passed = false,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = true, LineNumber = 618 }
+                                    }
+                                }
+                            },
+                        },
+                    }
                 }
             },
-            // Evaluation without results
-            new[]
+            new object[]
             {
-                new MockEvaluation
+                "Multiple nested evaluations with all passed results",
+                new[]
                 {
-                    RuleId = "TEST-000001",
-                    RuleDescription = "Test rule 0000001",
-                    Recommendation = "Recommendation 0000001",
-                    HelpUri = "https://domain.com/help",
-                    Passed = false,
-                    Evaluations = Enumerable.Empty<MockEvaluation>(),
-                    Results = Enumerable.Empty<MockResult>(),
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = true,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = true, LineNumber = 9 }
+                                    }
+                                }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 117 }
+                            },
+                        },
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help#0000002",
+                        Passed = true,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = true, LineNumber = 25 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult { Passed = true, LineNumber = 130 }
+                                    }
+                                }
+                            },
+                        },
+                    }
+                }
+            },
+            new object[]
+            {
+                "Evaluations with same line flagged multiple times",
+                new[]
+                {
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 9 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 9 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 15 }
+                            }
+                        },
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000002",
+                        RuleDescription = "Test rule 0000002",
+                        Recommendation = "Recommendation 0000002",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 45 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 45 }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = false,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult { Passed = false, LineNumber = 50 }
+                            }
+                        }
+                    }
                 }
             }
-        };
+        }.AsReadOnly();
     }
 }

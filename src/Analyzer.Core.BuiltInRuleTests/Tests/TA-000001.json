@@ -3,8 +3,8 @@
     "Template": "AppServicesLogs", // didn't use the existing AppServices template because AppServiceWebApp_HTTPS would trigger for all the new resources, and AppService_EnableDiagLogs for all the already existing ones
     "ReportedFailures": [
       // The resources between lines 14 and 55 are not reported because their kind property includes "functionapp" or "linux"
-      // The one between lines 70 and 83 is not reported because the siteConfig property has the desired values
-      // In lines 100-113 there's a resource that depends on another that doesn't fulfill the first property of the anyOf, but itself fulfills the second one
+      // The resource named "diagLogsEnabledInSiteConfigProperty" is not reported because the siteConfig property has the desired values
+      // The resource named "sitesConfig/diagLogsEnabled" depends on another that doesn't fulfill the first property of the anyOf (resource "diagLogsDisabledInSiteConfigPropertyButEnabledInDependentConfig"), but itself fulfills the second anyOf property
       // And the last one of sites/config type depends on a resource such that neither of them makes the anyOf properties true, but the first one is of Linux type
       {
         "LineNumber": 64,
@@ -19,19 +19,31 @@
         "Description": "requestTracingEnabled set to false"
       },
       {
-        "LineNumber": 94,
+        "LineNumber": 78,
+        "Description": "detailedErrorLoggingEnabled set to false in properties and in sites/config"
+      },
+      {
+        "LineNumber": 79,
+        "Description": "httpLoggingEnabled set to false in properties and in sites/config"
+      },
+      {
+        "LineNumber": 80,
+        "Description": "requestTracingEnabled set to false in properties and in sites/config"
+      },
+      {
+        "LineNumber": 122,
         "Description": "detailedErrorLoggingEnabled set to false in sites/config"
       },
       {
-        "LineNumber": 95,
+        "LineNumber": 123,
         "Description": "httpLoggingEnabled set to false in sites/config"
       },
       {
-        "LineNumber": 96,
+        "LineNumber": 124,
         "Description": "requestTracingEnabled set to false in sites/config"
       },
       {
-        "LineNumber": 138,
+        "LineNumber": 166,
         "Description": "httpLoggingEnabled set to false in a resource with detailedErrorLoggingEnabled and requestTracingEnabled as true"
       }
     ]

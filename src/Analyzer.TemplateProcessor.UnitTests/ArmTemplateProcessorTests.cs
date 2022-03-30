@@ -3,14 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Azure.Deployments.Core.Collections;
-using Azure.Deployments.Core.Extensions;
+using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Json;
 using Azure.Deployments.Templates.Engines;
-using Azure.Deployments.Templates.Schema;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
+using Microsoft.WindowsAzure.ResourceStack.Common.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
@@ -198,18 +200,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""outputs"": {}
             }");
 
-            _templateMetadata = new InsensitiveDictionary<JToken>
-            {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "tenantId", "00000000-0000-0000-0000-000000000000" }
-            };
+            _templateMetadata = PlaceholderInputGenerator.GeneratePlaceholderDeploymentMetadata();
 
             _templateParameters = new InsensitiveDictionary<JToken>();
         }
@@ -943,6 +934,82 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
         }
 
+        [DataTestMethod]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Resources/deployments"",
+                ""apiVersion"": ""2019-10-01"",
+                ""name"": ""aDeploymentName"",
+                ""properties"": {},
+                ""dependsOn"": [
+                    ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/aResourceName""
+                ]
+            }", DisplayName = "Child specifying the default subscription id")]
+        [DataRow(@"{
+                ""type"": ""Microsoft.Resources/deployments"",
+                ""apiVersion"": ""2019-10-01"",
+                ""name"": ""aDeploymentName"",
+                ""properties"": {},
+                ""dependsOn"": [
+                    ""[subscriptionResourceId('Microsoft.Resources/resourceGroups', 'aResourceName')]""
+                ]
+            }", DisplayName = "Child using subscriptionResourceId(...)")]
+        public void CopyResourceDependants_DependsOnAResourceGroup(string childResourceJson)
+        {
+            var parentResourceJson = @"{
+                ""type"": ""Microsoft.Resources/resourceGroups"",
+                ""apiVersion"": ""2019-10-01"",
+                ""name"": ""aResourceName"",
+                ""properties"": {}
+            }";
+
+            var expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
+                { "resources[1]", "resources[1]" },
+                { "resources[0].resources[0]", "resources[1]" }
+            };
+
+            TemplateResource parentResource = _getTemplateFromString(parentResourceJson);
+            TemplateResource childResource = _getTemplateFromString(childResourceJson);
+
+            ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(GenerateTemplateWithResources(new TemplateResource[] { parentResource, childResource }));
+
+            armTemplateProcessor.ProcessTemplate();
+
+            AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
+        }
+
+        [TestMethod]
+        public void CopyResourceDependants_DependsOnDoesNotSpecifyResourceGroup_ThrowsExpectedException()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2019-10-01"",
+                        ""name"": ""aDeploymentName"",
+                        ""properties"": {},
+                        ""dependsOn"": [
+                            ""/subscriptions/00000000-0000-0000-0000-000000000000""
+                        ]
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            try
+            {
+                var template = armTemplateProcessor.ProcessTemplate();
+                Assert.Fail("No exception was thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Equals("Resource group name was not found on parent resource id: /subscriptions/00000000-0000-0000-0000-000000000000"));
+            }
+        }
+
         [TestMethod]
         public void ProcessTemplate_ResourceNameWithIncorrectSegmentLength_ThrowsExpectedException()
         {
@@ -1011,6 +1078,36 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             JToken template = armTemplateProcessor.ProcessTemplate();
 
             Assert.AreEqual("privatelink.database.windows.net", template["resources"][0]["name"]);
+        }
+
+        [TestMethod]
+        public void ProcessTemplate_ValidTemplateUsingManagementGroupFunction_ProcessTemplateFunction()
+        {
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Management/managementGroups"",
+                        ""apiVersion"": ""2020-05-01"",
+                        ""scope"": ""/"",
+                        ""name"": ""aManagementGroupName"",
+                        ""properties"": {
+                            ""details"": {
+                                ""parent"": {
+                                    ""id"": ""[managementGroup().id]""
+                                }
+                            }
+                        }
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            JToken template = armTemplateProcessor.ProcessTemplate();
+
+            Assert.AreEqual("/providers/Microsoft.Management/managementGroups/examplemg1", template["resources"][0]["properties"]["details"]["parent"]["id"]);
         }
 
         private string GenerateTemplateWithOutputs(string outputValue)
