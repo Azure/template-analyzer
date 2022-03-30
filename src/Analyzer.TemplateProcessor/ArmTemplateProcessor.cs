@@ -136,6 +136,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
 
                 // Do not throw if there was another issue with evaluating language expressions
+
+                Console.WriteLine("An exception occurred when processing the template language expressions: " + ex.ToString());
             }
 
             MapTopLevelResources(template, copyNameMap);
@@ -185,6 +187,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     }
                     catch (Exception)
                     {
+                        Console.WriteLine("The parsing of a template output failed. Output key: " + outputKey + ". Root value: " + template.Outputs[outputKey]?.Value?.Value);
+
                         template.Outputs[outputKey].Value.Value = new JValue("NOT_PARSED");
                     }
                 }
@@ -382,9 +386,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         evaluationContext: evaluationHelper.EvaluationContext);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Do not throw if there was an issue with evaluating language expressions
+
+                Console.WriteLine("An exception occurred while evaluating the properties of a resource: " + ex.ToString());
+
                 return;
             }
 
