@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -75,15 +76,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             outputFileOption.AddAlias("-o");
             analyzeTemplateCommand.AddOption(outputFileOption);
 
+            var verboseOption = new Option(
+                "--verbose",
+                "Show details about the analysis");
+            verboseOption.AddAlias("-v");
+            analyzeTemplateCommand.AddOption(verboseOption);
+
             // Temporary PowerShell rule suppression until it will work nicely with SARIF
             Option ttkOption = new Option(
                 "--run-ttk",
                 "Run TTK against templates");
             analyzeTemplateCommand.AddOption(ttkOption);
 
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo, bool>(
-                (templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk) =>
-                this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk));
+            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
+                (templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
+                this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk, verbose));
 
             // Setup analyze-directory w/ directory argument 
             Command analyzeDirectoryCommand = new Command(
@@ -101,9 +108,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             analyzeDirectoryCommand.AddOption(ttkOption);
 
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo, bool>(
-                (directoryPath, reportFormat, outputFilePath, runTtk) =>
-                this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath, runTtk));
+            analyzeDirectoryCommand.AddOption(verboseOption);
+
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo, bool, bool>(
+                (directoryPath, reportFormat, outputFilePath, runTtk, verbose) =>
+                this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath, runTtk, verbose));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -112,22 +121,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool printMessageIfNotTemplate = true, IReportWriter writer = null)
-        {
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, ILogger logger = null)
+        { 
+            if (logger == null) {
+                logger = CreateLogger(verbose);
+            }
+
             bool disposeWriter = false;
+
             try
             {
                 // Check that template file paths exist
                 if (!templateFilePath.Exists)
                 {
-                    Console.WriteLine($"Invalid template file path: {templateFilePath}");
+                    logger.LogError($"Invalid template file path: {templateFilePath}");
                     return 0;
                 }
 
                 // Check that output file path provided for sarif report
                 if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
-                    Console.WriteLine($"Output file path was not provided.");
+                    logger.LogError($"Output file path was not provided.");
                     return 0;
                 }
 
@@ -139,7 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     if (printMessageIfNotTemplate)
                     {
-                        Console.WriteLine($"File is not a valid ARM Template. File path: {templateFilePath}");
+                        logger.LogError($"File is not a valid ARM Template. File path: {templateFilePath}");
                     }
                     return 0;
                 }
@@ -158,7 +172,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exp)
             {
-                Console.WriteLine(GetExceptionMessage(exp));
+                logger.LogError(GetExceptionMessage(exp));
                 return -1;
             }
             finally
@@ -170,20 +184,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk)
+        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
         {
+            var logger = CreateLogger(verbose);
+
             try
             {
                 if (!directoryPath.Exists)
                 {
-                    Console.WriteLine($"Invalid directory: {directoryPath}");
+                    logger.LogError($"Invalid directory: {directoryPath}");
                     return;
                 }
 
                 // Check that output file path provided for sarif report
                 if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
-                    Console.WriteLine($"Output file path is not provided.");
+                    logger.LogError($"Output file path is not provided.");
                     return;
                 }
 
@@ -200,7 +216,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
-                        int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, runTtk, false, reportWriter);
+                        int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, logger);
                         if (res == 1)
                         {
                             numOfSuccesses++;
@@ -214,17 +230,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
                     if (filesFailed.Count > 0)
                     {
-                        Console.WriteLine($"Unable to analyze {filesFailed.Count} file(s):");
+                        logger.LogError($"Unable to analyze {filesFailed.Count} file(s):");
                         foreach (FileInfo failedFile in filesFailed)
                         {
-                            Console.WriteLine($"\t{failedFile}");
+                            logger.LogError($"\t{failedFile}");
                         }
                     }
                 }
             }
             catch (Exception exp)
             {
-                Console.WriteLine(GetExceptionMessage(exp));
+                logger.LogError(GetExceptionMessage(exp));
             }
         }
 
@@ -284,6 +300,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             }
             return new ConsoleReportWriter();
+        }
+
+        private static ILogger CreateLogger(bool verboseMode)
+        {
+            var logLevel = verboseMode ? LogLevel.Information : LogLevel.Warning;
+
+            using var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder
+                .SetMinimumLevel(logLevel)
+                .AddSimpleConsole(options =>
+                {
+                    options.SingleLine = true;
+                });
+            });
+
+            return loggerFactory.CreateLogger<CommandLineParser>();
         }
     }
 }
