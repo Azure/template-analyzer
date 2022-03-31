@@ -64,7 +64,7 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 #### Error codes
 | Scenario      | Exit Code |
 | ----------- | ----------- |
-| Success: Operation is successful | 0 |
+| Success: Operation was successful | 0 |
 | Error: GenericError | 1 |
 | Error: invalid path | 2 |
 | Error: missing path | 3 |
