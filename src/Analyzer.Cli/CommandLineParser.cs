@@ -302,9 +302,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return new ConsoleReportWriter();
         }
 
-        private static ILogger CreateLogger(bool verboseMode)
+        private static ILogger CreateLogger(bool verbose)
         {
-            var logLevel = verboseMode ? LogLevel.Information : LogLevel.Warning;
+            var logLevel = verbose ? LogLevel.Debug : LogLevel.Information;
 
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 });
             });
 
-            return loggerFactory.CreateLogger<CommandLineParser>();
+            return loggerFactory.CreateLogger<Program>();
         }
     }
 }
