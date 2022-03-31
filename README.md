@@ -67,7 +67,7 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 | Success: Operation was successful | 0 |
 | Error: GenericError | 1 |
 | Error: Invalid file path | 2 |
-| Error: missing path | 3 |
+| Error: Missing file path | 3 |
 | Error: invalid ARM Template | 4 |
 | Issue: scan has violations | 5 |
 | Error + Issue: scan has both errors and violations | 6 |
