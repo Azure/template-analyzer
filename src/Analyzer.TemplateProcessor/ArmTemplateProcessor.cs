@@ -12,6 +12,7 @@ using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Expressions;
 using Azure.Deployments.Templates.Extensions;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
 using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 using Newtonsoft.Json;
@@ -27,6 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
     {
         private readonly string armTemplate;
         private readonly string apiVersion;
+        private readonly ILogger logger;
         private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
         private Dictionary<string, string> expandedToOriginalMapping = new Dictionary<string, string>();
         private Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new Dictionary<string, (TemplateResource, string)>(StringComparer.OrdinalIgnoreCase);
@@ -44,10 +46,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="armTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
-        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01")
+        /// <param name="logger">A logger to report errors and debug information</param>
+        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", ILogger logger = null)
         {
             this.armTemplate = armTemplate;
             this.apiVersion = apiVersion;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -137,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 // Do not throw if there was another issue with evaluating language expressions
 
-                Console.WriteLine($"An exception occurred when processing the template language expressions:\n{ex}");
+                logger?.LogError(ex, "An exception occurred when processing the template language expressions");
             }
 
             MapTopLevelResources(template, copyNameMap);
@@ -187,7 +191,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine($"The parsing of a template output failed. Output key: {outputKey}. Root value: {template.Outputs[outputKey]?.Value?.Value}");
+                        logger?.LogError($"The parsing of a template output failed. Output key: {outputKey}. Root value: {template.Outputs[outputKey]?.Value?.Value}");
 
                         template.Outputs[outputKey].Value.Value = new JValue("NOT_PARSED");
                     }
@@ -390,7 +394,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             {
                 // Do not throw if there was an issue with evaluating language expressions
 
-                Console.WriteLine($"An exception occurred while evaluating the properties of a resource:\n{ex}\nProperties:\n{templateResource?.Properties?.Value}");
+                logger?.LogError(ex, $"An exception occurred while evaluating the properties of a resource. Properties: {templateResource?.Properties?.Value}");
 
                 return;
             }

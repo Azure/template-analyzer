@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 0;
                 }
 
-                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk);
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk, logger);
 
                 if (writer == null)
                 {
