@@ -61,7 +61,7 @@ File: C:\Templates\azuredeploy.json
 #### SARIF
 Results are written to the file specified (with the `-o` or `--output-file-path` argument) in [SARIF](https://sarifweb.azurewebsites.net) format.
 
-#### Error codes
+#### Exit codes
 | Scenario      | Exit Code |
 | ----------- | ----------- |
 | Success: Operation was successful | 0 |
