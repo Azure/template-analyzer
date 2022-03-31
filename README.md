@@ -69,7 +69,7 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 | Error: Invalid file path | 2 |
 | Error: Missing file path | 3 |
 | Error: Invalid ARM template | 4 |
-| Issue: scan has violations | 5 |
+| Issue: Scan found rule violations | 5 |
 | Error + Issue: scan has both errors and violations | 6 |
 
 ### Understanding and customizing rules
