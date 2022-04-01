@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 // Check that template file paths exist
                 if (!templateFilePath.Exists)
                 {
-                    logger.LogError($"Invalid template file path: {templateFilePath}");
+                    logger.LogError("Invalid template file path: {templateFilePath}", templateFilePath);
                     return 0;
                 }
 
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     if (printMessageIfNotTemplate)
                     {
-                        logger.LogError($"File is not a valid ARM Template. File path: {templateFilePath}");
+                        logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                     }
                     return 0;
                 }
@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 if (!directoryPath.Exists)
                 {
-                    logger.LogError($"Invalid directory: {directoryPath}");
+                    logger.LogError("Invalid directory: {directoryPath}", directoryPath);
                     return;
                 }
 
@@ -230,10 +230,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
                     if (filesFailed.Count > 0)
                     {
-                        logger.LogError($"Unable to analyze {filesFailed.Count} file(s):");
+                        logger.LogError("Unable to analyze {numFilesFailed} file(s):", filesFailed.Count);
                         foreach (FileInfo failedFile in filesFailed)
                         {
-                            logger.LogError($"\t{failedFile}");
+                            logger.LogError("\t{failedFile}", failedFile);
                         }
                     }
                 }
@@ -316,7 +316,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 });
             });
 
-            return loggerFactory.CreateLogger<Program>();
+            return loggerFactory.CreateLogger("TemplateAnalyzerCLI");
         }
     }
 }
