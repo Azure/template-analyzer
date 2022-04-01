@@ -133,12 +133,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     }
                 }
 
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configurations File: {path}");
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configuration File: {path}");
                 return File.ReadAllText(path);
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read configurations file, but path provided or file exists in default location.", e);
+                throw new TemplateAnalyzerException("Failed to read configuration file.", e);
             }
         }
 
