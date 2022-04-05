@@ -135,14 +135,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!templateFilePath.Exists)
                 {
                     logger.LogError("Invalid template file path: {templateFilePath}", templateFilePath);
-                    return 0;
+                    return 2;
                 }
 
                 // Check that output file path provided for sarif report
                 if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     logger.LogError("Output file path was not provided.");
-                    return 0;
+                    return 3;
                 }
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                     }
-                    return 0;
+                    return 4;
                 }
 
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk, logger);
@@ -168,12 +168,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                return 1;
+                return 0;
             }
             catch (Exception exp)
             {
                 logger.LogError(GetExceptionMessage(exp));
-                return -1;
+                return 1;
             }
             finally
             {
@@ -217,11 +217,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     foreach (FileInfo file in filesToAnalyze)
                     {
                         int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, logger);
-                        if (res == 1)
+                        if (res == 0)
                         {
                             numOfSuccesses++;
                         }
-                        else if (res == -1)
+                        else if (res == 1)
                         {
                             filesFailed.Add(file);
                         }
