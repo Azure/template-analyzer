@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {

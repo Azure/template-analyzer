@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     logger?.LogDebug("Running PowerShell rule engine");
 
                     var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
+                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
                 }
 
                 return evaluations;

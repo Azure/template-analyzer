@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             if (!powershell.HadErrors)
             {
                 // Save the runspace with TTK loaded
-                this.runspace = powershell.Runspace; 
+                this.runspace = powershell.Runspace;
             }
         }
 
@@ -78,6 +78,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             if (runspace == null)
             {
                 // There was an error loading the TTK module.  Return an empty collection.
+
+                logger?.LogError("There was an error running the PowerShell based checks");
+
                 return Enumerable.Empty<IEvaluation>();
             }
 
