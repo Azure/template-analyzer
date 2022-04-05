@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 // Check that output file path provided for sarif report
                 if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
-                    logger.LogError($"Output file path was not provided.");
+                    logger.LogError("Output file path was not provided.");
                     return 0;
                 }
 
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 // Check that output file path provided for sarif report
                 if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
-                    logger.LogError($"Output file path is not provided.");
+                    logger.LogError("Output file path is not provided.");
                     return;
                 }
 

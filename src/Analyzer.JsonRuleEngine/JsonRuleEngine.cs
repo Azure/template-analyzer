@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
@@ -53,11 +54,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// Analyzes a template using rules defined in JSON.
         /// </summary>
         /// <param name="templateContext">The template context to analyze.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext, ILogger logger = null)
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {
+                logger?.LogDebug("Evaluating rule {ruleID} in the JSON rule engine", rule.Id);
+
                 var evaluations = rule.Expression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,

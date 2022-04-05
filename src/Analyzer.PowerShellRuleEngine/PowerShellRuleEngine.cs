@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
-using System.Management.Automation.Runspaces;
+using Microsoft.Extensions.Logging;
 
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
@@ -64,9 +65,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
         /// <param name="templateContext">The context of the template under analysis.
+        /// <param name="logger">A logger to report errors and debug information</param>
         /// <see cref="TemplateContext.TemplateIdentifier"/> must be the file path of the template to evaluate.</param>
         /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext, ILogger logger = null)
         {
             if (templateContext?.TemplateIdentifier == null)
             {

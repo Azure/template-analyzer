@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read rules.", e);
+                throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
             return new TemplateAnalyzer(
@@ -87,10 +87,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
+                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
 
                 if (usePowerShell && templateContext.TemplateIdentifier != null)
                 {
+                    logger?.LogDebug("Running PowerShell rule engine");
+
                     var powerShellRuleEngine = new PowerShellRuleEngine();
                     evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
