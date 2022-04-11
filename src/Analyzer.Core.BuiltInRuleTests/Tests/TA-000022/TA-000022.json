@@ -1,6 +1,6 @@
 [
   {
-    "Template": "RedisCache",
+    "Template": "RedisCache.json",
     "ReportedFailures": [
       {
         "LineNumber": 28,

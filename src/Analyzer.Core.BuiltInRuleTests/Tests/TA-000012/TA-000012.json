@@ -1,9 +1,9 @@
 [
   {
-    "Template": "AppServices",
+    "Template": "AppServices.json",
     "ReportedFailures": [
       {
-        "LineNumber": 268,
+        "LineNumber": 313,
         "Description": "Embedded sites config has a * rule in CORS"
       },
       {
