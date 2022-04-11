@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             var verboseOption = new Option(
                 "--verbose",
-                "Show details about the analysis");
+                "Shows details about the analysis");
             verboseOption.AddAlias("-v");
             analyzeTemplateCommand.AddOption(verboseOption);
 
@@ -309,11 +309,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder
-                .SetMinimumLevel(logLevel)
-                .AddSimpleConsole(options =>
-                {
-                    options.SingleLine = true;
-                });
+                    .SetMinimumLevel(logLevel)
+                    .AddSimpleConsole(options =>
+                    {
+                        options.SingleLine = true;
+                    });
             });
 
             return loggerFactory.CreateLogger("TemplateAnalyzerCLI");

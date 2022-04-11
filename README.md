@@ -33,6 +33,7 @@ Argument | Description
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
 **(Optional)** `--report-format` | <p>*Console*: output results to the console in plain text. **(default)**</p>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
+**(Optional)** `-v` or `--verbose` | Shows details about the analysis
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
 
