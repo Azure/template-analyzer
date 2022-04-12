@@ -154,9 +154,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
-                string parameterFileContents = parametesFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
+                string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                if (readConfigurationFile
+                if (readConfigurationFile)
                 {
                     templateAnalyzer.FilterRules(configurationsFilePath);
                 }
