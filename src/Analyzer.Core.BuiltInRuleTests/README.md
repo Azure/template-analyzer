@@ -21,12 +21,14 @@ The JSON test configuration has the following schema:
                 "LineNumber": 3, // Line number of expected reported failure
                 "Description": "(Optional) Description of what's being tested for this expected failure."
             }
-        // Other optional properties can be specified as well, for example to give context on why some resources are expected to pass analysis.
+        // Any other "made up" properties can be added as well, as the test author deems appropriate; for example, providing context on why some resources are expected to pass analysis.
         ]
     },
     ... // More tests can be defined if multiple templates should be analyzed - one test block for each template
 ]
 ```
+
+Although `Template`, `ReportedFailures`, and `LineNumber` are required properties, the test config is not limited to having only these properties.  If test authors choose, other properties can be created simply by adding them in the JSON file.  This can be helpful for giving additional context, for example to explain why certain resources in a test template do not fail (for testing that the rule does not generate false-positives).
 
 ### Test ARM Templates
 For each template file referenced in a `Template` property of a test configuration, there should be a file within the same directory with the same name.
