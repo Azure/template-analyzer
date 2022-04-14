@@ -10,9 +10,9 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
-using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
-using Newtonsoft.Json.Linq;
+using Microsoft.Azure.Templates.Analyzer.Types;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -51,8 +51,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Setup analyze-template w/ template file argument and parameter file option
             Command analyzeTemplateCommand = new Command(
                 "analyze-template",
-                "Analyze a singe template");
-            
+                "Analyze a single template");
+
             Argument<FileInfo> templateArgument = new Argument<FileInfo>(
                 "template-file-path",
                 "The ARM template to analyze");
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             // Setup analyze-directory w/ directory argument 
             Command analyzeDirectoryCommand = new Command(
-                "analyze-directory", 
+                "analyze-directory",
                 "Analyze all templates within a directory");
 
             Argument<DirectoryInfo> directoryArgument = new Argument<DirectoryInfo>(
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
                 // Check that the schema is valid
-                if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
+                if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidTemplate(templateFileContents))
                 {
                     if (printMessageIfNotTemplate)
                     {
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
+        private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files)
         {
             foreach (FileInfo file in directoryPath.GetFiles())
             {
@@ -243,23 +243,69 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private bool IsValidSchema(string template)
+        private static bool IsValidTemplate(string template)
         {
-            JObject jsonTemplate = JObject.Parse(template);
-            string schema = (string)jsonTemplate["$schema"];
-            string[] validSchemas = { 
-                "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"};
-            return validSchemas.Contains(schema);
+            var reader = new JsonTextReader(new StringReader(template));
+
+            reader.Read();
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return false;
+            }
+
+            // Checks all top level properties for schema property. If schema is not found, will check property names against expected ARM template properties. If expected properties
+            // are not found function will return false.
+
+            string[] validTemplateProperties =
+            {
+                 "contentVersion",
+                 "apiProfile",
+                 "parameters",
+                 "variables",
+                 "functions",
+                 "resources",
+                 "outputs",
+            };
+
+            string[] validSchemas = {
+               "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
+            };
+
+            while (reader.Read())
+            {
+                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
+                {
+
+
+                    if (reader.Value.ToString() == "$schema")
+                    {
+                        reader.Read();
+
+                        if (reader.TokenType != JsonToken.String)
+                        {
+                            return false;
+                        }
+
+                        return validSchemas.Any(property => JsonToken.Equals(reader.Value,StringComparison.OrdinalIgnoreCase));
+                    }
+                    else if (!validTemplateProperties.Any(property => JsonToken.Equals(reader.Value, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static string GetExceptionMessage(Exception exception)
         {
             Func<Exception, string> getExceptionInfo = (exception) => "\n\n" + exception.Message + "\n" + exception.StackTrace;
-            
+
             string exceptionMessage = "An exception occurred:" + getExceptionInfo(exception);
 
             while (exception.InnerException != null)
@@ -273,7 +319,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)
         {
-            if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase:true, out ReportFormat format))
+            if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase: true, out ReportFormat format))
             {
                 switch (format)
                 {
