@@ -1,6 +1,6 @@
 [
   {
-    "Template": "AppServicesFTPS",
+    "Template": "AppServicesFTPS.json",
     "ReportedFailures": [
       {
         "LineNumber": 97,

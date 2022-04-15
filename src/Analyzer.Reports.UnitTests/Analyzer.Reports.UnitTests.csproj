@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -11,10 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\Analyzer.Core.BuiltInRuleTests\TestTemplates\SQLServerAuditingSettings.badtemplate" Link="TestTemplates\SQLServerAuditingSettings.badtemplate">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Analyzer.Core.BuiltInRuleTests\TestTemplates\RedisCache.badtemplate" Link="TestTemplates\RedisCache.badtemplate">
+    <None Include="TestTemplates\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
