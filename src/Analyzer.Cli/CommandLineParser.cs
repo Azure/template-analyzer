@@ -37,9 +37,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// </summary>
         /// <param name="args">Arguments sent in via the command line</param>
         /// <returns>A Task that executes the command handler</returns>
-        public async Task InvokeCommandLineAPIAsync(string[] args)
+        public async Task<int> InvokeCommandLineAPIAsync(string[] args)
         {
-            await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
 
         private RootCommand SetupCommandLineAPI()
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
+        private int AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
         {
             var logger = CreateLogger(verbose);
 
@@ -193,14 +193,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!directoryPath.Exists)
                 {
                     logger.LogError("Invalid directory: {directoryPath}", directoryPath);
-                    return;
+                    return 2;
                 }
 
                 // Check that output file path provided for sarif report
                 if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     logger.LogError("Output file path is not provided.");
-                    return;
+                    return 3;
                 }
 
                 // Find files to analyze
@@ -211,6 +211,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
                 int numOfSuccesses = 0;
+                int exitCode = 0;
                 using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
                 {
                     var filesFailed = new List<FileInfo>();
@@ -224,6 +225,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         else if (res == 1)
                         {
                             filesFailed.Add(file);
+                            exitCode = CalculateExitCode(exitCode, res);
+                        }
+                        else
+                        {
+                            exitCode = CalculateExitCode(exitCode, res);
                         }
                     }
 
@@ -235,13 +241,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             logger.LogError("\t{failedFile}", failedFile);
                         }
+                        return 6;
                     }
+                    return exitCode;
                 }
             }
             catch (Exception exp)
             {
                 logger.LogError(GetExceptionMessage(exp));
+                return 1;
             }
+        }
+
+        private int CalculateExitCode(int exitCode, int res)
+        {
+            if (exitCode == 6 || res == 6)
+                return 6;
+            else if ((exitCode == 5 && res >= 1 && res <= 4) || (res == 5 && exitCode >= 1 && exitCode <= 4))
+                return 6;
+            else if (res == 5)
+                return 5;
+            else
+                return Math.Max(exitCode, res);
         }
 
         private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
