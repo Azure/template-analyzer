@@ -1,6 +1,6 @@
 [
   {
-    "Template": "AutomationAccountsVariables",
+    "Template": "AutomationAccountsVariables.json",
     "ReportedFailures": [
       {
         "LineNumber": 29,
