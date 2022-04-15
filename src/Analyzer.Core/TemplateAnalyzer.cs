@@ -11,6 +11,7 @@ using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read rules.", e);
+                throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
             return new TemplateAnalyzer(
@@ -57,13 +58,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true, ILogger logger = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(template);
+            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: logger);
 
             try
             {
@@ -85,12 +87,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
+                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
 
                 if (usePowerShell && templateContext.TemplateIdentifier != null)
                 {
+                    logger?.LogDebug("Running PowerShell rule engine");
+
                     var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
+                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
                 }
 
                 return evaluations;
