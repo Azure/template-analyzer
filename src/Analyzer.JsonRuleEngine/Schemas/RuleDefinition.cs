@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -34,6 +35,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// </summary>
         [JsonProperty]
         public string HelpUri { get; set; }
+
+        /// <summary> 
+        /// Gets or sets the severity of the rule. 
+        /// </summary> 
+        [JsonProperty] 
+        public Severity Severity { get; set; } = Severity.Medium;
 
         /// <summary>
         /// Gets or sets the expression details of the rule.

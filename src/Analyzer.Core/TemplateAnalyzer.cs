@@ -112,5 +112,49 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     "Rules/BuiltInRules.json"));
         }
+
+        /// <summary>
+        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
+        /// </summary>
+        /// <param name="configurationsFilePath">The path to a configuration file to read.</param>
+        /// <returns>Configuration file path contents if a file exists.</returns>
+        private string GetConfigurationFileContents(FileInfo configurationsFilePath)
+        {
+            try
+            {
+                string path;
+                if (configurationsFilePath != null)
+                {
+                    path = configurationsFilePath.FullName;
+                }
+                else
+                {
+                    path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        "Configurations", "Configuration.json");
+                    if (!File.Exists(path))
+                    {
+                        return null;
+                    }
+                }
+
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configuration File: {path}");
+                return File.ReadAllText(path);
+            }
+            catch (Exception e)
+            {
+                throw new TemplateAnalyzerException("Failed to read configuration file.", e);
+            }
+        }
+
+        /// <summary>
+        /// Modifies the rules to run based on values defined in the configurations file.
+        /// </summary>
+        /// <param name="configurationsFilePath">The configuration specifying rule modifications.</param>
+        public void FilterRules(FileInfo configurationsFilePath)
+        {
+            var configuration = GetConfigurationFileContents(configurationsFilePath);
+            if (configuration != null)
+                jsonRuleEngine.FilterRules(configuration);
+        }
     }
 }

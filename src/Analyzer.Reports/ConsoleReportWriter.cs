@@ -43,9 +43,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         GetFailedLines(evaluation)
                         .Select(l => $"{TwiceIndentedNewLine}Line: {l}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
-                    (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
-                    $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
-                    $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
+                        $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
+                        (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
+                        $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
+                        $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                     Console.WriteLine(output);
                 }
                 else
