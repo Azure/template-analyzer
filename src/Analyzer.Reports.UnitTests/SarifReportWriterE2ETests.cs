@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             mockFileSystem
                 .Setup(x => x.Create())
                 .Returns(() => stream);
-            return new SarifReportWriter(mockFileSystem.Object, targetDirectory);
+            return new SarifReportWriter(mockFileSystem.Object, targetPath: targetDirectory);
         }
     }
 }

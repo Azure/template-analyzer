@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             rootCommand = new RootCommand();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
 
-            // Setup analyze-template w/ template file argument and parameter file option
+            // Setup analyze-template w/ template file argument, parameter file option, and configuration file option
             Command analyzeTemplateCommand = new Command(
                 "analyze-template",
                 "Analyze a singe template");
@@ -64,6 +64,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                  "The parameter file to use when parsing the specified ARM template");
             parameterOption.AddAlias("-p");
             analyzeTemplateCommand.AddOption(parameterOption);
+
+            Option<FileInfo> configurationOption = new Option<FileInfo>(
+                 "--config-file-path",
+                 "The configuration file to use when parsing the specified ARM template");
+            configurationOption.AddAlias("-c");
+            analyzeTemplateCommand.AddOption(configurationOption);
 
             Option<ReportFormat> reportFormatOption = new Option<ReportFormat>(
                 "--report-format",
@@ -88,11 +94,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "Run TTK against templates");
             analyzeTemplateCommand.AddOption(ttkOption);
 
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeTemplate(templateFilePath, parametersFilePath, reportFormat, outputFilePath, runTtk, verbose));
+            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
+                (templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
+                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose));
 
-            // Setup analyze-directory w/ directory argument 
+            // Setup analyze-directory w/ directory argument and configuration file option
             Command analyzeDirectoryCommand = new Command(
                 "analyze-directory", 
                 "Analyze all templates within a directory");
@@ -102,17 +108,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "The directory to find ARM templates");
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
+            analyzeDirectoryCommand.AddOption(configurationOption);
+          
             analyzeDirectoryCommand.AddOption(reportFormatOption);
-
+          
             analyzeDirectoryCommand.AddOption(outputFileOption);
-
+          
             analyzeDirectoryCommand.AddOption(ttkOption);
 
             analyzeDirectoryCommand.AddOption(verboseOption);
 
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, ReportFormat, FileInfo, bool, bool>(
-                (directoryPath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeDirectory(directoryPath, reportFormat, outputFilePath, runTtk, verbose));
+            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
+                (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
+                this.AnalyzeDirectory(directoryPath, configurationsFilePath,  reportFormat, outputFilePath, runTtk, verbose));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -121,7 +129,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, ILogger logger = null)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
         { 
             if (logger == null) {
                 logger = CreateLogger(verbose);
@@ -147,6 +155,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
+
+                if (readConfigurationFile)
+                {
+                    templateAnalyzer.FilterRules(configurationsFilePath);
+                }
 
                 // Check that the schema is valid
                 if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
@@ -184,7 +197,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private int AnalyzeDirectory(DirectoryInfo directoryPath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
+        private int AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
         {
             var logger = CreateLogger(verbose);
 
@@ -203,11 +216,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 3;
                 }
 
+                templateAnalyzer.FilterRules(configurationsFilePath);
+
                 // Find files to analyze
                 var filesToAnalyze = new List<FileInfo>();
                 FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
 
-                // Log root directory
+                // Log root directory info to be analyzed
                 Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
                 int numOfSuccesses = 0;
@@ -217,7 +232,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
-                        int res = AnalyzeTemplate(file, null, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, logger);
+                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, false, logger);
                         if (res == 0)
                         {
                             numOfSuccesses++;
