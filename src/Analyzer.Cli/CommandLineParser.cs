@@ -23,6 +23,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private readonly TemplateAnalyzer templateAnalyzer;
 
+        private const int Success = 0;
+        private const int ErrorGeneric = 1;
+        private const int ErrorInvalidFile = 2;
+        private const int ErrorMissingFile = 3;
+        private const int ErrorInvalidARMTemplate = 4;
+        private const int Issue = 5;
+        private const int ErrorIssue = 6;
+
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
         /// </summary>
@@ -143,14 +151,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!templateFilePath.Exists)
                 {
                     logger.LogError("Invalid template file path: {templateFilePath}", templateFilePath);
-                    return 2;
+                    return ErrorInvalidFile;
                 }
 
                 // Check that output file path provided for sarif report
                 if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     logger.LogError("Output file path was not provided.");
-                    return 3;
+                    return ErrorMissingFile;
                 }
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -168,7 +176,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                     }
-                    return 4;
+                    return ErrorInvalidARMTemplate;
                 }
 
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk, logger);
@@ -181,12 +189,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                return 0;
+                return Success;
             }
             catch (Exception exp)
             {
                 logger.LogError(GetExceptionMessage(exp));
-                return 1;
+                return ErrorGeneric;
             }
             finally
             {
@@ -206,14 +214,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!directoryPath.Exists)
                 {
                     logger.LogError("Invalid directory: {directoryPath}", directoryPath);
-                    return 2;
+                    return ErrorInvalidFile;
                 }
 
                 // Check that output file path provided for sarif report
                 if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     logger.LogError("Output file path is not provided.");
-                    return 3;
+                    return ErrorMissingFile;
                 }
 
                 templateAnalyzer.FilterRules(configurationsFilePath);
@@ -256,7 +264,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             logger.LogError("\t{failedFile}", failedFile);
                         }
-                        return 6;
+                        return ErrorIssue;
                     }
                     return exitCode;
                 }
@@ -264,18 +272,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             catch (Exception exp)
             {
                 logger.LogError(GetExceptionMessage(exp));
-                return 1;
+                return ErrorGeneric;
             }
         }
 
         private int CalculateExitCode(int exitCode, int res)
         {
             if (exitCode == 6 || res == 6)
-                return 6;
+                return ErrorIssue;
             else if ((exitCode == 5 && res >= 1 && res <= 4) || (res == 5 && exitCode >= 1 && exitCode <= 4))
-                return 6;
+                return ErrorIssue;
             else if (res == 5)
-                return 5;
+                return Issue;
             else
                 return Math.Max(exitCode, res);
         }
