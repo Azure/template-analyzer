@@ -70,8 +70,8 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 | ----------- | ----------- |
 | Success: Operation was successful | 0 |
 | Error: GenericError | 1 |
-| Error: Invalid file path | 2 |
-| Error: Missing file path | 3 |
+| Error: Invalid file or directory path | 2 |
+| Error: Missing file or directory path | 3 |
 | Error: Invalid ARM template | 4 |
 | Issue: Scan found rule violations | 5 |
 | Error + Issue: Scan has both errors and violations | 6 |

@@ -23,13 +23,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private readonly TemplateAnalyzer templateAnalyzer;
 
-        private const int Success = 0;
-        private const int ErrorGeneric = 1;
-        private const int ErrorInvalidFile = 2;
-        private const int ErrorMissingFile = 3;
-        private const int ErrorInvalidARMTemplate = 4;
-        private const int Issue = 5;
-        private const int ErrorIssue = 6;
+        private enum ExitCode {
+            Success = 0,
+            ErrorGeneric = 1,
+            ErrorInvalidPath = 2,
+            ErrorMissingPath = 3,
+            ErrorInvalidARMTemplate = 4,
+            Issue = 5,
+            ErrorIssue = 6,
+        };
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -151,14 +153,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!templateFilePath.Exists)
                 {
                     logger.LogError("Invalid template file path: {templateFilePath}", templateFilePath);
-                    return ErrorInvalidFile;
+                    return (int)ExitCode.ErrorInvalidPath;
                 }
 
                 // Check that output file path provided for sarif report
                 if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     logger.LogError("Output file path was not provided.");
-                    return ErrorMissingFile;
+                    return (int)ExitCode.ErrorMissingPath;
                 }
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -176,7 +178,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                     }
-                    return ErrorInvalidARMTemplate;
+                    return (int)ExitCode.ErrorInvalidARMTemplate;
                 }
 
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk, logger);
@@ -189,12 +191,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                return Success;
+                return evaluations.Where(e => !e.Passed).Count() > 0 ? (int)ExitCode.Issue : (int)ExitCode.Success;
             }
             catch (Exception exp)
             {
                 logger.LogError(GetExceptionMessage(exp));
-                return ErrorGeneric;
+                return (int)ExitCode.ErrorGeneric;
             }
             finally
             {
@@ -214,14 +216,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!directoryPath.Exists)
                 {
                     logger.LogError("Invalid directory: {directoryPath}", directoryPath);
-                    return ErrorInvalidFile;
+                    return (int)ExitCode.ErrorInvalidPath;
                 }
 
                 // Check that output file path provided for sarif report
                 if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     logger.LogError("Output file path was not provided.");
-                    return ErrorMissingFile;
+                    return (int)ExitCode.ErrorMissingPath;
                 }
 
                 templateAnalyzer.FilterRules(configurationsFilePath);
@@ -233,30 +235,30 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 // Log root directory info to be analyzed
                 Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
-                int numOfSuccesses = 0;
-                int exitCode = 0;
+                int numOfFilesAnalyzed = 0;
+                bool issueReported = false;
                 using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
                 {
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
                         int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, false, logger);
-                        if (res == 0)
+                        if (res == (int)ExitCode.Success)
                         {
-                            numOfSuccesses++;
+                            numOfFilesAnalyzed++;
                         }
-                        else if (res == 1)
+                        else if (res == (int)ExitCode.Issue)
+                        {
+                            numOfFilesAnalyzed++;
+                            issueReported = true;
+                        }
+                        else if (res == (int)ExitCode.ErrorGeneric)
                         {
                             filesFailed.Add(file);
-                            exitCode = CalculateExitCode(exitCode, res);
-                        }
-                        else
-                        {
-                            exitCode = CalculateExitCode(exitCode, res);
                         }
                     }
 
-                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
+                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} file(s).");
                     if (filesFailed.Count > 0)
                     {
                         logger.LogError("Unable to analyze {numFilesFailed} file(s):", filesFailed.Count);
@@ -264,28 +266,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             logger.LogError("\t{failedFile}", failedFile);
                         }
-                        return ErrorIssue;
+                        if (issueReported)
+                            return (int)ExitCode.ErrorIssue;
+                        return (int)ExitCode.ErrorGeneric;
                     }
-                    return exitCode;
+                    return issueReported ? (int)ExitCode.Issue : (int)ExitCode.Success;
                 }
             }
             catch (Exception exp)
             {
                 logger.LogError(GetExceptionMessage(exp));
-                return ErrorGeneric;
+                return (int)ExitCode.ErrorGeneric;
             }
-        }
-
-        private int CalculateExitCode(int exitCode, int res)
-        {
-            if (exitCode == 6 || res == 6)
-                return ErrorIssue;
-            else if ((exitCode == 5 && res >= 1 && res <= 4) || (res == 5 && exitCode >= 1 && exitCode <= 4))
-                return ErrorIssue;
-            else if (res == 5)
-                return Issue;
-            else
-                return Math.Max(exitCode, res);
         }
 
         private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
