@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                return evaluations.Where(e => !e.Passed).Count() > 0 ? (int)ExitCode.Issue : (int)ExitCode.Success;
+                return evaluations.Any(e => !e.Passed) ? (int)ExitCode.Issue : (int)ExitCode.Success;
             }
             catch (Exception exp)
             {
