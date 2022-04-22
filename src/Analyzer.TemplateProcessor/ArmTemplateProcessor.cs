@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 // Do not throw if there was another issue with evaluating language expressions
 
-                logger?.LogError(ex, "An exception occurred when processing the template language expressions");
+                logger?.LogWarning(ex, "An exception occurred when processing the template language expressions");
             }
 
             MapTopLevelResources(template, copyNameMap);
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     }
                     catch (Exception)
                     {
-                        logger?.LogError("The parsing of a template output failed. Output name: {outputKey}. Output value: {outputValue}", outputKey, template.Outputs[outputKey]?.Value?.Value);
+                        logger?.LogWarning("The parsing of a template output failed. Output name: {outputKey}. Output value: {outputValue}", outputKey, template.Outputs[outputKey]?.Value?.Value);
 
                         template.Outputs[outputKey].Value.Value = new JValue("NOT_PARSED");
                     }
@@ -394,7 +394,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             {
                 // Do not throw if there was an issue with evaluating language expressions
 
-                logger?.LogError(ex, "An exception occurred while evaluating the properties of a resource. Properties: {properties}", templateResource.Properties.Value);
+                logger?.LogWarning(ex, "An exception occurred while evaluating the properties of a resource. Properties: {properties}", templateResource.Properties.Value);
 
                 return;
             }

@@ -18,13 +18,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     /// </summary>
     public class SarifReportWriter : IReportWriter
     {
+        /// <summary>
+        /// TODO
+        /// </summary>
+        public SarifLogger sarifLogger;
+
         internal const string UriBaseIdString = "ROOTPATH";
         internal const string PeriodString = ".";
 
         private IFileInfo reportFile;
         private Stream reportFileStream;
         private StreamWriter outputTextWriter;
-        private SarifLogger sarifLogger;
         private Run sarifRun;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
         private string rootPath;
