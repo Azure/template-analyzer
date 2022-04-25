@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 var sarifLogger = ((SarifReportWriter)reportWriter).sarifLogger;
 
-                loggerFactory.AddProvider(new SarifErrorLoggerProvider(sarifLogger));
+                loggerFactory.AddProvider(new SarifNotificationLoggerProvider(sarifLogger));
             }
 
             return loggerFactory.CreateLogger("TemplateAnalyzerCLI");

@@ -6,44 +6,37 @@ using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.CodeAnalysis.Sarif.Writers;
 using Microsoft.Extensions.Logging;
 
-// TODO move to another project/folder?
-
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// TODO 
+    /// Class to log warnings and errors as tool notifications in the SARIF output
     /// </summary>
-    public class SarifErrorLogger : ILogger // TODO rename
+    public class SarifNotificationLogger : ILogger
     {
         /// <summary>
-        /// TODO 
+        /// Class used to output information to the SARIF file
         /// </summary>
         private readonly SarifLogger sarifLogger;
 
         /// <summary>
-        /// TODO 
+        /// Constructor of the SarifNotificationLogger class
         /// </summary>
-        public SarifErrorLogger(SarifLogger sarifLogger)
+        /// <param name="sarifLogger">Class used to output information to the SARIF file</param>
+        public SarifNotificationLogger(SarifLogger sarifLogger)
         {
             this.sarifLogger = sarifLogger;
         }
 
-        /// <summary>
-        /// TODO 
-        /// </summary>
+        /// <inheritdoc/>
         public IDisposable BeginScope<TState>(TState state) => default!;
 
-        /// <summary>
-        /// TODO 
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsEnabled(LogLevel logLevel)
         {
             return logLevel == LogLevel.Error || logLevel == LogLevel.Warning;
         }
 
-        /// <summary>
-        /// TODO 
-        /// </summary>
+        /// <inheritdoc/>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
@@ -67,7 +60,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             var notification = new Notification
             {
-                Message = new Message { Text = notificationMessage }, // FIXME
+                Message = new Message { Text = notificationMessage },
                 Level = failureLevel
             };
 

@@ -4,39 +4,34 @@
 using Microsoft.CodeAnalysis.Sarif.Writers;
 using Microsoft.Extensions.Logging;
 
-// TODO move to another project/folder?
-
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// TODO 
+    /// Class that creates a logger to log warnings and errors as tool notifications in the SARIF output
     /// </summary>
-    public class SarifErrorLoggerProvider : ILoggerProvider // TODO rename
+    public class SarifNotificationLoggerProvider : ILoggerProvider
     {
         /// <summary>
-        /// TODO 
+        /// Class used to output information to the SARIF file
         /// </summary>
         private readonly SarifLogger sarifLogger;
 
         /// <summary>
-        /// TODO 
+        /// Constructor of the SarifNotificationLoggerProvider class
         /// </summary>
-        public SarifErrorLoggerProvider(SarifLogger sarifLogger)
+        /// <param name="sarifLogger">Class used to output information to the SARIF file</param>
+        public SarifNotificationLoggerProvider(SarifLogger sarifLogger)
         {
             this.sarifLogger = sarifLogger;
         }
 
-        /// <summary>
-        /// TODO 
-        /// </summary>
+        /// <inheritdoc/>
         public ILogger CreateLogger(string categoryName)
         {
-            return new SarifErrorLogger(sarifLogger);
+            return new SarifNotificationLogger(sarifLogger);
         }
 
-        /// <summary>
-        /// TODO 
-        /// </summary>
+        /// <inheritdoc/>
         public void Dispose()
         {
         }
