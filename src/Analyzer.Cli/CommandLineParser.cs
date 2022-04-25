@@ -136,8 +136,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Check that output file path provided for sarif report
             if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
             {
-                // We can't use the logger for this error because the Sarif logger was not created properly:
-                Console.WriteLine("Output file path was not provided."); // TODO check if can be improved
+                // We can't use the logger for this error,
+                // because we need to get the writer to create the logger, but this check has to be done before getting the writer:
+                Console.WriteLine("Output file path was not provided.");
                 return 3;
             }
 
@@ -185,9 +186,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 return 0;
             }
-            catch (Exception exp)
+            catch (Exception exception)
             {
-                logger.LogError(GetExceptionMessage(exp));
+                logger.LogError(exception, "An exception occurred while analyzing a template");
                 return 1;
             }
             finally
@@ -204,8 +205,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Check that output file path provided for sarif report
             if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
             {
-                // We can't use the logger for this error because the Sarif logger was not created properly:
-                Console.WriteLine("Output file path was not provided."); // TODO check if can be improved
+                // We can't use the logger for this error,
+                // because we need to get the writer to create the logger, but this check has to be done before getting the writer:
+                Console.WriteLine("Output file path was not provided.");
                 return;
             }
 
@@ -259,9 +261,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     logger.LogError(errorMessage);
                 }
             }
-            catch (Exception exp)
+            catch (Exception exception)
             {
-                logger.LogError(GetExceptionMessage(exp));
+                logger.LogError(exception, "An exception occurred while analyzing the directory provided");
             }
         }
 
@@ -291,21 +293,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
                 "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"};
             return validSchemas.Contains(schema);
-        }
-
-        private static string GetExceptionMessage(Exception exception)
-        {
-            Func<Exception, string> getExceptionInfo = (exception) => "\n\n" + exception.Message + "\n" + exception.StackTrace;
-            
-            string exceptionMessage = "An exception occurred:" + getExceptionInfo(exception);
-
-            while (exception.InnerException != null)
-            {
-                exception = exception.InnerException;
-                exceptionMessage += getExceptionInfo(exception);
-            }
-
-            return exceptionMessage;
         }
 
         private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)

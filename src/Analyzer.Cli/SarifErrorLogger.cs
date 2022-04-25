@@ -52,11 +52,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             var notificationMessage = state.ToString();
-
             if (exception != null)
             {
-                // TODO almost repeated code from CLI, fix
-                Func<Exception, string> getExceptionInfo = (exception) => " " + exception.GetType() + ": " + exception.Message + " " + exception.StackTrace;
+                Func<Exception, string> getExceptionInfo = (exception) => " - " + exception.Message + " - " + exception.StackTrace;
 
                 while (exception != null)
                 {
