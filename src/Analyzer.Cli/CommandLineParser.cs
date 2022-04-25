@@ -249,11 +249,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
                 if (filesFailed.Count > 0)
                 {
-                    logger.LogError("Unable to analyze {numFilesFailed} file(s):", filesFailed.Count);
+                    var errorMessage = $"Unable to analyze {filesFailed.Count} file(s):";
+
                     foreach (FileInfo failedFile in filesFailed)
                     {
-                        logger.LogError("\t{failedFile}", failedFile); // FIXME for Sarif logging
+                        errorMessage += $" {failedFile}";
                     }
+
+                    logger.LogError(errorMessage);
                 }
             }
             catch (Exception exp)

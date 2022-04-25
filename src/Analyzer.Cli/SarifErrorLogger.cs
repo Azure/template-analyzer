@@ -31,10 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <summary>
         /// TODO 
         /// </summary>
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            return null;
-        }
+        public IDisposable BeginScope<TState>(TState state) => default!;
 
         /// <summary>
         /// TODO 
@@ -72,7 +69,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             var notification = new Notification
             {
-                // Descriptor = new ReportingDescriptorReference { Id = resultId }, TODO
                 Message = new Message { Text = notificationMessage }, // FIXME
                 Level = failureLevel
             };
