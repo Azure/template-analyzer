@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     public class SarifReportWriter : IReportWriter
     {
         /// <summary>
-        /// Class used to output information to the SARIF file
+        /// Logger used to output information to the SARIF file
         /// </summary>
         public SarifLogger sarifLogger;
 

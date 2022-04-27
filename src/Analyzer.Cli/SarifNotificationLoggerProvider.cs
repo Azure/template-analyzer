@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     public class SarifNotificationLoggerProvider : ILoggerProvider
     {
         /// <summary>
-        /// Class used to output information to the SARIF file
+        /// Logger used to output information to the SARIF file
         /// </summary>
         private readonly SarifLogger sarifLogger;
 
