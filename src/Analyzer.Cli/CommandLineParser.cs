@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             if (writer == null)
             {
-                writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
+                writer = GetReportWriter(reportFormat, outputFilePath);
                 disposeWriter = true;
             }
 
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return;
             }
 
-            var reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName);
+            var reportWriter = this.GetReportWriter(reportFormat, outputFilePath, directoryPath.FullName);
 
             var logger = CreateLogger(verbose, reportFormat, reportWriter);
 
@@ -295,19 +295,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return validSchemas.Contains(schema);
         }
 
-        private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)
+        private IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null)
         {
-            if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase:true, out ReportFormat format))
+            switch (reportFormat)
             {
-                switch (format)
-                {
-                    case ReportFormat.Sarif:
-                        return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
-                    case ReportFormat.Console:
-                        return new ConsoleReportWriter();
-                }
+                case ReportFormat.Sarif:
+                    return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
+                case ReportFormat.Console:
+                    return new ConsoleReportWriter();
+                default:
+                    return new ConsoleReportWriter();
             }
-            return new ConsoleReportWriter();
         }
 
         private static ILogger CreateLogger(bool verbose, ReportFormat reportFormat, IReportWriter reportWriter)
