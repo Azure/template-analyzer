@@ -317,7 +317,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             if (reportFormat == ReportFormat.Sarif)
             {
-                var sarifLogger = ((SarifReportWriter)reportWriter).sarifLogger;
+                var sarifLogger = ((SarifReportWriter)reportWriter).SarifLogger;
 
                 loggerFactory.AddProvider(new SarifNotificationLoggerProvider(sarifLogger));
             }

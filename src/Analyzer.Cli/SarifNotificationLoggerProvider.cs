@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// Class that creates a logger to log warnings and errors as tool notifications in the SARIF output
+    /// Class that creates a logger to output logs as tool notifications in the SARIF file
     /// </summary>
     public class SarifNotificationLoggerProvider : ILoggerProvider
     {

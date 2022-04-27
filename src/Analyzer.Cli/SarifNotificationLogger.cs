@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// Class to log warnings and errors as tool notifications in the SARIF output
+    /// Class to output logs as tool notifications in the SARIF file
     /// </summary>
     public class SarifNotificationLogger : ILogger
     {
@@ -33,34 +33,29 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <inheritdoc/>
         public bool IsEnabled(LogLevel logLevel)
         {
-            return logLevel == LogLevel.Error || logLevel == LogLevel.Warning;
+            return true;
         }
 
         /// <inheritdoc/>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel))
+            var failureLevel = logLevel switch
             {
-                return;
-            }
-
-            var notificationMessage = state.ToString();
-            if (exception != null)
-            {
-                while (exception != null)
-                {
-                    notificationMessage += (" - " + exception.Message + " - " + exception.StackTrace);
-                    exception = exception.InnerException;
-                }
-            }
-
-            var failureLevel = logLevel == LogLevel.Error ? FailureLevel.Error : FailureLevel.Warning;
+                LogLevel.Error => FailureLevel.Error,
+                LogLevel.Warning => FailureLevel.Warning,
+                _ => FailureLevel.Note,
+            };
 
             var notification = new Notification
             {
-                Message = new Message { Text = notificationMessage },
+                Message = new Message { Text = state.ToString() },
                 Level = failureLevel
             };
+
+            if (exception != null)
+            {
+                notification.Exception = ExceptionData.Create(exception);
+            }
 
             sarifLogger.LogToolNotification(notification);  
         }
