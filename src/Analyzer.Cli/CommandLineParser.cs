@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return;
             }
 
-            var reportWriter = this.GetReportWriter(reportFormat, outputFilePath, directoryPath.FullName);
+            using var reportWriter = this.GetReportWriter(reportFormat, outputFilePath, directoryPath.FullName);
 
             var logger = CreateLogger(verbose, reportFormat, reportWriter);
 
@@ -251,14 +251,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
                 if (filesFailed.Count > 0)
                 {
-                    var errorMessage = $"Unable to analyze {filesFailed.Count} file(s):";
-
-                    foreach (FileInfo failedFile in filesFailed)
-                    {
-                        errorMessage += $" {failedFile}";
-                    }
-
-                    logger.LogError(errorMessage);
+                    logger.LogError($"Unable to analyze {filesFailed.Count} file(s): {string.Join(", ", filesFailed)}");
                 }
             }
             catch (Exception exception)
@@ -322,7 +315,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     });
             });
 
-            if (reportFormat == ReportFormat.Sarif && reportWriter != null)
+            if (reportFormat == ReportFormat.Sarif)
             {
                 var sarifLogger = ((SarifReportWriter)reportWriter).sarifLogger;
 
