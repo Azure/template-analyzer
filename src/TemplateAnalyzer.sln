@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Reports", "Analyze
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Reports.UnitTests", "Analyzer.Reports.UnitTests\Analyzer.Reports.UnitTests.csproj", "{58F5C921-D639-4962-858F-BCD5C85C16D5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Cli.FunctionalTests", "Analyzer.Cli.UnitTests\Analyzer.Cli.FunctionalTests.csproj", "{33EFDD35-B9EE-4988-847C-7475AF86797E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Cli.FunctionalTests", "Analyzer.Cli.FunctionalTests\Analyzer.Cli.FunctionalTests.csproj", "{33EFDD35-B9EE-4988-847C-7475AF86797E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cli", "Cli", "{5138342A-33CC-42B8-BD9A-2B5CDCE71745}"
 EndProject
