@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             CommandLineParser commandLineParser = new CommandLineParser();
 
-           return await commandLineParser.InvokeCommandLineAPIAsync(args).ConfigureAwait(false);
+            return await commandLineParser.InvokeCommandLineAPIAsync(args).ConfigureAwait(false);
         }
     }
 }

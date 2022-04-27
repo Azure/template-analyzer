@@ -17,7 +17,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
-    internal class CommandLineParser
+    /// <summary>
+    /// Creates the command line for running the Template Analyzer. 
+    /// Instantiates arguments that can be passed and different commands that can be invoked.
+    /// </summary>
+    public class CommandLineParser
     {
         RootCommand rootCommand;
 
@@ -30,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             ErrorMissingPath = 3,
             ErrorInvalidARMTemplate = 4,
             Issue = 5,
-            ErrorIssue = 6,
+            ErrorAndIssue = 6,
         };
 
         /// <summary>
@@ -105,8 +109,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeTemplateCommand.AddOption(ttkOption);
 
             analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose));
+                (templateFilePath, parametersFilePath, configFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
+                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configFilePath, reportFormat, outputFilePath, runTtk, verbose));
 
             // Setup analyze-directory w/ directory argument and configuration file option
             Command analyzeDirectoryCommand = new Command(
@@ -267,7 +271,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                             logger.LogError("\t{failedFile}", failedFile);
                         }
                         if (issueReported)
-                            return (int)ExitCode.ErrorIssue;
+                            return (int)ExitCode.ErrorAndIssue;
                         return (int)ExitCode.ErrorGeneric;
                     }
                     return issueReported ? (int)ExitCode.Issue : (int)ExitCode.Success;
