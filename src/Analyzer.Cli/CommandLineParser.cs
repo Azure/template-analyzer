@@ -270,9 +270,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             logger.LogError("\t{failedFile}", failedFile);
                         }
-                        if (issueReported)
-                            return (int)ExitCode.ErrorAndIssue;
-                        return (int)ExitCode.ErrorGeneric;
+                        return (int)(issueReported ? ExitCode.ErrorAndIssue : ExitCode.ErrorGeneric);
                     }
                     return issueReported ? (int)ExitCode.Issue : (int)ExitCode.Success;
                 }
