@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return;
             }
 
-            using var reportWriter = this.GetReportWriter(reportFormat, outputFilePath, directoryPath.FullName);
+            using var reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryPath.FullName);
 
             var logger = CreateLogger(verbose, reportFormat, reportWriter);
 
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return validSchemas.Contains(schema);
         }
 
-        private IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null)
+        private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null)
         {
             switch (reportFormat)
             {
