@@ -1,10 +1,14 @@
 [
   {
-    "Template": "Kubernetes",
+    "Template": "Kubernetes.json",
     "ReportedFailures": [
       {
         "LineNumber": 42,
-        "Description": "No Network restrictions defined"
+        "Description": "authorizedIPRanges is not given a value"
+      },
+      {
+        "LineNumber": 42,
+        "Description": "enablePrivateCluster is not given a value"
       },
       {
         "LineNumber": 62,

@@ -30,35 +30,38 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         /// <param name="ruleExpectations">The test configuration to run.</param>
         [DataTestMethod]
         [DynamicData(nameof(GetTests), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-        public void TestRule(TestConfiguration ruleExpectations)
+        public void TestRules(TestConfiguration ruleExpectations)
         {
-            // Get template to analyze
-            var testTemplatePath = Path.Combine("TestTemplates", $"{ruleExpectations.Template}.badtemplate");
-            var testTemplate = File.ReadAllText(testTemplatePath);
+            // Verify test config is valid (decided in GetTests function below).
+            // Reason for failure is described in RuleId.
+            if (ruleExpectations.RuleId.StartsWith("Invalid test"))
+                Assert.Fail(ruleExpectations.RuleId);
 
-            // If not already analyzed, analyze it and store evaluations
-            if (!templateEvaluations.TryGetValue(testTemplatePath, out var evaluations))
-            {
-                evaluations = templateAnalyzer.AnalyzeTemplate(testTemplate);
-                templateEvaluations[testTemplatePath] = evaluations;
-            }
+            // Get template to analyze
+            Assert.IsTrue(File.Exists(ruleExpectations.Template), message: $"Error: {ruleExpectations.Template} does not exist");
+            var testTemplate = File.ReadAllText(ruleExpectations.Template);
+
+            // Analyze template
+            var evaluations = templateAnalyzer.AnalyzeTemplate(testTemplate);
 
             // Find any instances of the rule being tested
-            // Exception containing "Sequence contains no elements" likely means you did 
-            // not name the test file the same name as the rule
-            var thisRuleEvaluations = evaluations.Where(e => e.RuleId.Equals(ruleExpectations.TestName, StringComparison.OrdinalIgnoreCase)).ToList();
+            var thisRuleEvaluations = evaluations.Where(e => e.RuleId.Equals(ruleExpectations.RuleId, StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Get all lines reported as failed
             var failingLines = thisRuleEvaluations
                 .Where(e => !e.Passed)
                 .SelectMany(e => GetAllFailedLines(e))
-                .ToHashSet();
+                .ToList();
+
+            failingLines.Sort();
 
             // Verify all expected lines are reported
-            var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToHashSet();
-            Assert.IsTrue(failingLines.SetEquals(expectedLines),
-                "Expected failing lines do not match actual failed lines.  " +
-                $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]");
+            var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToList();
+            expectedLines.Sort();
+            Assert.IsTrue(failingLines.SequenceEqual(expectedLines),
+                "Expected failing lines do not match actual failed lines." + Environment.NewLine +
+                $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]" +
+                (failingLines.Count > 0 ? "" : Environment.NewLine + "(Do the test directory and test config have the same name as the RuleId being tested?)"));
         }
 
         /// <summary>
@@ -87,14 +90,52 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         /// <returns>All the test configurations to run tests with.</returns>
         public static IEnumerable<object[]> GetTests()
         {
-            var testConfigurationFiles = Directory.GetFiles("Tests");
-            foreach (var testConfigFile in testConfigurationFiles)
+            var testDirectories = Directory.GetDirectories("Tests");
+            foreach (var testDirectoryName in testDirectories)
             {
-                var tests = JsonConvert.DeserializeObject<TestConfiguration[]>(File.ReadAllText(testConfigFile));
+                var ruleId= testDirectoryName.Split(Path.DirectorySeparatorChar)[^1];
+                var testConfigFile = Path.Combine(testDirectoryName, ruleId + ".json");
+
+                if (!File.Exists(testConfigFile))
+                {
+                    yield return InvalidTestConfig(testDirectoryName, "Directory and inner test configuration file must both be named the same as the RuleId being tested.");
+                    continue;
+                }
+
+                TestConfiguration[] tests = null;
+                string errorMessage = null;
+
+                try
+                {
+                    tests = JsonConvert.DeserializeObject<TestConfiguration[]>(File.ReadAllText(testConfigFile));
+                }
+                catch (Exception e)
+                {
+                    errorMessage = e.Message;
+                }
+
+                if (errorMessage != null)
+                {
+                    // yield return is not allowed inside a catch block.
+                    yield return InvalidTestConfig(testDirectoryName, errorMessage);
+                    continue;
+                }
+                
                 foreach (var test in tests)
                 {
-                    test.TestName = Path.GetFileNameWithoutExtension(testConfigFile);
-                    yield return new object[] { test }; 
+                    if (string.IsNullOrEmpty(test.Template) || test.ReportedFailures == null)
+                    {
+                        yield return InvalidTestConfig(testDirectoryName,
+                            test.ReportedFailures == null
+                            ? "No reported failures were specified.  If no failures are expected, assign an empty array to ReportedFailures property."
+                            : "No template file was specified to analyze - make sure the 'Template' property is set in the test config.");
+                        continue;
+                    }
+
+                    test.DisplayName = $"{ruleId} - {test.Template}";
+                    test.RuleId = ruleId;
+                    test.Template = Path.Combine(testDirectoryName, test.Template);
+                    yield return new object[] { test };
                 }
             }
         }
@@ -105,6 +146,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         /// <param name="_">Not used, but input is required in order to match the function signature expected by MSTest.</param>
         /// <param name="input">The test input given to <see cref="TestRule"/>.</param>
         /// <returns>The display name of the test.</returns>
-        public static string GetTestDisplayName(MethodInfo _, object[] input) => (input?[0] as TestConfiguration)?.TestName ?? "Unknown";
+        public static string GetTestDisplayName(MethodInfo _, object[] input) => input?[0] is TestConfiguration test ? test.DisplayName : "Unknown";
+
+        /// <summary>
+        /// Create a <see cref="TestConfiguration"/> that signals to the test runner that this test is invalid for some reason.
+        /// This is done so that invalid tests still show up as a failed test in the results, instead of breaking the whole
+        /// test run for built-in rules, requiring the developer to decipher what failed during test selection.
+        /// </summary>
+        /// <param name="test">The test that's invalid.</param>
+        /// <param name="reason">A description of why the test is invalid.</param>
+        /// <returns>The failed configuration in an object array that can be used by the test framework.</returns>
+        private static object[] InvalidTestConfig(string test, string reason) =>
+            new object[] {
+                new TestConfiguration
+                {
+                    DisplayName = test,
+                    RuleId = $"Invalid test: {reason}"
+                }
+            };
     }
 }

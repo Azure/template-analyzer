@@ -222,6 +222,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var evaluation = evaluationResults[0];
             Assert.AreEqual($"RuleId 0", evaluation.RuleId);
             Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
+            Assert.AreEqual(Severity.Medium, evaluation.Severity); //Default value
 
             Assert.IsNull(evaluation.Result);
 
@@ -331,6 +332,190 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             }
 
             return $"[{string.Join(",", rules)}]";
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(JsonRuleEngineException))]
+        public void FilterRules_ConfigurationIsInvalid_ExceptionIsThrown()
+        {
+            var rule = @"[{
+                ""id"": ""RuleId 0"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 1,
+                ""evaluation"": { }
+            }]";
+            // Act
+            var jsonRuleEngine = JsonRuleEngine.Create(rule, t => null);
+            jsonRuleEngine.FilterRules("falsePath");
+        }
+
+        [DataTestMethod]
+        [DataRow("", "RuleId0", "RuleId1", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Entire RuleSet; Empty configuration")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [3]
+                    }
+            }", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Include Severity 3")]
+        [DataRow(@"{
+                ""exclusions"": {
+                        ""severity"": [""Low""]
+                    }
+            }", "RuleId0", "RuleId1", DisplayName = "Exclude Severity 3")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""ids"": [""RuleId0""]
+                    }
+            }", "RuleId0", DisplayName = "Only Id RuleId0")]
+        [DataRow(@"{
+                ""exclusions"": {
+                        ""ids"": [""RuleId3""]
+                    }
+            }", "RuleId0", "RuleId1", "RuleId2", "RuleId4", DisplayName = "Exclude RuleId3")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [""Low""],
+                        ""ids"": [""RuleId0""]
+                    }
+            }", "RuleId0", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Include Severity 3 and Id RuleId0")]
+        [DataRow(@"{
+                ""exclusions"": {
+                        ""severity"": [2],
+                        ""ids"": [""RuleId0""]
+                    }
+            }", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Exclude Severity 2 and RuleId0")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""ids"": [""RuleId0""]
+                    }, 
+                ""severityOverrides"": {
+                    ""RuleId0"": 2
+                    }
+                }", "RuleId0:2", DisplayName = "Include RuleId0, change Severity to 2")]
+        [DataRow(@"{
+                ""severityOverrides"": {
+                    ""RuleId0"": ""Low"",
+                    ""RuleId2"": 1,
+                    ""RuleId4"": ""Medium""
+                    }
+                }", "RuleId0:3", "RuleId1", "RuleId2:1", "RuleId3", "RuleId4:2", DisplayName = "All rules included, multiple severities changed")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [3]
+                    },
+                ""exclusions"": {
+                        ""ids"": [""RuleId2""]
+                    }
+            }", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Include Severity 3; Exclusions object is ignored")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [1]
+                    }, 
+                ""severityOverrides"": {
+                    ""RuleId0"": 1
+                    }
+            }", "RuleId0", DisplayName = "Include Severity 1; override severity to same value as present produces no error")]
+        [DataRow(@"{
+                ""inclusions"": {
+                        ""severity"": [1]
+                    }, 
+                ""severityOverrides"": {
+                    ""RuleId1"": 1
+                    }
+            }", "RuleId0", DisplayName = "Include Severity 1; override severity on a not-include rule, rule still not included")]
+        public void FilterRules_ValidInputValues_ReturnCorrectFilteredRules(string configuration, params string[] expectedRules)
+        {
+            // Setup mock Rules
+            var mockRules = @"[{
+                ""id"": ""RuleId0"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": ""High"",
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId1"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 2,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId2"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 3,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId3"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": ""Low"",
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            },
+            {
+                ""id"": ""RuleId4"",
+                ""description"": ""Rule description"",
+                ""recommendation"": ""Recommendation"",
+                ""helpUri"": ""Uri"",
+                ""severity"": 3,
+                ""evaluation"": { 
+                    ""resourceType"": ""Microsoft.ResourceProvider/resource0"",
+                    ""path"": ""properties.somePath"",
+                    ""hasValue"": true
+                }
+            }]";
+
+            var parsedRules = JArray.Parse(mockRules);
+
+            // Arrange
+            var jsonRuleEngine = JsonRuleEngine.Create(mockRules, t => null);
+
+            // Filter
+            jsonRuleEngine.FilterRules(configuration);
+
+            // Compare
+            Assert.AreEqual(expectedRules.Length, jsonRuleEngine.RuleDefinitions.Count);
+
+            foreach (var rulePair in expectedRules)
+            {
+                var ruleParts = rulePair.Split(':');
+                Assert.IsTrue(ruleParts.Length < 3, "Invalid test expectation - must be just the Rule Id or of the form \"<rule id>:<severity>\"");
+                string ruleName = ruleParts[0], ruleSeverity = ruleParts.Length > 1 ? ruleParts[1] : string.Empty;
+
+                var includedRule = jsonRuleEngine.RuleDefinitions.SingleOrDefault(r => r.Id == ruleName);
+                Assert.IsNotNull(includedRule);
+
+                Severity expectedSeverity = Enum.Parse<Severity>(
+                    ruleSeverity != string.Empty
+                        ? ruleSeverity
+                        : parsedRules.Single(r => r["id"].Value<string>() == ruleName)["severity"].Value<string>()
+                    );
+
+                Assert.AreEqual(expectedSeverity, includedRule.Severity);
+            }
         }
     }
 }

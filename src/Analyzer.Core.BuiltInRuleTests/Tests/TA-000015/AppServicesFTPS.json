@@ -1,0 +1,133 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "linux",
+      "name": "linuxKind",
+      "location": "[parameters('location')]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "withoutSpecifyingProperties",
+      "location": "[parameters('location')]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "undesiredFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "undesiredValue"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "ftpsOnly",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "FtpsOnly"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "ftpsStateDisabled",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "Disabled"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "withoutSpecifyingPropertiesForSitesConfig",
+      "location": "[parameters('location')]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "kind": "api",
+      "name": "sitesConfig/desiredFtpsState",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'withoutSpecifyingPropertiesForSitesConfig')]"
+      ],
+      "properties": {
+        "ftpsState": "FtpsOnly"
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "misingKindPropertyWithUndesiredFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "undesiredValue"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "misingKindPropertyWithDesiredFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "ftpsState": "FtpsOnly"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "misingKindPropertyAndFtpsState",
+      "location": "[parameters('location')]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "name": "sitesConfigDependingOnAResourceWithoutKindProperty/desiredFtpsState",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'misingKindPropertyAndFtpsState')]"
+      ],
+      "properties": {
+        "ftpsState": "FtpsOnly"
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
         private readonly BuildILineNumberResolver BuildLineNumberResolver;
-        internal readonly IReadOnlyList<RuleDefinition> RuleDefinitions;
+        internal IReadOnlyList<RuleDefinition> RuleDefinitions;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
@@ -48,6 +49,52 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             if (jsonLineNumberResolverBuilder == null) throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
 
             return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
+        }
+
+        /// <summary>
+        /// Modifies the rules to run based on values defined in the configurations file.
+        /// </summary>
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(string configuration)
+        {
+            if (string.IsNullOrEmpty(configuration))
+                return;
+
+            ConfigurationDefinition contents;
+            try
+            {
+                contents = JsonConvert.DeserializeObject<ConfigurationDefinition>(configuration);
+            }
+            catch (Exception e)
+            {
+                throw new JsonRuleEngineException($"Failed to parse configurations file.", e);
+            }
+
+            if (contents.InclusionsConfigurationDefinition != null)
+            {
+                var includeSeverities = contents.InclusionsConfigurationDefinition.Severity;
+                var includeIds = contents.InclusionsConfigurationDefinition.Ids;
+
+                RuleDefinitions = RuleDefinitions.Where(r => (includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
+                    (includeIds != null && includeIds.Contains(r.Id))).ToList().AsReadOnly();
+            }
+            else if (contents.ExclusionsConfigurationDefinition != null)
+            {
+                var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
+                var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
+
+                RuleDefinitions = RuleDefinitions.Where(r => !(excludeSeverities != null && excludeSeverities.Contains(r.Severity)) &&
+                    !(excludeIds != null && excludeIds.Contains(r.Id))).ToList().AsReadOnly();
+            }
+
+            if (contents.SeverityOverrides != null)
+            {                
+                var ruleSubset = RuleDefinitions.Where(r => contents.SeverityOverrides.Keys.Contains(r.Id));
+                foreach (RuleDefinition rule in ruleSubset)
+                {
+                    rule.Severity = contents.SeverityOverrides[rule.Id];
+                }
+            }
         }
 
         /// <summary>
