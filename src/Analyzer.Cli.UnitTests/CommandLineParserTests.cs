@@ -61,7 +61,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
-        public void AnalyzeTemplate_SarifRun_ReturnExitCode()
+        public void AnalyzeTemplate_SarifRun_ReturnExpectedExitCode()
         {
             var templatePath = String.Concat(Directory.GetCurrentDirectory(), "\\AppServicesLogs-Failures.json");
             var outputFilePath = String.Concat(Directory.GetCurrentDirectory(), "\\outPutFile.sarif");
