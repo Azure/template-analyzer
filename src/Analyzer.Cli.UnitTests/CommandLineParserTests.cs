@@ -81,7 +81,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow(true, 3, "--report-format", "Sarif", DisplayName = "Directory exists, Report-format flag set, --output-file-path flag not included.")]
         [DataRow(true, 1, "--report-format", "Console", "--output-file-path", DisplayName = "Path exists, Report-format flag set, --output-file-path flag included, but no value provided.")]
         [DataRow(true, 6, DisplayName = "Error + Issue: Scan has both errors and issues")]
-        public void AnalyzeDirectory_ValidInputValues_ReturnExitCode(bool useTestDirectoryPath, int expectedExitCode, params string[] additionalParams)
+        public void AnalyzeDirectory_ValidInputValues_ReturnExpectedExitCode(bool useTestDirectoryPath, int expectedExitCode, params string[] additionalParams)
         {
             string[] args;
             if (useTestDirectoryPath)
