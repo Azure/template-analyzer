@@ -7,11 +7,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             CommandLineParser commandLineParser = new CommandLineParser();
 
-            await commandLineParser.InvokeCommandLineAPIAsync(args).ConfigureAwait(false);
+            return await commandLineParser.InvokeCommandLineAPIAsync(args).ConfigureAwait(false);
         }
     }
 }
