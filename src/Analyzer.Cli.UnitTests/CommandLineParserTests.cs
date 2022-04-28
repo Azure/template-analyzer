@@ -27,7 +27,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("\\CommandLineParserTests.cs", 1, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
         [DataRow("\\AppServicesLogs-Failures.json", 5, DisplayName = "Issues found in the template")]
         [DataRow("\\AppServicesLogs-Passes.json", 0, DisplayName = "Success")]
-        public void AnalyzeTemplate_ValidInputValues_ReturnExitCode(string relativeTemplatePath, int expectedExitCode, params string[] additionalParams)
+        public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, int expectedExitCode, params string[] additionalParams)
         {
             var args = new string[] { "analyze-template" , String.Concat(Directory.GetCurrentDirectory(), relativeTemplatePath)}; 
             args = args.Concat(additionalParams).ToArray();
