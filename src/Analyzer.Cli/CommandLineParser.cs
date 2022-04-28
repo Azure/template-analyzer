@@ -14,7 +14,6 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using Analyzer.Cli;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
