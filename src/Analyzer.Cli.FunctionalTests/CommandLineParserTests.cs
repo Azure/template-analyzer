@@ -63,10 +63,7 @@ namespace Analyzer.Cli.FunctionalTests
         public void AnalyzeTemplate_ReportFormatAsSarif_ReturnExpectedExitCodeUsingOption()
         {
             var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "AppServicesLogs-Failures.json");
-            var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "outPutFile.sarif");
-            // The FileStream has to be closed for the cli to be able to write values into it
-            using (var fs = File.Create(outputFilePath))
-            { }
+            var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "OutputFile.sarif");
             var args = new string[] { "analyze-template", templatePath, "--report-format", "Sarif", "--output-file-path", outputFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
