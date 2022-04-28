@@ -138,7 +138,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
                 {
                     // We can't use the logger for this error,
-                    // because we need to get the writer to create the logger, but this check has to be done before getting the writer:
+                    // because we need to get the writer to create the logger,
+                    // but this check has to be done before getting the writer:
                     Console.WriteLine("Output file path was not provided.");
                     return 3;
                 }
@@ -205,7 +206,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
             {
                 // We can't use the logger for this error,
-                // because we need to get the writer to create the logger, but this check has to be done before getting the writer:
+                // because we need to get the writer to create the logger,
+                // but this check has to be done before getting the writer:
                 Console.WriteLine("Output file path was not provided.");
                 return;
             }
