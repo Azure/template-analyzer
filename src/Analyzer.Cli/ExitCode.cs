@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Analyzer.Cli
+namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
     /// Enumeration of report types supported
