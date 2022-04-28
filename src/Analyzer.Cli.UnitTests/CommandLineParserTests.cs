@@ -39,7 +39,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataTestMethod]
         [DataRow("\\Configuration.json", 1, DisplayName = "Provided parameters file is not a parameters file")]
         [DataRow("\\Parameters.json", 5, DisplayName = "Provided parameters file correct, issues in template")]
-        public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExitCode(string relativeParametersFilePath, int expectedExitCode)
+        public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExpectedExitCode(string relativeParametersFilePath, int expectedExitCode)
         {
             var templatePath = String.Concat(Directory.GetCurrentDirectory(), "\\AppServicesLogs-Failures.json");
             var parametersFilePath = String.Concat(Directory.GetCurrentDirectory(), relativeParametersFilePath);
