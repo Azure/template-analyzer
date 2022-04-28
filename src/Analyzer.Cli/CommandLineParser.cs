@@ -14,6 +14,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using Analyzer.Cli;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -21,21 +22,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// Creates the command line for running the Template Analyzer. 
     /// Instantiates arguments that can be passed and different commands that can be invoked.
     /// </summary>
-    public class CommandLineParser
+    internal class CommandLineParser
     {
         RootCommand rootCommand;
 
         private readonly TemplateAnalyzer templateAnalyzer;
-
-        private enum ExitCode {
-            Success = 0,
-            ErrorGeneric = 1,
-            ErrorInvalidPath = 2,
-            ErrorMissingPath = 3,
-            ErrorInvalidARMTemplate = 4,
-            Issue = 5,
-            ErrorAndIssue = 6,
-        };
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -195,7 +186,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                return evaluations.Any(e => !e.Passed) ? (int)ExitCode.Issue : (int)ExitCode.Success;
+                return evaluations.Any(e => !e.Passed) ? (int)ExitCode.Violation : (int)ExitCode.Success;
             }
             catch (Exception exp)
             {
@@ -251,7 +242,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             numOfFilesAnalyzed++;
                         }
-                        else if (res == (int)ExitCode.Issue)
+                        else if (res == (int)ExitCode.Violation)
                         {
                             numOfFilesAnalyzed++;
                             issueReported = true;
@@ -270,9 +261,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         {
                             logger.LogError("\t{failedFile}", failedFile);
                         }
-                        return (int)(issueReported ? ExitCode.ErrorAndIssue : ExitCode.ErrorGeneric);
+                        return (int)(issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorGeneric);
                     }
-                    return issueReported ? (int)ExitCode.Issue : (int)ExitCode.Success;
+                    return issueReported ? (int)ExitCode.Violation : (int)ExitCode.Success;
                 }
             }
             catch (Exception exp)

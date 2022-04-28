@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Azure.Templates.Analyzer.Cli;
 using System.Linq;
 using System;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Azure.Templates.Analyzer.Cli;
 
 namespace Analyzer.Cli.FunctionalTests
 {
