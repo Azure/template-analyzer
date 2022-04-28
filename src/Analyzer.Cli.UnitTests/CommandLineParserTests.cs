@@ -50,7 +50,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
-        public void AnalyzeTemplate_ConfigurationFileParamUsed_ReturnExitCode()
+        public void AnalyzeTemplate_ConfigurationFileParamUsed_ReturnExpectedExitCode()
         {
             var templatePath = String.Concat(Directory.GetCurrentDirectory(), "\\AppServicesLogs-Failures.json");
             var configurationPath = String.Concat(Directory.GetCurrentDirectory(), "\\Configuration.json");
