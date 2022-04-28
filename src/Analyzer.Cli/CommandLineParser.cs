@@ -132,18 +132,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
         { 
             bool disposeWriter = false;
-            
-            // Check that output file path provided for sarif report
-            if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
-            {
-                // We can't use the logger for this error,
-                // because we need to get the writer to create the logger, but this check has to be done before getting the writer:
-                Console.WriteLine("Output file path was not provided.");
-                return 3;
-            }
 
             if (writer == null)
             {
+                if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
+                {
+                    // We can't use the logger for this error,
+                    // because we need to get the writer to create the logger, but this check has to be done before getting the writer:
+                    Console.WriteLine("Output file path was not provided.");
+                    return 3;
+                }
+
                 writer = GetReportWriter(reportFormat, outputFilePath);
                 disposeWriter = true;
             }
