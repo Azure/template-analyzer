@@ -83,11 +83,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow(true, 6, DisplayName = "Error + Issue: Scan has both errors and issues")]
         public void AnalyzeDirectory_ValidInputValues_ReturnExpectedExitCode(bool useTestDirectoryPath, int expectedExitCode, params string[] additionalParams)
         {
-            string[] args;
-            if (useTestDirectoryPath)
-                args = new string[] { "analyze-directory", Directory.GetCurrentDirectory() };
-            else
-                args = new string[] { "analyze-directory", "Directory does not exist" };
+            var args = new string[] { "analyze-directory", useTestDirectoryPath ? Directory.GetCurrentDirectory() : "Directory does not exist" };
 
             args = args.Concat(additionalParams).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
