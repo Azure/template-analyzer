@@ -31,11 +31,9 @@
     <None Update="Parameters.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="ADirectoryToAnalyze\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
-
-  <Target Name="CopyTestFolder" AfterTargets="Build" Condition="!Exists('$(OutputPath)\ADirectoryToAnalyze')">
-    <Exec Command="cp -r ../Analyzer.Cli.FunctionalTests/ADirectoryToAnalyze $(OutputPath)/ADirectoryToAnalyze/" Condition="'$(OS)' == 'Unix'" />
-    <Exec Command="Xcopy /E /I ..\Analyzer.Cli.FunctionalTests\ADirectoryToAnalyze $(OutputPath)\ADirectoryToAnalyze\" Condition="'$(OS)' != 'Unix'" />
-  </Target>
  
 </Project>
