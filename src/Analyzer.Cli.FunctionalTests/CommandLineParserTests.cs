@@ -91,7 +91,7 @@ namespace Analyzer.Cli.FunctionalTests
         [TestMethod]
         public void AnalyzeDirectory_DirectoryWithOtherJsonFiles_LogsExpectedErrorInSarif()
         {
-            var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Output.json");
+            var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Output.sarif");
             var directoryToAnalyze = Path.Combine(Directory.GetCurrentDirectory(), "ADirectoryToAnalyze");
             
             var args = new string[] { "analyze-directory", directoryToAnalyze, "--report-format", "Sarif", "--output-file-path", outputFilePath };
