@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             {
                 // There was an error loading the TTK module.  Return an empty collection.
 
-                logger?.LogError("There was an error running the PowerShell based checks");
+                logger?.LogWarning("There was an error running the PowerShell based checks");
 
                 return Enumerable.Empty<IEvaluation>();
             }
