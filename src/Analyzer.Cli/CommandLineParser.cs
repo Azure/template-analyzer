@@ -26,6 +26,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         RootCommand rootCommand;
 
         private readonly TemplateAnalyzer templateAnalyzer;
+        private readonly Dictionary<string, int> loggedErrors = new();
+        private readonly Dictionary<string, int> loggedWarnings = new();
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -200,6 +202,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (disposeWriter && writer != null)
                 {
                     writer.Dispose();
+
+                    this.SummarizeLogs();
                 }
             }
         }
@@ -271,6 +275,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 logger.LogError(exception, "An exception occurred while analyzing the directory provided");
                 return (int)ExitCode.ErrorGeneric;
             }
+            finally
+            {
+                this.SummarizeLogs();
+            }
         }
 
         private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
@@ -314,7 +322,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private static ILogger CreateLogger(bool verbose, ReportFormat reportFormat, IReportWriter reportWriter)
+        private ILogger CreateLogger(bool verbose, ReportFormat reportFormat, IReportWriter reportWriter)
         {
             var logLevel = verbose ? LogLevel.Debug : LogLevel.Information;
 
@@ -325,7 +333,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     .AddSimpleConsole(options =>
                     {
                         options.SingleLine = true;
-                    });
+                    })
+                    .AddProvider(new ErrorSummaryLoggerProvider(loggedErrors, loggedWarnings));
             });
 
             if (reportFormat == ReportFormat.Sarif)
@@ -336,6 +345,39 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             return loggerFactory.CreateLogger("TemplateAnalyzerCLI");
+        }
+
+        private void SummarizeLogs()
+        {
+            if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+
+                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above. The verbose mode can be used to obtain even more information about the execution.");
+
+                if (loggedErrors.Count > 0)
+                {
+                    Console.WriteLine("Summary of the errors:");
+
+                    foreach (KeyValuePair<string, int> error in loggedErrors)
+                    {
+                        Console.WriteLine($"\t{error.Value} instance(s) of: {error.Key}");
+
+                    }
+                }
+
+                if (loggedWarnings.Count > 0)
+                {
+                    Console.WriteLine("Summary of the warnings:");
+
+                    foreach (KeyValuePair<string, int> warning in loggedWarnings)
+                    {
+                        Console.WriteLine($"\t{warning.Value} instance(s) of: {warning.Key}");
+                    }
+                }
+
+                Console.ResetColor();
+            }
         }
     }
 }
