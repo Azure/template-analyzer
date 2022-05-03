@@ -29,7 +29,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("AppServicesLogs-Passes.json", 0, DisplayName = "Success")]
         public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, int expectedExitCode, params string[] additionalCliOptions)
         {
-            var args = new string[] { "analyze-template" , Path.Combine(Directory.GetCurrentDirectory(), relativeTemplatePath)}; 
+            var args = new string[] { "analyze-template" , GetFilePath(relativeTemplatePath)}; 
             args = args.Concat(additionalCliOptions).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
@@ -41,8 +41,8 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("Parameters.json", 5, DisplayName = "Provided parameters file correct, issues in template")]
         public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExpectedExitCode(string relativeParametersFilePath, int expectedExitCode)
         {
-            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "AppServicesLogs-Failures.json");
-            var parametersFilePath = Path.Combine(Directory.GetCurrentDirectory(), relativeParametersFilePath);
+            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var parametersFilePath = GetFilePath(relativeParametersFilePath);
             var args = new string[] { "analyze-template", templatePath, "--parameters-file-path", parametersFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
@@ -52,8 +52,8 @@ namespace Analyzer.Cli.FunctionalTests
         [TestMethod]
         public void AnalyzeTemplate_UseConfigurationFileOption_ReturnExpectedExitCodeUsingOption()
         {
-            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "AppServicesLogs-Failures.json");
-            var configurationPath = Path.Combine(Directory.GetCurrentDirectory(), "Configuration.json");
+            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var configurationPath = GetFilePath("Configuration.json");
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", configurationPath};
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
@@ -63,7 +63,7 @@ namespace Analyzer.Cli.FunctionalTests
         [TestMethod]
         public void AnalyzeTemplate_ReportFormatAsSarif_ReturnExpectedExitCodeUsingOption()
         {
-            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "AppServicesLogs-Failures.json");
+            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "OutputFile.sarif");
             var args = new string[] { "analyze-template", templatePath, "--report-format", "Sarif", "--output-file-path", outputFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -92,7 +92,7 @@ namespace Analyzer.Cli.FunctionalTests
         public void AnalyzeDirectory_DirectoryWithOtherJsonFiles_LogsExpectedErrorInSarif()
         {
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Output.sarif");
-            var directoryToAnalyze = Path.Combine(Directory.GetCurrentDirectory(), "ADirectoryToAnalyze");
+            var directoryToAnalyze = GetFilePath("DirectoryToTestSarifNotifications");
             
             var args = new string[] { "analyze-directory", directoryToAnalyze, "--report-format", "Sarif", "--output-file-path", outputFilePath };
 
@@ -121,6 +121,11 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreNotEqual(null, toolNotifications[0]["exception"]);
             Assert.AreNotEqual(null, toolNotifications[1]["exception"]);
             Assert.AreEqual(null, toolNotifications[2]["exception"]);
+        }
+
+        private static string GetFilePath(string testFileName)
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), "Tests", testFileName);
         }
     }
 }
