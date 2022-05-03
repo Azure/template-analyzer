@@ -131,11 +131,11 @@ namespace Analyzer.Cli.FunctionalTests
 
             var expectedLogSummary = $"2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above. " +
                 $"The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution." +
-                $"\r\nSummary of the errors:" +
-                $"\r\n\t1 instance(s) of: An exception occurred while analyzing a template" +
-                $"\r\n\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
-                $"\r\nSummary of the warnings:" +
-                $"\r\n\t1 instance(s) of: An exception occurred when processing the template language expressions\r\n";
+                $"\nSummary of the errors:" +
+                $"\n\t1 instance(s) of: An exception occurred while analyzing a template" +
+                $"\n\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
+                $"\nSummary of the warnings:" +
+                $"\n\t1 instance(s) of: An exception occurred when processing the template language expressions\n";
 
             var args = new string[] { "analyze-directory", directoryToAnalyze };
 
@@ -146,7 +146,7 @@ namespace Analyzer.Cli.FunctionalTests
 
             var cliConsoleOutput = outputWriter.ToString();
             var indexOfLogSummary = cliConsoleOutput.IndexOf("2 error(s) and 1 warning(s)");
-            var logSummary = cliConsoleOutput[indexOfLogSummary..];
+            var logSummary = cliConsoleOutput[indexOfLogSummary..].Replace("\r", ""); // The replace is for the test to work in Windows and Linux
 
             Assert.AreEqual(expectedLogSummary, logSummary);
         }
