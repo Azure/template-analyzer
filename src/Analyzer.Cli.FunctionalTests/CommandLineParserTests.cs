@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Linq;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -92,7 +93,7 @@ namespace Analyzer.Cli.FunctionalTests
         public void AnalyzeDirectory_DirectoryWithOtherJsonFiles_LogsExpectedErrorInSarif()
         {
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Output.sarif");
-            var directoryToAnalyze = GetFilePath("DirectoryToTestSarifNotifications");
+            var directoryToAnalyze = GetFilePath("ToTestSarifNotifications");
             
             var args = new string[] { "analyze-directory", directoryToAnalyze, "--report-format", "Sarif", "--output-file-path", outputFilePath };
 
@@ -121,6 +122,33 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreNotEqual(null, toolNotifications[0]["exception"]);
             Assert.AreNotEqual(null, toolNotifications[1]["exception"]);
             Assert.AreEqual(null, toolNotifications[2]["exception"]);
+        }
+
+        [TestMethod]
+        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary()
+        {
+            var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
+
+            var expectedLogSummary = $"2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above. " +
+                $"The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution." +
+                $"\r\nSummary of the errors:" +
+                $"\r\n\t1 instance(s) of: An exception occurred while analyzing a template" +
+                $"\r\n\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
+                $"\r\nSummary of the warnings:" +
+                $"\r\n\t1 instance(s) of: An exception occurred when processing the template language expressions\r\n";
+
+            var args = new string[] { "analyze-directory", directoryToAnalyze };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            var cliConsoleOutput = outputWriter.ToString();
+            var indexOfLogSummary = cliConsoleOutput.IndexOf("2 error(s) and 1 warning(s)");
+            var logSummary = cliConsoleOutput[indexOfLogSummary..];
+
+            Assert.AreEqual(expectedLogSummary, logSummary);
         }
 
         private static string GetFilePath(string testFileName)
