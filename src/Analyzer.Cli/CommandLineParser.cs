@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     writer.Dispose();
 
-                    this.SummarizeLogs();
+                    this.SummarizeLogs(); // This block will only be executed if the CLI was called with analyze-template
                 }
             }
         }
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         options.SingleLine = true;
                     })
-                    .AddProvider(new ErrorSummaryLoggerProvider(loggedErrors, loggedWarnings));
+                    .AddProvider(new SummaryLoggerProvider(loggedErrors, loggedWarnings));
             });
 
             if (reportFormat == ReportFormat.Sarif)
@@ -353,28 +353,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above. The verbose mode can be used to obtain even more information about the execution.");
+                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above. " +
+                    "The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.");
 
-                if (loggedErrors.Count > 0)
-                {
-                    Console.WriteLine("Summary of the errors:");
-
-                    foreach (KeyValuePair<string, int> error in loggedErrors)
+                var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
+                    if (logs.Count > 0)
                     {
-                        Console.WriteLine($"\t{error.Value} instance(s) of: {error.Key}");
+                        Console.WriteLine($"Summary of the {description}:");
 
+                        foreach (KeyValuePair<string, int> log in logs)
+                        {
+                            Console.WriteLine($"\t{log.Value} instance(s) of: {log.Key}");
+
+                        }
                     }
-                }
+                });
 
-                if (loggedWarnings.Count > 0)
-                {
-                    Console.WriteLine("Summary of the warnings:");
-
-                    foreach (KeyValuePair<string, int> warning in loggedWarnings)
-                    {
-                        Console.WriteLine($"\t{warning.Value} instance(s) of: {warning.Key}");
-                    }
-                }
+                printSummary(loggedErrors, "errors");
+                printSummary(loggedWarnings, "warnings");
 
                 Console.ResetColor();
             }

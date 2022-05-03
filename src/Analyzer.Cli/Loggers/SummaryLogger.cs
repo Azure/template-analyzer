@@ -8,17 +8,17 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// Class to print a summary of execution errors and warnings
+    /// Class to print a summary of the execution logs
     /// </summary>
-    public class ErrorSummaryLogger : ILogger
+    public class SummaryLogger : ILogger
     {
         private readonly Dictionary<string, int> loggedErrors;
         private readonly Dictionary<string, int> loggedWarnings;
 
         /// <summary>
-        /// Constructor of the ErrorSummaryLogger class
+        /// Constructor of the SummaryLogger class
         /// </summary>
-        public ErrorSummaryLogger(Dictionary<string, int> loggedErrors, Dictionary<string, int> loggedWarnings)
+        public SummaryLogger(Dictionary<string, int> loggedErrors, Dictionary<string, int> loggedWarnings)
         {
             this.loggedErrors = loggedErrors;
             this.loggedWarnings = loggedWarnings;
@@ -36,16 +36,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <inheritdoc/>
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            var recordLog = new Action<Dictionary<string, int>, string>((logs, newLogMessage) => {
+                if (!logs.TryAdd(newLogMessage, 1))
+                {
+                    logs[newLogMessage] += 1;
+                }
+            });
+
             var logMessage = state.ToString();
 
-            if (logLevel == LogLevel.Error && !loggedErrors.TryAdd(logMessage, 1))
+            if (logLevel == LogLevel.Error)
             {
-                loggedErrors[logMessage] += 1;
+                recordLog(loggedErrors, logMessage);
             }
-
-            if (logLevel == LogLevel.Warning && !loggedWarnings.TryAdd(logMessage, 1))
+            else if (logLevel == LogLevel.Warning)
             {
-                loggedWarnings[logMessage] += 1;
+                recordLog(loggedWarnings, logMessage);
             }
         }
     }
