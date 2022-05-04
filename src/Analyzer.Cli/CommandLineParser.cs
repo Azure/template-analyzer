@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
+                Console.WriteLine($"{Environment.NewLine}{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
 
                 if (!verbose)
                 {
