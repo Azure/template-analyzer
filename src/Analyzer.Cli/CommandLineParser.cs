@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
