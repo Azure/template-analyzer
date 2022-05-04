@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public string HelpUri { get; }
 
         /// <inheritdoc/>
-        public Severity Severity { get; } = Severity.Medium;
+        public Severity Severity { get; }
 
         /// <inheritdoc/>
         public string FileIdentifier { get; }
@@ -48,17 +48,22 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// </summary>
         /// <param name="ruleId">The id of the rule associated with this evaluation.</param>
         /// <param name="ruleDescription">The description of the rule associated with this evaluation.</param>
+        /// <param name="recommendation">The recommendation for addressing failures of the result.</param>
+        /// <param name="file">The file this evaluation is for.</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
-        /// <param name="result">The result of the evaluation.</param>
-        public PowerShellRuleEvaluation(string ruleId, string ruleDescription, bool passed, PowerShellRuleResult result)
+        /// <param name="severity">Determines how severe the finding is.</param>
+        /// <param name="result">The result of this evaluation.</param>
+        public PowerShellRuleEvaluation(string ruleId, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
         {
             RuleId = ruleId;
             RuleDescription = ruleDescription;
-            Recommendation = string.Empty;
+            Recommendation = recommendation;
+            FileIdentifier = file;
             Passed = passed;
+            Severity = severity;
             this.directResult = result;
-            this.evaluations = new List<IEvaluation>();
-            HelpUri = "https://github.com/Azure/arm-ttk";
+            this.evaluations = Enumerable.Empty<IEvaluation>();
+            HelpUri = $"https://azure.github.io/PSRule.Rules.Azure/en/rules/{ruleId}/";
         }
     }
 }

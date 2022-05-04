@@ -7,11 +7,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.1.5" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.1.6" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
+    <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
