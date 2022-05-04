@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above. " +
+                Console.WriteLine($"{Environment.NewLine}{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above. " +
                     "The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.");
 
                 var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
