@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
                 {
 
-                    if (reader.Value.ToString() == "$schema")
+                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase)) 
                     {
                         reader.Read();
 
