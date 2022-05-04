@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     writer.Dispose();
 
-                    this.SummarizeLogs(); // This block will only be executed if the CLI was called with analyze-template
+                    this.SummarizeLogs(verbose); // This block will only be executed if the CLI was called with analyze-template
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             finally
             {
-                this.SummarizeLogs();
+                this.SummarizeLogs(verbose);
             }
         }
 
@@ -347,14 +347,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return loggerFactory.CreateLogger("TemplateAnalyzerCLI");
         }
 
-        private void SummarizeLogs()
+        private void SummarizeLogs(bool verbose)
         {
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above. " +
-                    "The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.");
+                Console.WriteLine($"\n{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
+
+                if (!verbose)
+                {
+                    Console.WriteLine("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution");
+                }
 
                 var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
                     if (logs.Count > 0)
