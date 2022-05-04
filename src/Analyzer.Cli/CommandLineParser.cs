@@ -18,6 +18,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
+    /// <summary>
+    /// Creates the command line for running the Template Analyzer. 
+    /// Instantiates arguments that can be passed and different commands that can be invoked.
+    /// </summary>
     internal class CommandLineParser
     {
         RootCommand rootCommand;
@@ -38,9 +42,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// </summary>
         /// <param name="args">Arguments sent in via the command line</param>
         /// <returns>A Task that executes the command handler</returns>
-        public async Task InvokeCommandLineAPIAsync(string[] args)
+        public async Task<int> InvokeCommandLineAPIAsync(string[] args)
         {
-            await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
 
         private RootCommand SetupCommandLineAPI()
@@ -96,8 +100,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeTemplateCommand.AddOption(ttkOption);
 
             analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose));
+                (templateFilePath, parametersFilePath, configFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
+                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configFilePath, reportFormat, outputFilePath, runTtk, verbose));
 
             // Setup analyze-directory w/ directory argument and configuration file option
             Command analyzeDirectoryCommand = new Command(
@@ -132,11 +136,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
         { 
-            if (logger == null) {
-                logger = CreateLogger(verbose);
+            bool disposeWriter = false;
+
+            if (writer == null)
+            {
+                if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
+                {
+                    // We can't use the logger for this error,
+                    // because we need to get the writer to create the logger,
+                    // but this check has to be done before getting the writer:
+                    Console.WriteLine("When using --report-format sarif flag, --output-file-path flag is required.");
+                    return (int)ExitCode.ErrorMissingPath;
+                }
+
+                writer = GetReportWriter(reportFormat, outputFilePath);
+                disposeWriter = true;
             }
 
-            bool disposeWriter = false;
+            if (logger == null)
+            {
+                logger = CreateLogger(verbose, reportFormat, writer);
+            }
 
             try
             {
@@ -144,14 +164,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (!templateFilePath.Exists)
                 {
                     logger.LogError("Invalid template file path: {templateFilePath}", templateFilePath);
-                    return 2;
-                }
-
-                // Check that output file path provided for sarif report
-                if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
-                {
-                    logger.LogError("Output file path was not provided.");
-                    return 3;
+                    return (int)ExitCode.ErrorInvalidPath;
                 }
 
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -169,25 +182,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                     }
-                    return 4;
+                    return (int)ExitCode.ErrorInvalidARMTemplate;
                 }
 
                 IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk, logger);
 
-                if (writer == null)
-                {
-                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
-                    disposeWriter = true;
-                }
-
                 writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                return 0;
+                return evaluations.Any(e => !e.Passed) ? (int)ExitCode.Violation : (int)ExitCode.Success;
             }
-            catch (Exception exp)
+            catch (Exception exception)
             {
-                logger.LogError(GetExceptionMessage(exp));
-                return 1;
+                logger.LogError(exception, "An exception occurred while analyzing a template");
+                return (int)ExitCode.ErrorGeneric;
             }
             finally
             {
@@ -198,23 +205,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
+        private int AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
         {
-            var logger = CreateLogger(verbose);
+            // Check that output file path provided for sarif report
+            if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
+            {
+                // We can't use the logger for this error,
+                // because we need to get the writer to create the logger,
+                // but this check has to be done before getting the writer:
+                Console.WriteLine("When using --report-format sarif flag, --output-file-path flag is required.");
+                return (int)ExitCode.ErrorMissingPath;
+            }
+
+            using var reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryPath.FullName);
+
+            var logger = CreateLogger(verbose, reportFormat, reportWriter);
 
             try
             {
                 if (!directoryPath.Exists)
                 {
                     logger.LogError("Invalid directory: {directoryPath}", directoryPath);
-                    return;
-                }
-
-                // Check that output file path provided for sarif report
-                if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
-                {
-                    logger.LogError("Output file path is not provided.");
-                    return;
+                    return (int)ExitCode.ErrorInvalidPath;
                 }
 
                 templateAnalyzer.FilterRules(configurationsFilePath);
@@ -226,37 +238,39 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 // Log root directory info to be analyzed
                 Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
-                int numOfSuccesses = 0;
-                using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
+                int numOfFilesAnalyzed = 0;
+                bool issueReported = false;
+                var filesFailed = new List<FileInfo>();
+                foreach (FileInfo file in filesToAnalyze)
                 {
-                    var filesFailed = new List<FileInfo>();
-                    foreach (FileInfo file in filesToAnalyze)
+                    int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, false, logger);
+                    if (res == (int)ExitCode.Success)
                     {
-                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, false, logger);
-                        if (res == 0)
-                        {
-                            numOfSuccesses++;
-                        }
-                        else if (res == 1)
-                        {
-                            filesFailed.Add(file);
-                        }
+                        numOfFilesAnalyzed++;
                     }
-
-                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
-                    if (filesFailed.Count > 0)
+                    else if (res == (int)ExitCode.Violation)
                     {
-                        logger.LogError("Unable to analyze {numFilesFailed} file(s):", filesFailed.Count);
-                        foreach (FileInfo failedFile in filesFailed)
-                        {
-                            logger.LogError("\t{failedFile}", failedFile);
-                        }
+                        numOfFilesAnalyzed++;
+                        issueReported = true;
+                    }
+                    else if (res == (int)ExitCode.ErrorGeneric)
+                    {
+                        filesFailed.Add(file);
                     }
                 }
+
+                Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} file(s).");
+                if (filesFailed.Count > 0)
+                {
+                    logger.LogError($"Unable to analyze {filesFailed.Count} file(s): {string.Join(", ", filesFailed)}");
+                    return (int)(issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorGeneric);
+                }
+                return issueReported ? (int)ExitCode.Violation : (int)ExitCode.Success;
             }
-            catch (Exception exp)
+            catch (Exception exception)
             {
-                logger.LogError(GetExceptionMessage(exp));
+                logger.LogError(exception, "An exception occurred while analyzing the directory provided");
+                return (int)ExitCode.ErrorGeneric;
             }
         }
 
@@ -333,37 +347,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return false;
         }
 
-        private static string GetExceptionMessage(Exception exception)
+        private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null)
         {
-            Func<Exception, string> getExceptionInfo = (exception) => "\n\n" + exception.Message + "\n" + exception.StackTrace;
-
-            string exceptionMessage = "An exception occurred:" + getExceptionInfo(exception);
-
-            while (exception.InnerException != null)
+            switch (reportFormat)
             {
-                exception = exception.InnerException;
-                exceptionMessage += getExceptionInfo(exception);
+                case ReportFormat.Sarif:
+                    return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
+                case ReportFormat.Console:
+                    return new ConsoleReportWriter();
+                default:
+                    return new ConsoleReportWriter();
             }
-
-            return exceptionMessage;
         }
 
-        private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)
-        {
-            if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase: true, out ReportFormat format))
-            {
-                switch (format)
-                {
-                    case ReportFormat.Sarif:
-                        return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
-                    case ReportFormat.Console:
-                        return new ConsoleReportWriter();
-                }
-            }
-            return new ConsoleReportWriter();
-        }
-
-        private static ILogger CreateLogger(bool verbose)
+        private static ILogger CreateLogger(bool verbose, ReportFormat reportFormat, IReportWriter reportWriter)
         {
             var logLevel = verbose ? LogLevel.Debug : LogLevel.Information;
 
@@ -376,6 +373,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         options.SingleLine = true;
                     });
             });
+
+            if (reportFormat == ReportFormat.Sarif)
+            {
+                var sarifLogger = ((SarifReportWriter)reportWriter).SarifLogger;
+
+                loggerFactory.AddProvider(new SarifNotificationLoggerProvider(sarifLogger));
+            }
 
             return loggerFactory.CreateLogger("TemplateAnalyzerCLI");
         }
