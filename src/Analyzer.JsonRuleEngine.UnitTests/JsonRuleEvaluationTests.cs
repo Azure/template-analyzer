@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
@@ -59,6 +60,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     RuleDefinition = new RuleDefinition { HelpUri = "https://helpUri" }
                 }
                 .HelpUri);
+        }
+
+        [TestMethod]
+        public void GetSeverity_ReturnsSeverityFromRule()
+        {
+            Assert.AreEqual(
+                Severity.High,
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
+                {
+                    RuleDefinition = new RuleDefinition { Severity = Severity.High }
+                }
+                .Severity);
         }
 
         [TestMethod]

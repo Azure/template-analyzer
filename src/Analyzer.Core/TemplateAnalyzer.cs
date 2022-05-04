@@ -11,6 +11,7 @@ using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read rules.", e);
+                throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
             return new TemplateAnalyzer(
@@ -57,13 +58,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true, ILogger logger = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(template);
+            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: logger);
 
             try
             {
@@ -85,12 +87,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
+                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
 
                 if (usePowerShell && templateContext.TemplateIdentifier != null)
                 {
+                    logger?.LogDebug("Running PowerShell rule engine");
+
                     var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
+                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
                 }
 
                 return evaluations;
@@ -107,6 +111,50 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 Path.Combine(
                     Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                     "Rules/BuiltInRules.json"));
+        }
+
+        /// <summary>
+        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
+        /// </summary>
+        /// <param name="configurationsFilePath">The path to a configuration file to read.</param>
+        /// <returns>Configuration file path contents if a file exists.</returns>
+        private string GetConfigurationFileContents(FileInfo configurationsFilePath)
+        {
+            try
+            {
+                string path;
+                if (configurationsFilePath != null)
+                {
+                    path = configurationsFilePath.FullName;
+                }
+                else
+                {
+                    path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                        "Configurations", "Configuration.json");
+                    if (!File.Exists(path))
+                    {
+                        return null;
+                    }
+                }
+
+                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configuration File: {path}");
+                return File.ReadAllText(path);
+            }
+            catch (Exception e)
+            {
+                throw new TemplateAnalyzerException("Failed to read configuration file.", e);
+            }
+        }
+
+        /// <summary>
+        /// Modifies the rules to run based on values defined in the configurations file.
+        /// </summary>
+        /// <param name="configurationsFilePath">The configuration specifying rule modifications.</param>
+        public void FilterRules(FileInfo configurationsFilePath)
+        {
+            var configuration = GetConfigurationFileContents(configurationsFilePath);
+            if (configuration != null)
+                jsonRuleEngine.FilterRules(configuration);
         }
     }
 }

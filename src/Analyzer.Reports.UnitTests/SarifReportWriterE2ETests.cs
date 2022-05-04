@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
 
             var results = TemplateAnalyzer.Create().AnalyzeTemplate(
-                template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
+                template: ReadTemplate("SQLServerAuditingSettings.json"),
                 parameters: null,
                 templateFilePath: templateFilePath.FullName);
 
@@ -43,8 +43,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             string ruleId = "TA-000028";
             List<List<int>> expectedLinesForRun = new List<List<int>>
             {
-                new List<int> { 146, 147, 148 },
-                new List<int> { 206, 207, 208 }
+                new List<int> { 23, 24, 25 },
+                new List<int> { 43, 44, 45 }
             };
 
             string artifactUriString = templateFilePath.Name;
@@ -110,13 +110,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 var analyzer = TemplateAnalyzer.Create();
                 var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
                 var results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("RedisCache.badtemplate"),
+                    template: ReadTemplate("RedisCache.json"),
                     parameters: null,
                     templateFilePath: templateFilePath.FullName);
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
 
                 results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("SQLServerAuditingSettings.badtemplate"),
+                    template: ReadTemplate("SQLServerAuditingSettings.json"),
                     parameters: null,
                     templateFilePath: secondTemplateFileInfo.FullName);
                 writer.WriteResults(results, (FileInfoBase)secondTemplateFileInfo);
@@ -146,8 +146,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 146, 147, 148 },
-                        new List<int> { 206, 207, 208 }
+                        new List<int> { 23, 24, 25 },
+                        new List<int> { 43, 44, 45 }
                     })
                 }
             };
@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             mockFileSystem
                 .Setup(x => x.Create())
                 .Returns(() => stream);
-            return new SarifReportWriter(mockFileSystem.Object, targetDirectory);
+            return new SarifReportWriter(mockFileSystem.Object, targetPath: targetDirectory);
         }
     }
 }

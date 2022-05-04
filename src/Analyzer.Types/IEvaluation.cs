@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
@@ -30,6 +29,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// Gets the Uri where help for this evaluation can be found.
         /// </summary>
         public string HelpUri { get; }
+
+        /// <summary>
+        /// Gets the Severity of the rule this evaluation is for.
+        /// </summary>
+        public Severity Severity { get; }
 
         /// <summary>
         /// Gets the identifier of the file this evaluation is for.

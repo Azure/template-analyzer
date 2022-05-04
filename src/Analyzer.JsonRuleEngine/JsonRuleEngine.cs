@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
@@ -23,7 +25,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
         private readonly BuildILineNumberResolver BuildLineNumberResolver;
-        internal readonly IReadOnlyList<RuleDefinition> RuleDefinitions;
+        internal IReadOnlyList<RuleDefinition> RuleDefinitions;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
@@ -50,14 +52,63 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
+        /// Modifies the rules to run based on values defined in the configurations file.
+        /// </summary>
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(string configuration)
+        {
+            if (string.IsNullOrEmpty(configuration))
+                return;
+
+            ConfigurationDefinition contents;
+            try
+            {
+                contents = JsonConvert.DeserializeObject<ConfigurationDefinition>(configuration);
+            }
+            catch (Exception e)
+            {
+                throw new JsonRuleEngineException($"Failed to parse configurations file.", e);
+            }
+
+            if (contents.InclusionsConfigurationDefinition != null)
+            {
+                var includeSeverities = contents.InclusionsConfigurationDefinition.Severity;
+                var includeIds = contents.InclusionsConfigurationDefinition.Ids;
+
+                RuleDefinitions = RuleDefinitions.Where(r => (includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
+                    (includeIds != null && includeIds.Contains(r.Id))).ToList().AsReadOnly();
+            }
+            else if (contents.ExclusionsConfigurationDefinition != null)
+            {
+                var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
+                var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
+
+                RuleDefinitions = RuleDefinitions.Where(r => !(excludeSeverities != null && excludeSeverities.Contains(r.Severity)) &&
+                    !(excludeIds != null && excludeIds.Contains(r.Id))).ToList().AsReadOnly();
+            }
+
+            if (contents.SeverityOverrides != null)
+            {                
+                var ruleSubset = RuleDefinitions.Where(r => contents.SeverityOverrides.Keys.Contains(r.Id));
+                foreach (RuleDefinition rule in ruleSubset)
+                {
+                    rule.Severity = contents.SeverityOverrides[rule.Id];
+                }
+            }
+        }
+
+        /// <summary>
         /// Analyzes a template using rules defined in JSON.
         /// </summary>
         /// <param name="templateContext">The template context to analyze.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext, ILogger logger = null)
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {
+                logger?.LogDebug("Evaluating rule {ruleID} in the JSON rule engine", rule.Id);
+
                 var evaluations = rule.Expression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,

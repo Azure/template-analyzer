@@ -1,6 +1,12 @@
 [
   {
-    "Template": "KubernetesVersions",
+    "Template": "KubernetesVersions.json",
+    "PassingSections": [
+      {
+        "ResourceName": "AKS_Non-vulnerableVersion_1.13.5+",
+        "Explanation":  "Kubernetes version is a non-vulnerable version."
+      }
+    ],
     "ReportedFailures": [
       {
         "LineNumber": 29,

@@ -57,34 +57,6 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites",
       "kind": "app",
-      "name": "diagLogsDisabledInSiteConfigProperty",
-      "location": "[parameters('location')]",
-      "properties": {
-        "siteConfig": {
-          "detailedErrorLoggingEnabled": false,
-          "httpLoggingEnabled": false,
-          "requestTracingEnabled": false
-        }
-      }
-    },
-    {
-      "apiVersion": "2019-08-01",
-      "type": "Microsoft.Web/sites",
-      "kind": "app",
-      "name": "diagLogsDisabledInSiteConfigPropertyAndDependentConfig",
-      "location": "[parameters('location')]",
-      "properties": {
-        "siteConfig": {
-          "detailedErrorLoggingEnabled": false,
-          "httpLoggingEnabled": false,
-          "requestTracingEnabled": false
-        }
-      }
-    },
-    {
-      "apiVersion": "2019-08-01",
-      "type": "Microsoft.Web/sites",
-      "kind": "app",
       "name": "diagLogsDisabledInSiteConfigPropertyButEnabledInDependentConfig",
       "location": "[parameters('location')]",
       "properties": {
@@ -107,21 +79,6 @@
           "httpLoggingEnabled": true,
           "requestTracingEnabled": true
         }
-      }
-    },
-    {
-      "apiVersion": "2019-08-01",
-      "type": "Microsoft.Web/sites/config",
-      "kind": "app",
-      "name": "sitesConfig/diagLogsDisabled",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigPropertyAndDependentConfig')]"
-      ],
-      "properties": {
-        "detailedErrorLoggingEnabled": false,
-        "httpLoggingEnabled": false,
-        "requestTracingEnabled": false
       }
     },
     {
@@ -152,20 +109,6 @@
         "detailedErrorLoggingEnabled": false,
         "httpLoggingEnabled": false,
         "requestTracingEnabled": false
-      }
-    },
-    {
-      "apiVersion": "2019-08-01",
-      "type": "Microsoft.Web/sites",
-      "kind": "app",
-      "name": "aPropertyRequiredAsEnabledIsDisabled",
-      "location": "[parameters('location')]",
-      "properties": {
-        "siteConfig": {
-          "detailedErrorLoggingEnabled": true,
-          "httpLoggingEnabled": false,
-          "requestTracingEnabled": true
-        }
       }
     }
   ]

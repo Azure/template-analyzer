@@ -1,6 +1,6 @@
 [
   {
-    "Template": "AppServices",
+    "Template": "AppServices.json",
     "ReportedFailures": [
       {
         "LineNumber": 199,

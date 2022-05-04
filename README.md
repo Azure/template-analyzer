@@ -17,11 +17,13 @@ After ensuring the .NET Runtime is installed, download the latest Template BPA r
 To preview the rules that come bundled with the Template BPA, explore [the built-in rules](docs/built-in-bpa-rules.md).
 
 ## Using the Template BPA
-The Template BPA is executed via a command line.  Here are the formats to invoke it:
+The Template BPA is executed via a command line.  There are two formats to invoke it:
 
-`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>]`
+`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>] [-c <config-path>]`
 
-`TemplateAnalyzer.exe analyze-directory <directory-path>`
+or
+
+`TemplateAnalyzer.exe analyze-directory <directory-path> [-c <config-path>]`
 
 ### Input
 The Template BPA accepts the following inputs:
@@ -31,15 +33,17 @@ Argument | Description
 `<template-path>` | The ARM template to analyze
 `<directory-path>` | The directory to find ARM templates (recursively finds all templates in the directory and its subdirectories.)
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
-**(Optional)** `--report-format` | <p>*Console*: output results to the console in plain text. **(default)**</p>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
+**(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer.<br/>If argument is not provided, the default configuration will be used (*<_ExecutablePath_>/Configurations/Configuration.json*).
+**(Optional)** `--report-format` | *Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
+**(Optional)** `-v` or `--verbose` | Shows details about the analysis
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
 
 **Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
 ### Output
-Results can be output in plan text to the console, or output to a file in SARIF format.
+Results can be output in plain text to the console, or output to a file in SARIF format. Template BPA will exit with an error code if any errors or violations are found during a scan.
 
 #### Console
 The Template BPA outputs the results of violated rules, the corresponding line numbers where rules failed, and a recommendation to remediate each violation.
@@ -61,7 +65,18 @@ File: C:\Templates\azuredeploy.json
 #### SARIF
 Results are written to the file specified (with the `-o` or `--output-file-path` argument) in [SARIF](https://sarifweb.azurewebsites.net) format.
 
-### Understanding and Customizing Rules
+#### Exit codes
+| Scenario      | Exit Code |
+| ----------- | ----------- |
+| Success: Operation was successful | 0 |
+| Error: GenericError | 1 |
+| Error: Invalid file path | 2 |
+| Error: Missing file path | 3 |
+| Error: Invalid ARM template | 4 |
+| Issue: Scan found rule violations | 5 |
+| Error + Issue: Scan has both errors and violations | 6 |
+
+### Understanding and customizing rules
 The analysis rules used by the Template BPA are written in JSON, located in *Rules/BuiltInRules.json* (starting from the directory *TemplateAnalyzer.exe* is in). This file can be added to and/or modified to change the rules that are run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md).
 
 ## Contributing
