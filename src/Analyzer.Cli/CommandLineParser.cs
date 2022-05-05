@@ -351,7 +351,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = loggedErrors.Count > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
 
                 Console.WriteLine($"{Environment.NewLine}{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
 
@@ -368,12 +368,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         foreach (KeyValuePair<string, int> log in logs)
                         {
                             Console.WriteLine($"\t{log.Value} instance(s) of: {log.Key}");
-
                         }
                     }
                 });
 
                 printSummary(loggedErrors, "errors");
+
+                if (loggedWarnings.Count > 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                }
+
                 printSummary(loggedWarnings, "warnings");
 
                 Console.ResetColor();
