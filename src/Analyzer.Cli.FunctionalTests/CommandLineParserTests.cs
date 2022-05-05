@@ -90,7 +90,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
-        public void AnalyzeDirectory_DirectoryWithOtherJsonFiles_LogsExpectedErrorInSarif()
+        public void AnalyzeDirectory_DirectoryWithInvalidTemplates_LogsExpectedErrorInSarif()
         {
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Output.sarif");
             var directoryToAnalyze = GetFilePath("ToTestSarifNotifications");
