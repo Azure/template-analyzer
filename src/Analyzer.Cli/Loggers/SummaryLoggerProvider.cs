@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -11,22 +10,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     public class SummaryLoggerProvider : ILoggerProvider
     {
-        private readonly Dictionary<string, int> loggedErrors;
-        private readonly Dictionary<string, int> loggedWarnings;
+        /// <summary>
+        /// The summary logger
+        /// </summary>
+        public SummaryLogger SummaryLogger;
 
         /// <summary>
         /// Constructor of the ErrorSummaryLoggerProvider class
         /// </summary>
-        public SummaryLoggerProvider(Dictionary<string, int> loggedErrors, Dictionary<string, int> loggedWarnings)
+        public SummaryLoggerProvider()
         {
-            this.loggedErrors = loggedErrors;
-            this.loggedWarnings = loggedWarnings;
         }
 
         /// <inheritdoc/>
         public ILogger CreateLogger(string categoryName)
         {
-            return new SummaryLogger(loggedErrors, loggedWarnings);
+            this.SummaryLogger = new SummaryLogger();
+
+            return this.SummaryLogger;
         }
 
         /// <inheritdoc/>

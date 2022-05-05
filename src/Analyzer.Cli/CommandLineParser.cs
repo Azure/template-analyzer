@@ -26,8 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         RootCommand rootCommand;
 
         private readonly TemplateAnalyzer templateAnalyzer;
-        private readonly Dictionary<string, int> loggedErrors = new();
-        private readonly Dictionary<string, int> loggedWarnings = new();
+        private readonly SummaryLoggerProvider summaryLoggerProvider;
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -36,6 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             SetupCommandLineAPI();
             templateAnalyzer = TemplateAnalyzer.Create();
+            summaryLoggerProvider = new SummaryLoggerProvider();
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     writer.Dispose();
 
-                    this.SummarizeLogs(verbose); // This block will only be executed if the CLI was called with analyze-template
+                    this.summaryLoggerProvider.SummaryLogger.SummarizeLogs(verbose); // This block will only be executed if the CLI was called with analyze-template
                 }
             }
         }
@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             finally
             {
-                this.SummarizeLogs(verbose);
+                this.summaryLoggerProvider.SummaryLogger.SummarizeLogs(verbose);
             }
         }
 
@@ -334,7 +334,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     {
                         options.SingleLine = true;
                     })
-                    .AddProvider(new SummaryLoggerProvider(loggedErrors, loggedWarnings));
+                    .AddProvider(summaryLoggerProvider);
             });
 
             if (reportFormat == ReportFormat.Sarif)
@@ -345,44 +345,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             return loggerFactory.CreateLogger("TemplateAnalyzerCLI");
-        }
-
-        private void SummarizeLogs(bool verbose)
-        {
-            if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
-            {
-                Console.ForegroundColor = loggedErrors.Count > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
-
-                Console.WriteLine($"{Environment.NewLine}{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
-
-                if (!verbose)
-                {
-                    Console.WriteLine("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution");
-                }
-
-                var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
-                    if (logs.Count > 0)
-                    {
-                        Console.WriteLine($"Summary of the {description}:");
-
-                        foreach (KeyValuePair<string, int> log in logs)
-                        {
-                            Console.WriteLine($"\t{log.Value} instance(s) of: {log.Key}");
-                        }
-                    }
-                });
-
-                printSummary(loggedErrors, "errors");
-
-                if (loggedWarnings.Count > 0)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                }
-
-                printSummary(loggedWarnings, "warnings");
-
-                Console.ResetColor();
-            }
         }
     }
 }

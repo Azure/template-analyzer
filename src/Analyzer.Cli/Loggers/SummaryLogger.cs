@@ -12,16 +12,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     public class SummaryLogger : ILogger
     {
-        private readonly Dictionary<string, int> loggedErrors;
-        private readonly Dictionary<string, int> loggedWarnings;
+        private readonly Dictionary<string, int> loggedErrors = new();
+        private readonly Dictionary<string, int> loggedWarnings = new();
 
         /// <summary>
         /// Constructor of the SummaryLogger class
         /// </summary>
-        public SummaryLogger(Dictionary<string, int> loggedErrors, Dictionary<string, int> loggedWarnings)
+        public SummaryLogger()
         {
-            this.loggedErrors = loggedErrors;
-            this.loggedWarnings = loggedWarnings;
         }
 
         /// <inheritdoc/>
@@ -52,6 +50,47 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             else if (logLevel == LogLevel.Warning)
             {
                 recordLog(loggedWarnings, logMessage);
+            }
+        }
+
+        /// <summary>
+        /// Outputs to console a summary of the errors and warnings logged
+        /// </summary>
+        public void SummarizeLogs(bool showVerboseMessage)
+        {
+            if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
+            {
+                Console.ForegroundColor = loggedErrors.Count > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
+
+                Console.WriteLine($"{Environment.NewLine}{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
+
+                if (!showVerboseMessage)
+                {
+                    Console.WriteLine("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution");
+                }
+
+                var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
+                    if (logs.Count > 0)
+                    {
+                        Console.WriteLine($"Summary of the {description}:");
+
+                        foreach (KeyValuePair<string, int> log in logs)
+                        {
+                            Console.WriteLine($"\t{log.Value} instance(s) of: {log.Key}");
+                        }
+                    }
+                });
+
+                printSummary(loggedErrors, "errors");
+
+                if (loggedWarnings.Count > 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                }
+
+                printSummary(loggedWarnings, "warnings");
+
+                Console.ResetColor();
             }
         }
     }
