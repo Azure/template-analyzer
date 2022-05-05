@@ -108,8 +108,8 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual(templateErrorMessage, toolNotifications[0]["message"]["text"]);
             Assert.AreEqual(templateErrorMessage, toolNotifications[1]["message"]["text"]);
 
-            var nonJsonFilePath1 = Path.Combine(directoryToAnalyze, "ANonTemplateJsonFile.json");
-            var nonJsonFilePath2 = Path.Combine(directoryToAnalyze, "AnotherNonTemplateJsonFile.json");
+            var nonJsonFilePath1 = Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json");
+            var nonJsonFilePath2 = Path.Combine(directoryToAnalyze, "AnotherInvalidTemplate.json");
             var thirdNotificationMessageText = toolNotifications[2]["message"]["text"].ToString();
             // Both orders have to be considered for Windows and Linux:
             Assert.IsTrue($"Unable to analyze 2 file(s): {nonJsonFilePath1}, {nonJsonFilePath2}" == thirdNotificationMessageText ||
