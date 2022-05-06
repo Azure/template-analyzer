@@ -203,7 +203,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     writer.Dispose();
 
-                    this.summaryLoggerProvider.SummaryLogger.SummarizeLogs(verbose); // This block will only be executed if the CLI was called with analyze-template
+                    // This block will only be executed if the CLI was called with analyze-template
+                    this.summaryLoggerProvider.SummaryLogger.SummarizeLogs(verbose);
                 }
             }
         }

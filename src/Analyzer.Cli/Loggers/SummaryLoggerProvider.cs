@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// Class that creates a logger to print a summary of the execution logs
+    /// Class that creates a logger to print a summary of the execution logs to the standard output
     /// </summary>
     public class SummaryLoggerProvider : ILoggerProvider
     {
