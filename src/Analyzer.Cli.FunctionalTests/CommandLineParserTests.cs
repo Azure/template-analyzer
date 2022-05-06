@@ -2,10 +2,12 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.Cli;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
 namespace Analyzer.Cli.FunctionalTests
@@ -14,6 +16,42 @@ namespace Analyzer.Cli.FunctionalTests
     public class CommandLineParserTests
     {
         private CommandLineParser _commandLineParser;
+
+        /// <summary>
+        /// Data for tests that verify the log summary output
+        /// Index 1: Log summary output
+        /// Index 2: Additional CLI options
+        /// Index 3: Test display name, so that GetDisplayName() can do a lookup
+        /// </summary>
+        public static IReadOnlyList<object[]> LogSummaryScenarios { get; } = new List<object[]>
+        {
+            new object[] {
+                "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above" +
+                    $"{Environment.NewLine}The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution" +
+                    $"{Environment.NewLine}Summary of the errors:" +
+                    $"{Environment.NewLine}\t1 instance(s) of: An exception occurred while analyzing a template" +
+                    $"{Environment.NewLine}\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(GetFilePath("ToTestSummaryLogger"), "ReportsError.json")}" +
+                    $"{Environment.NewLine}Summary of the warnings:" +
+                    $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}",
+                Array.Empty<string>(),
+                "Prints expected log summary when using no additional CLI options"
+            },
+            new object[] {
+                "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above" +
+                    $"{Environment.NewLine}Summary of the errors:" +
+                    $"{Environment.NewLine}\t1 instance(s) of: An exception occurred while analyzing a template" +
+                    $"{Environment.NewLine}\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(GetFilePath("ToTestSummaryLogger"), "ReportsError.json")}" +
+                    $"{Environment.NewLine}Summary of the warnings:" +
+                    $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}",
+                new string[] { "--verbose" },
+                "Does not print the verbose recommendation when using the verbose CLI option"
+            }
+        }.AsReadOnly();
+
+        /// <summary>
+        /// Returns the element in the last index of the array from LogSummaryScenarios
+        /// </summary>
+        public static string GetDisplayName(MethodInfo _, object[] data) => (string)data[^1];
 
         [TestInitialize]
         public void TestInit()
@@ -124,20 +162,14 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual(null, toolNotifications[2]["exception"]);
         }
 
-        [TestMethod]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarningAndNoVerboseMode_PrintsExpectedLogSummary()
+        [DataTestMethod]
+        [DynamicData(nameof(LogSummaryScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary(string expectedLogSummary, string[] additionalCliOptions, string _)
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above" +
-                $"{Environment.NewLine}The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution" +
-                $"{Environment.NewLine}Summary of the errors:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred while analyzing a template" +
-                $"{Environment.NewLine}\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
-                $"{Environment.NewLine}Summary of the warnings:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}";
-
             var args = new string[] { "analyze-directory", directoryToAnalyze };
+            args = args.Concat(additionalCliOptions).ToArray();
 
             using StringWriter outputWriter = new();
             Console.SetOut(outputWriter);
@@ -151,20 +183,6 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual(expectedLogSummary, logSummary);
         }
 
-        [TestMethod]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarningAndVerboseMode_DoesNotPrintVerboseRecommendation()
-        {
-            var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
-
-            var args = new string[] { "analyze-directory", directoryToAnalyze, "--verbose" };
-
-            using StringWriter outputWriter = new();
-            Console.SetOut(outputWriter);
-
-            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-
-            Assert.IsFalse(outputWriter.ToString().Contains("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution"));
-        }
         private static string GetFilePath(string testFileName)
         {
             return Path.Combine(Directory.GetCurrentDirectory(), "Tests", testFileName);
