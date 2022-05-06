@@ -124,20 +124,32 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual(null, toolNotifications[2]["exception"]);
         }
 
-        [TestMethod]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarningAndNoVerboseMode_PrintsExpectedLogSummary()
+        [DataTestMethod]
+        [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode")]
+        [DataRow(true, DisplayName = "Does not recommend the verbose mode")]
+        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary(bool usesVerboseMode)
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above" +
-                $"{Environment.NewLine}The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution" +
-                $"{Environment.NewLine}Summary of the errors:" +
+            var expectedLogSummary = "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above";
+
+            if (!usesVerboseMode)
+            {
+                expectedLogSummary += $"{Environment.NewLine}The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution";
+            }
+            
+            expectedLogSummary += ($"{Environment.NewLine}Summary of the errors:" +
                 $"{Environment.NewLine}\t1 instance(s) of: An exception occurred while analyzing a template" +
                 $"{Environment.NewLine}\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
                 $"{Environment.NewLine}Summary of the warnings:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}";
+                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}");
 
             var args = new string[] { "analyze-directory", directoryToAnalyze };
+
+            if (usesVerboseMode)
+            {
+                args = args.Append("--verbose").ToArray();
+            }
 
             using StringWriter outputWriter = new();
             Console.SetOut(outputWriter);
@@ -151,20 +163,6 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual(expectedLogSummary, logSummary);
         }
 
-        [TestMethod]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarningAndVerboseMode_DoesNotPrintVerboseRecommendation()
-        {
-            var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
-
-            var args = new string[] { "analyze-directory", directoryToAnalyze, "--verbose" };
-
-            using StringWriter outputWriter = new();
-            Console.SetOut(outputWriter);
-
-            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-
-            Assert.IsFalse(outputWriter.ToString().Contains("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution"));
-        }
         private static string GetFilePath(string testFileName)
         {
             return Path.Combine(Directory.GetCurrentDirectory(), "Tests", testFileName);
