@@ -351,3 +351,7 @@ MigrationBackup/
 
 # Launch settings for Visual Studio
 **/Properties/launchSettings.json
+
+# Ignore PSRule modules
+src/Analyzer.PowerShellRuleEngine/PSRule/
+src/Analyzer.PowerShellRuleEngine/PSRule.Rules.Azure/

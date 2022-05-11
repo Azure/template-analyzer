@@ -34,10 +34,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// </summary>
         private readonly Regex lineNumberRegex = new(@"\son\sline:\s\d+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        // TODO: Download and output modules with the build
-        private const string psruleLocation = @"..\..\..\..\Analyzer.PowerShellRuleEngine\psrule.2.0.1";
-        private const string psruleAzureLocation = @"..\..\..\..\Analyzer.PowerShellRuleEngine\psrule.rules.azure.1.14.3";
-
         /// <summary>
         /// Creates a new instance of a PowerShellRuleEngine
         /// </summary>
@@ -60,8 +56,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             UnblockScripts(powershell);
 
             // Import PSRule modules
-            powershell.AddCommand("Import-Module").AddParameter("Name", Path.Combine(psruleLocation, "PSRule.psd1"))
-                .AddStatement().AddCommand("Import-Module").AddParameter("Name", Path.Combine(psruleAzureLocation, "PSRule.Rules.Azure.psd1"))
+            powershell.AddCommand("Import-Module").AddParameter("Name", ModuleManifestPath("PSRule"))
+                .AddStatement().AddCommand("Import-Module").AddParameter("Name", ModuleManifestPath("PSRule.Rules.Azure", "-nodeps"))
                 .Invoke();
 
             if (!powershell.HadErrors)
@@ -71,18 +67,33 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
         }
 
+        /// <summary>
+        /// Get the module manifest.
+        /// </summary>
+        private static string ModuleManifestPath(string name, string suffix = "")
+        {
+            return Path.Combine(ModulePath(name), $"{name}{suffix}.psd1");
+        }
+
+        /// <summary>
+        /// Get module path regardless of the current version.
+        /// </summary>
+        private static string ModulePath(string name)
+        {
+            var basePath = Path.Combine(Path.GetDirectoryName(Assembly.GetAssembly(typeof(PowerShellRuleEngine)).Location), name);
+            return Directory.EnumerateDirectories(basePath).FirstOrDefault();
+        }
+
         [Conditional("DEBUG")]
         private void UnblockScripts(Powershell powershell)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 powershell
-                    .AddCommand("Unblock-File").AddParameter("Path", Path.Combine(psruleLocation, "PSRule.Format.ps1xml"))
-                    .AddStatement().AddCommand("Unblock-File").AddParameter("Path", Path.Combine(psruleLocation, "PSRule.psm1"))
-                    .AddStatement().AddCommand("Unblock-File").AddParameter("Path", Path.Combine(psruleAzureLocation, "PSRule.Rules.Azure.psm1"))
-                    .AddStatement().AddCommand("Unblock-File").AddParameter("Path", Path.Combine(psruleAzureLocation, "rules", "*"))
+                    .AddCommand("Unblock-File").AddParameter("Path", Path.Combine(ModulePath("PSRule"), "*"))
+                    .AddStatement().AddCommand("Unblock-File").AddParameter("Path", Path.Combine(ModulePath("PSRule.Rules.Azure"), "*"))
                     .Invoke();
-            
+
                 if (powershell.HadErrors)
                 {
                     throw new Exception("Unable to unblock scripts");
@@ -126,7 +137,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             // Run PSRule on full template, for template-level rules to execute.
             var executionResults = powershell
                 .AddCommand("Invoke-PSRule")
-                .AddParameter("Module", "PSRule.Rules.Azure")
+                .AddParameter("Module", "PSRule.Rules.Azure-nodeps")
                 .AddParameter("InputPath", templateFile)
                 .AddParameter("Format", "File")
                 .AddParameter("Outcome", "Fail,Error")
@@ -142,7 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources");
             executionResults.AddRange(powershell
                 .AddCommand("Invoke-PSRule")
-                .AddParameter("Module", "PSRule.Rules.Azure")
+                .AddParameter("Module", "PSRule.Rules.Azure-nodeps")
                 .AddParameter("InputObject", resources.ToString())
                 .AddParameter("Format", "Json")
                 .AddParameter("Outcome", "Fail,Error")
@@ -175,13 +186,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     _ => Severity.Low
                 };
 
+                // Get source line
+                int line = GetMember<int>((executionResult.Properties["Source"].Value as Array)?.GetValue(0), "Line");
+
                 foreach (var reason in executionResult.Properties["Reason"]?.Value as string[] ?? Array.Empty<string>())
                 {
                     // TODO: add reason as a message into result
                     evaluations.Add(
                         new PowerShellRuleEvaluation(ruleId, ruleDescription, recommendation,
                             templateContext.TemplateIdentifier, false, severity,
-                            new PowerShellRuleResult(false, 1)));
+                            new PowerShellRuleResult(false, line)));
                 }
 
             }
