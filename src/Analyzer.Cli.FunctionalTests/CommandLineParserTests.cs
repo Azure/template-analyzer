@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
 using Newtonsoft.Json.Linq;
 
+
 namespace Analyzer.Cli.FunctionalTests
 {
     [TestClass]
@@ -121,6 +122,34 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreNotEqual(null, toolNotifications[0]["exception"]);
             Assert.AreNotEqual(null, toolNotifications[1]["exception"]);
             Assert.AreEqual(null, toolNotifications[2]["exception"]);
+        }
+        
+        [DataTestMethod]
+        [DataRow(ValidTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
+        [DataRow(ValidTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Unexpected property depths")]
+        [DataRow(ValidTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
+        [DataRow(ValidTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isnt string")]
+        [DataRow(ValidTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
+        [DataRow(ValidTemplateConstants.DifferentSchemaDepths, 1, DisplayName = "Two schemas, different depths, valid schema last")]
+        [DataRow(ValidTemplateConstants.CaseSensitivity, 1, DisplayName = "Unexpected capitalization in schema")]
+        [DataRow(ValidTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
+
+        public void IsValidTemplate_ShouldReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
+        {
+            try
+            {
+                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
+                File.WriteAllText(templatePath, templateToAnalyze);
+                var args = new string[] { "analyze-template", templatePath };
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+                Assert.AreEqual(expectedErrorCode, result.Result);
+            }
+            finally
+            {
+
+            }
+
         }
     }
 }
