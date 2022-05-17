@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         RootCommand rootCommand;
 
         private readonly TemplateAnalyzer templateAnalyzer;
+        private readonly SummaryLoggerProvider summaryLoggerProvider;
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -35,6 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             SetupCommandLineAPI();
             templateAnalyzer = TemplateAnalyzer.Create();
+            summaryLoggerProvider = new SummaryLoggerProvider();
         }
 
         /// <summary>
@@ -201,6 +203,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (disposeWriter && writer != null)
                 {
                     writer.Dispose();
+
+                    // This block will only be executed if the CLI was called with analyze-template
+                    this.summaryLoggerProvider.SummaryLogger.SummarizeLogs(verbose);
                 }
             }
         }
@@ -271,6 +276,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 logger.LogError(exception, "An exception occurred while analyzing the directory provided");
                 return (int)ExitCode.ErrorGeneric;
+            }
+            finally
+            {
+                this.summaryLoggerProvider.SummaryLogger.SummarizeLogs(verbose);
             }
         }
 
@@ -360,7 +369,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private static ILogger CreateLogger(bool verbose, ReportFormat reportFormat, IReportWriter reportWriter)
+        private ILogger CreateLogger(bool verbose, ReportFormat reportFormat, IReportWriter reportWriter)
         {
             var logLevel = verbose ? LogLevel.Debug : LogLevel.Information;
 
@@ -371,7 +380,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     .AddSimpleConsole(options =>
                     {
                         options.SingleLine = true;
-                    });
+                    })
+                    .AddProvider(summaryLoggerProvider);
             });
 
             if (reportFormat == ReportFormat.Sarif)
