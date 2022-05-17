@@ -17,20 +17,22 @@ namespace Analyzer.Cli.FunctionalTests
             }    
         }";
 
-        public const string CaseSensitivity = @"{""$schEmA"": ""https://ScHeMa.mAnAgEmEnt.AzUrE.cOm/schEmAs/2019-04-01/deploymentTemplate.json#""}";
+        public const string SchemaCaseInsensitive = @"{""$schEmA"": ""https://ScHeMa.mAnAgEmEnt.AzUrE.cOm/schEmAs/2019-04-01/deploymentTemplate.json#"", ""contentVersion"": ""1.0.0.0"", ""resources"": [] }";
 
         public const string MissingSchema = @"{""contentVersion"": ""1.0.0.0"", ""Parameters"": {}}";
 
         public const string SchemaValueNotString = @"{ ""$schema"": 5 }";
 
         public const string NoSchemaInvalidProperties = @" {""properties"": }";
-
-        public const string DifferentSchemaDepths = @"
-        {
-            ""parameters"": ""{
-              ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#""
-                },
-             ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#""
+ 
+        public const string DifferentSchemaDepths = @"{
+            ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+            ""contentVersion"": ""1.0.0.0"",
+            ""parameters"": {},
+            ""functions"": [],
+            ""variables"": {""$schema"": ""https://schema.management.azure.com/schemas/2040-40-40/deploymentTemplate.json#""},
+            ""resources"": [],
+            ""outputs"": {}
         }";
 
         public const string InvalidTopLevelProperties = @"{
