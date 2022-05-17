@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace Analyzer.Cli.FunctionalTests
 {
     [TestClass]
-    public class CommandLineParserTests
+    public class CommandLineParserTests 
     {
         private CommandLineParser _commandLineParser;
 
@@ -168,22 +168,22 @@ namespace Analyzer.Cli.FunctionalTests
         {
             return Path.Combine(Directory.GetCurrentDirectory(), "Tests", testFileName);
         }
-        
+
         [DataTestMethod]
+        [DataRow(ValidTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
+        [DataRow(ValidTemplateConstants.CaseSensitivity, 1, DisplayName = "Unexpected capitalization in schema")]
+        [DataRow(ValidTemplateConstants.DifferentSchemaDepths, 1, DisplayName = "Two schemas, different depths, valid schema last")]
         [DataRow(ValidTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
         [DataRow(ValidTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Unexpected property depths")]
         [DataRow(ValidTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
         [DataRow(ValidTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isnt string")]
         [DataRow(ValidTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
-        [DataRow(ValidTemplateConstants.DifferentSchemaDepths, 1, DisplayName = "Two schemas, different depths, valid schema last")]
-        [DataRow(ValidTemplateConstants.CaseSensitivity, 1, DisplayName = "Unexpected capitalization in schema")]
-        [DataRow(ValidTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
-
         public void IsValidTemplate_ShouldReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
         {
+            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
+
             try
             {
-                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
                 File.WriteAllText(templatePath, templateToAnalyze);
                 var args = new string[] { "analyze-template", templatePath };
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -192,9 +192,8 @@ namespace Analyzer.Cli.FunctionalTests
             }
             finally
             {
-
+                File.Delete(templatePath);
             }
-
         }
     }
 }
