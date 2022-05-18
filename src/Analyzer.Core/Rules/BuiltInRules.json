@@ -739,7 +739,7 @@
                   },
                   {
                     "path": "type",
-                    "equals": "auditingSettings"
+                    "equals": "auditingSettings" // FIXME?
                   }
                 ]
               },

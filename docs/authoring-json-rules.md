@@ -45,6 +45,8 @@ Since most rules apply only to specific types of Azure resources, the `resourceT
 
 The behavior of the `resourceType` property is to find a property called "resources" in the current scope that is an array of objects, look for a "type" property in each of the objects, and keep only the resources where the value of "type" matches the string in `resourceType`.  See [Scopes](#scopes) for more information on scopes.
 
+TODO add details about the resource types. Only specify full ones?
+
 Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 
 ## Operators

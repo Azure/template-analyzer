@@ -602,7 +602,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""dependsOn"": [
                     ""/subscriptions/subId/resourceGroups/resourceGroup/providers/Microsoft.Network/networkSecurityGroups/SecGroupNet"",
                     ""vNet"",
-                    ""parentVnet""
+                    ""parentResource""
                 ],
                 ""properties"": { }
             }"; 
@@ -621,23 +621,20 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""properties"": { }
             }";
             string parentTemplateResource3Json = @"{
-                ""type"": ""Microsoft.Network/virtualNetworks"",
+                ""type"": ""Microsoft.EventGrid/domains"",
                 ""apiVersion"": ""2019-04-01"",
-                ""name"": ""parentVnet"",
-                ""location"": ""westus"",
+                ""name"": ""parentResource"",
                 ""resources"": [
                     {
-                        ""type"": ""Microsoft.Network/virtualNetworks"",
+                        ""type"": ""topics"",
                         ""apiVersion"": ""2019-04-01"",
-                        ""name"": ""embeddedChildVnet"",
-                        ""location"": ""westus"",
+                        ""name"": ""embeddedChildResource"",
                         ""properties"": { },
                         ""resources"": [
                             {
-                                ""type"": ""Microsoft.Network/virtualNetworks"",
+                                ""type"": ""eventSubscriptions"",
                                 ""apiVersion"": ""2019-04-01"",
-                                ""name"": ""embeddedGrandChildVnet"",
-                                ""location"": ""westus"",
+                                ""name"": ""embeddedGrandChildResource"",
                                 ""properties"": { }
                             }
                         ],
@@ -677,6 +674,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             (expectedResourceJArray[2] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
             (expectedResourceJArray[3].InsensitiveToken("resources") as JArray).Add(JObject.Parse(childTemplateResourceJson));
 
+            // TODO improve or comment
+            var childResource = expectedResourceJArray[3]["resources"][0];
+            childResource["type"] = "Microsoft.EventGrid/domains/topics";
+            childResource["resources"][0]["type"] = "Microsoft.EventGrid/domains/topics/eventSubscriptions";
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
 
             AssertDictionariesAreEqual(expectedMapping, _armTemplateProcessor.ResourceMappings);
@@ -799,6 +800,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 
+            // TODO improve or comment
+            expectedResourceJArray[1]["resources"][0]["type"] = "Microsoft.Web/sites/sourcecontrols";
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
 
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
@@ -860,6 +863,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 
+            // TODO improve or comment
+            var childResource = expectedResourceJArray[0]["resources"][0];
+            childResource["type"] = "Microsoft.Sql/servers/databases";
+            childResource["resources"][0]["type"] = "Microsoft.Sql/servers/databases/transparentDataEncryption";
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
 
             AssertDictionariesAreEqual(expectedMapping, armTemplateProcessor.ResourceMappings);
