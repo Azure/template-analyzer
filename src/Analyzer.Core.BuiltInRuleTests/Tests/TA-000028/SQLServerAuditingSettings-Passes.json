@@ -220,8 +220,8 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings", // FIXME??
-          "name": "WithAlmostDefaultAuditing/defaulta",
+          "type": "auditingSettings",
+          "name": "defaultPlusMore",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
             "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
@@ -229,7 +229,27 @@
           }
         }
       ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "AnSqlServerWithoutChildResources",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/auditingSettings",
+      "name": "AnSqlServerWithoutChildResources/default",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+        "retentionDays": 95
+      },
+      "dependsOn": [
+        "AnSqlServerWithoutChildResources" // TODO add case without dependsOn?
+      ]
     }
-    // TODO add case with dependsOn
   ]
 }
