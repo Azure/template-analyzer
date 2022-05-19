@@ -220,7 +220,7 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
+          "type": "Microsoft.Sql/servers/auditingSettings", // FIXME??
           "name": "WithAlmostDefaultAuditing/defaulta",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
@@ -230,5 +230,6 @@
         }
       ]
     }
+    // TODO add case with dependsOn
   ]
 }
