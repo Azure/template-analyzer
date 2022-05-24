@@ -116,18 +116,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
             analyzeDirectoryCommand.AddOption(configurationOption);
-          
+
             analyzeDirectoryCommand.AddOption(reportFormatOption);
-          
+
             analyzeDirectoryCommand.AddOption(outputFileOption);
-          
+
             analyzeDirectoryCommand.AddOption(ttkOption);
 
             analyzeDirectoryCommand.AddOption(verboseOption);
 
             analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
                 (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeDirectory(directoryPath, configurationsFilePath,  reportFormat, outputFilePath, runTtk, verbose));
+                this.AnalyzeDirectory(directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
-        { 
+        {
             bool disposeWriter = false;
 
             if (writer == null)
@@ -310,9 +310,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             // Checks all top level properties for schema property. If schema is not found, will check property names against expected ARM template properties. If expected properties
             // are not found function will return false.
-
-            string[] validTemplateProperties =
-            {
+            string[] validTemplateProperties = {
                  "contentVersion",
                  "apiProfile",
                  "parameters",
@@ -322,29 +320,29 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                  "outputs",
             };
 
-            string[] validSchemas = {
-               "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-            };
-
             while (reader.Read())
             {
                 if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
                 {
 
-                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase)) 
+                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
                     {
                         reader.Read();
+
+                        string[] validSchemas = {
+                            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+                            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
+                        };
 
                         if (reader.TokenType != JsonToken.String)
                         {
                             return false;
                         }
 
-                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase)); 
+                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
                     }
                     else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
                     {

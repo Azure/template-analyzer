@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace Analyzer.Cli.FunctionalTests
 {
     [TestClass]
-    public class CommandLineParserTests 
+    public class CommandLineParserTests
     {
         private CommandLineParser _commandLineParser;
 
@@ -174,9 +174,9 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow(ValidTemplateConstants.SchemaCaseInsensitive, 0, DisplayName = "Schema is case insensitive")]
         [DataRow(ValidTemplateConstants.DifferentSchemaDepths, 0, DisplayName = "Two schemas, different depths, valid schema last")]
         [DataRow(ValidTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
-        [DataRow(ValidTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Unexpected property depths")]
+        [DataRow(ValidTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Invalid property depths")]
         [DataRow(ValidTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
-        [DataRow(ValidTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isnt string")]
+        [DataRow(ValidTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isn't string")]
         [DataRow(ValidTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
         public void IsValidTemplate_ShouldReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
         {
