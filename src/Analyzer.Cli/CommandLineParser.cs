@@ -90,13 +90,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             // Temporary PowerShell rule suppression until it will work nicely with SARIF
             Option ttkOption = new Option(
-                "--run-ttk",
+                "--run-powershell",
                 "Run TTK against templates");
             analyzeTemplateCommand.AddOption(ttkOption);
 
             analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose));
+                (templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose) =>
+                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose));
 
             // Setup analyze-directory w/ directory argument and configuration file option
             Command analyzeDirectoryCommand = new Command(
@@ -119,8 +119,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeDirectoryCommand.AddOption(verboseOption);
 
             analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeDirectory(directoryPath, configurationsFilePath,  reportFormat, outputFilePath, runTtk, verbose));
+                (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose) =>
+                this.AnalyzeDirectory(directoryPath, configurationsFilePath,  reportFormat, outputFilePath, runPowershell, verbose));
 
             // Add commands to root command
             rootCommand.AddCommand(analyzeTemplateCommand);
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return rootCommand;
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
+        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runPowershell, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
         { 
             if (logger == null) {
                 logger = CreateLogger(verbose);
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     return 4;
                 }
 
-                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runTtk, logger);
+                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runPowershell, logger);
 
                 if (writer == null)
                 {
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runTtk, bool verbose)
+        private void AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runPowershell, bool verbose)
         {
             var logger = CreateLogger(verbose);
 
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     var filesFailed = new List<FileInfo>();
                     foreach (FileInfo file in filesToAnalyze)
                     {
-                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose, false, reportWriter, false, logger);
+                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose, false, reportWriter, false, logger);
                         if (res == 0)
                         {
                             numOfSuccesses++;
