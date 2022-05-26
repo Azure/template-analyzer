@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// </summary>
         public void SummarizeLogs(bool showVerboseMessage)
         {
-            Console.WriteLine($"{Environment.NewLine}Build output:");
+            Console.WriteLine($"{Environment.NewLine}Analysis output:");
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
             {                
                 if (!showVerboseMessage)
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             else
             {
-                Console.WriteLine($"\t{loggedErrors.Count} Error(s) and {loggedWarnings.Count} Warning(s)");
+                Console.WriteLine($"\tAnalysis completed successfully");
             }
         }
     }
