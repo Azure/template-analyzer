@@ -94,7 +94,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"\t{loggedErrors.Count} Error(s)");
                 Console.ResetColor();
-            } else
+            }
+            else
             {
                 Console.WriteLine($"\t{loggedErrors.Count} Error(s) and {loggedWarnings.Count} Warning(s)");
             }
