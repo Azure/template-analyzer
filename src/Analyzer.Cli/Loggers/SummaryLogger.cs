@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     Console.WriteLine("\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.");
                 }
-                
                 var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
                     if (logs.Count > 0)
                     {
