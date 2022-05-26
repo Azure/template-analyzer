@@ -131,7 +131,7 @@ namespace Analyzer.Cli.FunctionalTests
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "Build output:";
+            var expectedLogSummary = "Analysis output:";
 
             if (!usesVerboseMode)
             {
@@ -160,7 +160,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             var cliConsoleOutput = outputWriter.ToString();
-            var indexOfLogSummary = cliConsoleOutput.IndexOf("Build output:");
+            var indexOfLogSummary = cliConsoleOutput.IndexOf("Analysis output:");
             var logSummary = cliConsoleOutput[indexOfLogSummary..];
 
             Assert.AreEqual(expectedLogSummary, logSummary);
