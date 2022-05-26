@@ -28,6 +28,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private readonly TemplateAnalyzer templateAnalyzer;
         private readonly SummaryLoggerProvider summaryLoggerProvider;
+ 
+        string[] validSchemas = {
+               "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
+        };
+
+        string[] validTemplateProperties = {
+                 "contentVersion",
+                 "apiProfile",
+                 "parameters",
+                 "variables",
+                 "functions",
+                 "resources",
+                 "outputs",
+        };
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -298,7 +316,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private static bool IsValidTemplate(string template)
+        private bool IsValidTemplate(string template)
         {
             var reader = new JsonTextReader(new StringReader(template));
 
@@ -308,35 +326,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return false;
             }
 
-            // Checks all top level properties for schema property. If schema is not found, will check property names against expected ARM template properties. If expected properties
-            // are not found function will return false.
-            string[] validTemplateProperties = {
-                 "contentVersion",
-                 "apiProfile",
-                 "parameters",
-                 "variables",
-                 "functions",
-                 "resources",
-                 "outputs",
-            };
-
             while (reader.Read())
             {
                 if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
                 {
-
                     if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
                     {
                         reader.Read();
-
-                        string[] validSchemas = {
-                            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-                            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-                            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-                        };
-
                         if (reader.TokenType != JsonToken.String)
                         {
                             return false;

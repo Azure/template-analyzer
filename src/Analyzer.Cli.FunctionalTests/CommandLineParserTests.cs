@@ -170,15 +170,15 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow(ValidTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
-        [DataRow(ValidTemplateConstants.SchemaCaseInsensitive, 0, DisplayName = "Schema is case insensitive")]
-        [DataRow(ValidTemplateConstants.DifferentSchemaDepths, 0, DisplayName = "Two schemas, different depths, valid schema last")]
-        [DataRow(ValidTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
-        [DataRow(ValidTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Invalid property depths")]
-        [DataRow(ValidTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
-        [DataRow(ValidTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isn't string")]
-        [DataRow(ValidTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
-        public void IsValidTemplate_ShouldReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
+        [DataRow(TestcaseTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
+        [DataRow(TestcaseTemplateConstants.SchemaCaseInsensitive, 0, DisplayName = "Schema is case insensitive")]
+        [DataRow(TestcaseTemplateConstants.DifferentSchemaDepths, 0, DisplayName = "Two schemas, different depths, valid schema last")]
+        [DataRow(TestcaseTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
+        [DataRow(TestcaseTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Invalid property depths")]
+        [DataRow(TestcaseTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
+        [DataRow(TestcaseTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isn't string")]
+        [DataRow(TestcaseTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
+        public void IsValidTemplate_ValidAndInvalidInputTemplates_ReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
         {
             var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
 
