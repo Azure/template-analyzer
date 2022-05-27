@@ -11,7 +11,7 @@ namespace Analyzer.Cli.FunctionalTests
     /// </summary>
     public class TestcaseTemplateConstants
     {
-        //Pass
+        // Pass
         public const string PassingTest = @"{
             ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
             ""contentVersion"": ""1.0.0.0"",
@@ -22,10 +22,10 @@ namespace Analyzer.Cli.FunctionalTests
             ""outputs"": {}
         }";
 
-        //Pass
+        // Pass
         public const string SchemaCaseInsensitive = @"{""$schEmA"": ""https://ScHeMa.mAnAgEmEnt.AzUrE.cOm/schEmAs/2019-04-01/deploymentTemplate.json#"", ""contentVersion"": ""1.0.0.0"", ""resources"": [] }";
 
-        //Pass
+        // Pass
         public const string DifferentSchemaDepths = @"{
             ""parameters"": {},
             ""functions"": [],
@@ -36,10 +36,10 @@ namespace Analyzer.Cli.FunctionalTests
             ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#""
         }";
 
-        //Fail
+        // Fail
         public const string MissingStartObject = @" ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#""}";
         
-        //Fail
+        // Fail
         public const string NoValidTopLevelProperties = @"
             { 
               ""parameters"": {
@@ -47,13 +47,13 @@ namespace Analyzer.Cli.FunctionalTests
             }    
         }";
 
-        //Fail
+        // Fail
         public const string MissingSchema = @"{""contentVersion"": ""1.0.0.0"", ""Parameters"": {}}";
 
-        //Fail
+        // Fail
         public const string SchemaValueNotString = @"{ ""$schema"": 5 }";
 
-        //Fail
+        // Fail
         public const string NoSchemaInvalidProperties = @" {""properties"": }";
     }
 }
