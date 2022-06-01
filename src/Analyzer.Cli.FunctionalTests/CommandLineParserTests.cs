@@ -112,8 +112,8 @@ namespace Analyzer.Cli.FunctionalTests
             var nonJsonFilePath2 = Path.Combine(directoryToAnalyze, "AnotherInvalidTemplate.json");
             var thirdNotificationMessageText = toolNotifications[2]["message"]["text"].ToString();
             // Both orders have to be considered for Windows and Linux:
-            Assert.IsTrue($"Unable to analyze 2 file(s): {nonJsonFilePath1}, {nonJsonFilePath2}" == thirdNotificationMessageText ||
-                $"Unable to analyze 2 file(s): {nonJsonFilePath2}, {nonJsonFilePath1}" == thirdNotificationMessageText);
+            Assert.IsTrue($"Unable to analyze 2 files: {nonJsonFilePath1}, {nonJsonFilePath2}" == thirdNotificationMessageText ||
+                $"Unable to analyze 2 files: {nonJsonFilePath2}, {nonJsonFilePath1}" == thirdNotificationMessageText);
             
             Assert.AreEqual("error", toolNotifications[0]["level"]);
             Assert.AreEqual("error", toolNotifications[1]["level"]);
@@ -127,11 +127,12 @@ namespace Analyzer.Cli.FunctionalTests
         [DataTestMethod]
         [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode")]
         [DataRow(true, DisplayName = "Does not recommend the verbose mode")]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary(bool usesVerboseMode)
+        [DataRow(false, true, DisplayName = "Outputs a recommendation for the verbose mode and uses plural form for 'errors'")]
+        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary(bool usesVerboseMode, bool multipleErrors = false)
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above";
+            var expectedLogSummary = $"{(multipleErrors ? "2 errors" : "1 error")} and 1 warning were found during the execution, please refer to the original messages above";
 
             if (!usesVerboseMode)
             {
@@ -139,10 +140,9 @@ namespace Analyzer.Cli.FunctionalTests
             }
             
             expectedLogSummary += ($"{Environment.NewLine}Summary of the errors:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred while analyzing a template" +
-                $"{Environment.NewLine}\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
+                $"{Environment.NewLine}\t{(multipleErrors ? "2 instances" : "1 instance")} of: An exception occurred while analyzing a template" +
                 $"{Environment.NewLine}Summary of the warnings:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}");
+                $"{Environment.NewLine}\t1 instance of: An exception occurred when processing the template language expressions{Environment.NewLine}");
 
             var args = new string[] { "analyze-directory", directoryToAnalyze };
 
@@ -154,13 +154,29 @@ namespace Analyzer.Cli.FunctionalTests
             using StringWriter outputWriter = new();
             Console.SetOut(outputWriter);
 
-            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+            // Copy template producing an error to get multiple errors in run
+            string secondErrorTemplate = Path.Combine(directoryToAnalyze, "ReportsError2.json");
+            if (multipleErrors)
+            {
+                File.Copy(Path.Combine(directoryToAnalyze, "ReportsError.json"), secondErrorTemplate);
+            }
 
-            var cliConsoleOutput = outputWriter.ToString();
-            var indexOfLogSummary = cliConsoleOutput.IndexOf("2 error(s) and 1 warning(s)");
-            var logSummary = cliConsoleOutput[indexOfLogSummary..];
+            try
+            {
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(expectedLogSummary, logSummary);
+                var cliConsoleOutput = outputWriter.ToString();
+                var expectedLogMessageStart = multipleErrors ? "2 errors and 1 warning" : "1 error and 1 warning";
+                var indexOfLogSummary = cliConsoleOutput.IndexOf(expectedLogMessageStart);
+                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message \"{expectedLogMessageStart}\" not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
+                var logSummary = cliConsoleOutput[indexOfLogSummary..];
+
+                Assert.AreEqual(expectedLogSummary, logSummary);
+            }
+            finally
+            {
+                File.Delete(secondErrorTemplate);
+            }
         }
 
         private static string GetFilePath(string testFileName)

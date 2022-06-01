@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         private Run sarifRun;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
         private string rootPath;
+        private int totalResults = 0;
 
         /// <summary>
         /// Logger used to output information to the SARIF file
@@ -78,6 +79,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     Message = new Message { Id = "default" }, // should be customized message for each result 
                     Locations = ExtractLocations(evaluation, filePath, isFileInRootPath).Values.ToArray()
                 });
+
+                totalResults++;
             }
         }
 
@@ -206,6 +209,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             this.SarifLogger?.Dispose();
             this.outputTextWriter?.Dispose();
             this.reportFileStream?.Dispose();
+
+            Console.WriteLine($"{Environment.NewLine}Wrote {totalResults} results to {reportFile.FullName}");
         }
     }
 }

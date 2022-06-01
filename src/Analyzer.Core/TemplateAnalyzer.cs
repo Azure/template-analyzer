@@ -22,20 +22,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     public class TemplateAnalyzer
     {
         private JsonRuleEngine jsonRuleEngine { get; }
+        private PowerShellRuleEngine powerShellRuleEngine;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
         /// </summary>
         /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
-        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine)
+        /// <param name="powerShellRuleEngine">The <see cref="PowerShellRuleEngine"/> to use in analyzing templates.</param>
+        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine, PowerShellRuleEngine powerShellRuleEngine)
         {
             this.jsonRuleEngine = jsonRuleEngine;
+            this.powerShellRuleEngine = powerShellRuleEngine;
         }
 
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        public static TemplateAnalyzer Create()
+        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        public static TemplateAnalyzer Create(bool usePowerShell)
         {
             string rules;
             try
@@ -48,7 +52,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)));
+                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)),
+                usePowerShell ? new PowerShellRuleEngine() : null);
         }
 
         /// <summary>
@@ -57,10 +62,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
-        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true, ILogger logger = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, ILogger logger = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
@@ -87,14 +91,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
+                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
 
-                if (usePowerShell && templateContext.TemplateIdentifier != null)
+                if (this.powerShellRuleEngine != null && templateContext.TemplateIdentifier != null)
                 {
                     logger?.LogDebug("Running PowerShell rule engine");
-
-                    var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
+                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
                 }
 
                 return evaluations;

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Azure");
             var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
 
-            var results = TemplateAnalyzer.Create().AnalyzeTemplate(
+            var results = TemplateAnalyzer.Create(false).AnalyzeTemplate(
                 template: ReadTemplate("SQLServerAuditingSettings.json"),
                 parameters: null,
                 templateFilePath: templateFilePath.FullName);
@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var memStream = new MemoryStream();
             using (var writer = SetupWriter(memStream, targetDirectory))
             {
-                var analyzer = TemplateAnalyzer.Create();
+                var analyzer = TemplateAnalyzer.Create(false);
                 var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
                 var results = analyzer.AnalyzeTemplate(
                     template: ReadTemplate("RedisCache.json"),

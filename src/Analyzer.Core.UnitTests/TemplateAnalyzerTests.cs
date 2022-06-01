@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            templateAnalyzer = TemplateAnalyzer.Create();
+            templateAnalyzer = TemplateAnalyzer.Create(usePowerShell: true);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var powerShell = Powershell.Create();
@@ -65,10 +65,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string template = GenerateTemplate(resourceProperties);
 
             // Analyze with PowerShell disabled
-            var evaluations = templateAnalyzer.AnalyzeTemplate(
+            var templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(usePowerShell: false);
+            var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
-                usePowerShell: false);
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json"); // This file has violations from PowerShell rules
 
             // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
             Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -76,8 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             // Analyze with PowerShell enabled
             evaluations = templateAnalyzer.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
-                usePowerShell: true);
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json"); // This file has violations from PowerShell rules
 
             // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
             Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -136,7 +135,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
             try
             {
-                TemplateAnalyzer.Create();
+                TemplateAnalyzer.Create(false);
             }
             finally
             {
@@ -160,10 +159,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
-        public void FilterRules_ConfigurationPath_NoErrorsThrownAndJsonRuleEngineInvoked()
+        public void FilterRules_EmptyConfigurationFile_NoErrorsThrown()
         {
             var emptyConfigurationFile = Path.GetTempFileName();
-            var templateAnalyzer = TemplateAnalyzer.Create();
+            var templateAnalyzer = TemplateAnalyzer.Create(false);
             templateAnalyzer.FilterRules(new FileInfo(emptyConfigurationFile));
         }
     }
