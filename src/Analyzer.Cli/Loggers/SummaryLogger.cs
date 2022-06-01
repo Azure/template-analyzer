@@ -68,40 +68,47 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // (singular or plural - just adding 's') of its description
             string DescNum(int count, string description) => $"{count} {description}{(count == 1 ? "" : "s")}";
 
+            Console.WriteLine($"{Environment.NewLine}Analysis output:");
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
-            {
-                Console.ForegroundColor = loggedErrors.Count > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
-
-                Console.WriteLine($"{Environment.NewLine}{DescNum(loggedErrors.Values.Sum(), "error")} and {DescNum(loggedWarnings.Values.Sum(), "warning")} were found during the execution, please refer to the original messages above");
-
+            {                
                 if (!this.verbose)
                 {
-                    Console.WriteLine("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution");
+                    Console.WriteLine("\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.");
                 }
 
                 void PrintSummary(Dictionary<string, int> logs, string description)
                 {
                     if (logs.Count > 0)
                     {
-                        Console.WriteLine($"Summary of the {description}:");
+                        Console.WriteLine($"{Environment.NewLine}\tSummary of the {description}:");
 
                         foreach (KeyValuePair<string, int> log in logs)
                         {
-                            Console.WriteLine($"\t{DescNum(log.Value, "instance")} of: {log.Key}");
+                            Console.WriteLine($"\t\t{DescNum(log.Value, "instance")} of: {log.Key}");
                         }
                     }
                 }
 
-                PrintSummary(loggedErrors, "errors");
-
-                if (loggedWarnings.Count > 0)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                }
-
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 PrintSummary(loggedWarnings, "warnings");
 
+                Console.ForegroundColor = ConsoleColor.Red;
+                PrintSummary(loggedErrors, "errors");
                 Console.ResetColor();
+
+                if (loggedWarnings.Count > 0)
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"{Environment.NewLine}\t{DescNum(loggedWarnings.Values.Sum(), "Warning")}");
+                Console.ResetColor();
+
+                if (loggedErrors.Count > 0)
+                    Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\t{DescNum(loggedErrors.Values.Sum(), "Error")}");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine($"\tAnalysis completed successfully");
             }
         }
     }

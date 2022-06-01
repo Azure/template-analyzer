@@ -9,6 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.Cli;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
 
+
 namespace Analyzer.Cli.FunctionalTests
 {
     [TestClass]
@@ -133,17 +134,20 @@ namespace Analyzer.Cli.FunctionalTests
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = $"{(multipleErrors ? "2 errors" : "1 error")} and 1 warning were found during the execution, please refer to the original messages above";
+            var expectedLogSummary = "Analysis output:";
 
             if (!usesVerboseMode)
             {
-                expectedLogSummary += $"{Environment.NewLine}The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution";
+                expectedLogSummary += $"{Environment.NewLine}\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.";
             }
             
-            expectedLogSummary += ($"{Environment.NewLine}Summary of the errors:" +
-                $"{Environment.NewLine}\t{(multipleErrors ? "2 instances" : "1 instance")} of: An exception occurred while analyzing a template" +
-                $"{Environment.NewLine}Summary of the warnings:" +
-                $"{Environment.NewLine}\t1 instance of: An exception occurred when processing the template language expressions{Environment.NewLine}");
+            expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\tSummary of the warnings:" +
+                $"{Environment.NewLine}\t\t1 instance of: An exception occurred when processing the template language expressions{Environment.NewLine}") +
+                $"{Environment.NewLine}\tSummary of the errors:" +
+                $"{Environment.NewLine}\t\t{(multipleErrors ? "2 instances" : "1 instance")} of: An exception occurred while analyzing a template";
+            
+            expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\t1 Warning" +
+                $"{Environment.NewLine}\t{(multipleErrors ? "2 Errors" : "1 Error")}{Environment.NewLine}");
 
             var args = new string[] { "analyze-directory", directoryToAnalyze };
 
@@ -167,9 +171,8 @@ namespace Analyzer.Cli.FunctionalTests
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
                 var cliConsoleOutput = outputWriter.ToString();
-                var expectedLogMessageStart = multipleErrors ? "2 errors and 1 warning" : "1 error and 1 warning";
-                var indexOfLogSummary = cliConsoleOutput.IndexOf(expectedLogMessageStart);
-                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message \"{expectedLogMessageStart}\" not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
+                var indexOfLogSummary = cliConsoleOutput.IndexOf("Analysis output:");
+                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
                 var logSummary = cliConsoleOutput[indexOfLogSummary..];
 
                 Assert.AreEqual(expectedLogSummary, logSummary);
@@ -264,6 +267,33 @@ namespace Analyzer.Cli.FunctionalTests
         private static string GetFilePath(string testFileName)
         {
             return Path.Combine(Directory.GetCurrentDirectory(), "Tests", testFileName);
+        }
+
+        [DataTestMethod]
+        [DataRow(TestcaseTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
+        [DataRow(TestcaseTemplateConstants.SchemaCaseInsensitive, 0, DisplayName = "Schema is case insensitive")]
+        [DataRow(TestcaseTemplateConstants.DifferentSchemaDepths, 0, DisplayName = "Two schemas, different depths, valid schema last")]
+        [DataRow(TestcaseTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
+        [DataRow(TestcaseTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Invalid property depths")]
+        [DataRow(TestcaseTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
+        [DataRow(TestcaseTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isn't string")]
+        [DataRow(TestcaseTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
+        public void IsValidTemplate_ValidAndInvalidInputTemplates_ReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
+        {
+            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
+
+            try
+            {
+                File.WriteAllText(templatePath, templateToAnalyze);
+                var args = new string[] { "analyze-template", templatePath };
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+                Assert.AreEqual(expectedErrorCode, result.Result);
+            }
+            finally
+            {
+                File.Delete(templatePath);
+            }
         }
     }
 }

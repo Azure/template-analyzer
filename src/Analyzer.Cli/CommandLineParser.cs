@@ -10,11 +10,10 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
-using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -30,6 +29,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private IReportWriter reportWriter;
         private ILogger logger;
         private SummaryLogger summaryLogger;
+ 
+        string[] validSchemas = {
+               "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+               "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
+        };
+
+        string[] validTemplateProperties = {
+                 "contentVersion",
+                 "apiProfile",
+                 "parameters",
+                 "variables",
+                 "functions",
+                 "resources",
+                 "outputs",
+        };
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -59,8 +76,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Setup analyze-template w/ template file argument, parameter file option, and configuration file option
             Command analyzeTemplateCommand = new Command(
                 "analyze-template",
-                "Analyze a singe template");
-            
+                "Analyze a single template");
+
             Argument<FileInfo> templateArgument = new Argument<FileInfo>(
                 "template-file-path",
                 "The ARM template to analyze");
@@ -107,7 +124,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             // Setup analyze-directory w/ directory argument and configuration file option
             Command analyzeDirectoryCommand = new Command(
-                "analyze-directory", 
+                "analyze-directory",
                 "Analyze all templates within a directory");
 
             Argument<DirectoryInfo> directoryArgument = new Argument<DirectoryInfo>(
@@ -116,11 +133,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeDirectoryCommand.AddArgument(directoryArgument);
 
             analyzeDirectoryCommand.AddOption(configurationOption);
-          
+
             analyzeDirectoryCommand.AddOption(reportFormatOption);
-          
+
             analyzeDirectoryCommand.AddOption(outputFileOption);
-          
+
             analyzeDirectoryCommand.AddOption(ttkOption);
 
             analyzeDirectoryCommand.AddOption(verboseOption);
@@ -159,7 +176,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             // Check that the schema is valid
-            if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(File.ReadAllText(templateFilePath.FullName)))
+            if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidTemplate(File.ReadAllText(templateFilePath.FullName)))
             {
                 logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                 FinishAnalysis();
@@ -297,7 +314,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             foreach (FileInfo file in directoryPath.GetFiles())
             {
-                if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) && IsValidSchema(File.ReadAllText(file.FullName)))
+                if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) && IsValidTemplate(File.ReadAllText(file.FullName)))
                 {
                     files.Add(file);
                 }
@@ -308,17 +325,38 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private bool IsValidSchema(string template)
+        private bool IsValidTemplate(string template)
         {
-            JObject jsonTemplate = JObject.Parse(template);
-            string schema = (string)jsonTemplate["$schema"];
-            string[] validSchemas = { 
-                "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"};
-            return validSchemas.Contains(schema);
+            var reader = new JsonTextReader(new StringReader(template));
+
+            reader.Read();
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return false;
+            }
+
+            while (reader.Read())
+            {
+                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
+                {
+                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
+                    {
+                        reader.Read();
+                        if (reader.TokenType != JsonToken.String)
+                        {
+                            return false;
+                        }
+
+                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
+                    }
+                    else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null) =>
