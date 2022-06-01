@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
 using Newtonsoft.Json.Linq;
 
+
 namespace Analyzer.Cli.FunctionalTests
 {
     [TestClass]
@@ -169,6 +170,33 @@ namespace Analyzer.Cli.FunctionalTests
         private static string GetFilePath(string testFileName)
         {
             return Path.Combine(Directory.GetCurrentDirectory(), "Tests", testFileName);
+        }
+
+        [DataTestMethod]
+        [DataRow(TestcaseTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
+        [DataRow(TestcaseTemplateConstants.SchemaCaseInsensitive, 0, DisplayName = "Schema is case insensitive")]
+        [DataRow(TestcaseTemplateConstants.DifferentSchemaDepths, 0, DisplayName = "Two schemas, different depths, valid schema last")]
+        [DataRow(TestcaseTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
+        [DataRow(TestcaseTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Invalid property depths")]
+        [DataRow(TestcaseTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
+        [DataRow(TestcaseTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isn't string")]
+        [DataRow(TestcaseTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
+        public void IsValidTemplate_ValidAndInvalidInputTemplates_ReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
+        {
+            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
+
+            try
+            {
+                File.WriteAllText(templatePath, templateToAnalyze);
+                var args = new string[] { "analyze-template", templatePath };
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+                Assert.AreEqual(expectedErrorCode, result.Result);
+            }
+            finally
+            {
+                File.Delete(templatePath);
+            }
         }
     }
 }
