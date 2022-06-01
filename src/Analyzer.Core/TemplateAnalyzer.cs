@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
-        private JsonRuleEngine jsonRuleEngine { get; }
+        private JsonRuleEngine jsonRuleEngine;
         private PowerShellRuleEngine powerShellRuleEngine;
 
         /// <summary>

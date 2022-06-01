@@ -46,6 +46,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             var logMessage = formatter(state, exception);
 
+            // Some logs don't make sense to include in the summary
+            // (for example, if they are logged at the end as part of the execution summary).
+            // If there's a match, don't track it.
             if (omitFromSummaryRegex.IsMatch(logMessage))
                 return;
 
