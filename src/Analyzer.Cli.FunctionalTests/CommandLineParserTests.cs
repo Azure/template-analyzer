@@ -76,6 +76,20 @@ namespace Analyzer.Cli.FunctionalTests
             File.Delete(outputFilePath);
         }
 
+        [TestMethod]
+        public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
+        {
+            var args = new string[] { "analyze-directory", Directory.GetCurrentDirectory() };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual(6, result.Result);
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 4 files");
+        }
+
         [DataTestMethod]
         [DataRow(false, 2, DisplayName = "Invalid directory path provided")]
         [DataRow(true, 3, "--report-format", "Sarif", DisplayName = "Directory exists, Report-format flag set, --output-file-path flag not included.")]
@@ -87,7 +101,7 @@ namespace Analyzer.Cli.FunctionalTests
 
             args = args.Concat(additionalCliOptions).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-
+            
             Assert.AreEqual(expectedExitCode, result.Result);
         }
 

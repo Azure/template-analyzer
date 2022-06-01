@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Verify the file is a valid template
             if (!IsValidTemplate(templateFilePath))
             {
-                logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
+                logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath.FullName);
                 FinishAnalysis();
                 return (int)ExitCode.ErrorInvalidARMTemplate;
             }
@@ -210,8 +210,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             // Find files to analyze
-            var filesToAnalyze = new List<FileInfo>();
-            FindTemplateFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
+            var filesToAnalyze = FindTemplateFilesInDirectory(directoryPath);
 
             // Log root directory info to be analyzed
             Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
@@ -310,23 +309,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter?.Dispose();
         }
 
-        private void FindTemplateFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
-        {
-            foreach (FileInfo file in directoryPath.GetFiles().Where(IsValidTemplate))
-            {
-                files.Add(file);
-            }
-            foreach (DirectoryInfo dir in directoryPath.GetDirectories())
-            {
-                FindTemplateFilesInDirectoryRecursive(dir, files);
-            }
-        }
+        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath) =>
+            directoryPath.GetFiles(
+                "*.json",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
+                }
+            ).Where(IsValidTemplate);
 
         private bool IsValidTemplate(FileInfo file)
         {
-            if (!file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
-                return false;
-
             using var fileStream = new StreamReader(file.OpenRead());
             var reader = new JsonTextReader(fileStream);
 
