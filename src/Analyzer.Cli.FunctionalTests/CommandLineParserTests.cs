@@ -131,18 +131,21 @@ namespace Analyzer.Cli.FunctionalTests
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "2 error(s) and 1 warning(s) were found during the execution, please refer to the original messages above";
+            var expectedLogSummary = "Analysis output:";
 
             if (!usesVerboseMode)
             {
-                expectedLogSummary += $"{Environment.NewLine}The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution";
+                expectedLogSummary += $"{Environment.NewLine}\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.";
             }
             
-            expectedLogSummary += ($"{Environment.NewLine}Summary of the errors:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred while analyzing a template" +
-                $"{Environment.NewLine}\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}" +
-                $"{Environment.NewLine}Summary of the warnings:" +
-                $"{Environment.NewLine}\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}");
+            expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\tSummary of the warnings:" +
+                $"{Environment.NewLine}\t\t1 instance(s) of: An exception occurred when processing the template language expressions{Environment.NewLine}") +
+                $"{Environment.NewLine}\tSummary of the errors:" +
+                $"{Environment.NewLine}\t\t1 instance(s) of: An exception occurred while analyzing a template" +
+                $"{Environment.NewLine}\t\t1 instance(s) of: Unable to analyze 1 file(s): {Path.Combine(directoryToAnalyze, "ReportsError.json")}";
+            
+            expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\t1 Warning(s)" +
+                $"{Environment.NewLine}\t2 Error(s){Environment.NewLine}");
 
             var args = new string[] { "analyze-directory", directoryToAnalyze };
 
@@ -157,7 +160,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             var cliConsoleOutput = outputWriter.ToString();
-            var indexOfLogSummary = cliConsoleOutput.IndexOf("2 error(s) and 1 warning(s)");
+            var indexOfLogSummary = cliConsoleOutput.IndexOf("Analysis output:");
             var logSummary = cliConsoleOutput[indexOfLogSummary..];
 
             Assert.AreEqual(expectedLogSummary, logSummary);

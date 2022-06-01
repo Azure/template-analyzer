@@ -58,39 +58,45 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// </summary>
         public void SummarizeLogs(bool showVerboseMessage)
         {
+            Console.WriteLine($"{Environment.NewLine}Analysis output:");
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
-            {
-                Console.ForegroundColor = loggedErrors.Count > 0 ? ConsoleColor.Red : ConsoleColor.Yellow;
-
-                Console.WriteLine($"{Environment.NewLine}{loggedErrors.Count} error(s) and {loggedWarnings.Count} warning(s) were found during the execution, please refer to the original messages above");
-
+            {                
                 if (!showVerboseMessage)
                 {
-                    Console.WriteLine("The verbose mode (option -v or --verbose) can be used to obtain even more information about the execution");
+                    Console.WriteLine("\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.");
                 }
-
                 var printSummary = new Action<Dictionary<string, int>, string>((logs, description) => {
                     if (logs.Count > 0)
                     {
-                        Console.WriteLine($"Summary of the {description}:");
+                        Console.WriteLine($"{Environment.NewLine}\tSummary of the {description}:");
 
                         foreach (KeyValuePair<string, int> log in logs)
                         {
-                            Console.WriteLine($"\t{log.Value} instance(s) of: {log.Key}");
+                            Console.WriteLine($"\t\t{log.Value} instance(s) of: {log.Key}");
                         }
                     }
                 });
 
-                printSummary(loggedErrors, "errors");
-
-                if (loggedWarnings.Count > 0)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                }
-
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 printSummary(loggedWarnings, "warnings");
 
+                Console.ForegroundColor = ConsoleColor.Red;
+                printSummary(loggedErrors, "errors");
                 Console.ResetColor();
+
+                if (loggedWarnings.Count > 0)
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"{Environment.NewLine}\t{loggedWarnings.Count} Warning(s)");
+                Console.ResetColor();
+
+                if (loggedErrors.Count > 0)
+                    Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"\t{loggedErrors.Count} Error(s)");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine($"\tAnalysis completed successfully");
             }
         }
     }
