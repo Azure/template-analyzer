@@ -175,8 +175,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)setupResult;
             }
 
-            // Check that the schema is valid
-            if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidTemplate(File.ReadAllText(templateFilePath.FullName)))
+            // Verify the file is a valid template
+            if (!IsValidTemplate(templateFilePath))
             {
                 logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
                 FinishAnalysis();
@@ -312,12 +312,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private void FindTemplateFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
         {
-            foreach (FileInfo file in directoryPath.GetFiles())
+            foreach (FileInfo file in directoryPath.GetFiles().Where(IsValidTemplate))
             {
-                if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) && IsValidTemplate(File.ReadAllText(file.FullName)))
-                {
-                    files.Add(file);
-                }
+                files.Add(file);
             }
             foreach (DirectoryInfo dir in directoryPath.GetDirectories())
             {
@@ -325,9 +322,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private bool IsValidTemplate(string template)
+        private bool IsValidTemplate(FileInfo file)
         {
-            var reader = new JsonTextReader(new StringReader(template));
+            if (!file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            using var fileStream = new StreamReader(file.OpenRead());
+            var reader = new JsonTextReader(fileStream);
 
             reader.Read();
             if (reader.TokenType != JsonToken.StartObject)
