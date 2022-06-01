@@ -13,6 +13,7 @@ using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -138,7 +139,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private int AnalyzeTemplateCommandHandler(
             FileInfo templateFilePath,
             FileInfo parametersFilePath,
-            FileInfo configurationsFilePath,
+            FileInfo configurationFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
             bool runTtk,
@@ -151,7 +152,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configurationsFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configurationFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runTtk, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -173,7 +174,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private int AnalyzeDirectoryCommandHandler(
             DirectoryInfo directoryPath,
-            FileInfo configurationsFilePath,
+            FileInfo configurationFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
             bool runTtk,
@@ -185,7 +186,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configurationsFilePath, directoryPath, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configurationFilePath, directoryPath, reportFormat, outputFilePath, runTtk, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -256,7 +257,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private ExitCode SetupAnalysis(
-            FileInfo configurationsFilePath,
+            FileInfo configurationFilePath,
             DirectoryInfo directoryToAnalyze,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
@@ -274,7 +275,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             CreateLoggers(verbose);
 
             this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell);
-            this.templateAnalyzer.FilterRules(configurationsFilePath);
+
+            if (configurationFilePath != null)
+            {
+                ConfigurationDefinition config = ReadConfigurationFile(configurationFilePath);
+                if (config == null)
+                    return ExitCode.ErrorGeneric;
+
+                this.templateAnalyzer.FilterRules(config);
+            }
 
             return ExitCode.Success;
         }
@@ -339,6 +348,47 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             this.logger = loggerFactory.CreateLogger("TemplateAnalyzerCLI");
+        }
+
+        /// <summary>
+        /// Reads a configuration file from disk. If no file was passed, checks the default directory for this file.
+        /// </summary>
+        private ConfigurationDefinition ReadConfigurationFile(FileInfo configurationFilePath)
+        {
+            this.logger.LogInformation($"Configuration File: {configurationFilePath.FullName}");
+
+            if (!configurationFilePath.Exists)
+            {
+                this.logger.LogError("Configuration file does not exist.");
+                return null;
+            }
+            
+            string configContents;
+            try
+            {
+                configContents = File.ReadAllText(configurationFilePath.FullName);
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError("Unable to read configuration file.", e);
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(configContents))
+            {
+                this.logger.LogError("Configuration is empty.");
+                return null;
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<ConfigurationDefinition>(configContents);
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError("Failed to parse configuration file.", e);
+                return null;
+            }
         }
     }
 }

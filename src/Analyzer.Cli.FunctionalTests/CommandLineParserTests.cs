@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
 
 namespace Analyzer.Cli.FunctionalTests
@@ -176,6 +177,87 @@ namespace Analyzer.Cli.FunctionalTests
             finally
             {
                 File.Delete(secondErrorTemplate);
+            }
+        }
+
+        [TestMethod]
+        public void FilterRules_ValidConfig_RulesFiltered()
+        {
+            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var args = new string[] { "analyze-template", templatePath };
+
+            // Analyze template without filtering rules to verify there is a failure.
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+            Assert.AreEqual(5, result.Result);
+
+            // Run again with rule filtered out, verify it passes.
+            var tempConfig = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempConfig,
+                    JObject.FromObject(
+                        new ConfigurationDefinition
+                        {
+                            InclusionsConfigurationDefinition = new()
+                            {
+                                // Use a non-existent rule id so all rules are filtered out.
+                                Ids = new() { "NonRuleId" }
+                            }
+                        })
+                    .ToString());
+                result = _commandLineParser.InvokeCommandLineAPIAsync(args.Concat(new[] { "--config-file-path", tempConfig }).ToArray());
+                Assert.AreEqual(0, result.Result);
+            }
+            finally
+            {
+                File.Delete(tempConfig);
+            }
+        }
+
+        [TestMethod]
+        public void FilterRules_ConfigurationPathIsInvalid_ReturnsGenericError()
+        {
+            var templatePath = GetFilePath("AppServicesLogs-Passes.json");
+            var args = new string[] { "analyze-template", templatePath, "--config-file-path", "NonExistentFile.json" };
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+            Assert.AreEqual(1, result.Result);
+        }
+
+        [TestMethod]
+        public void FilterRules_EmptyConfigurationFile_ReturnsGenericError()
+        {
+            var templatePath = GetFilePath("AppServicesLogs-Passes.json");
+            var tempConfig = Path.GetTempFileName();
+            var args = new string[] { "analyze-template", templatePath, "--config-file-path", tempConfig };
+
+            try
+            {
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+                Assert.AreEqual(1, result.Result);
+            }
+            finally
+            {
+                File.Delete(tempConfig);
+            }
+        }
+
+        [TestMethod]
+        public void FilterRules_MalformedConfigurationFile_ReturnsGenericError()
+        {
+            var templatePath = GetFilePath("AppServicesLogs-Passes.json");
+            var tempConfig = Path.GetTempFileName();
+            File.WriteAllText(tempConfig, "Invalid JSON");
+            var args = new string[] { "analyze-template", templatePath, "--config-file-path", tempConfig };
+
+            try
+            {
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+                Assert.AreEqual(1, result.Result);
+            }
+            finally
+            {
+                File.Delete(tempConfig);
             }
         }
 

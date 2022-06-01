@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
@@ -144,26 +145,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TemplateAnalyzerException))]
-        public void FilterRules_ConfigurationPathIsInvalid_ThrowTemplateAnalyzerException()
+        public void FilterRules_ValidConfiguration_NoExceptionThrown()
         {
-            var erroredPath = new FileInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "NoFile.json"));
-            templateAnalyzer.FilterRules(erroredPath);
+            // Note: this is not a great test, but there's very little to validate in this function.
+            TemplateAnalyzer.Create(false).FilterRules(new ConfigurationDefinition());
         }
 
         [TestMethod]
-        public void FilterRules_ConfigurationPathIsNull_NoErrorsThrown()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void FilterRules_ConfigurationNull_ExceptionThrown()
         {
             templateAnalyzer.FilterRules(null);
-        }
-
-        [TestMethod]
-        public void FilterRules_EmptyConfigurationFile_NoErrorsThrown()
-        {
-            var emptyConfigurationFile = Path.GetTempFileName();
-            var templateAnalyzer = TemplateAnalyzer.Create(false);
-            templateAnalyzer.FilterRules(new FileInfo(emptyConfigurationFile));
         }
     }
 }
