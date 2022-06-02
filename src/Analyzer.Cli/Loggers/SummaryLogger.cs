@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             // Local function to describe a count by returning the number with the appropriate form
             // (singular or plural - just adding 's') of its description
-            string DescNum(int count, string description) => $"{count} {description}{(count == 1 ? "" : "s")}";
+            string Pluralize(int count, string description) => $"{count} {description}{(count == 1 ? "" : "s")}";
 
             Console.WriteLine($"{Environment.NewLine}Analysis output:");
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                         foreach (KeyValuePair<string, int> log in logs)
                         {
-                            Console.WriteLine($"\t\t{DescNum(log.Value, "instance")} of: {log.Key}");
+                            Console.WriteLine($"\t\t{Pluralize(log.Value, "instance")} of: {log.Key}");
                         }
                     }
                 }
@@ -101,12 +101,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 if (loggedWarnings.Count > 0)
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"{Environment.NewLine}\t{DescNum(loggedWarnings.Values.Sum(), "Warning")}");
+                Console.WriteLine($"{Environment.NewLine}\t{Pluralize(loggedWarnings.Values.Sum(), "Warning")}");
                 Console.ResetColor();
 
                 if (loggedErrors.Count > 0)
                     Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"\t{DescNum(loggedErrors.Values.Sum(), "Error")}");
+                Console.WriteLine($"\t{Pluralize(loggedErrors.Values.Sum(), "Error")}");
                 Console.ResetColor();
             }
             else

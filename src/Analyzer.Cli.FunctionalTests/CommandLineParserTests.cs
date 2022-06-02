@@ -24,32 +24,32 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow("Path does not exist", 2, DisplayName = "Invalid template file path provided")]
-        [DataRow("Configuration.json", 4, DisplayName = "Path exists, not an ARM template.")]
-        [DataRow("Configuration.json", 3, "--report-format", "Sarif", DisplayName = "Path exists, Report-format flag set, --output-file-path flag not included.")]
-        [DataRow("Configuration.json", 1, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
-        [DataRow("AppServicesLogs-Failures.json", 5, DisplayName = "Violations found in the template")]
-        [DataRow("AppServicesLogs-Passes.json", 0, DisplayName = "Success")]
-        public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, int expectedExitCode, params string[] additionalCliOptions)
+        [DataRow("Path does not exist", ExitCode.ErrorInvalidPath, DisplayName = "Invalid template file path provided")]
+        [DataRow("Configuration.json", ExitCode.ErrorInvalidARMTemplate, DisplayName = "Path exists, not an ARM template.")]
+        [DataRow("Configuration.json", ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Path exists, Report-format flag set, --output-file-path flag not included.")]
+        [DataRow("Configuration.json", ExitCode.ErrorGeneric, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
+        [DataRow("AppServicesLogs-Failures.json", ExitCode.Violation, DisplayName = "Violations found in the template")]
+        [DataRow("AppServicesLogs-Passes.json", ExitCode.Success, DisplayName = "Success")]
+        public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
             var args = new string[] { "analyze-template" , GetFilePath(relativeTemplatePath)}; 
             args = args.Concat(additionalCliOptions).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(expectedExitCode, result.Result);
+            Assert.AreEqual((int)expectedExitCode, result.Result);
         }
 
         [DataTestMethod]
-        [DataRow("Configuration.json", 1, DisplayName = "Provided parameters file is not a parameters file")]
-        [DataRow("Parameters.json", 5, DisplayName = "Provided parameters file correct, issues in template")]
-        public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExpectedExitCode(string relativeParametersFilePath, int expectedExitCode)
+        [DataRow("Configuration.json", ExitCode.ErrorGeneric, DisplayName = "Provided parameters file is not a parameters file")]
+        [DataRow("Parameters.json", ExitCode.Violation, DisplayName = "Provided parameters file correct, issues in template")]
+        public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExpectedExitCode(string relativeParametersFilePath, ExitCode expectedExitCode)
         {
             var templatePath = GetFilePath("AppServicesLogs-Failures.json");
             var parametersFilePath = GetFilePath(relativeParametersFilePath);
             var args = new string[] { "analyze-template", templatePath, "--parameters-file-path", parametersFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(expectedExitCode, result.Result);
+            Assert.AreEqual((int)expectedExitCode, result.Result);
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace Analyzer.Cli.FunctionalTests
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", configurationPath};
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(5, result.Result);
+            Assert.AreEqual((int)ExitCode.Violation, result.Result);
         }
 
         [TestMethod]
@@ -71,7 +71,7 @@ namespace Analyzer.Cli.FunctionalTests
             var args = new string[] { "analyze-template", templatePath, "--report-format", "Sarif", "--output-file-path", outputFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(5, result.Result);
+            Assert.AreEqual((int)ExitCode.Violation, result.Result);
             
             File.Delete(outputFilePath);
         }
@@ -86,23 +86,23 @@ namespace Analyzer.Cli.FunctionalTests
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(6, result.Result);
+            Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
             StringAssert.Contains(outputWriter.ToString(), "Analyzed 4 files");
         }
 
         [DataTestMethod]
-        [DataRow(false, 2, DisplayName = "Invalid directory path provided")]
-        [DataRow(true, 3, "--report-format", "Sarif", DisplayName = "Directory exists, Report-format flag set, --output-file-path flag not included.")]
-        [DataRow(true, 1, "--report-format", "Console", "--output-file-path", DisplayName = "Path exists, Report-format flag set, --output-file-path flag included, but no value provided.")]
-        [DataRow(true, 6, DisplayName = "Error + Violation: Scan has both errors and violations")]
-        public void AnalyzeDirectory_ValidInputValues_ReturnExpectedExitCode(bool useTestDirectoryPath, int expectedExitCode, params string[] additionalCliOptions)
+        [DataRow(false, ExitCode.ErrorInvalidPath, DisplayName = "Invalid directory path provided")]
+        [DataRow(true, ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Directory exists, Report-format flag set, --output-file-path flag not included.")]
+        [DataRow(true, ExitCode.ErrorGeneric, "--report-format", "Console", "--output-file-path", DisplayName = "Path exists, Report-format flag set, --output-file-path flag included, but no value provided.")]
+        [DataRow(true, ExitCode.ErrorAndViolation, DisplayName = "Error + Violation: Scan has both errors and violations")]
+        public void AnalyzeDirectory_ValidInputValues_ReturnExpectedExitCode(bool useTestDirectoryPath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
             var args = new string[] { "analyze-directory", useTestDirectoryPath ? Directory.GetCurrentDirectory() : "Directory does not exist" };
 
             args = args.Concat(additionalCliOptions).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
             
-            Assert.AreEqual(expectedExitCode, result.Result);
+            Assert.AreEqual((int)expectedExitCode, result.Result);
         }
 
         [TestMethod]
@@ -115,7 +115,7 @@ namespace Analyzer.Cli.FunctionalTests
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual(1, result.Result);
+            Assert.AreEqual((int)ExitCode.ErrorGeneric, result.Result);
 
             var sarifOutput = JObject.Parse(File.ReadAllText(outputFilePath));
             var toolNotifications = sarifOutput["runs"][0]["invocations"][0]["toolExecutionNotifications"];
@@ -205,7 +205,7 @@ namespace Analyzer.Cli.FunctionalTests
 
             // Analyze template without filtering rules to verify there is a failure.
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-            Assert.AreEqual(5, result.Result);
+            Assert.AreEqual((int)ExitCode.Violation, result.Result);
 
             // Run again with rule filtered out, verify it passes.
             var tempConfig = Path.GetTempFileName();
@@ -223,7 +223,7 @@ namespace Analyzer.Cli.FunctionalTests
                         })
                     .ToString());
                 result = _commandLineParser.InvokeCommandLineAPIAsync(args.Concat(new[] { "--config-file-path", tempConfig }).ToArray());
-                Assert.AreEqual(0, result.Result);
+                Assert.AreEqual((int)ExitCode.Success, result.Result);
             }
             finally
             {
@@ -238,43 +238,30 @@ namespace Analyzer.Cli.FunctionalTests
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", "NonExistentFile.json" };
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-            Assert.AreEqual(1, result.Result);
+            Assert.AreEqual((int)ExitCode.ErrorInvalidConfiguration, result.Result);
         }
 
-        [TestMethod]
-        public void FilterRules_EmptyConfigurationFile_ReturnsGenericError()
+        [DataTestMethod]
+        [DataRow("myconfig.json", "", true, DisplayName = "Empty config file specified")]
+        [DataRow("configuration.json", "", false, DisplayName = "Empty default config file")]
+        [DataRow("myconfig.json", "Invalid JSON", true, DisplayName = "Malformed config file specified")]
+        [DataRow("configuration.json", "Invalid JSON", false, DisplayName = "Malformed default config file")]
+        public void FilterRules_InvalidConfigurationFile_ReturnsGenericError(string configPath, string configContents, bool specifyInCommand)
         {
             var templatePath = GetFilePath("AppServicesLogs-Passes.json");
-            var tempConfig = Path.GetTempFileName();
-            var args = new string[] { "analyze-template", templatePath, "--config-file-path", tempConfig };
+            var args = new string[] { "analyze-template", templatePath };
+            if (specifyInCommand)
+                args = args.Concat(new[] { "--config-file-path", configPath }).ToArray();
 
             try
             {
+                File.WriteAllText(configPath, configContents);
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-                Assert.AreEqual(1, result.Result);
+                Assert.AreEqual((int)ExitCode.ErrorInvalidConfiguration, result.Result);
             }
             finally
             {
-                File.Delete(tempConfig);
-            }
-        }
-
-        [TestMethod]
-        public void FilterRules_MalformedConfigurationFile_ReturnsGenericError()
-        {
-            var templatePath = GetFilePath("AppServicesLogs-Passes.json");
-            var tempConfig = Path.GetTempFileName();
-            File.WriteAllText(tempConfig, "Invalid JSON");
-            var args = new string[] { "analyze-template", templatePath, "--config-file-path", tempConfig };
-
-            try
-            {
-                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-                Assert.AreEqual(1, result.Result);
-            }
-            finally
-            {
-                File.Delete(tempConfig);
+                File.Delete(configPath);
             }
         }
 
@@ -284,15 +271,15 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow(TestcaseTemplateConstants.PassingTest, 0, DisplayName = "Valid Template")]
-        [DataRow(TestcaseTemplateConstants.SchemaCaseInsensitive, 0, DisplayName = "Schema is case insensitive")]
-        [DataRow(TestcaseTemplateConstants.DifferentSchemaDepths, 0, DisplayName = "Two schemas, different depths, valid schema last")]
-        [DataRow(TestcaseTemplateConstants.MissingStartObject, 4, DisplayName = "Missing start object")]
-        [DataRow(TestcaseTemplateConstants.NoValidTopLevelProperties, 4, DisplayName = "Invalid property depths")]
-        [DataRow(TestcaseTemplateConstants.MissingSchema, 4, DisplayName = "Missing schema, capitalized property names")]
-        [DataRow(TestcaseTemplateConstants.SchemaValueNotString, 4, DisplayName = "Schema value isn't string")]
-        [DataRow(TestcaseTemplateConstants.NoSchemaInvalidProperties, 4, DisplayName = "No schema, invalid properties")]
-        public void IsValidTemplate_ValidAndInvalidInputTemplates_ReturnExpectedErrorCode(string templateToAnalyze, int expectedErrorCode)
+        [DataRow(TestcaseTemplateConstants.PassingTest, ExitCode.Success, DisplayName = "Valid Template")]
+        [DataRow(TestcaseTemplateConstants.SchemaCaseInsensitive, ExitCode.Success, DisplayName = "Schema is case insensitive")]
+        [DataRow(TestcaseTemplateConstants.DifferentSchemaDepths, ExitCode.Success, DisplayName = "Two schemas, different depths, valid schema last")]
+        [DataRow(TestcaseTemplateConstants.MissingStartObject, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Missing start object")]
+        [DataRow(TestcaseTemplateConstants.NoValidTopLevelProperties, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Invalid property depths")]
+        [DataRow(TestcaseTemplateConstants.MissingSchema, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Missing schema, capitalized property names")]
+        [DataRow(TestcaseTemplateConstants.SchemaValueNotString, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Schema value isn't string")]
+        [DataRow(TestcaseTemplateConstants.NoSchemaInvalidProperties, ExitCode.ErrorInvalidARMTemplate, DisplayName = "No schema, invalid properties")]
+        public void IsValidTemplate_ValidAndInvalidInputTemplates_ReturnExpectedErrorCode(string templateToAnalyze, ExitCode expectedErrorCode)
         {
             var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
 
@@ -302,7 +289,7 @@ namespace Analyzer.Cli.FunctionalTests
                 var args = new string[] { "analyze-template", templatePath };
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-                Assert.AreEqual(expectedErrorCode, result.Result);
+                Assert.AreEqual((int)expectedErrorCode, result.Result);
             }
             finally
             {

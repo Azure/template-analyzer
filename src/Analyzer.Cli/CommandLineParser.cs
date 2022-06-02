@@ -23,6 +23,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     internal class CommandLineParser
     {
+        private readonly IReadOnlyList<string> validSchemas = new List<string> {
+            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
+        }.AsReadOnly();
+
+        private readonly IReadOnlyList<string> validTemplateProperties = new List<string> {
+            "contentVersion",
+            "apiProfile",
+            "parameters",
+            "variables",
+            "functions",
+            "resources",
+            "outputs",
+        }.AsReadOnly();
+
+        private const string defaultConfigFileName = "configuration.json";
+
         private RootCommand rootCommand;
         private TemplateAnalyzer templateAnalyzer;
 
@@ -30,24 +50,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private ILogger logger;
         private SummaryLogger summaryLogger;
  
-        string[] validSchemas = {
-               "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-               "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-        };
-
-        string[] validTemplateProperties = {
-                 "contentVersion",
-                 "apiProfile",
-                 "parameters",
-                 "variables",
-                 "functions",
-                 "resources",
-                 "outputs",
-        };
-
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
         /// </summary>
@@ -273,7 +275,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private ExitCode SetupAnalysis(
-            FileInfo configurationFilePath,
+            FileInfo configurationFile,
             DirectoryInfo directoryToAnalyze,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
@@ -292,12 +294,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell);
 
-            if (configurationFilePath != null)
+            if (!TryReadConfigurationFile(configurationFile, out var config))
             {
-                ConfigurationDefinition config = ReadConfigurationFile(configurationFilePath);
-                if (config == null)
-                    return ExitCode.ErrorGeneric;
+                return ExitCode.ErrorInvalidConfiguration;
+            }
 
+            // Success from TryReadConfigurationFile means there wasn't an error looking for the config.
+            // config could still be null if no path was specified in the command and no default exists.
+            if (config != null)
+            {
                 this.templateAnalyzer.FilterRules(config);
             }
 
@@ -380,47 +385,72 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 loggerFactory.AddProvider(new SarifNotificationLoggerProvider(sarifWriter.SarifLogger));
             }
 
-            this.logger = loggerFactory.CreateLogger("TemplateAnalyzerCLI");
+            this.logger = loggerFactory.CreateLogger("TemplateAnalyzerCli");
         }
 
         /// <summary>
         /// Reads a configuration file from disk. If no file was passed, checks the default directory for this file.
         /// </summary>
-        private ConfigurationDefinition ReadConfigurationFile(FileInfo configurationFilePath)
+        /// <returns>True if: 
+        ///   - the specified configuration file was read successfully,
+        ///   - no config was specified and the default file doesn't exist,
+        ///   - the default file exists and was read successfully.
+        /// False otherwise.</returns>
+        private bool TryReadConfigurationFile(FileInfo configurationFile, out ConfigurationDefinition config)
         {
-            this.logger.LogInformation($"Configuration File: {configurationFilePath.FullName}");
+            config = null;
 
-            if (!configurationFilePath.Exists)
+            string configFilePath;
+            if (configurationFile != null)
             {
-                this.logger.LogError("Configuration file does not exist.");
-                return null;
+                if (!configurationFile.Exists)
+                {
+                    // If a config file was specified in the command but doesn't exist, it's an error.
+                    this.logger.LogError("Configuration file does not exist.");
+                    return false;
+                }
+                configFilePath = configurationFile.FullName;
             }
-            
+            else
+            {
+                // Look for a config at the default location.
+                // It's not required to exist, so if it doesn't, just return early.
+                configFilePath = Path.Combine(AppContext.BaseDirectory, defaultConfigFileName);
+                if (!File.Exists(configFilePath))
+                    return true;
+            }
+
+            // At this point, an existing config file was found.
+            // If there are any problems reading it, it's an error.
+
+            this.logger.LogInformation($"Configuration File: {configFilePath}");
+
             string configContents;
             try
             {
-                configContents = File.ReadAllText(configurationFilePath.FullName);
+                configContents = File.ReadAllText(configFilePath);
             }
             catch (Exception e)
             {
                 this.logger.LogError("Unable to read configuration file.", e);
-                return null;
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(configContents))
             {
                 this.logger.LogError("Configuration is empty.");
-                return null;
+                return false;
             }
 
             try
             {
-                return JsonConvert.DeserializeObject<ConfigurationDefinition>(configContents);
+                config = JsonConvert.DeserializeObject<ConfigurationDefinition>(configContents);
+                return true;
             }
             catch (Exception e)
             {
                 this.logger.LogError("Failed to parse configuration file.", e);
-                return null;
+                return false;
             }
         }
     }

@@ -42,5 +42,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// Error + Violation: Scan has both errors and violations
         /// </summary>
         ErrorAndViolation = 6,
+
+        /// <summary>
+        /// Error: Problem loading configuration
+        /// </summary>
+        ErrorInvalidConfiguration = 7,
     };
 }

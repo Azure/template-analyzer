@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             this.outputTextWriter?.Dispose();
             this.reportFileStream?.Dispose();
 
-            Console.WriteLine($"{Environment.NewLine}Wrote {totalResults} results to {reportFile.FullName}");
+            Console.WriteLine($"{Environment.NewLine}Wrote {totalResults} {(totalResults == 1 ? "result" : "results")} to {reportFile.FullName}");
         }
     }
 }
