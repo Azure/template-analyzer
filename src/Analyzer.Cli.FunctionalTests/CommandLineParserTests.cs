@@ -232,7 +232,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
-        public void FilterRules_ConfigurationPathIsInvalid_ReturnsGenericError()
+        public void FilterRules_ConfigurationPathIsInvalid_ReturnsConfigurationError()
         {
             var templatePath = GetFilePath("AppServicesLogs-Passes.json");
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", "NonExistentFile.json" };
@@ -246,7 +246,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("configuration.json", "", false, DisplayName = "Empty default config file")]
         [DataRow("myconfig.json", "Invalid JSON", true, DisplayName = "Malformed config file specified")]
         [DataRow("configuration.json", "Invalid JSON", false, DisplayName = "Malformed default config file")]
-        public void FilterRules_InvalidConfigurationFile_ReturnsGenericError(string configPath, string configContents, bool specifyInCommand)
+        public void FilterRules_InvalidConfigurationFile_ReturnsConfigurationError(string configPath, string configContents, bool specifyInCommand)
         {
             var templatePath = GetFilePath("AppServicesLogs-Passes.json");
             var args = new string[] { "analyze-template", templatePath };
