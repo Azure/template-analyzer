@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 }
                 else
                 {
-                    path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    path = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory),
                         "Configurations", "Configuration.json");
                     if (!File.Exists(path))
                     {
