@@ -40,10 +40,27 @@
             "args": [
                 "publish",
                 "${workspaceFolder}/src/Analyzer.Cli/Analyzer.Cli.csproj",
+                "--runtime",
+                "${input:runtimeId}",
+                "--self-contained",
+                "/property:PublishSingleFile=true",
+                "/property:IncludeNativeLibrariesForSelfExtract=true",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "runtimeId",
+            "type": "pickString",
+            "description": "The platform to publish for",
+            "options": [
+                "win-x64",
+                "linux-x64",
+                "osx-x64"
+            ]
         }
     ]
 }
