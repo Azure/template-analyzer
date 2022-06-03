@@ -12,10 +12,16 @@
     <tags>arm azure template analyzer scanner deployment security</tags>
 
     <dependencies>
-      <dependency id="Azure.Deployments.Core" version="1.0.112" />
-      <dependency id="Azure.Deployments.Expression" version="1.0.112" />
-      <dependency id="Azure.Deployments.Templates" version="1.0.112" />
-      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <group targetFramework="net6.0">
+        <dependency id="Azure.Deployments.Core" version="1.0.568" />
+        <dependency id="Azure.Deployments.Expression" version="1.0.568" />
+        <dependency id="Azure.Deployments.Templates" version="1.0.568" />
+        <dependency id="Newtonsoft.Json" version="12.0.3" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+        <dependency id="Microsoft.PowerShell.SDK" Version="7.1.5" />
+        <dependency id="Sarif.Sdk" Version="2.4.12" />
+        <dependency id="System.IO.Abstractions" Version="13.2.47" />
+      </group>
     </dependencies>
 
   </metadata>
