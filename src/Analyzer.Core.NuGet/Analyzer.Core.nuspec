@@ -2,8 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Azure.Templates.Analyzer.Core</id>
-    <!-- Also update version in Analyzer.Cli nuspec and Directory.Build.props. -->
-    <version>0.1.2</version>
+    <version>$version$</version>
     <authors>Microsoft</authors>
     <description>ARM Template scanner for security misconfiguration and best practices</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>

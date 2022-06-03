@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             // It's copied to the bin directory as part of the build process.
             var powershell = Powershell.Create(initialState);
             powershell.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1")
+                .AddParameter("Name", Path.GetDirectoryName(AppContext.BaseDirectory) + @"\TTK\arm-ttk.psd1")
                 .Invoke();
 
             if (!powershell.HadErrors)

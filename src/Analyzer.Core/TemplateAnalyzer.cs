@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             return File.ReadAllText(
                 Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    Path.GetDirectoryName(AppContext.BaseDirectory),
                     "Rules/BuiltInRules.json"));
         }
 

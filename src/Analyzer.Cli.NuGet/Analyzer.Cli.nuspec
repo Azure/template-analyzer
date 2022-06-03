@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>Azure.Templates.Analyzer.CommandLine</id>
-    <!-- Also update version in Analyzer.Core nuspec and Directory.Build.props. -->
-    <version>0.1.2</version>
+    <id>Azure.Templates.Analyzer.CommandLine.$runtimeId$</id>
+    <version>$version$</version>
     <authors>Microsoft</authors>
     <description>A command line interface for Azure.Templates.Analyzer.Core - an ARM Template scanner for security misconfiguration and best practices</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
@@ -13,7 +12,7 @@
   </metadata>
 
   <files>
-    <file src="..\Analyzer.Cli\bin\$configuration$\net6.0\publish\**" target="tools/" exclude="**\*.pdb" />
+    <file src="..\Analyzer.Cli\bin\$configuration$\net6.0\$runtimeId$\publish\**" target="tools/" exclude="**\*.pdb" />
   </files>
 
 </package>
