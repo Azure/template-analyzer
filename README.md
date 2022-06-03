@@ -19,11 +19,11 @@ To preview the rules that come bundled with the Template BPA, explore [the built
 ## Using the Template BPA
 The Template BPA is executed via a command line.  There are two formats to invoke it:
 
-`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>] [-c <config-path>]`
+`TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>] [-c <config-path>] [--report-format <format>] [-o <output-path>] [-v]`
 
 or
 
-`TemplateAnalyzer.exe analyze-directory <directory-path> [-c <config-path>]`
+`TemplateAnalyzer.exe analyze-directory <directory-path> [-c <config-path>] [--report-format <format>] [-o <output-path>] [-v]`
 
 ### Input
 The Template BPA accepts the following inputs:
@@ -31,10 +31,10 @@ The Template BPA accepts the following inputs:
 Argument | Description
 --- | ---
 `<template-path>` | The ARM template to analyze
-`<directory-path>` | The directory to find ARM templates (recursively finds all templates in the directory and its subdirectories.)
+`<directory-path>` | The directory in which to search for ARM templates (recursively finds and analyzes all ARM templates in the directory and its subdirectories).<br/>Templates are identified by a '.json' file extension and a [valid top-level *$schema* property](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax#template-format).
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
-**(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer.<br/>If argument is not provided, the default configuration will be used (*<_ExecutablePath_>/Configurations/Configuration.json*).
-**(Optional)** `--report-format` | *Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
+**(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer.<br/>**If argument is not provided, the Template BPA will attempt to load a configuration from *<_ExecutablePath_>/configuration.json* if the file exists.**.
+**(Optional)** `--report-format` | Valid formats:<br/>*Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
 **(Optional)** `-v` or `--verbose` | Shows details about the analysis
 
