@@ -197,8 +197,10 @@ namespace Analyzer.Cli.FunctionalTests
             }
         }
 
-        [TestMethod]
-        public void FilterRules_ValidConfig_RulesFiltered()
+        [DataTestMethod]
+        [DataRow("myConfig.json", true, DisplayName = "Custom config name specified in command")]
+        [DataRow("configuration.json", false, DisplayName = "Config not specified, default config path applied")]
+        public void FilterRules_ValidConfig_RulesFiltered(string configName, bool specifyInCommand)
         {
             var templatePath = GetFilePath("AppServicesLogs-Failures.json");
             var args = new string[] { "analyze-template", templatePath };
@@ -207,11 +209,10 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
             Assert.AreEqual((int)ExitCode.Violation, result.Result);
 
-            // Run again with rule filtered out, verify it passes.
-            var tempConfig = Path.GetTempFileName();
+            // Run again with rule filtered out, verify it passes (config was loaded).
             try
             {
-                File.WriteAllText(tempConfig,
+                File.WriteAllText(configName,
                     JObject.FromObject(
                         new ConfigurationDefinition
                         {
@@ -222,12 +223,16 @@ namespace Analyzer.Cli.FunctionalTests
                             }
                         })
                     .ToString());
-                result = _commandLineParser.InvokeCommandLineAPIAsync(args.Concat(new[] { "--config-file-path", tempConfig }).ToArray());
+                
+                if (specifyInCommand)
+                    args = args.Concat(new[] { "--config-file-path", configName }).ToArray();
+
+                result = _commandLineParser.InvokeCommandLineAPIAsync(args);
                 Assert.AreEqual((int)ExitCode.Success, result.Result);
             }
             finally
             {
-                File.Delete(tempConfig);
+                File.Delete(configName);
             }
         }
 
