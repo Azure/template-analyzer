@@ -24,22 +24,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         private JsonRuleEngine jsonRuleEngine;
         private PowerShellRuleEngine powerShellRuleEngine;
 
+        private ILogger logger;
+
         /// <summary>
         /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
         /// </summary>
         /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
         /// <param name="powerShellRuleEngine">The <see cref="PowerShellRuleEngine"/> to use in analyzing templates.</param>
-        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine, PowerShellRuleEngine powerShellRuleEngine)
+        /// <param name="logger">A logger to report errors and debug information</param>
+        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine, PowerShellRuleEngine powerShellRuleEngine, ILogger logger)
         {
             this.jsonRuleEngine = jsonRuleEngine;
             this.powerShellRuleEngine = powerShellRuleEngine;
+            this.logger = logger;
         }
 
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
         /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
-        public static TemplateAnalyzer Create(bool usePowerShell)
+        /// <param name="logger">A logger to report errors and debug information</param>
+        /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
+        public static TemplateAnalyzer Create(bool usePowerShell, ILogger logger = null)
         {
             string rules;
             try
@@ -53,7 +59,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             return new TemplateAnalyzer(
                 JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)),
-                usePowerShell ? new PowerShellRuleEngine() : null);
+                usePowerShell ? new PowerShellRuleEngine() : null,
+                logger);
         }
 
         /// <summary>
@@ -62,14 +69,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
-        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, ILogger logger = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: logger);
+            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: this.logger);
 
             try
             {
@@ -91,12 +97,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
+                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext, this.logger);
 
                 if (this.powerShellRuleEngine != null && templateContext.TemplateIdentifier != null)
                 {
-                    logger?.LogDebug("Running PowerShell rule engine");
-                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
+                    this.logger?.LogDebug("Running PowerShell rule engine");
+                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext, this.logger));
                 }
 
                 return evaluations;

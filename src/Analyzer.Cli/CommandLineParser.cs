@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidARMTemplate;
             }
 
-            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFilePath, this.reportWriter, this.logger);
+            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFilePath);
 
             FinishAnalysis();
             return (int)analysisResult;
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             var filesFailed = new List<FileInfo>();
             foreach (FileInfo file in filesToAnalyze)
             {
-                ExitCode res = AnalyzeTemplate(file, null, reportWriter, logger);
+                ExitCode res = AnalyzeTemplate(file, null);
 
                 if (res == ExitCode.Success || res == ExitCode.Violation)
                 {
@@ -254,16 +254,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return (int)exitCode;
         }
 
-        private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, IReportWriter writer, ILogger logger)
+        private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
         { 
             try
             {
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, logger);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
 
-                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
+                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
                 return evaluations.Any(e => !e.Passed) ? ExitCode.Violation : ExitCode.Success;
             }
@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
             CreateLoggers(verbose);
 
-            this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell);
+            this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell, this.logger);
 
             if (!TryReadConfigurationFile(configurationFile, out var config))
             {
