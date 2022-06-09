@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -248,7 +248,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
             }
             
-            this.summaryLogger.SummarizeLogs();
             FinishAnalysis();
             
             return (int)exitCode;
@@ -311,6 +310,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private void FinishAnalysis()
         {
+            this.summaryLogger.SummarizeLogs();
             this.reportWriter?.Dispose();
         }
 
