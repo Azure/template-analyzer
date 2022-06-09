@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -8,6 +8,7 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
@@ -68,97 +69,108 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        private RootCommand SetupCommandLineAPI()
+        private void SetupCommandLineAPI()
         {
             // Command line API is setup using https://github.com/dotnet/command-line-api
 
-            rootCommand = new RootCommand();
+            rootCommand = new();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
 
-            // Setup analyze-template w/ template file argument, parameter file option, and configuration file option
+            // Setup analyze-template and analyze-directory commands
+            List<Command> allCommands = new()
+            {
+                SetupAnalyzeTemplateCommand(),
+                SetupAnalyzeDirectoryCommand()
+            };
+            
+            // Add all commands to root command
+            allCommands.ForEach(rootCommand.AddCommand);
+
+            // Setup options that apply to all commands
+            SetupCommonOptionsForCommands(allCommands);
+        }
+
+        private Command SetupAnalyzeTemplateCommand()
+        {
             Command analyzeTemplateCommand = new Command(
                 "analyze-template",
                 "Analyze a single template");
 
-            Argument<FileInfo> templateArgument = new Argument<FileInfo>(
-                "template-file-path",
-                "The ARM template to analyze");
-            analyzeTemplateCommand.AddArgument(templateArgument);
+            analyzeTemplateCommand.AddArgument(
+                new Argument<FileInfo>(
+                    "template-file-path",
+                    "The ARM template to analyze"));
 
-            Option<FileInfo> parameterOption = new Option<FileInfo>(
-                 "--parameters-file-path",
-                 "The parameter file to use when parsing the specified ARM template");
-            parameterOption.AddAlias("-p");
-            analyzeTemplateCommand.AddOption(parameterOption);
+            analyzeTemplateCommand.AddOption(
+                new Option<FileInfo>(
+                    new[] { "-p", "--parameters-file-path" },
+                    "The parameter file to use when parsing the specified ARM template")
+            );
 
-            Option<FileInfo> configurationOption = new Option<FileInfo>(
-                 "--config-file-path",
-                 "The configuration file to use when parsing the specified ARM template");
-            configurationOption.AddAlias("-c");
-            analyzeTemplateCommand.AddOption(configurationOption);
+            // Assign handler method
+            analyzeTemplateCommand.Handler = CommandHandler.Create(
+                GetType().GetMethod(
+                    nameof(AnalyzeTemplateCommandHandler),
+                    BindingFlags.Instance | BindingFlags.NonPublic),
+                this);
 
-            Option<ReportFormat> reportFormatOption = new Option<ReportFormat>(
-                "--report-format",
-                "Format of report to be generated");
-            analyzeTemplateCommand.AddOption(reportFormatOption);
+            return analyzeTemplateCommand;
+        }
 
-            Option<FileInfo> outputFileOption = new Option<FileInfo>(
-                "--output-file-path",
-                "The report file path");
-            outputFileOption.AddAlias("-o");
-            analyzeTemplateCommand.AddOption(outputFileOption);
-
-            var verboseOption = new Option(
-                "--verbose",
-                "Shows details about the analysis");
-            verboseOption.AddAlias("-v");
-            analyzeTemplateCommand.AddOption(verboseOption);
-
-            // Temporary PowerShell rule suppression until it will work nicely with SARIF
-            Option ttkOption = new Option(
-                "--run-ttk",
-                "Run TTK against templates");
-            analyzeTemplateCommand.AddOption(ttkOption);
-
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (templateFilePath, parametersFilePath, configFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeTemplateCommandHandler(templateFilePath, parametersFilePath, configFilePath, reportFormat, outputFilePath, runTtk, verbose));
-
-            // Setup analyze-directory w/ directory argument and configuration file option
+        private Command SetupAnalyzeDirectoryCommand()
+        {
             Command analyzeDirectoryCommand = new Command(
                 "analyze-directory",
                 "Analyze all templates within a directory");
 
-            Argument<DirectoryInfo> directoryArgument = new Argument<DirectoryInfo>(
-                "directory-path",
-                "The directory to find ARM templates");
-            analyzeDirectoryCommand.AddArgument(directoryArgument);
+            analyzeDirectoryCommand.AddArgument(
+                new Argument<DirectoryInfo>(
+                    "directory-path",
+                    "The directory to find ARM templates"));
 
-            analyzeDirectoryCommand.AddOption(configurationOption);
+            // Assign handler method
+            analyzeDirectoryCommand.Handler = CommandHandler.Create(
+                GetType().GetMethod(
+                    nameof(AnalyzeDirectoryCommandHandler),
+                    BindingFlags.Instance | BindingFlags.NonPublic),
+                this);
 
-            analyzeDirectoryCommand.AddOption(reportFormatOption);
-
-            analyzeDirectoryCommand.AddOption(outputFileOption);
-
-            analyzeDirectoryCommand.AddOption(ttkOption);
-
-            analyzeDirectoryCommand.AddOption(verboseOption);
-
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runTtk, verbose) =>
-                this.AnalyzeDirectoryCommandHandler(directoryPath, configurationsFilePath,  reportFormat, outputFilePath, runTtk, verbose));
-
-            // Add commands to root command
-            rootCommand.AddCommand(analyzeTemplateCommand);
-            rootCommand.AddCommand(analyzeDirectoryCommand);
-
-            return rootCommand;
+            return analyzeDirectoryCommand;
         }
 
+        private void SetupCommonOptionsForCommands(List<Command> commands)
+        {
+            List<Option> options = new()
+            {            
+                new Option<FileInfo>(
+                    new[] { "-c", "--config-file-path" },
+                    "The configuration file to use when parsing the specified ARM template"),
+
+                new Option<ReportFormat>(
+                    "--report-format",
+                    "Format of report to be generated"),
+
+                new Option<FileInfo>(
+                    new[] { "-o", "--output-file-path" },
+                    $"The report file path (required for --report-format {ReportFormat.Sarif})"),
+
+                new Option(
+                    new[] { "-v", "--verbose" },
+                    "Shows details about the analysis"),
+
+                new Option(
+                    "--run-ttk",
+                    "Run TTK against templates")
+            };
+                
+            commands.ForEach(c => options.ForEach(c.AddOption));
+        }
+
+        // Note: argument names must match command arguments/options (without "-" characters)
         private int AnalyzeTemplateCommandHandler(
             FileInfo templateFilePath,
             FileInfo parametersFilePath,
-            FileInfo configurationFilePath,
+            FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
             bool runTtk,
@@ -171,7 +183,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configurationFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runTtk, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -191,9 +203,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return (int)analysisResult;
         }
 
+        // Note: argument names must match command arguments/options (without "-" characters)
         private int AnalyzeDirectoryCommandHandler(
             DirectoryInfo directoryPath,
-            FileInfo configurationFilePath,
+            FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
             bool runTtk,
@@ -205,7 +218,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configurationFilePath, directoryPath, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, runTtk, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
