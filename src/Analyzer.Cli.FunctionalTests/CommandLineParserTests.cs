@@ -27,7 +27,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("Path does not exist", ExitCode.ErrorInvalidPath, DisplayName = "Invalid template file path provided")]
         [DataRow("Configuration.json", ExitCode.ErrorInvalidARMTemplate, DisplayName = "Path exists, not an ARM template.")]
         [DataRow("Configuration.json", ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Path exists, Report-format flag set, --output-file-path flag not included.")]
-        [DataRow("Configuration.json", ExitCode.ErrorGeneric, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
+        [DataRow("Configuration.json", ExitCode.ErrorCommand, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
         [DataRow("AppServicesLogs-Failures.json", ExitCode.Violation, DisplayName = "Violations found in the template")]
         [DataRow("AppServicesLogs-Passes.json", ExitCode.Success, DisplayName = "Success")]
         public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
@@ -40,7 +40,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow("Configuration.json", ExitCode.ErrorGeneric, DisplayName = "Provided parameters file is not a parameters file")]
+        [DataRow("Configuration.json", ExitCode.ErrorAnalysis, DisplayName = "Provided parameters file is not a parameters file")]
         [DataRow("Parameters.json", ExitCode.Violation, DisplayName = "Provided parameters file correct, issues in template")]
         public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExpectedExitCode(string relativeParametersFilePath, ExitCode expectedExitCode)
         {
@@ -93,7 +93,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataTestMethod]
         [DataRow(false, ExitCode.ErrorInvalidPath, DisplayName = "Invalid directory path provided")]
         [DataRow(true, ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Directory exists, Report-format flag set, --output-file-path flag not included.")]
-        [DataRow(true, ExitCode.ErrorGeneric, "--report-format", "Console", "--output-file-path", DisplayName = "Path exists, Report-format flag set, --output-file-path flag included, but no value provided.")]
+        [DataRow(true, ExitCode.ErrorCommand, "--report-format", "Console", "--output-file-path", DisplayName = "Path exists, Report-format flag set, --output-file-path flag included, but no value provided.")]
         [DataRow(true, ExitCode.ErrorAndViolation, DisplayName = "Error + Violation: Scan has both errors and violations")]
         public void AnalyzeDirectory_ValidInputValues_ReturnExpectedExitCode(bool useTestDirectoryPath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
@@ -115,7 +115,7 @@ namespace Analyzer.Cli.FunctionalTests
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
-            Assert.AreEqual((int)ExitCode.ErrorGeneric, result.Result);
+            Assert.AreEqual((int)ExitCode.ErrorAnalysis, result.Result);
 
             var sarifOutput = JObject.Parse(File.ReadAllText(outputFilePath));
             var toolNotifications = sarifOutput["runs"][0]["invocations"][0]["toolExecutionNotifications"];

@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     numOfFilesAnalyzed++;
                     issueReported |= res == ExitCode.Violation;
                 }
-                else if (res == ExitCode.ErrorGeneric)
+                else if (res == ExitCode.ErrorAnalysis)
                 {
                     filesFailed.Add(file);
                 }
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             if (filesFailed.Count > 0)
             {
                 logger.LogError($"Unable to analyze {filesFailed.Count} {(filesFailed.Count == 1 ? "file" : "files")}: {string.Join(", ", filesFailed)}");
-                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorGeneric;
+                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
             }
             else
             {
@@ -282,7 +282,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             catch (Exception exception)
             {
                 logger.LogError(exception, "An exception occurred while analyzing a template");
-                return ExitCode.ErrorGeneric;
+                return ExitCode.ErrorAnalysis;
             }
         }
 
