@@ -69,12 +69,14 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 | Scenario      | Exit Code |
 | ----------- | ----------- |
 | Success: Operation was successful | 0 |
-| Error: GenericError | 1 |
+| Error: Problem with command | 1 |
 | Error: Invalid file or directory path | 2 |
 | Error: Missing file or directory path | 3 |
-| Error: Invalid ARM template | 4 |
-| Violation: Scan found rule violations | 5 |
-| Error + Violation: Scan has both errors and violations | 6 |
+| Error: Problem loading configuration file | 4 |
+| Error: Invalid ARM template specified | 10 |
+| Violation: Scan found rule violations in analyzed template(s) | 20 |
+| Error: An error was encountered trying to analyze a template | 21 |
+| Violation + Error: Scan encountered both violations in template(s) and errors trying to analyze template(s) | 22 |
 
 ### Understanding and customizing rules
 The analysis rules used by the Template BPA are written in JSON, located in *Rules/BuiltInRules.json* (starting from the directory *TemplateAnalyzer.exe* is in). This file can be added to and/or modified to change the rules that are run. See the [documentation for more information about how to author Template BPA JSON rules](./docs/authoring-json-rules.md).
