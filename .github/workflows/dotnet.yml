@@ -63,4 +63,4 @@ jobs:
       run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --runtime ${{ matrix.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
       
     - name: Pack CLI
-      run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }};runtimeId=${{ matrix.runtimeId }}
+      run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties "configuration=${{ env.Configuration }};runtimeId=${{ matrix.runtimeId }}"
