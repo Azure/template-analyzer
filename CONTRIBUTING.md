@@ -29,11 +29,12 @@ The Template Analyzer solution is comprised of the following main components:
 * There are two .nuspec files that define NuGet packages that can be created
   * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer.Core into package *Azure.Templates.Analyzer.Core*.
     * Requires building *[src\Analyzer.Core](./src/Analyzer.Core)* first.
-  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer.Cli into package *Azure.Templates.Analyzer.CommandLine*.
-    * Requires publishing the CLI first - the `Publish` task in VS Code can be used for this.
+  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer.Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
+    * Requires publishing the CLI first - the `Publish` task in VS Code can be used for this (Terminal->Run Task...->Publish).  The platform is chosen when running the task.
 * These can be packed (after building/publishing) using the [nuget.exe CLI](https://www.nuget.org/downloads)
   * Example: `nuget pack <nuspec-file> -Version <version> -p Configuration=<Debug|Release>`
-  * Use `Debug` or `Release` depending on the Configuration the solution or projects were built with
+  * Use `Debug` or `Release` depending on the Configuration the solution or projects were built with (`Debug` is the default)
+  * Analyzer.Cli also needs `-runtimeId <id-for-platform>`.  This will be the runtime chosen when running the `Publish` task in vS Code.
   * This is a great way to test NuGet consumption of local changes
  
 ### Code Structure
