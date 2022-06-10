@@ -21,8 +21,10 @@ jobs:
         include:
         - os: windows-latest
           osLabel: Windows
+          runtimeId: win-x64
         - os: ubuntu-latest
           osLabel: Linux
+          runtimeId: linux-x64
     
     name: Build ${{ matrix.osLabel }}
     runs-on: ${{ matrix.os }}
@@ -33,7 +35,10 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 6.x
+    
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
         
     - name: Restore dependencies
       run: dotnet restore
@@ -43,3 +48,19 @@ jobs:
       
     - name: Test
       run: dotnet test --no-build --configuration ${{ env.Configuration }} --verbosity normal
+
+    - name: Get version
+      id: get-version
+      uses: actions/github-script@v6
+      with:
+        script: return /\<Version\>(.+)\<\/Version\>/.exec(require('fs').readFileSync('src/Directory.Build.props'))[1]
+        result-encoding: string
+      
+    - name: Pack Analyzer.Core
+      run: nuget pack Analyzer.Core.NuGet/Analyzer.Core.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }}
+      
+    - name: (dotnet) Publish CLI
+      run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --no-restore --runtime ${{ env.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
+      
+    - name: Pack CLI
+      run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }};runtimeId=${{ env.runtimeId }}
