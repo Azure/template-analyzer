@@ -53,7 +53,7 @@ jobs:
       id: get-version
       uses: actions/github-script@v6
       with:
-        script: return /\<Version\>(.+)\<\/Version\>/.exec(require('fs').readFileSync('Directory.Build.props'))[1]
+        script: return /\<Version\>(.+)\<\/Version\>/.exec(require('fs').readFileSync('src/Directory.Build.props'))[1]
         result-encoding: string
       
     - name: Pack Analyzer.Core
