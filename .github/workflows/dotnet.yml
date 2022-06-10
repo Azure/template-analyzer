@@ -60,7 +60,7 @@ jobs:
       run: nuget pack Analyzer.Core.NuGet/Analyzer.Core.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }}
       
     - name: (dotnet) Publish CLI
-      run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --no-restore --runtime ${{ env.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
+      run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --no-restore --runtime ${{ matrix.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
       
     - name: Pack CLI
-      run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }};runtimeId=${{ env.runtimeId }}
+      run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }};runtimeId=${{ matrix.runtimeId }}
