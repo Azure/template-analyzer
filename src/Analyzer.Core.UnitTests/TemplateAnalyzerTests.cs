@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            templateAnalyzer = TemplateAnalyzer.Create();
+            templateAnalyzer = TemplateAnalyzer.Create(usePowerShell: true);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var powerShell = Powershell.Create();
@@ -65,10 +66,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string template = GenerateTemplate(resourceProperties);
 
             // Analyze with PowerShell disabled
-            var evaluations = templateAnalyzer.AnalyzeTemplate(
+            var templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(usePowerShell: false);
+            var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
-                usePowerShell: false);
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json"); // This file has violations from PowerShell rules
 
             // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
             Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -76,8 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             // Analyze with PowerShell enabled
             evaluations = templateAnalyzer.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
-                usePowerShell: true);
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json"); // This file has violations from PowerShell rules
 
             // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
             Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
             try
             {
-                TemplateAnalyzer.Create();
+                TemplateAnalyzer.Create(false);
             }
             finally
             {
@@ -145,26 +145,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TemplateAnalyzerException))]
-        public void FilterRules_ConfigurationPathIsInvalid_ThrowTemplateAnalyzerException()
+        public void FilterRules_ValidConfiguration_NoExceptionThrown()
         {
-            var erroredPath = new FileInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "NoFile.json"));
-            templateAnalyzer.FilterRules(erroredPath);
+            // Note: this is not a great test, but there's very little to validate in this function.
+            TemplateAnalyzer.Create(false).FilterRules(new ConfigurationDefinition());
         }
 
         [TestMethod]
-        public void FilterRules_ConfigurationPathIsNull_NoErrorsThrown()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void FilterRules_ConfigurationNull_ExceptionThrown()
         {
             templateAnalyzer.FilterRules(null);
-        }
-
-        [TestMethod]
-        public void FilterRules_ConfigurationPath_NoErrorsThrownAndJsonRuleEngineInvoked()
-        {
-            var emptyConfigurationFile = Path.GetTempFileName();
-            var templateAnalyzer = TemplateAnalyzer.Create();
-            templateAnalyzer.FilterRules(new FileInfo(emptyConfigurationFile));
         }
     }
 }

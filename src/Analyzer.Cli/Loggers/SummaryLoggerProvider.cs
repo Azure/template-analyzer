@@ -10,25 +10,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     public class SummaryLoggerProvider : ILoggerProvider
     {
-        /// <summary>
-        /// The summary logger
-        /// </summary>
-        public SummaryLogger SummaryLogger;
+        private SummaryLogger summaryLogger;
 
         /// <summary>
-        /// Constructor of the ErrorSummaryLoggerProvider class
+        /// Constructs a <see cref="SummaryLoggerProvider"/>.
         /// </summary>
-        public SummaryLoggerProvider()
+        /// <param name="summaryLogger">The <see cref="SummaryLogger"/> used to summarize log entries.</param>
+        public SummaryLoggerProvider(SummaryLogger summaryLogger)
         {
+            this.summaryLogger = summaryLogger;
         }
 
         /// <inheritdoc/>
-        public ILogger CreateLogger(string categoryName)
-        {
-            this.SummaryLogger = new SummaryLogger();
-
-            return this.SummaryLogger;
-        }
+        public ILogger CreateLogger(string categoryName) => this.summaryLogger;
 
         /// <inheritdoc/>
         public void Dispose()
