@@ -21,21 +21,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
-        private JsonRuleEngine jsonRuleEngine { get; }
+        private JsonRuleEngine jsonRuleEngine;
+        private PowerShellRuleEngine powerShellRuleEngine;
+
+        private ILogger logger;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
         /// </summary>
         /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
-        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine)
+        /// <param name="powerShellRuleEngine">The <see cref="PowerShellRuleEngine"/> to use in analyzing templates.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
+        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine, PowerShellRuleEngine powerShellRuleEngine, ILogger logger)
         {
             this.jsonRuleEngine = jsonRuleEngine;
+            this.powerShellRuleEngine = powerShellRuleEngine;
+            this.logger = logger;
         }
 
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        public static TemplateAnalyzer Create()
+        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
+        /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
+        public static TemplateAnalyzer Create(bool usePowerShell, ILogger logger = null)
         {
             string rules;
             try
@@ -48,7 +58,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)));
+                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)),
+                usePowerShell ? new PowerShellRuleEngine() : null,
+                logger);
         }
 
         /// <summary>
@@ -57,15 +69,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
-        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
-        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true, ILogger logger = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: logger);
+            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: this.logger);
 
             try
             {
@@ -87,14 +97,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext, logger);
+                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext, this.logger);
 
-                if (usePowerShell && templateContext.TemplateIdentifier != null)
+                if (this.powerShellRuleEngine != null && templateContext.TemplateIdentifier != null)
                 {
-                    logger?.LogDebug("Running PowerShell rule engine");
-
-                    var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext, logger));
+                    this.logger?.LogDebug("Running PowerShell rule engine");
+                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext, this.logger));
                 }
 
                 return evaluations;
@@ -114,47 +122,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
-        /// Loads a configurations file. If no file was passed, checks the default directory for this file.
+        /// Modifies the rules to run based on values defined in the configuration file.
         /// </summary>
-        /// <param name="configurationsFilePath">The path to a configuration file to read.</param>
-        /// <returns>Configuration file path contents if a file exists.</returns>
-        private string GetConfigurationFileContents(FileInfo configurationsFilePath)
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(ConfigurationDefinition configuration)
         {
-            try
-            {
-                string path;
-                if (configurationsFilePath != null)
-                {
-                    path = configurationsFilePath.FullName;
-                }
-                else
-                {
-                    path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                        "Configurations", "Configuration.json");
-                    if (!File.Exists(path))
-                    {
-                        return null;
-                    }
-                }
-
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Configuration File: {path}");
-                return File.ReadAllText(path);
-            }
-            catch (Exception e)
-            {
-                throw new TemplateAnalyzerException("Failed to read configuration file.", e);
-            }
-        }
-
-        /// <summary>
-        /// Modifies the rules to run based on values defined in the configurations file.
-        /// </summary>
-        /// <param name="configurationsFilePath">The configuration specifying rule modifications.</param>
-        public void FilterRules(FileInfo configurationsFilePath)
-        {
-            var configuration = GetConfigurationFileContents(configurationsFilePath);
-            if (configuration != null)
-                jsonRuleEngine.FilterRules(configuration);
+            jsonRuleEngine.FilterRules(configuration);
         }
     }
 }

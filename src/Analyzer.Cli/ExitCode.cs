@@ -14,9 +14,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         Success = 0,
 
         /// <summary>
-        /// Error: GenericError
+        /// Error: There was an error with the command.
+        /// This is returned by rootCommand.InvokeAsync in the CLI if there is an error.
         /// </summary>
-        ErrorGeneric = 1,
+        ErrorCommand = 1,
 
         /// <summary>
         /// Error: Invalid file or directory path
@@ -29,18 +30,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         ErrorMissingPath = 3,
 
         /// <summary>
+        /// Error: Problem loading configuration
+        /// </summary>
+        ErrorInvalidConfiguration = 4,
+
+        /// <summary>
         /// Error: Invalid ARM template
         /// </summary>
-        ErrorInvalidARMTemplate = 4,
+        ErrorInvalidARMTemplate = 10,
 
         /// <summary>
         /// Violation: Scan found rule violations
         /// </summary>
-        Violation = 5,
+        Violation = 20,
 
         /// <summary>
-        /// Error + Violation: Scan has both errors and violations
+        /// Error: There was an error analyzing a template
         /// </summary>
-        ErrorAndViolation = 6,
+        ErrorAnalysis = 21,
+
+        /// <summary>
+        /// Error + Violation: Scan has both rule violations and analysis errors
+        /// </summary>
+        ErrorAndViolation = 22,
     };
 }
