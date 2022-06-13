@@ -728,26 +728,10 @@
       },
       "allOf": [
         {
-          "path": "resources[*]",
+          "resourceType": "Microsoft.Sql/servers/auditingSettings",
           "where": {
-            "allOf": [
-              {
-                "anyOf": [
-                  {
-                    "path": "type",
-                    "equals": "Microsoft.Sql/servers/auditingSettings"
-                  },
-                  {
-                    "path": "type",
-                    "equals": "auditingSettings" // FIXME?
-                  }
-                ]
-              },
-              {
-                "path": "name",
-                "regex": "^default$|/default$"
-              }
-            ]
+            "path": "name",
+            "regex": "^default$|/default$"
           },
           "anyOf": [
             {
