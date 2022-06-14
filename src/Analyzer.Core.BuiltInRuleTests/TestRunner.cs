@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         [ClassInitialize]
         public static void Initialize(TestContext testContext)
         {
-            templateAnalyzer = TemplateAnalyzer.Create();
+            templateAnalyzer = TemplateAnalyzer.Create(true);
         }
 
         /// <summary>
