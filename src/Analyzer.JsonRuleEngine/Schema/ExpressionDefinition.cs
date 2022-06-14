@@ -3,7 +3,6 @@
 
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -37,23 +36,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates an <see cref="Expression"/> that can evaluate a template.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <see cref=" ILineNumberResolver"/> to
-        /// pass to the created <see cref="Expression"/>.</param>
+        /// <param name="isNegative">Whether to negate the evaluation.</param>
         /// <returns>The <see cref="Expression"/>.</returns>
-        public abstract Expression ToExpression(ILineNumberResolver jsonLineNumberResolver);
+        public abstract Expression ToExpression(bool isNegative = false);
 
         /// <summary>
         /// Gets the properties common across all <see cref="Expression"/> types.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <see cref=" ILineNumberResolver"/> to
-        /// pass to any sub-<see cref="Expression"/>s created.</param>
         /// <returns>The common properties of the <see cref="Expression"/>.</returns>
-        protected ExpressionCommonProperties GetCommonProperties(ILineNumberResolver jsonLineNumberResolver) => commonProperties
-            ??= new ExpressionCommonProperties
+        protected ExpressionCommonProperties CommonProperties =>
+            commonProperties ??= new ExpressionCommonProperties
             {
                 ResourceType = ResourceType,
                 Path = Path,
-                Where = Where?.ToExpression(jsonLineNumberResolver)
+                Where = Where?.ToExpression(isNegative: false)
             };
 
         /// <summary>

@@ -16,6 +16,18 @@
       {
         "LineNumber": 148,
         "Description": "retentionDays not set to a value equal to 0 or greater than 90"
+      },
+      {
+        "LineNumber": 206,
+        "Description": "isAzureMonitorTargetEnabled set to false, in auditingSettings resource defined with full resource type and name"
+      },
+      {
+        "LineNumber": 207,
+        "Description": "storageEndpoint is not an empty string, in auditingSettings resource defined with full resource type and name"
+      },
+      {
+        "LineNumber": 208,
+        "Description": "retentionDays not set to a value equal to 0 or greater than 90, in auditingSettings resource defined with full resource type and name"
       }
     ]
   }

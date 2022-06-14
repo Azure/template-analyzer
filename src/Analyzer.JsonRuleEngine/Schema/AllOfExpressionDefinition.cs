@@ -3,7 +3,6 @@
 
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
@@ -22,11 +21,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         /// <summary>
         /// Creates a <see cref="AllOfExpression"/> capable of evaluating JSON using the expressions specified in the JSON rule.
         /// </summary>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
-        /// pass to the created <see cref="Expression"/>.</param>
+        /// <param name="isNegative">Whether to negate the result of the evaluation.</param>
         /// <returns>The AllOfExpression.</returns>
-        public override Expression ToExpression(ILineNumberResolver jsonLineNumberResolver)
-            => new AllOfExpression(this.AllOf.Select(e => e.ToExpression(jsonLineNumberResolver)).ToArray(), GetCommonProperties(jsonLineNumberResolver));
+        public override Expression ToExpression(bool isNegative = false)
+        {
+            if (!isNegative)
+            {
+                return new AllOfExpression(this.AllOf.Select(e => e.ToExpression(isNegative)).ToArray(), this.CommonProperties);
+            }
+            else
+            {
+                // De Morgan's Law
+                return new AnyOfExpression(this.AllOf.Select(e => e.ToExpression(isNegative)).ToArray(), this.CommonProperties);
+            }
+        }
 
         /// <summary>
         /// Validates the <see cref="AllOfExpressionDefinition"/> for valid syntax

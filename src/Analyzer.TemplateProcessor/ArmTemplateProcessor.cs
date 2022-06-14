@@ -28,7 +28,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         private readonly string armTemplate;
         private readonly string apiVersion;
         private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
-        private Dictionary<string, TemplateResource> flattenedResources = new Dictionary<string, TemplateResource>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, string> expandedToOriginalMapping = new Dictionary<string, string>();
+        private Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new Dictionary<string, (TemplateResource, string)>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Mapping between resources in the expanded template to their original resource in 
@@ -123,9 +124,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             {
                 TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName: null, subscriptionId: null, resourceGroupName: null, template, apiVersion);
             }
-            catch
+            catch (Exception ex)
             {
-                // Do not throw if there was an issue with evaluating language expressions
+                if (ex.Message.Contains("incorrect segment lengths")) {
+                    // Processing stops when the error is found: some resources could be missing
+                    // information that is needed for the remaining template processing,
+                    // like updated values in their DependsOn and Name properties
+                    throw;
+                }
+
+                // Do not throw if there was another issue with evaluating language expressions
             }
 
             MapTopLevelResources(template, copyNameMap);
@@ -148,17 +156,15 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
             SaveFlattenedResources(template.Resources);
 
-            foreach (var resourcePair in flattenedResources)
+            foreach (var resourceInfo in flattenedResources.Values)
             {
-                var resource = resourcePair.Value;
+                ProcessTemplateResourceLanguageExpressions(resourceInfo.resource, evaluationHelper);
 
-                ProcessTemplateResourceLanguageExpressions(resource, evaluationHelper);
+                CopyResourceDependants(resourceInfo.resource);
 
-                CopyResourceDependants(resource, flattenedResources);
-
-                if (!ResourceMappings.ContainsKey(resource.Path))
+                if (!ResourceMappings.ContainsKey(resourceInfo.resource.Path))
                 {
-                    AddResourceMapping(resource.Path, resource.Path);
+                    AddResourceMapping(resourceInfo.expandedPath, resourceInfo.resource.Path);
                 }
             }
 
@@ -189,8 +195,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// Copies child resources into sub resources for parent resources.
         /// </summary>
         /// <param name="templateResource">The child resource.</param>
-        /// <param name="resources">A collection of all resources with a mapping to their processed name.</param>
-        internal void CopyResourceDependants(TemplateResource templateResource, Dictionary<string, TemplateResource> resources)
+        internal void CopyResourceDependants(TemplateResource templateResource)
         {
             if (templateResource.DependsOn == null)
             {
@@ -200,7 +205,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             foreach (var parentResourceIds in templateResource.DependsOn)
             {
                 string parentResourceName;
-                TemplateResource parentResource = null;
+                (TemplateResource resource, string expandedPath) parentResourceInfo = (null, null);
                 // If the dependsOn references the resourceId
                 if (parentResourceIds.Value.StartsWith("/subscriptions"))
                 {
@@ -208,31 +213,33 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
                     string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
 
-                    resources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResource);
+                    this.flattenedResources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResourceInfo);
                 }
                 // If the dependsOn references the resource name
                 else
                 {
                     parentResourceName = parentResourceIds.Value;
-                    var matchingResources = resources.Where(k => k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var matchingResources = this.flattenedResources.Where(k => k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase)).ToList();
                     if (matchingResources.Count == 1)
                     {
-                        parentResource = matchingResources.First().Value;
+                        parentResourceInfo = matchingResources.First().Value;
                     }
                 }
 
                 // Parent resouce is not in the template
-                if (parentResource == null)
+                if (parentResourceInfo == (null, null))
                 {
                     continue;
                 }
 
                 // Add this resource as a child of its parent resource
+                var parentResource = parentResourceInfo.resource;
+                var parentResourceExpandedPath = parentResourceInfo.expandedPath;
                 if (parentResource.Resources == null)
                 {
                     parentResource.Resources = new TemplateResource[] { templateResource };
 
-                    AddResourceMapping($"{parentResource.Path}.resources[0]", templateResource.Path);
+                    AddResourceMapping($"{parentResourceExpandedPath}.resources[0]", templateResource.Path);
                 }
                 // check if resource is already a child of parent resource
                 else if (!parentResource.Resources.Any(res =>
@@ -243,7 +250,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     parentResource.Resources = childResources.ConcatArray(new TemplateResource[] { templateResource });
                     int resourceIndex = parentResource.Resources.Length - 1;
 
-                    AddResourceMapping($"{parentResource.Path}.resources[{resourceIndex}]", templateResource.Path);
+                    AddResourceMapping($"{parentResourceExpandedPath}.resources[{resourceIndex}]", templateResource.Path);
                 }
             }
 
@@ -256,28 +263,39 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             // in the dictionary with mapping. This is necessary to report an issue in
             // a copied nth grandchild resource.
             var tokens = expandedTemplatePath.Split('.');
-
             for (int i = 0; i < tokens.Length - 1; i++)
             {
-                string possibleOriginalPathOfAnotherResource = string.Join('.', tokens[..(i + 1)]);
-                if (originalToExpandedMapping.TryGetValue(possibleOriginalPathOfAnotherResource, out List<string> copiedLocationsOfAnotherResource))
+                string segmentOfExpandedPath = string.Join('.', tokens[..(i + 1)]);
+
+                // Each segment of a path in the expanded template corresponds to one resource in the original template,
+                // not necessarily the same index of resource, since copy loops reorder resources after processing.
+                // And each resource in the original template could be copied to multiple locations in the expanded template:
+                string originalPathOfSegmentOfExpandedPath;
+                if (expandedToOriginalMapping.TryGetValue(segmentOfExpandedPath, out originalPathOfSegmentOfExpandedPath))
                 {
-                    foreach (string copiedLocationOfAnotherResource in copiedLocationsOfAnotherResource)
+                    if (originalToExpandedMapping.TryGetValue(originalPathOfSegmentOfExpandedPath, out List<string> copiedLocationsOfPathSegment))
                     {
-                        if (!copiedLocationOfAnotherResource.Equals(possibleOriginalPathOfAnotherResource, StringComparison.OrdinalIgnoreCase))
+                        foreach (string copiedLocationOfPathSegment in copiedLocationsOfPathSegment)
                         {
-                            ResourceMappings.TryAdd($"{copiedLocationOfAnotherResource}.{string.Join('.', tokens[(i + 1)..])}", originalTemplatePath);
+                            // This check is done to avoid assuming that the resource was copied to other top-level resources that don't necessarily depend on it:
+                            if (copiedLocationOfPathSegment.Split('.').Length > 1)
+                            {
+                                var fullExpandedPath = $"{copiedLocationOfPathSegment}.{string.Join('.', tokens[(i + 1)..])}";
+                                ResourceMappings.TryAdd(fullExpandedPath, originalTemplatePath);
+                            }
                         }
                     }
                 }
             }
 
-            if (!ResourceMappings.TryAdd(expandedTemplatePath, originalTemplatePath))
+            if (!ResourceMappings.TryAdd(expandedTemplatePath, originalTemplatePath) && ResourceMappings[expandedTemplatePath] != originalTemplatePath)
             {
-                throw new Exception($"Error mapping resource at path {originalTemplatePath}");
+                throw new Exception("Error processing resource dependencies: " +
+                    $"{expandedTemplatePath} currently maps to {ResourceMappings[expandedTemplatePath]}, instead of {originalTemplatePath}.");
             }
 
-            if(!originalToExpandedMapping.TryAdd(originalTemplatePath, new List<string> { expandedTemplatePath }))
+            expandedToOriginalMapping[expandedTemplatePath] = originalTemplatePath;
+            if (!originalToExpandedMapping.TryAdd(originalTemplatePath, new List<string> { expandedTemplatePath }))
             {
                 originalToExpandedMapping[originalTemplatePath].Add(expandedTemplatePath);
             }
@@ -289,7 +307,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <param name="resources">Resources in the template.</param>
         /// <param name="parentName">Name of the parent resource. Used during recursive call.</param>
         /// <param name="parentType">Type of the parent resource. Used during recursive call.</param>
-        private void SaveFlattenedResources(TemplateResource[] resources, string parentName = null, string parentType = null)
+        /// <param name="parentExpandedPath">Path of the parent resource in the expanded template. Used during the recursive call.</param>
+        private void SaveFlattenedResources(TemplateResource[] resources, string parentName = null, string parentType = null, string parentExpandedPath = "")
         {
             for (int i = 0; i < resources.Length; i++)
             {
@@ -298,25 +317,29 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
                 if (parentName != null && parentType != null)
                 {
-                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].Path}.resources[{i}]";
+                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].resource.Path}.resources[{i}]";
 
                     dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
                 }
                 else
                 {
-                    resource.Path = $"resources[{i}]";
+                    if (resource.Path == "")
+                    {
+                        resource.Path = $"resources[{i}]";
+                    }
 
                     dictionaryKey = $"{resource.Name.Value} {resource.Type.Value}";
                 }
 
-                flattenedResources.Add(dictionaryKey, resource);
+                var resourceExpandedPath = $"{(parentExpandedPath != "" ? parentExpandedPath + "." : "")}resources[{i}]";
+                flattenedResources.Add(dictionaryKey, (resource, resourceExpandedPath));
 
                 if (resource.Resources != null)
                 {
                     string resourceNamePrefix = parentName == null ? "" : $"{parentName}/";
                     string resourceTypePrefix = parentType == null ? "" : $"{parentType}/";
 
-                    SaveFlattenedResources(resource.Resources, $"{resourceNamePrefix}{resource.Name.Value}", $"{resourceTypePrefix}{resource.Type.Value}");
+                    SaveFlattenedResources(resource.Resources, $"{resourceNamePrefix}{resource.Name.Value}", $"{resourceTypePrefix}{resource.Type.Value}", resourceExpandedPath);
                 }
             }
         }
@@ -406,10 +429,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 {
                     // Copied resource.  Update OriginalName and
                     // add mapping to original resource
-                    resource.OriginalName = originalValues.Item1;
+                    resource.OriginalName = originalValues.Item1;                    
+                    resource.Path = $"resources[{originalValues.Item2}]";
 
-                    resource.Path = $"resources[{i}]";
-                    AddResourceMapping(resource.Path, $"resources[{originalValues.Item2}]");
+                    AddResourceMapping($"resources[{i}]", resource.Path);
 
                     continue;
                 }

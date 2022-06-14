@@ -1,0 +1,144 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "name": "functionAppKind",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": false,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "linux",
+      "name": "linuxKind",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": false,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app,linux",
+      "name": "withLinuxKind",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": false,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "diagLogsDisabledInSiteConfigProperty",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": false,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": false
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "diagLogsEnabledInSiteConfigProperty",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": true,
+          "httpLoggingEnabled": true,
+          "requestTracingEnabled": true
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "kind": "app",
+      "name": "sitesConfig/diagLogsDisabled",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
+      ],
+      "properties": {
+        "detailedErrorLoggingEnabled": false,
+        "httpLoggingEnabled": false,
+        "requestTracingEnabled": false
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "kind": "app",
+      "name": "sitesConfig/diagLogsEnabled",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'diagLogsDisabledInSiteConfigProperty')]"
+      ],
+      "properties": {
+        "detailedErrorLoggingEnabled": true,
+        "httpLoggingEnabled": true,
+        "requestTracingEnabled": true
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "kind": "app",
+      "name": "sitesConfigDependingOnLinuxKind/diagLogsDisabled",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', 'linuxKind')]"
+      ],
+      "properties": {
+        "detailedErrorLoggingEnabled": false,
+        "httpLoggingEnabled": false,
+        "requestTracingEnabled": false
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "app",
+      "name": "aPropertyRequiredAsEnabledIsDisabled",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "detailedErrorLoggingEnabled": true,
+          "httpLoggingEnabled": false,
+          "requestTracingEnabled": true
+        }
+      }
+    }
+  ]
+}

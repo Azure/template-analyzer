@@ -38,6 +38,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         /// <param name="tokenToEvaluate">The JToken to evaluate.</param>
         /// <returns>A value indicating whether or not the evaluation passed.</returns>
         public override bool EvaluateExpression(JToken tokenToEvaluate)
-            => (tokenToEvaluate != null) == EffectiveValue;
+            => (tokenToEvaluate != null) == EffectiveValue ^ this.IsNegative;
     }
 }

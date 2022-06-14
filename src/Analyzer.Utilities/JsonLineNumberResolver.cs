@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                 if (!string.Equals(resourceWithIndex, originalResourcePath))
                 {
-                    return ResolveLineNumber($"{originalResourcePath}.{remainingPathAtResourceScope}");
+                    tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
 

@@ -7,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using System.Management.Automation.Runspaces;
 
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
@@ -17,12 +19,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     /// <summary>
     /// Executes template analysis encoded in PowerShell
     /// </summary>
-    public class PowerShellRuleEngine
+    public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
         /// Execution environment for PowerShell
         /// </summary>
-        private readonly Powershell powerShell;
+        private readonly Runspace runspace;
 
         /// <summary>
         /// Regex that matches a string like: " on line: aNumber"
@@ -34,26 +36,54 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// </summary>
         public PowerShellRuleEngine()
         {
-            this.powerShell = Powershell.Create();
+            var initialState = InitialSessionState.CreateDefault();
 
-            powerShell.Commands.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1"); // arm-ttk is added to the needed project's bins directories in build time 
-            powerShell.AddStatement();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Ensure we can execute the signed bundled scripts.
+                // (This sets the policy at the Process scope.)
+                // When custom PS rules are supported, we may need to update this to be more relaxed.
+                initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
+            }
 
-            powerShell.Invoke();
+            // Import ARM-TTK module.
+            // It's copied to the bin directory as part of the build process.
+            var powershell = Powershell.Create(initialState);
+            powershell.AddCommand("Import-Module")
+                .AddParameter("Name", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\TTK\arm-ttk.psd1")
+                .Invoke();
+
+            if (!powershell.HadErrors)
+            {
+                // Save the runspace with TTK loaded
+                this.runspace = powershell.Runspace; 
+            }
         }
 
         /// <summary>
-        /// Evaluates template against the rules encoded in PowerShell, and outputs the results to the console
+        /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
-        /// <param name="templateFilePath">The file path of the template under analysis.</param>
-        public IEnumerable<IEvaluation> EvaluateRules(string templateFilePath)
+        /// <param name="templateContext">The context of the template under analysis.
+        /// <see cref="TemplateContext.TemplateIdentifier"/> must be the file path of the template to evaluate.</param>
+        /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
-            this.powerShell.Commands.AddCommand("Test-AzTemplate")
-                .AddParameter("Test", "deploymentTemplate")
-                .AddParameter("TemplatePath", templateFilePath);
+            if (templateContext?.TemplateIdentifier == null)
+            {
+                throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
+            }
 
-            var executionResults = this.powerShell.Invoke();
+            if (runspace == null)
+            {
+                // There was an error loading the TTK module.  Return an empty collection.
+                return Enumerable.Empty<IEvaluation>();
+            }
+
+            var executionResults = Powershell.Create(runspace)
+                .AddCommand("Test-AzTemplate")
+                .AddParameter("Test", "deploymentTemplate")
+                .AddParameter("TemplatePath", templateContext.TemplateIdentifier)
+                .Invoke();
 
             var evaluations = new List<PowerShellRuleEvaluation>();
 
@@ -63,12 +93,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 foreach (dynamic warning in executionResult.Warnings)
                 {
-                    AddErrorToDictionary(warning, ref uniqueErrors);
+                    PreProcessErrors(warning, uniqueErrors);
                 }
 
                 foreach (dynamic error in executionResult.Errors)
                 {
-                    AddErrorToDictionary(error, ref uniqueErrors);
+                    PreProcessErrors(error, uniqueErrors);
                 }
 
                 foreach (KeyValuePair<string, SortedSet<int>> uniqueError in uniqueErrors)
@@ -78,14 +108,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     {
                         evaluationResults.Add(new PowerShellRuleResult(false, lineNumber));
                     }
-                    evaluations.Add(new PowerShellRuleEvaluation(executionResult.Name, uniqueError.Key, false, evaluationResults));
+
+                    var ruleId = (executionResult.Name as string)?.Replace(" ", "") ?? string.Empty;
+                    var ruleDescription = executionResult.Name + ". " + uniqueError.Key;
+                    evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, false, evaluationResults));
                 }
             }
 
             return evaluations;
         }
 
-        private void AddErrorToDictionary(dynamic error, ref Dictionary<string, SortedSet<int>> uniqueErrors)
+        private void PreProcessErrors(dynamic error, Dictionary<string, SortedSet<int>> uniqueErrors)
         {
             var lineNumber = 0;
 

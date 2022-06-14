@@ -32,7 +32,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
             ExpressionJsonPropertyNames.UnionWith(new HashSet<string>
             {
                 "allOf",
-                "anyOf"
+                "anyOf",
+                "not"
             });
         }
 
@@ -75,7 +76,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Converters
 
                     return anyOfExpressionDefinition;
                 }
-                
+                else if (objectPropertyNames.Contains("not", StringComparer.OrdinalIgnoreCase))
+                {
+                    var notExpressionDefinition = CreateExpressionDefinition<NotExpressionDefinition>(jsonObject, serializer);
+                    notExpressionDefinition.Validate();
+
+                    return notExpressionDefinition;
+                }
+
                 return CreateExpressionDefinition<LeafExpressionDefinition>(jsonObject, serializer);
             }
 

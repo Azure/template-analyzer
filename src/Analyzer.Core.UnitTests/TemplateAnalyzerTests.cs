@@ -2,8 +2,11 @@
 // Licensed under the MIT License.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -14,9 +17,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
     [TestClass]
     public class TemplateAnalyzerTests
     {
+        private static TemplateAnalyzer templateAnalyzer;
+
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
+            templateAnalyzer = TemplateAnalyzer.Create();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var powerShell = Powershell.Create();
@@ -36,14 +42,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, false, @"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", DisplayName = "2 matching Resources with 1 passing evaluation")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\success.json", DisplayName = "1 matching Resource with 1 passing evaluation, specifying a template file path")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 2, false, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", DisplayName = "1 matching Resource with 2 failing evaluations, specifying a template file path")]
-        public void EvaluateRulesAgainstTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string resource2Properties = null, string templateFilePath = null)
+        public void AnalyzeTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string resource2Properties = null, string templateFilePath = null)
         {
             // Arrange
             string[] resourceProperties = { GenerateResource(resource1Properties, resourceType, "resource1"), GenerateResource(resource2Properties, resourceType, "resource2") };
             string template = GenerateTemplate(resourceProperties);
 
-            var templateAnalyzer = new TemplateAnalyzer(template, templateFilePath: templateFilePath);
-            var evaluations = templateAnalyzer.EvaluateRulesAgainstTemplate();
+            var evaluations = templateAnalyzer.AnalyzeTemplate(template, templateFilePath: templateFilePath);
             var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
 
             Assert.AreEqual(expectedEvaluationCount, evaluationsWithResults.Count);
@@ -52,6 +57,36 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             {
                 Assert.AreEqual(expectedEvaluationPassed, evaluation.Passed);
             }
+        }
+
+        [TestMethod]
+        public void AnalyzeTemplate_NotUsingPowerShell_NoPowerShellViolations()
+        {
+            // Arrange
+            string[] resourceProperties = {
+                GenerateResource(
+                    @"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantIdValue"" } }",
+                    "Microsoft.ServiceFabric/clusters", "resource1")
+            };
+            string template = GenerateTemplate(resourceProperties);
+
+            // Analyze with PowerShell disabled
+            var evaluations = templateAnalyzer.AnalyzeTemplate(
+                template,
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
+                usePowerShell: false);
+
+            // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
+            Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
+
+            // Analyze with PowerShell enabled
+            evaluations = templateAnalyzer.AnalyzeTemplate(
+                template,
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
+                usePowerShell: true);
+
+            // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
+            Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
         }
 
         private string GenerateTemplate(string[] resourceProperties)
@@ -80,17 +115,39 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void EvaluateRulesAgainstTemplate_TemplateIsNull_ThrowArgumentNullException()
+        public void AnalyzeTemplate_TemplateIsNull_ThrowArgumentNullException()
         {
-            new TemplateAnalyzer(null);
+            templateAnalyzer.AnalyzeTemplate(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(TemplateAnalyzerException))]
-        public void EvaluateRulesAgainstTemplate_TemplateIsInvalid_ThrowTemplateAnalyzerException()
+        public void AnalyzeTemplate_TemplateIsInvalid_ThrowTemplateAnalyzerException()
         {
-            TemplateAnalyzer templateAnalyzer = new TemplateAnalyzer("{}");
-            templateAnalyzer.EvaluateRulesAgainstTemplate();
+            templateAnalyzer.AnalyzeTemplate("{}");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(TemplateAnalyzerException))]
+        public void Create_MissingRulesFile_ThrowsException()
+        {
+            var rulesDir = Path.Combine(
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    "Rules");
+            var rulesFile = Path.Combine(rulesDir, "BuiltInRules.json");
+            var movedFile = Path.Combine(rulesDir, "MovedRules.json");
+
+            // Move rules file
+            File.Move(rulesFile, movedFile);
+
+            try
+            {
+                TemplateAnalyzer.Create();
+            }
+            finally
+            {
+                File.Move(movedFile, rulesFile, overwrite: true);
+            }
         }
     }
 }
