@@ -674,7 +674,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             (expectedResourceJArray[2] as JObject).Add("resources", new JArray { JObject.Parse(childTemplateResourceJson) });
             (expectedResourceJArray[3].InsensitiveToken("resources") as JArray).Add(JObject.Parse(childTemplateResourceJson));
 
-            // TODO improve or comment
+            // The processed template has the full type value of each resource:
             var childResource = expectedResourceJArray[3]["resources"][0];
             childResource["type"] = "Microsoft.EventGrid/domains/topics";
             childResource["resources"][0]["type"] = "Microsoft.EventGrid/domains/topics/eventSubscriptions";
@@ -800,7 +800,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 
-            // TODO improve or comment
+            // The processed template has the full type value of each resource:
             expectedResourceJArray[1]["resources"][0]["type"] = "Microsoft.Web/sites/sourcecontrols";
             Assert.IsTrue(JToken.DeepEquals(expectedResourceJArray, actualResourceArray));
 
@@ -863,7 +863,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             var actualResourceArray = template.ToJToken().InsensitiveToken("resources");
 
-            // TODO improve or comment
+            // The processed template has the full type value of each resource:
             var childResource = expectedResourceJArray[0]["resources"][0];
             childResource["type"] = "Microsoft.Sql/servers/databases";
             childResource["resources"][0]["type"] = "Microsoft.Sql/servers/databases/transparentDataEncryption";
