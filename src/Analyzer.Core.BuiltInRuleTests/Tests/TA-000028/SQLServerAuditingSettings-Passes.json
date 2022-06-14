@@ -248,7 +248,7 @@
         "retentionDays": 95
       },
       "dependsOn": [
-        "AnSqlServerWithoutChildResources" // TODO add case without dependsOn?
+        "AnSqlServerWithoutChildResources"
       ]
     }
   ]

@@ -43,9 +43,7 @@ Evaluation of ARM templates is performed on the JSON representation of the templ
 
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 
-The behavior of the `resourceType` property is to find a property called "resources" in the current scope that is an array of objects, look for a "type" property in each of the objects, and keep only the resources where the value of "type" matches the string in `resourceType`.  See [Scopes](#scopes) for more information on scopes.
-
-TODO add details about the resource types. Only specify full ones?
+The behavior of the `resourceType` property is to find a property called "resources" in the current scope that is an array of objects, look for a "type" property in each of the objects, and keep only the resources where the full value of "type" matches the string in `resourceType`. Consider that if a resource of type `Microsoft.Sql/servers` has a child of type `auditingSettings`, then the full type of the child is actually `Microsoft.Sql/servers/auditingSettings`. See [Scopes](#scopes) for more information on scopes.
 
 Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 

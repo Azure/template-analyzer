@@ -45,7 +45,7 @@
         "retentionDays": 45
       },
       "dependsOn": [
-        "FailsSQLRetentionDaysRuleWithFullResourceTypeAndName" // TODO add case without dependsOn?
+        "FailsSQLRetentionDaysRuleWithFullResourceTypeAndName"
       ]
     }
   ]
