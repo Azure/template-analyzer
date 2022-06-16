@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
 
@@ -71,23 +72,53 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// in a "resources" property array at the current scope.
         /// </summary>
         /// <param name="resourceType">The type of resource to find.</param>
+        /// <param name="newCurrentPath">The new current path, used for the recursive call.</param>
+        /// <param name="newCurrentScope">The new current scope, used for the recursive call.</param>
         /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
-        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType)
+        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType, string newCurrentPath = null, JToken newCurrentScope = null)
         {
-            string fullPath = currentPath + ".resources[*]";
+            var resourceTypeSeparator = "/";
+
+            newCurrentPath ??= this.currentPath;
+            newCurrentScope ??= this.currentScope;
+
+            string fullPath = newCurrentPath + ".resources[*]";
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                var resources = this.currentScope.InsensitiveTokens("resources[*]");
+                var resources = newCurrentScope.InsensitiveTokens("resources[*]");
                 resolvedTokens = resources.Select(r => (FieldContent)r).ToList();
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
+            var resourceTypePrefixes = new List<string> { resourceType };
+            var resourceTypeSuffixes = new List<string> { "" };
+            var indexesOfTypesSeparators = Regex.Matches(resourceType, resourceTypeSeparator).Cast<Match>().Select(m => m.Index).Skip(1);
+            foreach (var index in indexesOfTypesSeparators)
+            {
+                resourceTypePrefixes.Add(resourceType[..index]);
+                resourceTypeSuffixes.Add(resourceType[(index + 1)..]);
+            }
+            
             foreach (var resource in resolvedTokens)
             {
-                if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceType, StringComparison.OrdinalIgnoreCase))
+                for (int i = 0; i < resourceTypePrefixes.Count; i++)
                 {
-                    yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                    if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceTypePrefixes[i], StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (String.IsNullOrEmpty(resourceTypeSuffixes[i]))
+                        {
+                            yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                        }
+                        else
+                        {
+                            foreach(var newJsonPathResolver in ResolveResourceType(String.Concat(resourceTypePrefixes[i], resourceTypeSeparator, resourceTypeSuffixes[i]), resource.Value.Path, resource.Value))
+                            {
+                                yield return newJsonPathResolver;
+                            }
+                        }
+                    }
                 }
+                
             }
         }
 

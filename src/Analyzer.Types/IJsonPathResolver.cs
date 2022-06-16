@@ -33,7 +33,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// in a "resources" property array at the current scope.
         /// </summary>
         /// <param name="resourceType">The type of resource to find.</param>
+        /// <param name="newCurrentPath">The new current path, used for the recursive call.</param>
+        /// <param name="newCurrentScope">The new current scope, used for the recursive call.</param>
         /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
-        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType);
+        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType, string newCurrentPath = null, JToken newCurrentScope = null);
     }
 }

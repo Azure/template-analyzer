@@ -35,6 +35,22 @@
       "name": "automationAccounts/isEncryptedNotDefined",
       "location": "[parameters('location')]",
       "properties": {}
+    },
+    {
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "justAutomationAccounts",
+      "location": "[parameters('location')]",
+      "resources": [
+        {
+          "type": "variables",
+          "apiVersion": "2021-04-01",
+          "name": "isNotEncrypted",
+          "properties": {
+            "isEncrypted": false
+          }
+        }
+      ]
     }
   ]
 }
