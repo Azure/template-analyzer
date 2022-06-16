@@ -94,26 +94,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             var resourceTypePrefixes = new List<string> { resourceType };
             var resourceTypeSuffixes = new List<string> { "" };
             var indexesOfTypesSeparators = Regex.Matches(resourceType, resourceTypeSeparator).Cast<Match>().Select(m => m.Index).Skip(1);
-            foreach (var index in indexesOfTypesSeparators)
+            foreach (var indexOfTypeSeparator in indexesOfTypesSeparators)
             {
-                resourceTypePrefixes.Add(resourceType[..index]);
-                resourceTypeSuffixes.Add(resourceType[(index + 1)..]);
+                resourceTypePrefixes.Add(resourceType[..indexOfTypeSeparator]);
+                resourceTypeSuffixes.Add(resourceType[(indexOfTypeSeparator + 1)..]);
             }
             
             foreach (var resource in resolvedTokens)
             {
-                for (int i = 0; i < resourceTypePrefixes.Count; i++)
+                for (int numOfPrefix = 0; numOfPrefix < resourceTypePrefixes.Count; numOfPrefix++)
                 {
-                    if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceTypePrefixes[i], StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceTypePrefixes[numOfPrefix], StringComparison.OrdinalIgnoreCase))
                     {
-                        if (String.IsNullOrEmpty(resourceTypeSuffixes[i]))
+                        if (String.IsNullOrEmpty(resourceTypeSuffixes[numOfPrefix]))
                         {
                             yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
                         }
                         else
                         {
                             // In this case we still haven't matched the suffix of the prefix found
-                            foreach(var newJsonPathResolver in ResolveResourceType(String.Concat(resourceTypePrefixes[i], resourceTypeSeparator, resourceTypeSuffixes[i]), resource.Value.Path, resource.Value))
+                            foreach(var newJsonPathResolver in ResolveResourceType(String.Concat(resourceTypePrefixes[numOfPrefix], resourceTypeSeparator, resourceTypeSuffixes[numOfPrefix]), resource.Value.Path, resource.Value))
                             {
                                 yield return newJsonPathResolver;
                             }
