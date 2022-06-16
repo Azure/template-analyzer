@@ -40,11 +40,9 @@
             "args": [
                 "publish",
                 "${workspaceFolder}/src/Analyzer.Cli/Analyzer.Cli.csproj",
-                "--runtime",
-                "${input:runtimeId}",
+                "--configuration", "Release",
+                "--runtime", "${input:runtimeId}",
                 "--self-contained",
-                "/property:PublishSingleFile=true",
-                "/property:IncludeNativeLibrariesForSelfExtract=true",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
