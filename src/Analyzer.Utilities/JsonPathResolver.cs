@@ -90,6 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
+            // When trying to resolve Microsoft.Web/sites/siteextensions, for example, we should consider that siteextensions can be a child resource of Microsoft.Web/sites (a prefix of the original resource type)
             var resourceTypePrefixes = new List<string> { resourceType };
             var resourceTypeSuffixes = new List<string> { "" };
             var indexesOfTypesSeparators = Regex.Matches(resourceType, resourceTypeSeparator).Cast<Match>().Select(m => m.Index).Skip(1);
@@ -111,6 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                         }
                         else
                         {
+                            // In this case we still haven't matched the suffix of the prefix found
                             foreach(var newJsonPathResolver in ResolveResourceType(String.Concat(resourceTypePrefixes[i], resourceTypeSeparator, resourceTypeSuffixes[i]), resource.Value.Path, resource.Value))
                             {
                                 yield return newJsonPathResolver;
