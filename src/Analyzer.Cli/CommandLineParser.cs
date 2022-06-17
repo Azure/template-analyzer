@@ -445,7 +445,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception e)
             {
-                this.logger.LogError("Unable to read configuration file.", e);
+                this.logger.LogError(e, "Unable to read configuration file.");
                 return false;
             }
 
@@ -462,7 +462,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception e)
             {
-                this.logger.LogError("Failed to parse configuration file.", e);
+                this.logger.LogError(e, "Failed to parse configuration file.");
                 return false;
             }
         }

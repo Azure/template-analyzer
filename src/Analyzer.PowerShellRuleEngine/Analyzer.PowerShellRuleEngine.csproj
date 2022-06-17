@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.PowerShellRuleEngine</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.1.5" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.4" />
   </ItemGroup>
   
   <ItemGroup>
@@ -24,8 +24,11 @@
     </DownloadFile>
     
     <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />
-    <Exec Command="mv -f $(IntermediateOutputPath)/TTK/arm-ttk $(OutputPath)/TTK" Condition="'$(OS)' == 'Unix'" />
-    <Exec Command="move /Y $(IntermediateOutputPath)\TTK\arm-ttk $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
+
+    <ItemGroup>
+      <TTKFiles Include="$(IntermediateOutputPath)\TTK\arm-ttk\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TTKFiles)" DestinationFolder="$(OutputPath)\TTK\%(RecursiveDir)" />
   </Target>
 
   <Target Name="CleanTTK" AfterTargets="Clean">
