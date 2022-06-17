@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -8,7 +8,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
@@ -45,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             // but since this libary is not needed here, might as well just eliminate the dependency.
             var initialState = InitialSessionState.CreateDefault2();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Platform.IsWindows)
             {
                 // Ensure we can execute the signed bundled scripts.
                 // (This sets the policy at the Process scope.)
@@ -53,11 +52,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
             }
 
-            // Import ARM-TTK module.
-            // It's copied to the bin directory as part of the build process.
             var powershell = Powershell.Create(initialState);
+
+            // Scripts that aren't unblocked will prompt for permission to run on Windows before executing,
+            // even if the scripts are signed.  (Unsigned scripts simply won't run.)
+            UnblockScripts(powershell, Path.Combine(AppContext.BaseDirectory, "TTK"));
+
+            // Import ARM-TTK module.
             powershell.AddCommand("Import-Module")
-                .AddParameter("Name", Path.GetDirectoryName(AppContext.BaseDirectory) + @"\TTK\arm-ttk.psd1")
+                .AddParameter("Name", Path.Combine(AppContext.BaseDirectory, "TTK", "arm-ttk.psd1"))
                 .Invoke();
 
             if (!powershell.HadErrors)
@@ -148,6 +151,33 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             {
                 // errorMessage was already added to the dictionary
                 uniqueErrors[errorMessage].Add(lineNumber);
+            }
+        }
+
+        /// <summary>
+        /// Unblocks scripts on Windows to allow them to run.
+        /// If a script is not unblocked, even if it's signed,
+        /// PowerShell prompts for confirmation before executing.
+        /// This prompting would throw an exception, because there's
+        /// no interaction with a user that would allow for confirmation.
+        /// </summary>
+        private void UnblockScripts(Powershell powershell, string directory)
+        {
+            if (Platform.IsWindows)
+            {
+                powershell
+                    .AddCommand("Get-ChildItem")
+                    .AddParameter("Path", directory)
+                    .AddParameter("Recurse")
+                    .AddCommand("Unblock-File")
+                    .Invoke();
+
+                if (powershell.HadErrors)
+                {
+                    throw new Exception("Unable to unblock scripts");
+                }
+
+                powershell.Commands.Clear();
             }
         }
     }
