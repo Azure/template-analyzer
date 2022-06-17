@@ -1,8 +1,10 @@
 <Project>
 
   <Target Name="CopyTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
-    <Exec Command="cp -r ../Analyzer.PowerShellRuleEngine/bin/$(Configuration)/$(TargetFramework)/TTK $(OutputPath)/TTK/" Condition="'$(OS)' == 'Unix'" />
-    <Exec Command="Xcopy /E /I ..\Analyzer.PowerShellRuleEngine\bin\$(Configuration)\$(TargetFramework)\TTK $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
+    <ItemGroup>
+      <TTKFiles Include="..\Analyzer.PowerShellRuleEngine\bin\$(Configuration)\$(TargetFramework)\TTK\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TTKFiles)" DestinationFolder="$(OutputPath)\TTK\%(RecursiveDir)" />
   </Target>
 
   <!-- Move platform-specific runtime modules directly into the publish directory -->

@@ -24,8 +24,11 @@
     </DownloadFile>
     
     <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />
-    <Exec Command="mv -f $(IntermediateOutputPath)/TTK/arm-ttk $(OutputPath)/TTK" Condition="'$(OS)' == 'Unix'" />
-    <Exec Command="move /Y $(IntermediateOutputPath)\TTK\arm-ttk $(OutputPath)\TTK" Condition="'$(OS)' != 'Unix'" />
+
+    <ItemGroup>
+      <TTKFiles Include="$(IntermediateOutputPath)\TTK\arm-ttk\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TTKFiles)" DestinationFolder="$(OutputPath)\TTK\%(RecursiveDir)" />
   </Target>
 
   <Target Name="CleanTTK" AfterTargets="Clean">
