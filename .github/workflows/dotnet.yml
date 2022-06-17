@@ -43,8 +43,13 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
       
+    # Always run a debug build to validate XML comments
     - name: Build
-      run: dotnet build --configuration ${{ env.Configuration }} --no-restore
+      run: dotnet build --configuration Debug --no-restore
+    
+    - name: Build (Release)
+      if: env.Configuration == 'Release'
+      run: dotnet build --configuration Release --no-restore
       
     - name: Test
       run: dotnet test --no-build --configuration ${{ env.Configuration }} --verbosity normal
