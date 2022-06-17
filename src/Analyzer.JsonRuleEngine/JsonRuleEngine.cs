@@ -24,16 +24,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <returns>An <see cref="ILineNumberResolver"/> to resolve line numbers for the given template context.</returns>
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
-        private readonly BuildILineNumberResolver BuildLineNumberResolver;
         internal IReadOnlyList<RuleDefinition> RuleDefinitions;
+
+        private readonly BuildILineNumberResolver BuildLineNumberResolver;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
         /// </summary>
-        private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder)
+        private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger)
         {
             this.RuleDefinitions = rules;
             this.BuildLineNumberResolver = jsonLineNumberResolverBuilder;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -42,13 +45,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="rawRuleDefinitions">The raw JSON rules to evaluate a template with.</param>
         /// <param name="jsonLineNumberResolverBuilder">A builder to create an <see cref="ILineNumberResolver"/> for mapping JSON paths from a
         /// processed template to the line number of the equivalent location in the original template.</param>
-        public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder)
+        /// <param name="logger">A logger to report errors and debug information</param>
+        public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger = null)
         {
             if (rawRuleDefinitions == null) throw new ArgumentNullException(nameof(rawRuleDefinitions));
             if (string.IsNullOrWhiteSpace(rawRuleDefinitions)) throw new ArgumentException("String cannot be only whitespace.", nameof(rawRuleDefinitions));
             if (jsonLineNumberResolverBuilder == null) throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
 
-            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
+            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder, logger);
         }
 
         /// <summary>
@@ -93,7 +97,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="templateContext">The template context to analyze.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext, ILogger logger = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {

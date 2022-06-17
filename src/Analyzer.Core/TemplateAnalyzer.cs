@@ -58,8 +58,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)),
-                usePowerShell ? new PowerShellRuleEngine() : null,
+                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext), logger),
+                usePowerShell ? new PowerShellRuleEngine(logger) : null,
                 logger);
         }
 
@@ -97,12 +97,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext, this.logger);
+                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
 
                 if (this.powerShellRuleEngine != null && templateContext.TemplateIdentifier != null)
                 {
                     this.logger?.LogDebug("Running PowerShell rule engine");
-                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext, this.logger));
+                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
 
                 return evaluations;
