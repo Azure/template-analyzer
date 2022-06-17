@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         private readonly ILogger logger;
 
         /// <summary>
-        /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
+        /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver, ILogger)"/> for creating new instances.
         /// </summary>
         private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger)
         {
@@ -95,7 +95,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// Analyzes a template using rules defined in JSON.
         /// </summary>
         /// <param name="templateContext">The template context to analyze.</param>
-        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>The results of the rules against the template.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
