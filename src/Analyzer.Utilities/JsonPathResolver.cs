@@ -75,8 +75,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
         public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType)
         {
-            var resourceTypeSeparator = "/";
-
             string fullPath = this.currentPath + ".resources[*]";
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
@@ -85,32 +83,29 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 resolvedPaths[fullPath] = resolvedTokens;
             }
 
-            // When trying to resolve Microsoft.Web/sites/siteextensions, for example, we should consider that siteextensions can be a child resource of Microsoft.Web/sites (a prefix of the original resource type)
-            var resourceTypePrefixes = new List<string> { resourceType };
-            var resourceTypeSuffixes = new List<string> { "" };
-            var indexesOfTypesSeparators = Regex.Matches(resourceType, resourceTypeSeparator).Cast<Match>().Select(m => m.Index).Skip(1);
+            // When trying to resolve Microsoft.Web/sites/siteextensions, for example, we should consider that siteextensions can be a child resource of Microsoft.Web/sites (a parent of the original resource type)
+            var resourceTypeParents = new List<string> { resourceType };
+            var indexesOfTypesSeparators = Regex.Matches(resourceType, "/").Cast<Match>().Select(m => m.Index).Skip(1);
             foreach (var indexOfTypeSeparator in indexesOfTypesSeparators)
             {
-                resourceTypePrefixes.Add(resourceType[..indexOfTypeSeparator]);
-                resourceTypeSuffixes.Add(resourceType[(indexOfTypeSeparator + 1)..]);
+                resourceTypeParents.Add(resourceType[..indexOfTypeSeparator]);
             }
             
             foreach (var resource in resolvedTokens)
             {
-                for (int numOfPrefix = 0; numOfPrefix < resourceTypePrefixes.Count; numOfPrefix++)
+                foreach (var resourceTypeParent in resourceTypeParents)
                 {
-                    if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceTypePrefixes[numOfPrefix], StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceTypeParent, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (String.IsNullOrEmpty(resourceTypeSuffixes[numOfPrefix]))
+                        if (resourceTypeParent == resourceType)
                         {
                             yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
                         }
                         else
                         {
-                            // In this case we still haven't matched the suffix of the prefix found
+                            // In this case we still haven't matched the whole resource type
                             var subScope = new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
-                            var subResourceType = String.Concat(resourceTypePrefixes[numOfPrefix], resourceTypeSeparator, resourceTypeSuffixes[numOfPrefix]);
-                            foreach (var newJsonPathResolver in subScope.ResolveResourceType(subResourceType))
+                            foreach (var newJsonPathResolver in subScope.ResolveResourceType(resourceType))
                             {
                                 yield return newJsonPathResolver;
                             }
