@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             if (!string.IsNullOrEmpty(resourceType))
             {
                 mockJsonPathResolver
-                    .Setup(s => s.ResolveResourceType(It.Is<string>(type => type == resourceType), null, null))
+                    .Setup(s => s.ResolveResourceType(It.Is<string>(type => type == resourceType)))
                     .Returns(new List<IJsonPathResolver> { mockJsonPathResolver.Object });
             }
 

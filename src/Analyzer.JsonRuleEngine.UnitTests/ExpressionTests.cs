@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.Resolve(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
             mockPathResolver
-                .Setup(r => r.ResolveResourceType(It.IsAny<string>(), null, null))
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
 
             bool whereConditionWasEvaluated = false;
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.Resolve(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
             mockPathResolver
-                .Setup(r => r.ResolveResourceType(It.IsAny<string>(), null, null))
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
 
             bool whereConditionWasEvaluated = false;
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.Resolve(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
             mockPathResolver
-                .Setup(r => r.ResolveResourceType(It.IsAny<string>(), null, null))
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
 
             bool whereConditionWasEvaluated = false;
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.Resolve(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
             mockPathResolver
-                .Setup(r => r.ResolveResourceType(It.IsAny<string>(), null, null))
+                .Setup(r => r.ResolveResourceType(It.IsAny<string>()))
                 .Returns(() => new[] { mockPathResolver.Object });
 
             bool lineNumberResolverWasAlwaysNull = true;

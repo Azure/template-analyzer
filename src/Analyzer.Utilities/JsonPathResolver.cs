@@ -72,20 +72,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// in a "resources" property array at the current scope.
         /// </summary>
         /// <param name="resourceType">The type of resource to find.</param>
-        /// <param name="newCurrentPath">The new current path, used for the recursive call.</param>
-        /// <param name="newCurrentScope">The new current scope, used for the recursive call.</param>
         /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
-        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType, string newCurrentPath = null, JToken newCurrentScope = null)
+        public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType)
         {
             var resourceTypeSeparator = "/";
 
-            newCurrentPath ??= this.currentPath;
-            newCurrentScope ??= this.currentScope;
-
-            string fullPath = newCurrentPath + ".resources[*]";
+            string fullPath = this.currentPath + ".resources[*]";
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
-                var resources = newCurrentScope.InsensitiveTokens("resources[*]");
+                var resources = this.currentScope.InsensitiveTokens("resources[*]");
                 resolvedTokens = resources.Select(r => (FieldContent)r).ToList();
                 resolvedPaths[fullPath] = resolvedTokens;
             }
@@ -113,7 +108,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                         else
                         {
                             // In this case we still haven't matched the suffix of the prefix found
-                            foreach(var newJsonPathResolver in ResolveResourceType(String.Concat(resourceTypePrefixes[numOfPrefix], resourceTypeSeparator, resourceTypeSuffixes[numOfPrefix]), resource.Value.Path, resource.Value))
+                            var subScope = new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                            var subResourceType = String.Concat(resourceTypePrefixes[numOfPrefix], resourceTypeSeparator, resourceTypeSuffixes[numOfPrefix]);
+                            foreach (var newJsonPathResolver in subScope.ResolveResourceType(subResourceType))
                             {
                                 yield return newJsonPathResolver;
                             }
