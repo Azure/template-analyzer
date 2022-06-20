@@ -10,9 +10,7 @@
 The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your ARM templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
 
 ## Getting started with the Template BPA
-The Template BPA is built using .NET 5.  Having the [.NET 5 Runtime](https://dotnet.microsoft.com/download) installed is currently a prerequisite.
-
-After ensuring the .NET Runtime is installed, download the latest Template BPA release in [the releases section](https://github.com/Azure/template-analyzer/releases).
+Download the latest Template BPA release in [the releases section](https://github.com/Azure/template-analyzer/releases).
 
 To preview the rules that come bundled with the Template BPA, explore [the built-in rules](docs/built-in-bpa-rules.md).
 

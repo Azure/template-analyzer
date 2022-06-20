@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>TemplateAnalyzer</AssemblyName>
     <Description>A command line interface for Microsoft.Azure.Templates.Analyzer.Core - an ARM template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>

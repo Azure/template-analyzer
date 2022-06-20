@@ -2,8 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Azure.Templates.Analyzer.Core</id>
-    <!-- Also update version in Analyzer.Cli nuspec and Directory.Build.props. -->
-    <version>0.1.2</version>
+    <version>$version$</version>
     <authors>Microsoft</authors>
     <description>ARM Template scanner for security misconfiguration and best practices</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
@@ -12,16 +11,22 @@
     <tags>arm azure template analyzer scanner deployment security</tags>
 
     <dependencies>
-      <dependency id="Azure.Deployments.Core" version="1.0.112" />
-      <dependency id="Azure.Deployments.Expression" version="1.0.112" />
-      <dependency id="Azure.Deployments.Templates" version="1.0.112" />
-      <dependency id="Newtonsoft.Json" version="12.0.3" />
+      <group targetFramework="net6.0">
+        <dependency id="Azure.Deployments.Core" version="1.0.568" />
+        <dependency id="Azure.Deployments.Expression" version="1.0.568" />
+        <dependency id="Azure.Deployments.Templates" version="1.0.568" />
+        <dependency id="Newtonsoft.Json" version="12.0.3" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="6.0.1" />
+        <dependency id="Microsoft.PowerShell.SDK" version="7.2.4" />
+        <dependency id="Sarif.Sdk" version="2.4.12" />
+        <dependency id="System.IO.Abstractions" version="13.2.47" />
+      </group>
     </dependencies>
 
   </metadata>
 
   <files>
-    <file src="..\Analyzer.Core\bin\$configuration$\**" target="lib\" exclude="**\*.pdb" />
+    <file src="..\Analyzer.Core\bin\$configuration$\**" target="lib\" exclude="**\*.pdb;**\ref\**" />
   </files>
 
 </package>
