@@ -84,35 +84,32 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             }
 
             // When trying to resolve Microsoft.Web/sites/siteextensions, for example, we should consider that siteextensions can be a child resource of Microsoft.Web/sites (a parent of the original resource type)
-            var resourceTypeParents = new List<string> { resourceType };
+            var resourceTypeParents = new List<string> { };
             var indexesOfTypesSeparators = Regex.Matches(resourceType, "/").Cast<Match>().Select(m => m.Index).Skip(1);
             foreach (var indexOfTypeSeparator in indexesOfTypesSeparators)
             {
                 resourceTypeParents.Add(resourceType[..indexOfTypeSeparator]);
             }
-            
+
+            static bool resourceTypesAreEqual(FieldContent jTokenResourceType, string stringResourceType)
+            {
+                return string.Equals(jTokenResourceType.Value.InsensitiveToken("type")?.Value<string>(), stringResourceType, StringComparison.OrdinalIgnoreCase);
+            }
+
             foreach (var resource in resolvedTokens)
             {
-                foreach (var resourceTypeParent in resourceTypeParents)
+                if (resourceTypesAreEqual(resource, resourceType))
                 {
-                    if (string.Equals(resource.Value.InsensitiveToken("type")?.Value<string>(), resourceTypeParent, StringComparison.OrdinalIgnoreCase))
+                    yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                }
+                else if (resourceTypeParents.Exists(parentResourceType => resourceTypesAreEqual(resource.Value, parentResourceType))) {
+                    // In this case we still haven't matched the whole resource type
+                    var subScope = new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
+                    foreach (var newJsonPathResolver in subScope.ResolveResourceType(resourceType))
                     {
-                        if (resourceTypeParent == resourceType)
-                        {
-                            yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
-                        }
-                        else
-                        {
-                            // In this case we still haven't matched the whole resource type
-                            var subScope = new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
-                            foreach (var newJsonPathResolver in subScope.ResolveResourceType(resourceType))
-                            {
-                                yield return newJsonPathResolver;
-                            }
-                        }
+                        yield return newJsonPathResolver;
                     }
                 }
-                
             }
         }
 
