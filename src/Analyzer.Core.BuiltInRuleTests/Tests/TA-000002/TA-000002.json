@@ -1,0 +1,61 @@
+[
+  {
+    "Template": "RemoteDebugging-Failures.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 22,
+        "Description": "remoteDebuggingEnabled set to true in resource"
+      },
+      {
+        "LineNumber": 46,
+        "Description": "remoteDebuggingEnabled set to true in child config (even though it's false in parent resource)"
+      },
+      {
+        "LineNumber": 59,
+        "Description": "remoteDebuggingEnabled set to true in resource (even though it's false in child config)"
+      },
+      {
+        "LineNumber": 92,
+        "Description": "remoteDebuggingEnabled set to true in child config"
+      },
+      {
+        "LineNumber": 114,
+        "Description": "remoteDebuggingEnabled set to true in dependent config"
+      }
+    ]
+  },
+  {
+    "Template": "RemoteDebugging-Passes.json",
+    "ReportedFailures": [ ],
+    "PassingSections": [
+      {
+        "ResourceName": "notApiKind",
+        "Explanation": "Wrong resource kind"
+      },
+      {
+        "ResourceName": "withoutSpecifyingProperties",
+        "Explanation": "remoteDebuggingEnabled is not defined"
+      },
+      {
+        "ResourceName": "remoteDebuggingOff",
+        "Explanation": "remoteDebuggingEnabled is false"
+      },
+      {
+        "ResourceName": "absentInChildConfig",
+        "Explanation": "remoteDebuggingEnabled not defined in web app or in child web app config"
+      },
+      {
+        "ResourceName": "offInChildConfig",
+        "Explanation": "remoteDebuggingEnabled is false in a child config"
+      },
+      {
+        "ResourceNames": [
+          "offInDependentConfig",
+          "offInDependentConfig/web",
+          "offInDependentConfig/metadata"
+        ],
+        "Explanation": "remoteDebuggingEnabled is false in a dependent config.  Config with name 'metadata' is not the right config type for this property, so it being defined with 'true' has no effect."
+      }
+    ]
+  }
+]

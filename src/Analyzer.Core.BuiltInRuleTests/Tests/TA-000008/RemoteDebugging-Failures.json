@@ -1,0 +1,118 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "name": "remoteDebuggingOn",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "remoteDebuggingEnabled": true
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp,linux",
+      "name": "offInResourceButOnInChildConfig",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "remoteDebuggingEnabled": false
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites/', 'offInResourceButonInChildConfig')]"
+          ],
+          "properties": {
+            "remoteDebuggingEnabled": true
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "name": "onInResourceButOffInChildConfig",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "remoteDebuggingEnabled": true
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites/', 'offInResourceButonInChildConfig')]"
+          ],
+          "properties": {
+            "remoteDebuggingEnabled": false
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp,linux",
+      "name": "onInChildConfig",
+      "location": "[parameters('location')]",
+      "properties": { },
+      "resources": [
+        {
+          "apiVersion": "2019-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites/', 'onInChildConfig')]"
+          ],
+          "properties": {
+            "remoteDebuggingEnabled": true
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "name": "onInDependentConfig",
+      "location": "[parameters('location')]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "name": "onInDependentConfig/web",
+      "kind": "functionapp,linux",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites/', 'onInDependentConfig')]"
+      ],
+      "properties": {
+        "remoteDebuggingEnabled": true
+      }
+    }
+  ]
+}
