@@ -1,0 +1,81 @@
+[
+  {
+    "Template": "LatestTLS-Failures.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 21,
+        "Description": "Minimum TLS is not set"
+      },
+      {
+        "LineNumber": 32,
+        "Description": "Minimum TLS is set to an insecure version"
+      },
+      {
+        "LineNumber": 42,
+        "Description": "Minimum TLS is not set in parent or child config (failure in parent)"
+      },
+      {
+        "LineNumber": 52,
+        "Description": "Minimum TLS is not set in parent or child config (failure in child config)"
+      },
+      {
+        "LineNumber": 62,
+        "Description": "Minimum TLS is not set in parent and is insecure in dependent config (failure in parent)"
+      },
+      {
+        "LineNumber": 73,
+        "Description": "Minimum TLS is not set in parent and is insecure in this dependent config (failure in child config)"
+      },
+      {
+        "LineNumber": 82,
+        "Description": "Minimum TLS is not set in parent and is missing in dependent config (failure in parent)"
+      },
+      {
+        "LineNumber": 92,
+        "Description": "Minimum TLS is not set in parent and is missing in this dependent config (failure in child config)"
+      },
+      {
+        "LineNumber": 113,
+        "Description": "Minimum TLS is set to secure version in parent but is set to insecure version in this child config"
+      },
+      {
+        "LineNumber": 126,
+        "Description": "Minimum TLS is set to insecure version in parent even though it is set to secure version in child config"
+      },
+    ]
+  },
+  {
+    "Template": "LatestTLS-Passes.json",
+    "ReportedFailures": [ ],
+    "PassingSections": [
+      {
+        "ResourceName": "notAppKind",
+        "Explanation": "Wrong resource kind"
+      },
+      {
+        "ResourceName": "usingSecureMinTls",
+        "Explanation": "Minimum TLS is correctly set to 1.2"
+      },
+      {
+        "ResourceName": "absentInChildConfigButSecureInParent",
+        "Explanation": "Minimum TLS is correctly set to 1.2 in the parent, even though it's missing in the child config"
+      },
+      {
+        "ResourceName": "absentInParentButSecureInChildConfig",
+        "Explanation": "Minimum TLS is correctly set to 1.2 in the child config, even though it's missing in the parent"
+      },
+      {
+        "ResourceName": "absentInParentButSecureInDependentConfig",
+        "Explanation": "Minimum TLS is correctly set to 1.2 in the dependent config, even though it's missing in the parent"
+      },
+      {
+        "ResourceNames": [
+          "absentInParentButSecureInDependentConfig",
+          "absentInParentButSecureInDependentConfig/web",
+          "absentInParentButSecureInDependentConfig/metadata"
+        ],
+        "Explanation": "Minimum TLS is correctly set to 1.2 in the dependent config, even though it's missing in the parent.  It's insecure in 'metadata', but the property is not relevant for that config type."
+      }
+    ]
+  }
+]
