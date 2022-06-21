@@ -102,7 +102,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 {
                     yield return new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
                 }
-                else if (resourceTypeParents.Exists(parentResourceType => resourceTypesAreEqual(resource.Value, parentResourceType))) {
+                else if (resourceTypeParents.Exists(parentResourceType => resourceTypesAreEqual(resource.Value, parentResourceType)))
+                {
                     // In this case we still haven't matched the whole resource type
                     var subScope = new JsonPathResolver(resource.Value, resource.Value.Path, this.resolvedPaths);
                     foreach (var newJsonPathResolver in subScope.ResolveResourceType(resourceType))
