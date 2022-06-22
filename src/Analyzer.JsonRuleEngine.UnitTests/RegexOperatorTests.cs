@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [TestMethod]
         public void EvaluateExpression_PropertyIsMissingAndNegated_EvaluationIsTrue()
         {
-            var regexOperator = new RegexOperator("");
+            var regexOperator = new RegexOperator("", isNegative: true);
             Assert.IsTrue(regexOperator.EvaluateExpression(null));
         }
 
