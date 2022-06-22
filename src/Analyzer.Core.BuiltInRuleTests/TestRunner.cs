@@ -51,6 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             var failingLines = thisRuleEvaluations
                 .Where(e => !e.Passed)
                 .SelectMany(e => GetAllFailedLines(e))
+                .Distinct()
                 .ToList();
 
             failingLines.Sort();
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             var expectedLines = ruleExpectations.ReportedFailures.Select(failure => failure.LineNumber).ToList();
             expectedLines.Sort();
             Assert.IsTrue(failingLines.SequenceEqual(expectedLines),
-                "Expected failing lines do not match actual failed lines." + Environment.NewLine +
+                $"Expected failing lines do not match actual failed lines for rule {ruleExpectations.RuleId}." + Environment.NewLine +
                 $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]" +
                 (failingLines.Count > 0 ? "" : Environment.NewLine + "(Do the test directory and test config have the same name as the RuleId being tested?)"));
         }

@@ -4,11 +4,7 @@
     "ReportedFailures": [
       {
         "LineNumber": 42,
-        "Description": "authorizedIPRanges is not given a value"
-      },
-      {
-        "LineNumber": 42,
-        "Description": "enablePrivateCluster is not given a value"
+        "Description": "authorizedIPRanges and enablePrivateCluster are not given a value"
       },
       {
         "LineNumber": 62,
