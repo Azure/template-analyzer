@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             if (tokenToEvaluate == null || tokenToEvaluate.Type != JTokenType.String)
             {
-                return false;
+                return this.IsNegative;
             }
 
             return regex.IsMatch(tokenToEvaluate.Value<string>()) ^ this.IsNegative;

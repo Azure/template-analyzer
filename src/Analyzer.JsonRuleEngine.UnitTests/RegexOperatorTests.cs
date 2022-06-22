@@ -63,6 +63,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void EvaluateExpression_PropertyIsMissingAndNegated_EvaluationIsTrue()
+        {
+            var regexOperator = new RegexOperator("");
+            Assert.IsTrue(regexOperator.EvaluateExpression(null));
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(System.ArgumentException))]
         public void EvaluateExpresssion_RegexPatternInvalid_ArgumentExceptionIsThrown()
         {

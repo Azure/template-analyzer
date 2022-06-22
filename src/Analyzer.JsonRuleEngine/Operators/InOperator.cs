@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             if (tokenToEvaluate == null)
             {
-                return false;
+                return this.IsNegative;
             }
 
             bool tokenMatched = false;
