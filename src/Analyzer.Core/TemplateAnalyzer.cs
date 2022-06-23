@@ -12,6 +12,8 @@ using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
@@ -72,6 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
+            
             if (template == null) throw new ArgumentNullException(nameof(template));
 
             JToken templatejObject;
@@ -105,7 +108,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext, this.logger));
                 }
 
+                // START OF MY EXPERIMENTAL CODE
+                dynamic json = JsonConvert.DeserializeObject(template);
+                dynamic target = json.resources;
+                for (int i = 0; i < target.Count; i++)
+                {
+                    dynamic currentResource = target[i];
+                    if (currentResource.type == "Microsoft.Resources/deployments")
+                    {
+                        dynamic nestedTemplate = currentResource.properties.template;
+                        string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate);
+                        IEnumerable<IEvaluation> result = AnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath);
+                        evaluations = evaluations.Concat(result);
+                    }
+                }
+                // END OF MY EXPERIMENTAL CODE
                 return evaluations;
+               
+
             }
             catch (Exception e)
             {
