@@ -8,20 +8,48 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
-using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Reports;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
+    /// <summary>
+    /// Creates the command line for running the Template Analyzer. 
+    /// Instantiates arguments that can be passed and different commands that can be invoked.
+    /// </summary>
     internal class CommandLineParser
     {
-        RootCommand rootCommand;
+        private readonly IReadOnlyList<string> validSchemas = new List<string> {
+            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
+        }.AsReadOnly();
 
-        private readonly TemplateAnalyzer templateAnalyzer;
+        private readonly IReadOnlyList<string> validTemplateProperties = new List<string> {
+            "contentVersion",
+            "apiProfile",
+            "parameters",
+            "variables",
+            "functions",
+            "resources",
+            "outputs",
+        }.AsReadOnly();
+
+        private const string defaultConfigFileName = "configuration.json";
+
+        private RootCommand rootCommand;
+        private TemplateAnalyzer templateAnalyzer;
+
+        private IReportWriter reportWriter;
+        private ILogger logger;
+        private SummaryLogger summaryLogger;
 
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
@@ -29,7 +57,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         public CommandLineParser()
         {
             SetupCommandLineAPI();
-            templateAnalyzer = TemplateAnalyzer.Create();
         }
 
         /// <summary>
@@ -37,301 +64,408 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// </summary>
         /// <param name="args">Arguments sent in via the command line</param>
         /// <returns>A Task that executes the command handler</returns>
-        public async Task InvokeCommandLineAPIAsync(string[] args)
+        public async Task<int> InvokeCommandLineAPIAsync(string[] args)
         {
-            await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
 
-        private RootCommand SetupCommandLineAPI()
+        private void SetupCommandLineAPI()
         {
             // Command line API is setup using https://github.com/dotnet/command-line-api
 
-            rootCommand = new RootCommand();
+            rootCommand = new();
             rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
 
-            // Setup analyze-template w/ template file argument, parameter file option, and configuration file option
-            Command analyzeTemplateCommand = new Command(
-                "analyze-template",
-                "Analyze a singe template");
-            
-            Argument<FileInfo> templateArgument = new Argument<FileInfo>(
-                "template-file-path",
-                "The ARM template to analyze");
-            analyzeTemplateCommand.AddArgument(templateArgument);
+            // Setup analyze-template and analyze-directory commands
+            List<Command> allCommands = new()
+            {
+                SetupAnalyzeTemplateCommand(),
+                SetupAnalyzeDirectoryCommand()
+            };
 
-            Option<FileInfo> parameterOption = new Option<FileInfo>(
-                 "--parameters-file-path",
-                 "The parameter file to use when parsing the specified ARM template");
-            parameterOption.AddAlias("-p");
-            analyzeTemplateCommand.AddOption(parameterOption);
+            // Add all commands to root command
+            allCommands.ForEach(rootCommand.AddCommand);
 
-            Option<FileInfo> configurationOption = new Option<FileInfo>(
-                 "--config-file-path",
-                 "The configuration file to use when parsing the specified ARM template");
-            configurationOption.AddAlias("-c");
-            analyzeTemplateCommand.AddOption(configurationOption);
-
-            Option<ReportFormat> reportFormatOption = new Option<ReportFormat>(
-                "--report-format",
-                "Format of report to be generated");
-            analyzeTemplateCommand.AddOption(reportFormatOption);
-
-            Option<FileInfo> outputFileOption = new Option<FileInfo>(
-                "--output-file-path",
-                "The report file path");
-            outputFileOption.AddAlias("-o");
-            analyzeTemplateCommand.AddOption(outputFileOption);
-
-            var verboseOption = new Option(
-                "--verbose",
-                "Shows details about the analysis");
-            verboseOption.AddAlias("-v");
-            analyzeTemplateCommand.AddOption(verboseOption);
-
-            // Temporary PowerShell rule suppression until it will work nicely with SARIF
-            Option ttkOption = new Option(
-                "--run-powershell",
-                "Run TTK against templates");
-            analyzeTemplateCommand.AddOption(ttkOption);
-
-            analyzeTemplateCommand.Handler = CommandHandler.Create<FileInfo, FileInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose) =>
-                this.AnalyzeTemplate(templateFilePath, parametersFilePath, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose));
-
-            // Setup analyze-directory w/ directory argument and configuration file option
-            Command analyzeDirectoryCommand = new Command(
-                "analyze-directory", 
-                "Analyze all templates within a directory");
-
-            Argument<DirectoryInfo> directoryArgument = new Argument<DirectoryInfo>(
-                "directory-path",
-                "The directory to find ARM templates");
-            analyzeDirectoryCommand.AddArgument(directoryArgument);
-
-            analyzeDirectoryCommand.AddOption(configurationOption);
-          
-            analyzeDirectoryCommand.AddOption(reportFormatOption);
-          
-            analyzeDirectoryCommand.AddOption(outputFileOption);
-          
-            analyzeDirectoryCommand.AddOption(ttkOption);
-
-            analyzeDirectoryCommand.AddOption(verboseOption);
-
-            analyzeDirectoryCommand.Handler = CommandHandler.Create<DirectoryInfo, FileInfo, ReportFormat, FileInfo, bool, bool>(
-                (directoryPath, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose) =>
-                this.AnalyzeDirectory(directoryPath, configurationsFilePath,  reportFormat, outputFilePath, runPowershell, verbose));
-
-            // Add commands to root command
-            rootCommand.AddCommand(analyzeTemplateCommand);
-            rootCommand.AddCommand(analyzeDirectoryCommand);
-
-            return rootCommand;
+            // Setup options that apply to all commands
+            SetupCommonOptionsForCommands(allCommands);
         }
 
-        private int AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runPowershell, bool verbose, bool printMessageIfNotTemplate = true, IReportWriter writer = null, bool readConfigurationFile = true, ILogger logger = null)
-        { 
-            if (logger == null) {
-                logger = CreateLogger(verbose);
+        private Command SetupAnalyzeTemplateCommand()
+        {
+            Command analyzeTemplateCommand = new Command(
+                "analyze-template",
+                "Analyze a single template");
+
+            analyzeTemplateCommand.AddArgument(
+                new Argument<FileInfo>(
+                    "template-file-path",
+                    "The ARM template to analyze"));
+
+            analyzeTemplateCommand.AddOption(
+                new Option<FileInfo>(
+                    new[] { "-p", "--parameters-file-path" },
+                    "The parameter file to use when parsing the specified ARM template")
+            );
+
+            // Assign handler method
+            analyzeTemplateCommand.Handler = CommandHandler.Create(
+                GetType().GetMethod(
+                    nameof(AnalyzeTemplateCommandHandler),
+                    BindingFlags.Instance | BindingFlags.NonPublic),
+                this);
+
+            return analyzeTemplateCommand;
+        }
+
+        private Command SetupAnalyzeDirectoryCommand()
+        {
+            Command analyzeDirectoryCommand = new Command(
+                "analyze-directory",
+                "Analyze all templates within a directory");
+
+            analyzeDirectoryCommand.AddArgument(
+                new Argument<DirectoryInfo>(
+                    "directory-path",
+                    "The directory to find ARM templates"));
+
+            // Assign handler method
+            analyzeDirectoryCommand.Handler = CommandHandler.Create(
+                GetType().GetMethod(
+                    nameof(AnalyzeDirectoryCommandHandler),
+                    BindingFlags.Instance | BindingFlags.NonPublic),
+                this);
+
+            return analyzeDirectoryCommand;
+        }
+
+        private void SetupCommonOptionsForCommands(List<Command> commands)
+        {
+            List<Option> options = new()
+            {
+                new Option<FileInfo>(
+                    new[] { "-c", "--config-file-path" },
+                    "The configuration file to use when parsing the specified ARM template"),
+
+                new Option<ReportFormat>(
+                    "--report-format",
+                    "Format of report to be generated"),
+
+                new Option<FileInfo>(
+                    new[] { "-o", "--output-file-path" },
+                    $"The report file path (required for --report-format {ReportFormat.Sarif})"),
+
+                new Option(
+                    new[] { "-v", "--verbose" },
+                    "Shows details about the analysis"),
+
+                new Option(
+                    "--run-powershell",
+                    "Run PowerShell based checks against templates")
+            };
+
+            commands.ForEach(c => options.ForEach(c.AddOption));
+        }
+
+        // Note: argument names must match command arguments/options (without "-" characters)
+        private int AnalyzeTemplateCommandHandler(
+            FileInfo templateFilePath,
+            FileInfo parametersFilePath,
+            FileInfo configFilePath,
+            ReportFormat reportFormat,
+            FileInfo outputFilePath,
+            bool runPowershell,
+            bool verbose)
+        {
+            // Check that template file paths exist
+            if (!templateFilePath.Exists)
+            {
+                Console.Error.WriteLine("Invalid template file path: {0}", templateFilePath);
+                return (int)ExitCode.ErrorInvalidPath;
             }
 
-            bool disposeWriter = false;
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runPowershell, verbose);
+            if (setupResult != ExitCode.Success)
+            {
+                return (int)setupResult;
+            }
 
+            // Verify the file is a valid template
+            if (!IsValidTemplate(templateFilePath))
+            {
+                logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath.FullName);
+                FinishAnalysis();
+                return (int)ExitCode.ErrorInvalidARMTemplate;
+            }
+
+            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFilePath);
+
+            FinishAnalysis();
+            return (int)analysisResult;
+        }
+
+        // Note: argument names must match command arguments/options (without "-" characters)
+        private int AnalyzeDirectoryCommandHandler(
+            DirectoryInfo directoryPath,
+            FileInfo configFilePath,
+            ReportFormat reportFormat,
+            FileInfo outputFilePath,
+            bool runPowershell,
+            bool verbose)
+        {
+            if (!directoryPath.Exists)
+            {
+                Console.Error.WriteLine("Invalid directory: {0}", directoryPath);
+                return (int)ExitCode.ErrorInvalidPath;
+            }
+
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, runPowershell, verbose);
+            if (setupResult != ExitCode.Success)
+            {
+                return (int)setupResult;
+            }
+
+            // Find files to analyze
+            var filesToAnalyze = FindTemplateFilesInDirectory(directoryPath);
+
+            // Log root directory info to be analyzed
+            Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
+
+            int numOfFilesAnalyzed = 0;
+            bool issueReported = false;
+            var filesFailed = new List<FileInfo>();
+            foreach (FileInfo file in filesToAnalyze)
+            {
+                ExitCode res = AnalyzeTemplate(file, null);
+
+                if (res == ExitCode.Success || res == ExitCode.Violation)
+                {
+                    numOfFilesAnalyzed++;
+                    issueReported |= res == ExitCode.Violation;
+                }
+                else if (res == ExitCode.ErrorAnalysis)
+                {
+                    filesFailed.Add(file);
+                }
+            }
+
+            Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
+
+            ExitCode exitCode;
+            if (filesFailed.Count > 0)
+            {
+                logger.LogError($"Unable to analyze {filesFailed.Count} {(filesFailed.Count == 1 ? "file" : "files")}: {string.Join(", ", filesFailed)}");
+                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
+            }
+            else
+            {
+                exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
+            }
+
+            FinishAnalysis();
+
+            return (int)exitCode;
+        }
+
+        private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
+        {
             try
             {
-                // Check that template file paths exist
-                if (!templateFilePath.Exists)
-                {
-                    logger.LogError("Invalid template file path: {templateFilePath}", templateFilePath);
-                    return 2;
-                }
-
-                // Check that output file path provided for sarif report
-                if (writer == null && reportFormat == ReportFormat.Sarif && outputFilePath == null)
-                {
-                    logger.LogError("Output file path was not provided.");
-                    return 3;
-                }
-
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                if (readConfigurationFile)
-                {
-                    templateAnalyzer.FilterRules(configurationsFilePath);
-                }
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
 
-                // Check that the schema is valid
-                if (!templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) || !IsValidSchema(templateFileContents))
-                {
-                    if (printMessageIfNotTemplate)
-                    {
-                        logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath);
-                    }
-                    return 4;
-                }
+                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
-                IEnumerable<IEvaluation> evaluations = templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName, usePowerShell: runPowershell, logger);
-
-                if (writer == null)
-                {
-                    writer = GetReportWriter(reportFormat.ToString(), outputFilePath);
-                    disposeWriter = true;
-                }
-
-                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
-
-                return 0;
+                return evaluations.Any(e => !e.Passed) ? ExitCode.Violation : ExitCode.Success;
             }
-            catch (Exception exp)
+            catch (Exception exception)
             {
-                logger.LogError(GetExceptionMessage(exp));
-                return 1;
-            }
-            finally
-            {
-                if (disposeWriter && writer != null)
-                {
-                    writer.Dispose();
-                }
+                logger.LogError(exception, "An exception occurred while analyzing a template");
+                return ExitCode.ErrorAnalysis;
             }
         }
 
-        private void AnalyzeDirectory(DirectoryInfo directoryPath, FileInfo configurationsFilePath, ReportFormat reportFormat, FileInfo outputFilePath, bool runPowershell, bool verbose)
+        private ExitCode SetupAnalysis(
+            FileInfo configurationFile,
+            DirectoryInfo directoryToAnalyze,
+            ReportFormat reportFormat,
+            FileInfo outputFilePath,
+            bool runPowershell,
+            bool verbose)
         {
-            var logger = CreateLogger(verbose);
-
-            try
+            // Output file path must be specified if SARIF was chosen as the report format
+            if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
             {
-                if (!directoryPath.Exists)
+                Console.Error.WriteLine("When using --report-format sarif flag, --output-file-path flag is required.");
+                return ExitCode.ErrorMissingPath;
+            }
+
+            this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
+            CreateLoggers(verbose);
+
+            this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell, this.logger);
+
+            if (!TryReadConfigurationFile(configurationFile, out var config))
+            {
+                return ExitCode.ErrorInvalidConfiguration;
+            }
+
+            // Success from TryReadConfigurationFile means there wasn't an error looking for the config.
+            // config could still be null if no path was specified in the command and no default exists.
+            if (config != null)
+            {
+                this.templateAnalyzer.FilterRules(config);
+            }
+
+            return ExitCode.Success;
+        }
+
+        private void FinishAnalysis()
+        {
+            this.summaryLogger.SummarizeLogs();
+            this.reportWriter?.Dispose();
+        }
+
+        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath) =>
+            directoryPath.GetFiles(
+                "*.json",
+                new EnumerationOptions
                 {
-                    logger.LogError("Invalid directory: {directoryPath}", directoryPath);
-                    return;
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
                 }
+            ).Where(IsValidTemplate);
 
-                // Check that output file path provided for sarif report
-                if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
+        private bool IsValidTemplate(FileInfo file)
+        {
+            using var fileStream = new StreamReader(file.OpenRead());
+            var reader = new JsonTextReader(fileStream);
+
+            reader.Read();
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return false;
+            }
+
+            while (reader.Read())
+            {
+                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
                 {
-                    logger.LogError("Output file path is not provided.");
-                    return;
-                }
-
-                templateAnalyzer.FilterRules(configurationsFilePath);
-
-                // Find files to analyze
-                var filesToAnalyze = new List<FileInfo>();
-                FindJsonFilesInDirectoryRecursive(directoryPath, filesToAnalyze);
-
-                // Log root directory info to be analyzed
-                Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
-
-                int numOfSuccesses = 0;
-                using (IReportWriter reportWriter = this.GetReportWriter(reportFormat.ToString(), outputFilePath, directoryPath.FullName))
-                {
-                    var filesFailed = new List<FileInfo>();
-                    foreach (FileInfo file in filesToAnalyze)
+                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
                     {
-                        int res = AnalyzeTemplate(file, null, configurationsFilePath, reportFormat, outputFilePath, runPowershell, verbose, false, reportWriter, false, logger);
-                        if (res == 0)
+                        reader.Read();
+                        if (reader.TokenType != JsonToken.String)
                         {
-                            numOfSuccesses++;
+                            return false;
                         }
-                        else if (res == 1)
-                        {
-                            filesFailed.Add(file);
-                        }
+
+                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
                     }
-
-                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfSuccesses} file(s).");
-                    if (filesFailed.Count > 0)
+                    else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
                     {
-                        logger.LogError("Unable to analyze {numFilesFailed} file(s):", filesFailed.Count);
-                        foreach (FileInfo failedFile in filesFailed)
-                        {
-                            logger.LogError("\t{failedFile}", failedFile);
-                        }
+                        return false;
                     }
                 }
             }
-            catch (Exception exp)
-            {
-                logger.LogError(GetExceptionMessage(exp));
-            }
+
+            return false;
         }
 
-        private void FindJsonFilesInDirectoryRecursive(DirectoryInfo directoryPath, List<FileInfo> files) 
-        {
-            foreach (FileInfo file in directoryPath.GetFiles())
+        private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null) =>
+            reportFormat switch
             {
-                if (file.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase))
-                {
-                    files.Add(file);
-                }
-            }
-            foreach (DirectoryInfo dir in directoryPath.GetDirectories())
-            {
-                FindJsonFilesInDirectoryRecursive(dir, files);
-            }
-        }
+                ReportFormat.Sarif => new SarifReportWriter((FileInfoBase)outputFile, rootFolder),
+                _ => new ConsoleReportWriter()
+            };
 
-        private bool IsValidSchema(string template)
+        private void CreateLoggers(bool verbose)
         {
-            JObject jsonTemplate = JObject.Parse(template);
-            string schema = (string)jsonTemplate["$schema"];
-            string[] validSchemas = { 
-                "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-                "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"};
-            return validSchemas.Contains(schema);
-        }
-
-        private static string GetExceptionMessage(Exception exception)
-        {
-            Func<Exception, string> getExceptionInfo = (exception) => "\n\n" + exception.Message + "\n" + exception.StackTrace;
-            
-            string exceptionMessage = "An exception occurred:" + getExceptionInfo(exception);
-
-            while (exception.InnerException != null)
-            {
-                exception = exception.InnerException;
-                exceptionMessage += getExceptionInfo(exception);
-            }
-
-            return exceptionMessage;
-        }
-
-        private IReportWriter GetReportWriter(string reportFormat, FileInfo outputFile, string rootFolder = null)
-        {
-            if (Enum.TryParse<ReportFormat>(reportFormat, ignoreCase:true, out ReportFormat format))
-            {
-                switch (format)
-                {
-                    case ReportFormat.Sarif:
-                        return new SarifReportWriter((FileInfoBase)outputFile, rootFolder);
-                    case ReportFormat.Console:
-                        return new ConsoleReportWriter();
-                }
-            }
-            return new ConsoleReportWriter();
-        }
-
-        private static ILogger CreateLogger(bool verbose)
-        {
-            var logLevel = verbose ? LogLevel.Debug : LogLevel.Information;
+            this.summaryLogger = new SummaryLogger(verbose);
 
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder
-                    .SetMinimumLevel(logLevel)
+                    .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information)
                     .AddSimpleConsole(options =>
                     {
                         options.SingleLine = true;
-                    });
+                    })
+                    .AddProvider(new SummaryLoggerProvider(summaryLogger));
             });
 
-            return loggerFactory.CreateLogger("TemplateAnalyzerCLI");
+            if (this.reportWriter is SarifReportWriter sarifWriter)
+            {
+                loggerFactory.AddProvider(new SarifNotificationLoggerProvider(sarifWriter.SarifLogger));
+            }
+
+            this.logger = loggerFactory.CreateLogger("TemplateAnalyzerCli");
+        }
+
+        /// <summary>
+        /// Reads a configuration file from disk. If no file was passed, checks the default directory for this file.
+        /// </summary>
+        /// <returns>True if: 
+        ///   - the specified configuration file was read successfully,
+        ///   - no config was specified and the default file doesn't exist,
+        ///   - the default file exists and was read successfully.
+        /// False otherwise.</returns>
+        private bool TryReadConfigurationFile(FileInfo configurationFile, out ConfigurationDefinition config)
+        {
+            config = null;
+
+            string configFilePath;
+            if (configurationFile != null)
+            {
+                if (!configurationFile.Exists)
+                {
+                    // If a config file was specified in the command but doesn't exist, it's an error.
+                    this.logger.LogError("Configuration file does not exist.");
+                    return false;
+                }
+                configFilePath = configurationFile.FullName;
+            }
+            else
+            {
+                // Look for a config at the default location.
+                // It's not required to exist, so if it doesn't, just return early.
+                configFilePath = Path.Combine(AppContext.BaseDirectory, defaultConfigFileName);
+                if (!File.Exists(configFilePath))
+                    return true;
+            }
+
+            // At this point, an existing config file was found.
+            // If there are any problems reading it, it's an error.
+
+            this.logger.LogInformation($"Configuration File: {configFilePath}");
+
+            string configContents;
+            try
+            {
+                configContents = File.ReadAllText(configFilePath);
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError(e, "Unable to read configuration file.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(configContents))
+            {
+                this.logger.LogError("Configuration is empty.");
+                return false;
+            }
+
+            try
+            {
+                config = JsonConvert.DeserializeObject<ConfigurationDefinition>(configContents);
+                return true;
+            }
+            catch (Exception e)
+            {
+                this.logger.LogError(e, "Failed to parse configuration file.");
+                return false;
+            }
         }
     }
 }

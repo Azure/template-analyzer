@@ -9,6 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
@@ -335,8 +336,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(JsonRuleEngineException))]
-        public void FilterRules_ConfigurationIsInvalid_ExceptionIsThrown()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void FilterRules_ConfigurationIsNull_ExceptionIsThrown()
         {
             var rule = @"[{
                 ""id"": ""RuleId 0"",
@@ -344,15 +345,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 ""recommendation"": ""Recommendation"",
                 ""helpUri"": ""Uri"",
                 ""severity"": 1,
-                ""evaluation"": { }
+                ""evaluation"": {
+                    ""path"": ""$schema"",
+                    ""hasValue"": true
+                }
             }]";
             // Act
             var jsonRuleEngine = JsonRuleEngine.Create(rule, t => null);
-            jsonRuleEngine.FilterRules("falsePath");
+            jsonRuleEngine.FilterRules(null);
         }
 
         [DataTestMethod]
-        [DataRow("", "RuleId0", "RuleId1", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Entire RuleSet; Empty configuration")]
+        [DataRow("{}", "RuleId0", "RuleId1", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Entire RuleSet; Empty configuration")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [3]
@@ -494,7 +498,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var jsonRuleEngine = JsonRuleEngine.Create(mockRules, t => null);
 
             // Filter
-            jsonRuleEngine.FilterRules(configuration);
+            jsonRuleEngine.FilterRules(JsonConvert.DeserializeObject<ConfigurationDefinition>(configuration));
 
             // Compare
             Assert.AreEqual(expectedRules.Length, jsonRuleEngine.RuleDefinitions.Count);

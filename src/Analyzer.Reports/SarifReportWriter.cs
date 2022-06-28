@@ -24,10 +24,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         private IFileInfo reportFile;
         private Stream reportFileStream;
         private StreamWriter outputTextWriter;
-        private SarifLogger sarifLogger;
         private Run sarifRun;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
         private string rootPath;
+        private int totalResults = 0;
+
+        /// <summary>
+        /// Logger used to output information to the SARIF file
+        /// </summary>
+        public SarifLogger SarifLogger { get; set; }
 
         /// <summary>
         /// Constructor of the SarifReportWriter class
@@ -43,7 +48,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             this.InitRun();
             this.RootPath = targetPath;
 
-            this.sarifLogger = new SarifLogger(
+            this.SarifLogger = new SarifLogger(
                 textWriter: this.outputTextWriter,
                 logFilePersistenceOptions: LogFilePersistenceOptions.PrettyPrint | LogFilePersistenceOptions.OverwriteExistingOutputFile,
                 tool: this.sarifRun.Tool,
@@ -67,13 +72,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 this.ExtractRule(evaluation);
 
                 // Log result
-                sarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
+                SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
                 {
                     RuleId = evaluation.RuleId,
                     Level = GetLevelFromEvaluation(evaluation),
                     Message = new Message { Id = "default" }, // should be customized message for each result 
                     Locations = ExtractLocations(evaluation, filePath, isFileInRootPath).Values.ToArray()
                 });
+
+                totalResults++;
             }
         }
 
@@ -199,9 +206,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="disposing"></param>
         public void Dispose(bool disposing)
         {
-            this.sarifLogger?.Dispose();
+            this.SarifLogger?.Dispose();
             this.outputTextWriter?.Dispose();
             this.reportFileStream?.Dispose();
+
+            Console.WriteLine($"{Environment.NewLine}Wrote {totalResults} {(totalResults == 1 ? "result" : "results")} to {reportFile.FullName}");
         }
     }
 }

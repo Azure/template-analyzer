@@ -24,16 +24,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <returns>An <see cref="ILineNumberResolver"/> to resolve line numbers for the given template context.</returns>
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
-        private readonly BuildILineNumberResolver BuildLineNumberResolver;
         internal IReadOnlyList<RuleDefinition> RuleDefinitions;
 
+        private readonly BuildILineNumberResolver BuildLineNumberResolver;
+        private readonly ILogger logger;
+
         /// <summary>
-        /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
+        /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver, ILogger)"/> for creating new instances.
         /// </summary>
-        private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder)
+        private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger)
         {
             this.RuleDefinitions = rules;
             this.BuildLineNumberResolver = jsonLineNumberResolverBuilder;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -42,57 +45,48 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="rawRuleDefinitions">The raw JSON rules to evaluate a template with.</param>
         /// <param name="jsonLineNumberResolverBuilder">A builder to create an <see cref="ILineNumberResolver"/> for mapping JSON paths from a
         /// processed template to the line number of the equivalent location in the original template.</param>
-        public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder)
+        /// <param name="logger">A logger to report errors and debug information</param>
+        public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger = null)
         {
             if (rawRuleDefinitions == null) throw new ArgumentNullException(nameof(rawRuleDefinitions));
             if (string.IsNullOrWhiteSpace(rawRuleDefinitions)) throw new ArgumentException("String cannot be only whitespace.", nameof(rawRuleDefinitions));
             if (jsonLineNumberResolverBuilder == null) throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
 
-            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
+            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder, logger);
         }
 
         /// <summary>
-        /// Modifies the rules to run based on values defined in the configurations file.
+        /// Modifies the rules to run based on values defined in the configuration file.
         /// </summary>
         /// <param name="configuration">The configuration specifying rule modifications.</param>
-        public void FilterRules(string configuration)
+        public void FilterRules(ConfigurationDefinition configuration)
         {
-            if (string.IsNullOrEmpty(configuration))
-                return;
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
 
-            ConfigurationDefinition contents;
-            try
+            if (configuration.InclusionsConfigurationDefinition != null)
             {
-                contents = JsonConvert.DeserializeObject<ConfigurationDefinition>(configuration);
-            }
-            catch (Exception e)
-            {
-                throw new JsonRuleEngineException($"Failed to parse configurations file.", e);
-            }
-
-            if (contents.InclusionsConfigurationDefinition != null)
-            {
-                var includeSeverities = contents.InclusionsConfigurationDefinition.Severity;
-                var includeIds = contents.InclusionsConfigurationDefinition.Ids;
+                var includeSeverities = configuration.InclusionsConfigurationDefinition.Severity;
+                var includeIds = configuration.InclusionsConfigurationDefinition.Ids;
 
                 RuleDefinitions = RuleDefinitions.Where(r => (includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
                     (includeIds != null && includeIds.Contains(r.Id))).ToList().AsReadOnly();
             }
-            else if (contents.ExclusionsConfigurationDefinition != null)
+            else if (configuration.ExclusionsConfigurationDefinition != null)
             {
-                var excludeSeverities = contents.ExclusionsConfigurationDefinition.Severity;
-                var excludeIds = contents.ExclusionsConfigurationDefinition.Ids;
+                var excludeSeverities = configuration.ExclusionsConfigurationDefinition.Severity;
+                var excludeIds = configuration.ExclusionsConfigurationDefinition.Ids;
 
                 RuleDefinitions = RuleDefinitions.Where(r => !(excludeSeverities != null && excludeSeverities.Contains(r.Severity)) &&
                     !(excludeIds != null && excludeIds.Contains(r.Id))).ToList().AsReadOnly();
             }
 
-            if (contents.SeverityOverrides != null)
+            if (configuration.SeverityOverrides != null)
             {                
-                var ruleSubset = RuleDefinitions.Where(r => contents.SeverityOverrides.Keys.Contains(r.Id));
+                var ruleSubset = RuleDefinitions.Where(r => configuration.SeverityOverrides.Keys.Contains(r.Id));
                 foreach (RuleDefinition rule in ruleSubset)
                 {
-                    rule.Severity = contents.SeverityOverrides[rule.Id];
+                    rule.Severity = configuration.SeverityOverrides[rule.Id];
                 }
             }
         }
@@ -101,9 +95,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// Analyzes a template using rules defined in JSON.
         /// </summary>
         /// <param name="templateContext">The template context to analyze.</param>
-        /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>The results of the rules against the template.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext, ILogger logger = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {
