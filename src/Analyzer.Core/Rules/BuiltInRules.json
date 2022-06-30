@@ -146,15 +146,32 @@
         "path": "kind",
         "regex": "api$"
       },
-      "anyOf": [
+      "allOf": [
         {
-          "resourceType": "Microsoft.Web/sites/config",
-          "path": "properties.minTlsVersion",
-          "equals": "1.2"
+          "not": {
+            "path": "properties.siteConfig.minTlsVersion",
+            "in": ["1.0", "1.1"]
+          }
         },
         {
-          "path": "properties.siteConfig.minTlsVersion",
-          "equals": "1.2"
+          "resourceType": "Microsoft.Web/sites/config",
+          "not": {
+            "path": "properties.minTlsVersion",
+            "in": ["1.0", "1.1"]
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "resourceType": "Microsoft.Web/sites/config",
+              "path": "properties.minTlsVersion",
+              "equals": "1.2"
+            },
+            {
+              "path": "properties.siteConfig.minTlsVersion",
+              "equals": "1.2"
+            }
+          ]
         }
       ]
     }
@@ -305,15 +322,32 @@
         "path": "kind",
         "regex": "^functionapp"
       },
-      "anyOf": [
+      "allOf": [
         {
-          "resourceType": "Microsoft.Web/sites/config",
-          "path": "properties.minTlsVersion",
-          "equals": "1.2"
+          "not": {
+            "path": "properties.siteConfig.minTlsVersion",
+            "in": ["1.0", "1.1"]
+          }
         },
         {
-          "path": "properties.siteConfig.minTlsVersion",
-          "equals": "1.2"
+          "resourceType": "Microsoft.Web/sites/config",
+          "not": {
+            "path": "properties.minTlsVersion",
+            "in": ["1.0", "1.1"]
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "resourceType": "Microsoft.Web/sites/config",
+              "path": "properties.minTlsVersion",
+              "equals": "1.2"
+            },
+            {
+              "path": "properties.siteConfig.minTlsVersion",
+              "equals": "1.2"
+            }
+          ]
         }
       ]
     }
@@ -496,15 +530,32 @@
           }
         ]
       },
-      "anyOf": [
+      "allOf": [
         {
-          "resourceType": "Microsoft.Web/sites/config",
-          "path": "properties.minTlsVersion",
-          "equals": "1.2"
+          "not": {
+            "path": "properties.siteConfig.minTlsVersion",
+            "in": ["1.0", "1.1"]
+          }
         },
         {
-          "path": "properties.siteConfig.minTlsVersion",
-          "equals": "1.2"
+          "resourceType": "Microsoft.Web/sites/config",
+          "not": {
+            "path": "properties.minTlsVersion",
+            "in": ["1.0", "1.1"]
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "resourceType": "Microsoft.Web/sites/config",
+              "path": "properties.minTlsVersion",
+              "equals": "1.2"
+            },
+            {
+              "path": "properties.siteConfig.minTlsVersion",
+              "equals": "1.2"
+            }
+          ]
         }
       ]
     }

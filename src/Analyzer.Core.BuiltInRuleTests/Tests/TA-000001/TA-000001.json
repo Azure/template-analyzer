@@ -44,15 +44,7 @@
       },
       {
         "LineNumber": 82,
-        "Description": "httpLoggingEnabled is not given a value"
-      },
-      {
-        "LineNumber": 82,
-        "Description": "detailedErrorLoggingEnabled is not given a value"
-      },
-      {
-        "LineNumber": 82,
-        "Description": "requestTracingEnabled is not given a value"
+        "Description": "httpLoggingEnabled, detailedErrorLoggingEnabled, and requestTracingEnabled are not given values"
       }
     ]
   },

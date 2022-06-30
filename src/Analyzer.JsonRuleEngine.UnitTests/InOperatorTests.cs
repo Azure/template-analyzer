@@ -41,7 +41,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             Assert.AreEqual(!evaluationResult, inOperatorNegated.EvaluateExpression(desiredValueJToken));
         }
 
-
         [TestMethod]
         public void EvaluateExpression_NullAsTokenToEvaluate_ReturnsFalse()
         {
@@ -50,6 +49,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var inOperator = new InOperator(operatorValue);
 
             Assert.IsFalse(inOperator.EvaluateExpression(null));
+        }
+
+        [TestMethod]
+        public void EvaluateExpression_NullAsTokenToEvaluateAndNegated_ReturnsTrue()
+        {
+            string[] possibleValues = { "aValue", "anotherValue" };
+            var operatorValue = JArray.FromObject(possibleValues);
+            var inOperator = new InOperator(operatorValue, isNegative: true);
+
+            Assert.IsTrue(inOperator.EvaluateExpression(null));
         }
 
         [TestMethod]

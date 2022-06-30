@@ -1,0 +1,109 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "linux",
+      "name": "notApiKind",
+      "location": "[parameters('location')]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "usingSecureMinTls",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "minTlsVersion": "1.2"
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "absentInChildConfigButSecureInParent",
+      "location": "[parameters('location')]",
+      "properties": {
+        "siteConfig": {
+          "minTlsVersion": "1.2"
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites/', 'absentInChildConfigButSecureInParent')]"
+          ],
+          "properties": { }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "absentInParentButSecureInChildConfig",
+      "location": "[parameters('location')]",
+      "properties": { },
+      "resources": [
+        {
+          "apiVersion": "2019-08-01",
+          "type": "config",
+          "name": "web",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites/', 'absentInParentButSecureInChildConfig')]"
+          ],
+          "properties": {
+            "minTlsVersion": "1.2"
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "absentInParentButSecureInDependentConfig",
+      "location": "[parameters('location')]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "name": "absentInParentButSecureInDependentConfig/web",
+      "kind": "api",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites/', 'absentInParentButSecureInDependentConfig')]"
+      ],
+      "properties": {
+        "minTlsVersion": "1.2"
+      }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites/config",
+      "name": "absentInParentButSecureInDependentConfig/metadata",
+      "kind": "api",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites/', 'absentInParentButSecureInDependentConfig')]"
+      ],
+      "properties": { }
+    }
+  ]
+}
