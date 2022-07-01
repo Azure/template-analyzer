@@ -15,7 +15,7 @@
       "type": "Microsoft.Automation/automationAccounts/variables",
       "apiVersion": "2021-04-01",
       "name": "automationAccounts/isEncrypted",
-      "location":  "[parameters('location')]",
+      "location": "[parameters('location')]",
       "properties": {
         "isEncrypted": true
       }
@@ -30,11 +30,20 @@
       }
     },
     {
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "automationAccountsWithADependant",
+      "location": "[parameters('location')]"
+    },
+    {
       "type": "Microsoft.Automation/automationAccounts/variables",
       "apiVersion": "2021-04-01",
       "name": "automationAccounts/isEncryptedNotDefined",
       "location": "[parameters('location')]",
-      "properties": {}
+      "properties": {},
+      "dependsOn": [
+        "automationAccountsWithADependant"
+      ]
     },
     {
       "type": "Microsoft.Automation/automationAccounts",
