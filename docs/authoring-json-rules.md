@@ -43,7 +43,9 @@ Evaluation of ARM templates is performed on the JSON representation of the templ
 
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 
-The behavior of the `resourceType` property is to find a property called "resources" in the current scope that is an array of objects, look for a "type" property in each of the objects, and keep only the resources where the full value of "type" matches the string in `resourceType` or a prefix of it. Consider that if a resource of type `Microsoft.Sql/servers` has a child of type `auditingSettings`, then the full type of the child is actually `Microsoft.Sql/servers/auditingSettings`. When looking for `Microsoft.Sql/servers/auditingSettings`, for example, if `Microsoft.Sql/servers` is matched, then the search will continue on the resources array of that resource, looking again for the full type of `auditingSettings`. See [Scopes](#scopes) for more information on scopes.
+When `resourceType` is specified, it must be the fully-qualified type name (for example, *Microsoft.Sql/servers/auditingSettings*, instead of simply *auditingSettings* as might be specified in a child resource of *Microsoft.Sql/servers*).
+
+When looking for the specified resource type, the Template BPA will look for the "resources" array property at the current [scopes](#scopes), and if found, compare the "type" property of each resource against the string specified for *resourceType*.  The search will also include looking at child resources - i.e. a "resources" array property defined within a resource.  This will occur if a type-parent of the specified *resourceType* is found in the resources (e.g. if searching for type *Microsoft.Sql/servers/auditingSettings*, resources defined within a resource of type *Microsoft.Sql/servers* will also be searched).
 
 Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 
