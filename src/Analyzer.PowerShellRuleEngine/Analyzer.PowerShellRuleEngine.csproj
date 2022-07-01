@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,6 +8,7 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.4" />
+    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.3.0-B0001" />
   </ItemGroup>
   
   <ItemGroup>
