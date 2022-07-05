@@ -33,18 +33,19 @@
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/auditingSettings",
+      "name": "FailsSQLRetentionDaysRuleWithFullResourceTypeAndName/default",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+        "retentionDays": 45
       },
-      "resources": [
-        {
-          "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
-          "name": "FailsSQLRetentionDaysRuleWithFullResourceTypeAndName/default",
-          "properties": {
-            "isAzureMonitorTargetEnabled": false,
-            "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
-            "retentionDays": 45
-          }
-        }
+      "dependsOn": [
+        "FailsSQLRetentionDaysRuleWithFullResourceTypeAndName"
       ]
     }
   ]
