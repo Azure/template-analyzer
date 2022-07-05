@@ -232,7 +232,7 @@
     },
     {
       "type": "Microsoft.Sql/servers",
-      "name": "AnSqlServerWithoutChildResources",
+      "name": "ASqlServerWithoutChildResources",
       "apiVersion": "2020-02-02-preview",
       "properties": {
         "kind": "v12.0"
@@ -248,7 +248,7 @@
         "retentionDays": 95
       },
       "dependsOn": [
-        "AnSqlServerWithoutChildResources"
+        "ASqlServerWithoutChildResources"
       ]
     }
   ]

@@ -23,10 +23,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         /// </summary>
         public static IReadOnlyList<object[]> ScenariosOfResolveResouceTypes { get; } = new List<object[]>
         {
-            { new object[] { @"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" } ] }", "Microsoft.ResourceProvider/resource1", new int[][] { new int[] { 0 } }, "1 (of 1) Matching Resource" } },
-            { new object[] { @"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" }, { ""type"": ""Microsoft.ResourceProvider/resource1"" } ] }", "Microsoft.ResourceProvider/resource1", new int[][] { new int[] { 0 }, new int[] { 1 } }, "2 (of 2) Matching Resources" } },
-            { new object[] { @"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" }, { ""type"": ""Microsoft.ResourceProvider/resource2"" } ] }", "Microsoft.ResourceProvider/resource2", new int[][] { new int[] { 1 } }, "1 (of 2) Matching Resources" } },
-            { new object[] { @"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" }, { ""type"": ""Microsoft.ResourceProvider/resource2"" } ] }", "Microsoft.ResourceProvider/resource3", Array.Empty<int[]>(), "0 (of 2) Matching Resources" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" }
+                                ] }", "Microsoft.ResourceProvider/resource1", new int[][] { new int[] { 0 } }, "1 (of 1) Matching Resource" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" },
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" }
+                                ] }", "Microsoft.ResourceProvider/resource1", new int[][] { new int[] { 0 }, new int[] { 1 } }, "2 (of 2) Matching Resources" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" },
+                                    { ""type"": ""Microsoft.ResourceProvider/resource2"" }
+                                ] }", "Microsoft.ResourceProvider/resource2", new int[][] { new int[] { 1 } }, "1 (of 2) Matching Resources" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" },
+                                    { ""type"": ""Microsoft.ResourceProvider/resource2"" }
+                                ] }", "Microsoft.ResourceProvider/resource3", Array.Empty<int[]>(), "0 (of 2) Matching Resources" } },
             { new object[] { @"{
                 ""resources"": [
                     {

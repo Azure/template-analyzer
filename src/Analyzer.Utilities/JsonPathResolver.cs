@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
             // When trying to resolve Microsoft.Web/sites/siteextensions, for example, we should consider that siteextensions can be a child resource of Microsoft.Web/sites (a parent of the original resource type)
             var resourceTypeParents = new List<string> { };
-            var indexesOfTypesSeparators = Regex.Matches(resourceType, "/").Cast<Match>().Select(m => m.Index).Skip(1);
+            var indexesOfTypesSeparators = Regex.Matches(resourceType, "/").Select(m => m.Index).Skip(1);
             foreach (var indexOfTypeSeparator in indexesOfTypesSeparators)
             {
                 resourceTypeParents.Add(resourceType[..indexOfTypeSeparator]);
