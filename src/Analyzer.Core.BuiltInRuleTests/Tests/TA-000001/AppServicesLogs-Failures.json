@@ -84,6 +84,29 @@
           "minTlsVersion": "1.2"
         }
       }
+    },
+    {
+      "apiVersion": "2019-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "withConfigAsChildResource",
+      "kind": "app",
+      "properties": {
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-08-01",
+          "type": "config",
+          "name": "configAsChildResource",
+          "dependsOn": [
+            "withConfigAsChildResource"
+          ],
+          "properties": {
+            "detailedErrorLoggingEnabled": true,
+            "httpLoggingEnabled": false,
+            "requestTracingEnabled": true
+          }
+        }
+      ]
     }
   ]
 }

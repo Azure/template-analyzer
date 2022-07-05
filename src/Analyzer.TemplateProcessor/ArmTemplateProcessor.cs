@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
             SaveFlattenedResources(template.Resources);
 
-            foreach (var resourceInfo in flattenedResources.Values)
+            foreach ((var resourceNameAndType, var resourceInfo) in flattenedResources)
             {
                 ProcessTemplateResourceLanguageExpressions(resourceInfo.resource, evaluationHelper);
 
@@ -174,6 +174,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 {
                     AddResourceMapping(resourceInfo.expandedPath, resourceInfo.resource.Path);
                 }
+
+                resourceInfo.resource.Type.Value = resourceNameAndType.Split(" ")[1];
             }
 
             if ((template.Outputs?.Count ?? 0) > 0)

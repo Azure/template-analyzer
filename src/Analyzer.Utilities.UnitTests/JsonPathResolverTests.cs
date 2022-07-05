@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -14,6 +15,54 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
     [TestClass]
     public class JsonPathResolverTests
     {
+        /// <summary>
+        /// Test data for tests that verify the matching of resource types
+        /// Index 1: Template
+        /// Index 2: Resource type to match
+        /// Index 3: Indexes of the resources matched
+        /// </summary>
+        public static IReadOnlyList<object[]> ScenariosOfResolveResouceTypes { get; } = new List<object[]>
+        {
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" }
+                                ] }", "Microsoft.ResourceProvider/resource1", new int[][] { new int[] { 0 } }, "1 (of 1) Matching Resource" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" },
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" }
+                                ] }", "Microsoft.ResourceProvider/resource1", new int[][] { new int[] { 0 }, new int[] { 1 } }, "2 (of 2) Matching Resources" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" },
+                                    { ""type"": ""Microsoft.ResourceProvider/resource2"" }
+                                ] }", "Microsoft.ResourceProvider/resource2", new int[][] { new int[] { 1 } }, "1 (of 2) Matching Resources" } },
+            { new object[] { @"{ ""resources"": [
+                                    { ""type"": ""Microsoft.ResourceProvider/resource1"" },
+                                    { ""type"": ""Microsoft.ResourceProvider/resource2"" }
+                                ] }", "Microsoft.ResourceProvider/resource3", Array.Empty<int[]>(), "0 (of 2) Matching Resources" } },
+            { new object[] { @"{
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource1""
+                    },
+                    {
+                        ""type"": ""Microsoft.ResourceProvider/resource2"",
+                        ""resources"": [
+                            {
+                                ""type"": ""Microsoft.ResourceProvider/resource2/resource3"",
+                                ""resources"": [
+                                    {
+                                        ""type"": ""Microsoft.ResourceProvider/resource2/resource3/resource4""
+                                    }    
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }", "Microsoft.ResourceProvider/resource2/resource3/resource4", new int[][] { new int[] { 1, 0, 0 } }, "1 Matching Child Resource" } }
+        }.AsReadOnly();
+
+        // Just returns the element in the last index of the array from ScenariosOfResolveResouceTypes
+        public static string GetDisplayName(MethodInfo _, object[] data) => (string)data[^1];
+
         [DataTestMethod]
         [DataRow(null, DisplayName = "Null path")]
         [DataRow("", DisplayName = "Empty path")]
@@ -158,11 +207,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(@"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" } ] }", "Microsoft.ResourceProvider/resource1", new[] { 0 }, DisplayName = "1 (of 1) Matching Resource")]
-        [DataRow(@"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" }, { ""type"": ""Microsoft.ResourceProvider/resource1"" } ] }", "Microsoft.ResourceProvider/resource1", new[] { 0, 1 }, DisplayName = "2 (of 2) Matching Resources")]
-        [DataRow(@"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" }, { ""type"": ""Microsoft.ResourceProvider/resource2"" } ] }", "Microsoft.ResourceProvider/resource2", new[] { 1 }, DisplayName = "1 (of 2) Matching Resources")]
-        [DataRow(@"{ ""resources"": [ { ""type"": ""Microsoft.ResourceProvider/resource1"" }, { ""type"": ""Microsoft.ResourceProvider/resource2"" } ] }", "Microsoft.ResourceProvider/resource3", new int[] { }, DisplayName = "0 (of 2) Matching Resources")]
-        public void ResolveResourceType_JObjectWithExpectedResourcesArray_ReturnsResourcesOfCorrectType(string template, string resourceType, int[] matchingResourceIndexes)
+        [DynamicData(nameof(ScenariosOfResolveResouceTypes), DynamicDataDisplayName = nameof(GetDisplayName))]
+        public void ResolveResourceType_JObjectWithExpectedResourcesArray_ReturnsResourcesOfCorrectType(string template, string resourceType, int[][] matchingResourceIndexes, string _)
         {
             var jToken = JObject.Parse(template);
             var resolver = new JsonPathResolver(jToken, jToken.Path);
@@ -174,11 +220,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 Assert.AreEqual(matchingResourceIndexes.Length, resources.Count);
 
                 // Verify resources of correct type were returned
-                for (int j = 0; j < matchingResourceIndexes.Length; j++)
+                for (int numOfResourceMatched = 0; numOfResourceMatched < matchingResourceIndexes.Length; numOfResourceMatched++)
                 {
-                    var resource = resources[j];
-                    int resourceIndex = matchingResourceIndexes[j];
-                    var expectedPath = $"resources[{resourceIndex}]";
+                    var resource = resources[numOfResourceMatched];
+                    var resourceIndexes = matchingResourceIndexes[numOfResourceMatched];
+                    var expectedPath = "";
+
+                    for (int numOfResourceIndex = 0; numOfResourceIndex < resourceIndexes.Length; numOfResourceIndex++)
+                    {
+                        if (numOfResourceIndex != 0)
+                        {
+                            expectedPath += ".";
+                        }
+                        expectedPath += $"resources[{resourceIndexes[numOfResourceIndex]}]";
+                    }
+
                     Assert.AreEqual(expectedPath, resource.JToken.Path);
                 }
             }
