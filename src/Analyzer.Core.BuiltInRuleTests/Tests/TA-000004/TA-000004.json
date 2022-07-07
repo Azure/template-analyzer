@@ -1,0 +1,15 @@
+[
+  {
+    "Template": "AppServices.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 29,
+        "Description": "HTTPS property not defined"
+      },
+      {
+        "LineNumber": 44,
+        "Description": "HTTPS property set to false"
+      }
+    ]
+  }
+]

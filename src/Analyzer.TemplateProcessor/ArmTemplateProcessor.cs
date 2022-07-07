@@ -4,16 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+<<<<<<< HEAD
 using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Configuration;
 using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Extensions;
+=======
+using Azure.Deployments.Core.Configuration;
+using Azure.Deployments.Core.Definitions.Schema;
+>>>>>>> origin/development
 using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
 using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Expressions;
 using Azure.Deployments.Templates.Extensions;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -27,6 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
     {
         private readonly string armTemplate;
         private readonly string apiVersion;
+        private readonly ILogger logger;
         private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
         private Dictionary<string, string> expandedToOriginalMapping = new Dictionary<string, string>();
         private Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new Dictionary<string, (TemplateResource, string)>(StringComparer.OrdinalIgnoreCase);
@@ -44,12 +53,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="armTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
         /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
-        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01")
+        /// <param name="logger">A logger to report errors and debug information</param>
+        public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", ILogger logger = null)
         {
             this.armTemplate = armTemplate;
             this.apiVersion = apiVersion;
-
-            AnalyzerDeploymentsInterop.Initialize();
+            this.logger = logger;
         }
 
         /// <summary>
@@ -120,9 +129,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 if (resource.Copy != null) copyNameMap[resource.Copy.Name.Value] = (resource.OriginalName, i);
             }
 
+            var managementGroupName = metadata["managementGroup"]["name"].ToString();
+            var subscriptionId = metadata["subscription"]["subscriptionId"].ToString();
+            var resourceGroupName = metadata["resourceGroup"]["name"].ToString();
+
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName: null, subscriptionId: null, resourceGroupName: null, template, apiVersion);
+                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion);
             }
             catch (Exception ex)
             {
@@ -134,6 +147,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
 
                 // Do not throw if there was another issue with evaluating language expressions
+
+                logger?.LogWarning(ex, "An exception occurred when processing the template language expressions");
             }
 
             MapTopLevelResources(template, copyNameMap);
@@ -183,6 +198,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     }
                     catch (Exception)
                     {
+                        logger?.LogWarning("The parsing of a template output failed. Output name: {outputName}. Output value: {outputValue}", outputKey, template.Outputs[outputKey]?.Value?.Value);
+
                         template.Outputs[outputKey].Value.Value = new JValue("NOT_PARSED");
                     }
                 }
@@ -209,9 +226,28 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 // If the dependsOn references the resourceId
                 if (parentResourceIds.Value.StartsWith("/subscriptions"))
                 {
+                    string parentResourceType;
                     string parentResourceId = IResourceIdentifiableExtensions.GetUnqualifiedResourceId(parentResourceIds.Value);
-                    parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
-                    string parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
+                    if (parentResourceId != "")
+                    {
+                        parentResourceName = IResourceIdentifiableExtensions.GetResourceName(parentResourceId);
+                        parentResourceType = IResourceIdentifiableExtensions.GetFullyQualifiedResourceType(parentResourceId);
+                    }
+                    else
+                    {
+                        // When there's no provider segment, GetUnqualifiedResourceId returns an empty string
+                        // and GetFullyQualifiedResourceId returns invalid values.
+                        // If the parent resource is defined as "/subscriptions/<anID>/resourceGroups/<aName>",
+                        // or the TemplateEngine reduces it to that shape (for example if the parent resource is specified as subscriptionResourceId('Microsoft.Resources/resourceGroups', <aName>)),
+                        // then there won't be any provider segment:
+                        parentResourceType = "Microsoft.Resources/resourceGroups";
+                        parentResourceName = IResourceIdentifiableExtensions.GetResourceGroup(parentResourceIds.Value);
+
+                        if (parentResourceName == null)
+                        {
+                            throw new Exception("Resource group name was not found on parent resource id: " + parentResourceIds.Value);
+                        }
+                    }
 
                     this.flattenedResources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResourceInfo);
                 }
@@ -361,9 +397,12 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         evaluationContext: evaluationHelper.EvaluationContext);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Do not throw if there was an issue with evaluating language expressions
+
+                logger?.LogWarning(ex, "An exception occurred while evaluating the properties of a resource. Properties: {properties}", templateResource.Properties.Value);
+
                 return;
             }
 

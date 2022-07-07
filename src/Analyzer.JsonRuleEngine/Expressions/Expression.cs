@@ -44,47 +44,29 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// <param name="jsonScope">The specific scope to evaluate.</param>
         /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
         /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
-        /// <returns>A <see cref="JsonRuleEvaluation"/> with the results.</returns>
-        public abstract JsonRuleEvaluation Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver);
+        /// <returns>An <see cref="IEnumerable{JsonRuleEvaluation}"/> with the results of the evaluation.</returns>
+        public abstract IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver);
 
         /// <summary>
         /// Performs tasks common across <see cref="Expression"/> implementations, such as
         /// determining all paths to run against.
         /// </summary>
         /// <param name="jsonScope">The scope being evaluated.</param>
-        /// <param name="getResult">A delegate for logic specific to the child <see cref="Expression"/>, which
-        /// generates a <see cref="JsonRuleResult"/> for the specified <paramref name="jsonScope"/>.</param>
-        /// <returns>A <see cref="JsonRuleEvaluation"/> populated with the results generated from <paramref name="getResult"/>.</returns>
-        protected JsonRuleEvaluation EvaluateInternal(IJsonPathResolver jsonScope, Func<IJsonPathResolver, JsonRuleResult> getResult) =>
-            EvaluateInternal(jsonScope, getResult: getResult, getEvaluation: null);
-
-        /// <summary>
-        /// Performs tasks common across <see cref="Expression"/> implementations, such as
-        /// determining all paths to run against.
-        /// </summary>
-        /// <param name="jsonScope">The scope being evaluated.</param>
-        /// <param name="getEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
+        /// <param name="doEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
         /// generates a <see cref="JsonRuleEvaluation"/> for the specified <paramref name="jsonScope"/>.</param>
-        /// <returns>A <see cref="JsonRuleEvaluation"/>, either populated with the evaluations generated from <paramref name="getEvaluation"/>,
-        /// or the single <see cref="JsonRuleEvaluation"/> if only one was generated from <paramref name="getEvaluation"/>.</returns>
-        protected JsonRuleEvaluation EvaluateInternal(IJsonPathResolver jsonScope, Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation) =>
-            EvaluateInternal(jsonScope, getEvaluation: getEvaluation, getResult: null);
-
-        /// <summary>
-        /// Performs tasks common across <see cref="Expression"/> implementations, such as
-        /// determining all paths to run against.  Only <paramref name="getEvaluation"/>
-        /// or <paramref name="getResult"/> should be populated, not both.
-        /// </summary>
-        /// <param name="jsonScope">The scope being evaluated.</param>
-        /// <param name="getEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
-        /// generates a <see cref="JsonRuleEvaluation"/> for the specified <paramref name="jsonScope"/>.</param>
-        /// <param name="getResult">A delegate for logic specific to the child <see cref="Expression"/>, which
-        /// generates a <see cref="JsonRuleResult"/> for the specified <paramref name="jsonScope"/>.</param>
         /// <returns>The results of the evaluation.</returns>
-        private JsonRuleEvaluation EvaluateInternal(
-            IJsonPathResolver jsonScope,
-            Func<IJsonPathResolver, JsonRuleEvaluation> getEvaluation,
-            Func<IJsonPathResolver, JsonRuleResult> getResult)
+        protected IEnumerable<JsonRuleEvaluation> EvaluateInternal(IJsonPathResolver jsonScope, Func<IJsonPathResolver, JsonRuleEvaluation> doEvaluation) =>
+            EvaluateInternal(jsonScope, scope => new[] { doEvaluation(scope) });
+
+        /// <summary>
+        /// Performs tasks common across <see cref="Expression"/> implementations, such as
+        /// determining all paths to run against.
+        /// </summary>
+        /// <param name="jsonScope">The scope being evaluated.</param>
+        /// <param name="doEvaluation">A delegate for logic specific to the child <see cref="Expression"/>, which
+        /// generates an enumerable of <see cref="JsonRuleEvaluation"/>s for the specified <paramref name="jsonScope"/>.</param>
+        /// <returns>The results of the evaluation.</returns>
+        protected IEnumerable<JsonRuleEvaluation> EvaluateInternal(IJsonPathResolver jsonScope, Func<IJsonPathResolver, IEnumerable<JsonRuleEvaluation>> doEvaluation)
         {
             if (jsonScope == null) throw new ArgumentNullException(nameof(jsonScope));
 
@@ -99,9 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 scopesToEvaluate = new[] { jsonScope };
             }
 
-            List<JsonRuleEvaluation> jsonRuleEvaluations = new List<JsonRuleEvaluation>();
-            List<JsonRuleResult> jsonRuleResults = new List<JsonRuleResult>();
-            bool evaluationPassed = true;
+            List<JsonRuleEvaluation> evaluations = new List<JsonRuleEvaluation>();
 
             foreach (var initialScope in scopesToEvaluate)
             {
@@ -115,37 +95,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                     // Evaluate this path if either (a) there is no Where condition to evaluate, or (b) the Where expression passed for this path.
                     // Do not pass a line number resolver to Where because line numbers in these evaluations do not matter.
                     var whereEvaluation = Where?.Evaluate(propertyToEvaluate, jsonLineNumberResolver: null);
-                    if (whereEvaluation == null || (whereEvaluation.Passed && whereEvaluation.HasResults))
+                    if (whereEvaluation == null || whereEvaluation.Any(w => w.Passed && w.HasResults))
                     {
-                        // Expression implementation will generate Evaluation or Result.
-                        // evaluationPassed is &&'d with the Passed outcome to combine
-                        // the evaluations of all relevant paths (which can come from
-                        // matching resource types and/or wildcards in Path).
-                        if (getEvaluation != null)
-                        {
-                            var evaluation = getEvaluation(propertyToEvaluate);
-                            evaluationPassed &= evaluation.Passed;
-                            evaluation.Expression = this;
-                            jsonRuleEvaluations.Add(evaluation);
-                        }
-                        else
-                        {
-                            var result = getResult(propertyToEvaluate);
-                            evaluationPassed &= result.Passed;
-                            result.Expression = this;
-                            jsonRuleResults.Add(result);
-                        } 
+                        // Perform the evaluation on this scope/path
+                        evaluations.AddRange(doEvaluation(propertyToEvaluate));
                     }
                 }
             }
 
-            // Return Evaluation that wraps the Expression's results.
-            // If Expression resulted in a single Evaluation, return that directly.
-            return getResult != null
-                ? new JsonRuleEvaluation(this, evaluationPassed, jsonRuleResults)
-                : jsonRuleEvaluations.Count == 1
-                    ? jsonRuleEvaluations.First()
-                    : new JsonRuleEvaluation(this, evaluationPassed, jsonRuleEvaluations);
+            return evaluations;
         }
     }
 }

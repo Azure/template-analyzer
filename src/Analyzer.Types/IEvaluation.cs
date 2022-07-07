@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
@@ -32,6 +31,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public string HelpUri { get; }
 
         /// <summary>
+        /// Gets the Severity of the rule this evaluation is for.
+        /// </summary>
+        public Severity Severity { get; }
+
+        /// <summary>
         /// Gets the identifier of the file this evaluation is for.
         /// </summary>
         public string FileIdentifier { get; }
@@ -49,10 +53,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Gets the collections of results from this evaluation.
         /// </summary>
-        public IEnumerable<IResult> Results { get; }
+        public IResult Result { get; }
 
         /// <summary>
-        /// Gets wether this evaluation has corresponding results.
+        /// Gets whether this evaluation has corresponding results.
         /// </summary>
         /// <returns>Whether this evaluation has corresponding results</returns>
         public bool HasResults { get; }

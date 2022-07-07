@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
@@ -22,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            templateAnalyzer = TemplateAnalyzer.Create();
+            templateAnalyzer = TemplateAnalyzer.Create(usePowerShell: true);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var powerShell = Powershell.Create();
@@ -36,13 +35,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, DisplayName = "1 matching Resource with 1 passing evaluation")]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, false, DisplayName = "1 matching Resource with 1 failing evaluation")]
-        [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.Storage/storageAccounts", 0, false, DisplayName = "0 matching Resources with no results")]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, false, @"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", DisplayName = "2 matching Resources with 1 passing evaluation")]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, true, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\success.json", DisplayName = "1 matching Resource with 1 passing evaluation, specifying a template file path")]
-        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 2, false, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", DisplayName = "1 matching Resource with 2 failing evaluations, specifying a template file path")]
-        public void AnalyzeTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, bool expectedEvaluationPassed, string resource2Properties = null, string templateFilePath = null)
+        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, 1, DisplayName = "1 matching Resource with 1 passing evaluation")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, 0, DisplayName = "1 matching Resource with 1 failing evaluation")]
+        [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.Storage/storageAccounts", 0, 0, DisplayName = "0 matching Resources with no results")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 2, 1, @"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", DisplayName = "2 matching Resources with 1 passing evaluation")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, 1, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\success.json", DisplayName = "1 matching Resource with 1 passing evaluation, specifying a template file path")]
+        [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 2, 0, null, @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", DisplayName = "1 matching Resource with 2 failing evaluations, specifying a template file path")]
+        public void AnalyzeTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, int expectedEvaluationPassCount, string resource2Properties = null, string templateFilePath = null)
         {
             // Arrange
             string[] resourceProperties = { GenerateResource(resource1Properties, resourceType, "resource1"), GenerateResource(resource2Properties, resourceType, "resource2") };
@@ -52,11 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
 
             Assert.AreEqual(expectedEvaluationCount, evaluationsWithResults.Count);
-
-            foreach(IEvaluation evaluation in evaluationsWithResults)
-            {
-                Assert.AreEqual(expectedEvaluationPassed, evaluation.Passed);
-            }
+            Assert.AreEqual(expectedEvaluationPassCount, evaluationsWithResults.Count(e => e.Passed));
         }
 
         [TestMethod]
@@ -71,10 +66,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string template = GenerateTemplate(resourceProperties);
 
             // Analyze with PowerShell disabled
-            var evaluations = templateAnalyzer.AnalyzeTemplate(
+            var templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(usePowerShell: false);
+            var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
-                usePowerShell: false);
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json"); // This file has violations from PowerShell rules
 
             // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
             Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -82,8 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             // Analyze with PowerShell enabled
             evaluations = templateAnalyzer.AnalyzeTemplate(
                 template,
-                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json", // This file has violations from PowerShell rules
-                usePowerShell: true);
+                templateFilePath: @"..\..\..\..\Analyzer.PowerShellRuleEngine.UnitTests\templates\error_without_line_number.json"); // This file has violations from PowerShell rules
 
             // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
             Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -142,12 +136,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
             try
             {
-                TemplateAnalyzer.Create();
+                TemplateAnalyzer.Create(false);
             }
             finally
             {
                 File.Move(movedFile, rulesFile, overwrite: true);
             }
+        }
+
+        [TestMethod]
+        public void FilterRules_ValidConfiguration_NoExceptionThrown()
+        {
+            // Note: this is not a great test, but there's very little to validate in this function.
+            TemplateAnalyzer.Create(false).FilterRules(new ConfigurationDefinition());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void FilterRules_ConfigurationNull_ExceptionThrown()
+        {
+            templateAnalyzer.FilterRules(null);
         }
     }
 }

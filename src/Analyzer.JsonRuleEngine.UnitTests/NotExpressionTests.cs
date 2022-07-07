@@ -47,20 +47,21 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     .Returns(new List<IJsonPathResolver> { mockJsonPathResolver.Object });
             }
 
-            var leafExpressionresults = new JsonRuleResult[] { jsonRuleResult };
-
             mockLeafExpression
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new JsonRuleEvaluation(mockLeafExpression.Object, expectedEvaluationResult, leafExpressionresults));
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression.Object, expectedEvaluationResult, jsonRuleResult) });
 
             var notExpression = new NotExpression(mockLeafExpression.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var evaluation = notExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, mockLineResolver);
+            var evaluationOutcome = notExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, mockLineResolver).ToList();
 
             // Assert
+            Assert.AreEqual(1, evaluationOutcome.Count);
+
+            var evaluation = evaluationOutcome[0];
             Assert.AreEqual(expectedEvaluationResult, evaluation.Passed);
-            Assert.AreEqual(expectedEvaluationResult, evaluation.Results.First().Passed);
+            Assert.AreEqual(expectedEvaluationResult, evaluation.Result.Passed);
 
             Assert.IsTrue(mockLeafExpression.Object.Operator.IsNegative);
         }

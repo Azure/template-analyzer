@@ -1,0 +1,11 @@
+[
+  {
+    "Template": "RedisCache.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 28,
+        "Description": "enableNonSslPort equals true"
+      }
+    ]
+  }
+]

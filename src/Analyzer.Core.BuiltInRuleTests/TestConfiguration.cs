@@ -14,7 +14,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         [JsonProperty]
         public ExpectedRuleFailure[] ReportedFailures;
 
-        public string TestName { get; set; }
+        public string RuleId { get; set; }
+
+        public string DisplayName { get; set; }
     }
 
     [JsonObject]

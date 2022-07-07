@@ -1,0 +1,23 @@
+[
+  {
+    "Template": "Kubernetes.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 42,
+        "Description": "authorizedIPRanges is not given a value"
+      },
+      {
+        "LineNumber": 42,
+        "Description": "enablePrivateCluster is not given a value"
+      },
+      {
+        "LineNumber": 62,
+        "Description": "apiServerAccessProfile is not defined"
+      },
+      {
+        "LineNumber": 63,
+        "Description": "enablePrivateCluster is false"
+      }
+    ]
+  }
+]

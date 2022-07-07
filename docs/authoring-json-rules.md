@@ -2,7 +2,7 @@
 <a name="note"></a>***Note**: The ARM Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-Template BPA rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template BPA rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
 
 ## Template BPA Rule Object
 Here are the fields that make up a rule definition.
@@ -12,14 +12,19 @@ Here are the fields that make up a rule definition.
     "description": "Brief description of what the rule is evaluating",
     "recommendation": "Guidance describing what should be done to fix the issue if a template violates the rule",
     "helpUri": "URI to find more detailed information about the rule and how to fix a template",
+    "severity" : "Integer value between 1 and 3, with 1 being high and 3 being low, designating the importance of the rule",
     "evaluation": { … } // The evaluation logic of the rule.  More details below.
 }
 ```
 
 ### Guidelines for rule metadata
-- The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md).
-- The `recommendation` should provide clear but concise guidance on how to modify a template if the rule fails.  If some details are somewhat complex, or the rule takes a bit more to understand, add those details to a guide accessible at the URI in `helpUri`.
-- The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository.
+| Property Name | Description | Is required for contributing<br/>a built-in rule | Is required<br/>in schema | Default Value |
+|---|---|---|---|---|
+| id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md). | yes | yes | - |
+| description | Brief description of what the rule is evaluating | yes | yes | - |
+| recommendation | The `recommendation` should provide clear but concise guidance on how to modify a template if the rule fails.<br/>If some details are somewhat complex, or the rule takes a bit more to understand, add those details to a guide accessible at the URI in `helpUri`. | yes | no | none |
+| helpUri | The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository. | yes | no | none |
+| severity | The `severity` is optional. If no severity is provided, it defaults to a severity of 2. | yes | no | 2 |
 
 ## Evaluation Object
 The `Evaluation` is comprised of the following basic properties.
@@ -403,11 +408,12 @@ In contrast to the first example, the `allOf` operator in the example above woul
 **NOTE:** In both examples above, `"path": "properties.osProfile.computerName"` is specified *inside* the `allOf` operators.  This is important because of how [scopes](#scopes) are determined.  If it was instead specified outside the operator (as a sibling to `where`), it would narrow the **outer** scope to that path.  That path would then be passed into `where`, resulting in `"path": "apiVersion"` and `"path": "name"` (inside `where` in the examples) being appended to *properties.osProfile.computerName* in the outer scope, which is not the intent.
 
 ## Wildcard Behavior
-The `path` in an `Evaluation` can specify the '\*' character as a wildcard.  '\*' can be used to match any full property name or as the index into an array (selecting all elements of the array).  When a wildcard is used, zero or more paths in the template will be found that match `path`.  If zero are found, the operator in the `Evaluation` is skipped, as there is nothing to evaluate.  If two or more are found, the operator evaluates each path individually and the results are logically 'and'ed together.
+The `path` in an `Evaluation` can specify the '\*' character as a wildcard.  '\*' can be used to match any full property name or as the index into an array (selecting all elements of the array).  When a wildcard is used, zero or more paths in the template will be found that match `path`.  If zero paths are found, the operator in the `Evaluation` is skipped, as there is nothing to evaluate.  If two or more paths are found, the operator evaluates each path individually and treats each path as its own result; then, if the operator evaluating the path(s) is contained within an `allOf` or `anyOf`, the results will be combined according to those operators - otherwise, they will be reported individually.
 
 When using a wildcard for a property name, '\*' must replace the entire name of a property (such as *property.\** or *property.\*.otherProperty*), being the only character between the periods.  Wildcards for partial property names (e.g. *property.\*id*) are **not** supported.  When using a wildcard as an index into an array (such as *property[\*]*), '\*' must be the only character between the '[]' characters.
 
 Examples:
+
 ``` js
 {
     "resourceType": "Microsoft.Compute/virtualMachines",
@@ -417,6 +423,7 @@ Examples:
         // resources[0].properties.osProfile.adminPassword
 }
 ```
+
 ``` js
 {
     "resourceType": "Microsoft.Compute/virtualMachines",
@@ -424,12 +431,14 @@ Examples:
         // resources[0].properties.networkProfile.networkInterfaces[0]
 }
 ```
+
 ``` js
 {
     "path": "resources[*]" // Returns all resources (only one resource is defined):
         // resources[0]
 }
 ```
+
 ``` js
 {
     "path": "outputs.*" // Returns all outputs:
@@ -437,6 +446,7 @@ Examples:
         // outputs.customOutput
 }
 ```
+
 ``` js
 {
     "resourceType": "Microsoft.Compute/virtualMachines",

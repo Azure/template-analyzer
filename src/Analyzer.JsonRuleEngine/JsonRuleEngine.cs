@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
@@ -22,16 +24,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <returns>An <see cref="ILineNumberResolver"/> to resolve line numbers for the given template context.</returns>
         public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
 
+        internal IReadOnlyList<RuleDefinition> RuleDefinitions;
+
         private readonly BuildILineNumberResolver BuildLineNumberResolver;
-        internal readonly IReadOnlyList<RuleDefinition> RuleDefinitions;
+        private readonly ILogger logger;
 
         /// <summary>
-        /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver)"/> for creating new instances.
+        /// Private constructor to enforce use of <see cref="JsonRuleEngine.Create(string, BuildILineNumberResolver, ILogger)"/> for creating new instances.
         /// </summary>
-        private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder)
+        private JsonRuleEngine(List<RuleDefinition> rules, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger)
         {
             this.RuleDefinitions = rules;
             this.BuildLineNumberResolver = jsonLineNumberResolverBuilder;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -40,13 +45,50 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="rawRuleDefinitions">The raw JSON rules to evaluate a template with.</param>
         /// <param name="jsonLineNumberResolverBuilder">A builder to create an <see cref="ILineNumberResolver"/> for mapping JSON paths from a
         /// processed template to the line number of the equivalent location in the original template.</param>
-        public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder)
+        /// <param name="logger">A logger to report errors and debug information</param>
+        public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger = null)
         {
             if (rawRuleDefinitions == null) throw new ArgumentNullException(nameof(rawRuleDefinitions));
             if (string.IsNullOrWhiteSpace(rawRuleDefinitions)) throw new ArgumentException("String cannot be only whitespace.", nameof(rawRuleDefinitions));
             if (jsonLineNumberResolverBuilder == null) throw new ArgumentNullException(nameof(jsonLineNumberResolverBuilder));
 
-            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder);
+            return new JsonRuleEngine(ParseRuleDefinitions(rawRuleDefinitions), jsonLineNumberResolverBuilder, logger);
+        }
+
+        /// <summary>
+        /// Modifies the rules to run based on values defined in the configuration file.
+        /// </summary>
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(ConfigurationDefinition configuration)
+        {
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            if (configuration.InclusionsConfigurationDefinition != null)
+            {
+                var includeSeverities = configuration.InclusionsConfigurationDefinition.Severity;
+                var includeIds = configuration.InclusionsConfigurationDefinition.Ids;
+
+                RuleDefinitions = RuleDefinitions.Where(r => (includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
+                    (includeIds != null && includeIds.Contains(r.Id))).ToList().AsReadOnly();
+            }
+            else if (configuration.ExclusionsConfigurationDefinition != null)
+            {
+                var excludeSeverities = configuration.ExclusionsConfigurationDefinition.Severity;
+                var excludeIds = configuration.ExclusionsConfigurationDefinition.Ids;
+
+                RuleDefinitions = RuleDefinitions.Where(r => !(excludeSeverities != null && excludeSeverities.Contains(r.Severity)) &&
+                    !(excludeIds != null && excludeIds.Contains(r.Id))).ToList().AsReadOnly();
+            }
+
+            if (configuration.SeverityOverrides != null)
+            {                
+                var ruleSubset = RuleDefinitions.Where(r => configuration.SeverityOverrides.Keys.Contains(r.Id));
+                foreach (RuleDefinition rule in ruleSubset)
+                {
+                    rule.Severity = configuration.SeverityOverrides[rule.Id];
+                }
+            }
         }
 
         /// <summary>
@@ -58,16 +100,21 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         {
             foreach (RuleDefinition rule in RuleDefinitions)
             {
-                JsonRuleEvaluation evaluation = rule.Expression.Evaluate(
+                logger?.LogDebug("Evaluating rule {ruleID} in the JSON rule engine", rule.Id);
+
+                var evaluations = rule.Expression.Evaluate(
                     new JsonPathResolver(
                         templateContext.ExpandedTemplate,
                         templateContext.ExpandedTemplate.Path),
                     this.BuildLineNumberResolver(templateContext));
 
-                 evaluation.RuleDefinition = rule;
-                 evaluation.FileIdentifier = templateContext.TemplateIdentifier;
-                    
-                yield return evaluation;
+                foreach (var evaluation in evaluations)
+                {
+                    evaluation.RuleDefinition = rule;
+                    evaluation.FileIdentifier = templateContext.TemplateIdentifier;
+
+                    yield return evaluation;
+                }
             }
         }
 
