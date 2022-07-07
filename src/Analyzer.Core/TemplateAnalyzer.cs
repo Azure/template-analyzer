@@ -84,7 +84,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             dynamic sourceMap = null;
             if (isBicep)
             {
-                (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                try
+                {
+                    (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                }
+                catch (Exception e)
+                {
+                    throw new TemplateAnalyzerException("Error compiling bicep template", e);
+                }
             }
 
             JToken templatejObject;

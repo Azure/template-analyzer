@@ -116,9 +116,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(TemplateAnalyzerException))]
-        public void AnalyzeTemplate_TemplateIsInvalid_ThrowTemplateAnalyzerException()
+        public void AnalyzeTemplate_JsonTemplateIsInvalid_ThrowTemplateAnalyzerException()
         {
             templateAnalyzer.AnalyzeTemplate("{}");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(TemplateAnalyzerException))]
+        public void AnalyzeTemplate_BicepTemplateIsInvalid_ThrowTemplateAnalyzerException()
+        {
+            var invalidBicep = "param location string = badstring";
+            var templateFilePath = Path.Combine(Directory.GetCurrentDirectory(), "invalid.bicep");
+
+            try
+            {
+                File.WriteAllText(templateFilePath, invalidBicep);
+                templateAnalyzer.AnalyzeTemplate(invalidBicep, templateFilePath: templateFilePath);
+            }
+            finally
+            {
+                File.Delete(templateFilePath);
+            }
         }
 
         [TestMethod]

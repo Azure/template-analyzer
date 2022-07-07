@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using Bicep.Core.Analyzers.Linter;
 using Bicep.Core.Configuration;
 using Bicep.Core.Emit;
@@ -55,6 +56,13 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var settings = new EmitterSettings(featureProvider);
             var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), settings);
             var emitResult = emitter.Emit(stringWriter);
+
+            if (emitResult.Status == EmitStatus.Failed)
+            {
+                var bicepDiags = emitResult.Diagnostics.Select(diag => diag.Message);
+                var bicepIssues = string.Join('\n', bicepDiags);
+                throw new Exception($"Bicep issues found:\n{bicepIssues}");
+            }
             
             return (stringWriter.ToString(), emitResult.SourceMap);
         }

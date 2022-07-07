@@ -35,13 +35,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         {
             var jsonLine = this.jsonLineNumberResolver.ResolveLineNumber(pathInExpandedTemplate);
 
-            var entrypoint = this.sourceMap.Entrypoint;
-            var fileSourceMap = this.sourceMap.Entries.First(); // TODO: check entrypoint from source..? or just search for line number
+            // find mapping with matching target/json line to get source/bicep line
+            foreach(var file in this.sourceMap.Entries)
+            {
+                var match = file.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+                if (match != null)
+                {
+                    return match.SourceLine;
+                }
+            }
 
-            var bicepLocation = fileSourceMap.SourceMap.Where(mapping => mapping.TargetLine == jsonLine).FirstOrDefault();
-            var bicepLine = bicepLocation.SourceLine;
-
-            return bicepLine;
+            return 0;
         }
     }
 }
