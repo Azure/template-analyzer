@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
@@ -14,7 +13,6 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using Bicep.Core.Emit;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
 {
@@ -60,7 +58,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext), logger),
+                JsonRuleEngine.Create(
+                    rules,
+                    templateContext => templateContext.IsBicep
+                        ? new BicepLocationResolver(templateContext)
+                        : new JsonLineNumberResolver(templateContext),
+                    logger),
                 usePowerShell ? new PowerShellRuleEngine(logger) : null,
                 logger);
         }
@@ -78,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             // if the template is bicep, convert to JSON and get source map
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
-            SourceMap sourceMap = null;
+            dynamic sourceMap = null;
             if (isBicep)
             {
                 (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);

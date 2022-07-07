@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Setup mock line number resolver
-            var mockLineResolver = new Mock<ILineNumberResolver>();
+            var mockLineResolver = new Mock<ILocationResolver>();
             mockLineResolver.Setup(r =>
                 r.ResolveLineNumber(
                     It.IsAny<string>()))
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Setup mock line number resolver
-            var mockLineResolver = new Mock<ILineNumberResolver>();
+            var mockLineResolver = new Mock<ILocationResolver>();
             mockLineResolver.Setup(r =>
                 r.ResolveLineNumber(
                     It.IsAny<string>()))

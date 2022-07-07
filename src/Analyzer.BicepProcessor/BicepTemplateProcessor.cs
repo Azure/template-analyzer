@@ -34,18 +34,23 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             Environment.SetEnvironmentVariable("BICEP_SOURCEMAPPING_ENABLED", "true");
 
+            var fileResolver = new FileResolver();
             var featureProvider = new FeatureProvider();
             
-            var fileResolver = new FileResolver();
-            var clientFactory = new ContainerRegistryClientFactory(new TokenCredentialFactory());
-            var templateSpecRepositoryFactory = new TemplateSpecRepositoryFactory(new TokenCredentialFactory());
-            var dispatcher = new ModuleDispatcher(new DefaultModuleRegistryProvider(fileResolver, clientFactory, templateSpecRepositoryFactory, featureProvider));
-            var configurationManager = new ConfigurationManager(new FileSystem());
-            var configuration = configurationManager.GetConfiguration(new Uri(bicepPath));
+            var moduleDispatcher = new ModuleDispatcher(
+                new DefaultModuleRegistryProvider(
+                    fileResolver,
+                    new ContainerRegistryClientFactory(new TokenCredentialFactory()),
+                    new TemplateSpecRepositoryFactory(new TokenCredentialFactory()),
+                    featureProvider));
+            var configuration = (new ConfigurationManager(new FileSystem()).GetConfiguration(new Uri(bicepPath)));
 
-            var namespaceProvider = new DefaultNamespaceProvider(new AzResourceTypeLoader(), featureProvider);
-            var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, dispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepPath), configuration);
-            var compilation = new Compilation(featureProvider, namespaceProvider, sourceFileGrouping, configuration, new LinterAnalyzer(configuration));
+            var compilation = new Compilation(
+                featureProvider,
+                new DefaultNamespaceProvider( new AzResourceTypeLoader(), featureProvider),
+                SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepPath), configuration),
+                configuration,
+                new LinterAnalyzer(configuration));
 
             var settings = new EmitterSettings(featureProvider);
             var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), settings);

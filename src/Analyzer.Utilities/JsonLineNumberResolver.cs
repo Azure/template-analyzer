@@ -10,9 +10,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
+    /// An <see cref="ILocationResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
     /// </summary>
-    public class JsonLineNumberResolver : ILineNumberResolver
+    public class JsonLineNumberResolver : ILocationResolver
     {
         private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -85,16 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 }
             }
 
-            //return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
-
-            int lineNumber = (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
-            // TODO
-            //if (this.templateContext.IsBicep)
-            //{
-            //    lineNumber = this.templateContext.SourceMap.GetBicepLineNumber(lineNumber);
-            //}
-
-            return lineNumber;
+            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
         }
     }
 }

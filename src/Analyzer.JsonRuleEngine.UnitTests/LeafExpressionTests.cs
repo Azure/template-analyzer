@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Returns(expectedEvaluationResult);
 
             // A line resolver to return a line number for the result
-            var mockLineResolver = new Mock<ILineNumberResolver>();
+            var mockLineResolver = new Mock<ILocationResolver>();
             mockLineResolver
                 .Setup(r => r.ResolveLineNumber(It.Is<string>(p => p == expectedPathEvaluated)))
                 .Returns(lineNumber);

@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// <summary>
     /// An interface used for resolving line numbers in a document.
     /// </summary>
-    public interface ILineNumberResolver
+    public interface ILocationResolver
     {
         /// <summary>
         /// Find the line number of a path.
@@ -14,5 +14,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="path">The path describing the location in the document.</param>
         /// <returns>The line number of the specified path.</returns>
         public int ResolveLineNumber(string path);
+        //public (string,int) ResolveLocation(string path);
     }
 }

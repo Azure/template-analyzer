@@ -18,11 +18,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
     public class JsonRuleEngine : IRuleEngine
     {
         /// <summary>
-        /// Delegate for building an <see cref="ILineNumberResolver"/>
+        /// Delegate for building an <see cref="ILocationResolver"/>
         /// </summary>
         /// <param name="context">The <see cref="TemplateContext"/> being evaluated.</param>
-        /// <returns>An <see cref="ILineNumberResolver"/> to resolve line numbers for the given template context.</returns>
-        public delegate ILineNumberResolver BuildILineNumberResolver(TemplateContext context);
+        /// <returns>An <see cref="ILocationResolver"/> to resolve line numbers for the given template context.</returns>
+        public delegate ILocationResolver BuildILineNumberResolver(TemplateContext context);
 
         internal IReadOnlyList<RuleDefinition> RuleDefinitions;
 
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// Creates an instance of <see cref="JsonRuleEngine"/>.
         /// </summary>
         /// <param name="rawRuleDefinitions">The raw JSON rules to evaluate a template with.</param>
-        /// <param name="jsonLineNumberResolverBuilder">A builder to create an <see cref="ILineNumberResolver"/> for mapping JSON paths from a
+        /// <param name="jsonLineNumberResolverBuilder">A builder to create an <see cref="ILocationResolver"/> for mapping JSON paths from a
         /// processed template to the line number of the equivalent location in the original template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         public static JsonRuleEngine Create(string rawRuleDefinitions, BuildILineNumberResolver jsonLineNumberResolverBuilder, ILogger logger = null)
