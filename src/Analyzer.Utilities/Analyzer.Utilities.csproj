@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\lib\Bicep.Core.dll" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

@@ -267,22 +267,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
-        { 
+        {
             try
             {
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
-
-                // Check that the schema is valid
-                if (templateFilePath.Extension.Equals(".json", StringComparison.OrdinalIgnoreCase) && 
-                    !IsValidSchema(templateFileContents))
-                {
-                    if (printMessageIfNotTemplate)
-                    {
-                        Console.WriteLine("File is not a valid ARM Template.");
-                    }
-                    return 0;
-                }
 
                 IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
 
@@ -338,8 +327,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter?.Dispose();
         }
 
-        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath) =>
-            directoryPath.GetFiles(
+        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath)
+        {
+            var armTemplates = directoryPath.GetFiles(
                 "*.json",
                 new EnumerationOptions
                 {
@@ -348,8 +338,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             ).Where(IsValidTemplate);
 
+            var bicepTemplates = directoryPath.GetFiles(
+                "*.bicep",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
+                });
+
+            return armTemplates.Concat(bicepTemplates);
+        }
+
         private bool IsValidTemplate(FileInfo file)
         {
+            // bicep files are valid
+            if (file.FullName.EndsWith(".bicep", StringComparison.OrdinalIgnoreCase) )
+            {
+                return true;
+            }
+
             using var fileStream = new StreamReader(file.OpenRead());
             var reader = new JsonTextReader(fileStream);
 

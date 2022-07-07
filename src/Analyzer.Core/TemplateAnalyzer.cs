@@ -14,7 +14,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using Bicep.Core.SourceMapping;
+using Bicep.Core.Emit;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
 {
@@ -36,10 +36,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="logger">A logger to report errors and debug information</param>
         private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine, PowerShellRuleEngine powerShellRuleEngine, ILogger logger)
         {
-            this.Template = template ?? throw new ArgumentNullException(paramName: nameof(template));
-            this.Parameters = parameters;
-            this.TemplateFilePath = templateFilePath;
-            this.IsBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep");
             this.jsonRuleEngine = jsonRuleEngine;
             this.powerShellRuleEngine = powerShellRuleEngine;
             this.logger = logger;
@@ -80,17 +76,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
+            // if the template is bicep, convert to JSON and get source map
+            var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
+            SourceMap sourceMap = null;
+            if (isBicep)
+            {
+                (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+            }
+
             JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(template, logger: this.logger);
 
             try
             {
-                if (IsBicep)
-                {
-                    (Template, SourceMap) = BicepTemplateProcessor.ConvertBicepToJson(TemplateFilePath);
-                }
-                armTemplateProcessor = new ArmTemplateProcessor(Template);
-                templatejObject = armTemplateProcessor.ProcessTemplate(Parameters);
+                templatejObject = armTemplateProcessor.ProcessTemplate(parameters);
             }
             catch (Exception e)
             {
@@ -104,8 +103,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 IsMainTemplate = true,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
-				IsBicep = IsBicep,
-                SourceMap = SourceMap
+                IsBicep = isBicep,
+                SourceMap = sourceMap
             };
 
             try

@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\lib\Bicep.Core.dll" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

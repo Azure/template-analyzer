@@ -40,6 +40,17 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
+        [DataRow("Storage.bicep", ExitCode.Success, DisplayName = "Success")]
+        public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode2(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
+        {
+            var args = new string[] { "analyze-template", GetFilePath(relativeTemplatePath) };
+            args = args.Concat(additionalCliOptions).ToArray();
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)expectedExitCode, result.Result);
+        }
+
+        [DataTestMethod]
         [DataRow("Configuration.json", ExitCode.ErrorAnalysis, DisplayName = "Provided parameters file is not a parameters file")]
         [DataRow("Parameters.json", ExitCode.Violation, DisplayName = "Provided parameters file correct, issues in template")]
         public void AnalyzeTemplate_ParameterFileParamUsed_ReturnExpectedExitCode(string relativeParametersFilePath, ExitCode expectedExitCode)

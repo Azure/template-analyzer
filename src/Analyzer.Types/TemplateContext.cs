@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using Bicep.Core.SourceMapping;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
@@ -30,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Source map that maps ARM JSON back to source Bicep
         /// </summary>
-        public SourceMap SourceMap { get; set; }
+        public dynamic SourceMap { get; set; } // TODO nichb: what to do here about SourceMap type in .NET 6 package
 
         /// <summary>
         /// A unique identifier for the template

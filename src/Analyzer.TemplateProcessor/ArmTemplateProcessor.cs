@@ -4,15 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-<<<<<<< HEAD
-using Azure.Deployments.Core.Collections;
 using Azure.Deployments.Core.Configuration;
 using Azure.Deployments.Core.Definitions.Schema;
-using Azure.Deployments.Core.Extensions;
-=======
-using Azure.Deployments.Core.Configuration;
-using Azure.Deployments.Core.Definitions.Schema;
->>>>>>> origin/development
 using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
 using Azure.Deployments.Templates.Engines;

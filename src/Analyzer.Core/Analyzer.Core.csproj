@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\lib\Bicep.Core.dll" />
+    <PackageReference Include="Azure.Bicep.Core" Version="0.8.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
   </ItemGroup>
 
