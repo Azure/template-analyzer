@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
@@ -104,6 +103,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     this.logger?.LogDebug("Running PowerShell rule engine");
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
+
+                // For each rule we don't want to report the same line more than once
+                // This is a temporal fix
+                var evalsToValidate = new List<IEvaluation>();
+                var evalsToNotValidate = new List<IEvaluation>();
+                foreach (var eval in evaluations)
+                {
+                    if (!eval.Passed && eval.Result != null)
+                    {
+                        evalsToValidate.Add(eval);
+                    }
+                    else
+                    {
+                        evalsToNotValidate.Add(eval);
+                    }
+                }
+                var uniqueResults = new Dictionary<(string, int), IEvaluation>();
+                foreach (var eval in evalsToValidate)
+                {
+                    uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
+                }
+                evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
 
                 return evaluations;
             }
