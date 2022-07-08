@@ -83,6 +83,10 @@
       {
         "ResourceName": "SecondSegmentIsNotOnlyDefault",
         "Explanation": "resource is out of scope: 'default' is in name, but doesn't match regular expression'"
+      },
+      {
+        "ResourceName": "ASqlServerWithoutChildResources/default",
+        "Explanation": "Resource not defined as child of an Sql server meets the criteria for rule evaluation, and it satisfies every optional requirement in the rule"
       }
     ]
   },
