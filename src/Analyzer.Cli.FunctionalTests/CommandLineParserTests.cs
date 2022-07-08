@@ -30,7 +30,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("Configuration.json", ExitCode.ErrorCommand, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
         [DataRow("AppServicesLogs-Failures.json", ExitCode.Violation, DisplayName = "Violations found in the template")]
         [DataRow("AppServicesLogs-Passes.json", ExitCode.Success, DisplayName = "Success")]
-        [DataRow("AppServicesLogs-Failures.bicep", ExitCode.Violation, DisplayName = "Violations found in the template")]
+        [DataRow("AppServicesLogs-Failures.bicep", ExitCode.Violation, DisplayName = "Violations found in the Bicep template")]
         [DataRow("AppServicesLogs-Passes.bicep", ExitCode.Success, DisplayName = "Success")]
         public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
