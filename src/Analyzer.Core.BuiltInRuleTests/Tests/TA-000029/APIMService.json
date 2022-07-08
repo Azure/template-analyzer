@@ -110,7 +110,6 @@
         "description": "Import from \"apimhelloworld\" Function App",
         "subscriptionRequired": true,
         "path": "apimhelloworld",
-        "protocols": [],
         "isCurrent": true
       }
     },
@@ -209,6 +208,23 @@
           "ws",
           "https"
         ],
+        "isCurrent": true
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/apis",
+      "apiVersion": "2021-12-01-preview",
+      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest8')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
+      ],
+      "properties": {
+        "displayName": "apimhelloworld",
+        "apiRevision": "1",
+        "description": "Import from \"apimhelloworld\" Function App",
+        "subscriptionRequired": true,
+        "path": "apimhelloworld",
+        "protocols": [],
         "isCurrent": true
       }
     }
