@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
 using PSRule.Definitions;
 using PSRule.Pipeline;
@@ -18,13 +19,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     {
         public List<PowerShellRuleEvaluation> Evaluations = new();
 
-        private readonly string templateIdentifier;
+        private readonly TemplateContext templateContext;
         private readonly ILogger logger;
+        private readonly JsonLineNumberResolver jsonLineNumberResolver;
 
-        public ClientHost(string templateIdentifier, ILogger logger = null)
+        public ClientHost(TemplateContext templateContext, ILogger logger = null)
         {
-            this.templateIdentifier = templateIdentifier;
+            this.templateContext = templateContext;
             this.logger = logger;
+            this.jsonLineNumberResolver = new JsonLineNumberResolver(templateContext);
         }
 
         public override bool ShouldProcess(string target, string action)
@@ -66,14 +69,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 _ => Severity.Low
             };
 
-            
-            foreach (var reason in ruleRecord.Reason ?? Array.Empty<string>())
+            foreach (var reason in ruleRecord.Detail.Reason)
             {
+                var lineNumber = 1;
+                try // Temporal, TODO improve anyways?
+                {
+                    lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.Path);
+                }
+                catch
+                {
+                }
+               
                 // TODO: add reason as a message into result
-                this.Evaluations.Add(
-                    new PowerShellRuleEvaluation(ruleId, ruleDescription, recommendation,
-                        templateIdentifier, false, severity,
-                        new PowerShellRuleResult(false, 1))); // TODO calculate line number
+                this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, recommendation,
+                        templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
             }
         }
     }

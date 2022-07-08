@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var templateFile = tempTemplateFile.Replace(".tmp", ".json");
             File.Move(tempTemplateFile, templateFile);
 
-            var host = new ClientHost(templateContext.TemplateIdentifier, logger);
+            var host = new ClientHost(templateContext, logger);
             var outputOption = new OutputOption
             {
                 Outcome = RuleOutcome.Fail // TODO check if should add .Error here too or that handled by overwriting Error()?
@@ -78,6 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             File.Delete(templateFile);
 
             // Run PSRule on resources array, for typed-rules:
+            // TODO try to do it in one run
             var optionsForResourceAnalysis = new PSRuleOption
             {
                 Input = new InputOption
