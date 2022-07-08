@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using Bicep.Core.Analyzers.Linter;
 using Bicep.Core.Configuration;
 using Bicep.Core.Diagnostics;
@@ -50,8 +51,16 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             Environment.SetEnvironmentVariable("BICEP_SOURCEMAPPING_ENABLED", "true");
 
             var configuration = configurationManager.GetConfiguration(new Uri(bicepPath));
-            var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepPath), configuration);
+            var workspace = new Workspace();
+            var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, workspace, PathHelper.FilePathToFileUrl(bicepPath), configuration);
             var compilation = new Compilation(featureProvider, namespaceProvider, sourceFileGrouping, configuration, new LinterAnalyzer(configuration));
+
+            // pull modules optimistically
+            if (moduleDispatcher.RestoreModules(configuration, moduleDispatcher.GetValidModuleReferences(sourceFileGrouping.ModulesToRestore, configuration)).Result)
+            {
+                // modules had to be restored - recompile
+                sourceFileGrouping = SourceFileGroupingBuilder.Rebuild(moduleDispatcher, workspace, sourceFileGrouping, configuration);
+            }
 
             var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), emitterSettings);
             var emitResult = emitter.Emit(stringWriter);
