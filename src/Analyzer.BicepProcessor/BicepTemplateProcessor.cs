@@ -7,6 +7,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using Bicep.Core.Analyzers.Linter;
 using Bicep.Core.Configuration;
+using Bicep.Core.Diagnostics;
 using Bicep.Core.Emit;
 using Bicep.Core.Features;
 using Bicep.Core.FileSystem;
@@ -57,10 +58,11 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             if (emitResult.Status == EmitStatus.Failed)
             {
-                var bicepIssues = string.Join(Environment.NewLine, emitResult.Diagnostics.Select(diag => diag.Message));
-                throw new Exception($"Bicep issues found:{Environment.NewLine}{bicepIssues}");
+                var bicepIssues = emitResult.Diagnostics
+                    .Where(diag => diag.Level == DiagnosticLevel.Error)
+                    .Select(diag => diag.Message);
+                throw new Exception($"Bicep issues found:{Environment.NewLine}{string.Join(Environment.NewLine, bicepIssues)}");
             }
-
 
             return (stringWriter.ToString(), emitResult.SourceMap);
         }
