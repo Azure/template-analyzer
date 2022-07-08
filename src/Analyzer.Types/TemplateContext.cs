@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Source map that maps ARM JSON back to source Bicep
         /// </summary>
-        public dynamic SourceMap { get; set; } // TODO nichb: what to do here about SourceMap type in .NET 6 package
+        public object SourceMap { get; set; }
 
         /// <summary>
         /// A unique identifier for the template

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         public BicepLocationResolver(TemplateContext templateContext)
         {
             this.jsonLineNumberResolver = new(templateContext ?? throw new ArgumentNullException(nameof(templateContext)));
-            this.sourceMap = templateContext.SourceMap ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
+            this.sourceMap = (templateContext.SourceMap as SourceMap) ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
         }
 
         /// <summary>

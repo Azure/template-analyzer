@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             // if the template is bicep, convert to JSON and get source map
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
-            dynamic sourceMap = null;
+            object sourceMap = null;
             if (isBicep)
             {
                 try

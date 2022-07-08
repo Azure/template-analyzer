@@ -59,8 +59,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             if (emitResult.Status == EmitStatus.Failed)
             {
-                var bicepDiags = emitResult.Diagnostics.Select(diag => diag.Message);
-                var bicepIssues = string.Join('\n', bicepDiags);
+                var bicepIssues = string.Join('\n', emitResult.Diagnostics.Select(diag => diag.Message));
                 throw new Exception($"Bicep issues found:\n{bicepIssues}");
             }
             
