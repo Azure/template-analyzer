@@ -57,10 +57,11 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             if (emitResult.Status == EmitStatus.Failed)
             {
-                var bicepIssues = string.Join('\n', emitResult.Diagnostics.Select(diag => diag.Message));
-                throw new Exception($"Bicep issues found:\n{bicepIssues}");
+                var bicepIssues = string.Join(Environment.NewLine, emitResult.Diagnostics.Select(diag => diag.Message));
+                throw new Exception($"Bicep issues found:{Environment.NewLine}{bicepIssues}");
             }
-            
+
+
             return (stringWriter.ToString(), emitResult.SourceMap);
         }
     }
