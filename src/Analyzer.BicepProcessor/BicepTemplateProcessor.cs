@@ -24,6 +24,19 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
     /// </summary>
     public class BicepTemplateProcessor
     {
+        private static readonly IConfigurationManager configurationManager = new ConfigurationManager(new FileSystem());
+        private static readonly IFileResolver fileResolver = new FileResolver();
+        private static readonly IFeatureProvider featureProvider = new FeatureProvider();
+
+        private static readonly EmitterSettings emitterSettings = new(featureProvider);
+        private static readonly IModuleDispatcher moduleDispatcher = new ModuleDispatcher(
+            new DefaultModuleRegistryProvider(
+                fileResolver,
+                new ContainerRegistryClientFactory(new TokenCredentialFactory()),
+                new TemplateSpecRepositoryFactory(new TokenCredentialFactory()),
+                featureProvider));
+        private static readonly INamespaceProvider namespaceProvider = new DefaultNamespaceProvider(new AzResourceTypeLoader(), featureProvider);
+
         /// <summary>
         /// Converts Bicep template into JSON template and returns it as a string
         /// </summary>
@@ -35,26 +48,11 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             Environment.SetEnvironmentVariable("BICEP_SOURCEMAPPING_ENABLED", "true");
 
-            var fileResolver = new FileResolver();
-            var featureProvider = new FeatureProvider();
-            
-            var moduleDispatcher = new ModuleDispatcher(
-                new DefaultModuleRegistryProvider(
-                    fileResolver,
-                    new ContainerRegistryClientFactory(new TokenCredentialFactory()),
-                    new TemplateSpecRepositoryFactory(new TokenCredentialFactory()),
-                    featureProvider));
-            var configuration = (new ConfigurationManager(new FileSystem()).GetConfiguration(new Uri(bicepPath)));
+            var configuration = configurationManager.GetConfiguration(new Uri(bicepPath));
+            var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepPath), configuration);
+            var compilation = new Compilation(featureProvider, namespaceProvider, sourceFileGrouping, configuration, new LinterAnalyzer(configuration));
 
-            var compilation = new Compilation(
-                featureProvider,
-                new DefaultNamespaceProvider( new AzResourceTypeLoader(), featureProvider),
-                SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, new Workspace(), PathHelper.FilePathToFileUrl(bicepPath), configuration),
-                configuration,
-                new LinterAnalyzer(configuration));
-
-            var settings = new EmitterSettings(featureProvider);
-            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), settings);
+            var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), emitterSettings);
             var emitResult = emitter.Emit(stringWriter);
 
             if (emitResult.Status == EmitStatus.Failed)
