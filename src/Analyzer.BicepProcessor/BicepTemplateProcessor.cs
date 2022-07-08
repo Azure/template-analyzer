@@ -53,7 +53,6 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var configuration = configurationManager.GetConfiguration(new Uri(bicepPath));
             var workspace = new Workspace();
             var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, workspace, PathHelper.FilePathToFileUrl(bicepPath), configuration);
-            var compilation = new Compilation(featureProvider, namespaceProvider, sourceFileGrouping, configuration, new LinterAnalyzer(configuration));
 
             // pull modules optimistically
             if (moduleDispatcher.RestoreModules(configuration, moduleDispatcher.GetValidModuleReferences(sourceFileGrouping.ModulesToRestore, configuration)).Result)
@@ -62,6 +61,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 sourceFileGrouping = SourceFileGroupingBuilder.Rebuild(moduleDispatcher, workspace, sourceFileGrouping, configuration);
             }
 
+            var compilation = new Compilation(featureProvider, namespaceProvider, sourceFileGrouping, configuration, new LinterAnalyzer(configuration));
             var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel(), emitterSettings);
             var emitResult = emitter.Emit(stringWriter);
 
