@@ -42,7 +42,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             var testTemplate = File.ReadAllText(ruleExpectations.Template);
 
             // Analyze template
-            var evaluations = templateAnalyzer.AnalyzeTemplate(testTemplate);
+            var templateFilePath = Path.Combine(Directory.GetCurrentDirectory(), ruleExpectations.Template);
+            var evaluations = templateAnalyzer.AnalyzeTemplate(testTemplate, templateFilePath: templateFilePath);
 
             // Find any instances of the rule being tested
             var thisRuleEvaluations = evaluations.Where(e => e.RuleId.Equals(ruleExpectations.RuleId, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -93,7 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             var testDirectories = Directory.GetDirectories("Tests");
             foreach (var testDirectoryName in testDirectories)
             {
-                var ruleId= testDirectoryName.Split(Path.DirectorySeparatorChar)[^1];
+                var ruleId = testDirectoryName.Split(Path.DirectorySeparatorChar)[^1];
                 var testConfigFile = Path.Combine(testDirectoryName, ruleId + ".json");
 
                 if (!File.Exists(testConfigFile))

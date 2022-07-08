@@ -11,5 +11,18 @@
         "Description": "Stand alone sites config has a * rule in CORS"
       }
     ]
+  },
+  {
+    "Template": "AppServices.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 147,
+        "Description": "Embedded sites config has a * rule in CORS"
+      },
+      {
+        "LineNumber": 160,
+        "Description": "Stand alone sites config has a * rule in CORS"
+      }
+    ]
   }
 ]
