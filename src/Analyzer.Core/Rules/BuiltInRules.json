@@ -758,5 +758,17 @@
         }
       ]
     }
+  },
+  {
+    "id": "TA-000029",
+    "description": "API Management APIs should use encrypted protocols only",
+    "recommendation": "To use encrypted protocols only, add (or update) the protocols properties to only include https",
+    "helpUri": "aka.ms/needtoadd",
+    "severity": "1",
+    "not": {
+      "resourceType": "Microsoft.ApiManagement/service/apis",
+      "path": "properties.protocols",
+      "in": [ "http", "ws" ]
+      }
   }
 ]

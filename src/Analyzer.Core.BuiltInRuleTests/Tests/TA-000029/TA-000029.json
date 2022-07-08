@@ -1,0 +1,27 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 130,
+        "Description": "protocols contains http"
+      },
+      {
+        "LineNumber": 149,
+        "Description": "protocols contains ws"
+      },
+      {
+        "LineNumber": 168,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 188,
+        "Description": "protocols contains http"
+      },
+      {
+        "LineNumber": 208,
+        "Description": "protocols contains ws"
+      }
+    ]
+  }
+]
