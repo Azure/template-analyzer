@@ -352,7 +352,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private bool IsValidTemplate(FileInfo file)
         {
             // assume bicep files are valid, they are compiled/verified later
-            if (file.FullName.EndsWith(".bicep", StringComparison.OrdinalIgnoreCase) )
+            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase) )
             {
                 return true;
             }
