@@ -220,14 +220,35 @@
       "resources": [
         {
           "apiVersion": "2020-02-02-preview",
-          "type": "Microsoft.Sql/servers/auditingSettings",
-          "name": "WithAlmostDefaultAuditing/defaulta",
+          "type": "auditingSettings",
+          "name": "defaultPlusMore",
           "properties": {
             "isAzureMonitorTargetEnabled": false,
             "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
             "retentionDays": 45
           }
         }
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "name": "ASqlServerWithoutChildResources",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "kind": "v12.0"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/auditingSettings",
+      "name": "ASqlServerWithoutChildResources/default",
+      "apiVersion": "2020-02-02-preview",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "storageEndpoint": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2019-06-01').PrimaryEndpoints.Blob]",
+        "retentionDays": 95
+      },
+      "dependsOn": [
+        "ASqlServerWithoutChildResources"
       ]
     }
   ]

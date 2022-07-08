@@ -53,6 +53,22 @@
       {
         "LineNumber": 82,
         "Description": "requestTracingEnabled is not given a value"
+      },
+      {
+        "LineNumber": 93,
+        "Description": "detailedErrorLoggingEnabled is not given a value in properties.siteConfig"
+      },
+      {
+        "LineNumber": 93,
+        "Description": "httpLoggingEnabled is not given a value in properties.siteConfig"
+      },
+      {
+        "LineNumber": 93,
+        "Description": "requestTracingEnabled is not given a value in properties.siteConfig"
+      },
+      {
+        "LineNumber": 105,
+        "Description": "httpLoggingEnabled set to false in config child resource"
       }
     ]
   },
@@ -176,6 +192,10 @@
       {
         "ResourceName": "sitesConfigDependingOnLinuxKind/diagLogsDisabled",
         "Explanation": "The site config configures a site of the wrong kind"
+      },
+      {
+        "ResourceName": "withConfigAsChildResource",
+        "Explanation": "The config child resource has the desired values"
       }
     ]
   }
