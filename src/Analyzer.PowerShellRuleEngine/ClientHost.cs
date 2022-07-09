@@ -60,6 +60,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var ruleRecord = (RuleRecord)record; // TODO doublecheck
 
             var ruleId = ruleRecord.Ref;
+            var ruleName = ruleRecord.RuleName;
             var ruleDescription = ruleRecord.Info.DisplayName;
             var recommendation = ruleRecord.Recommendation;
             var severity = ruleRecord.Level switch
@@ -81,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 }
                
                 // TODO: add reason as a message into result
-                this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleDescription, recommendation,
+                this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, ruleDescription, recommendation,
                         templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
             }
         }

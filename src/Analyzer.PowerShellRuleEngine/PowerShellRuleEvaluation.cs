@@ -47,13 +47,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// Creates an <see cref="PowerShellRuleEvaluation"/> that describes the evaluation of a PowerShell rule against an ARM template.
         /// </summary>
         /// <param name="ruleId">The id of the rule associated with this evaluation.</param>
+        /// <param name="ruleName">The name of the rule associated with this evaluation.</param>
         /// <param name="ruleDescription">The description of the rule associated with this evaluation.</param>
         /// <param name="recommendation">The recommendation for addressing failures of the result.</param>
         /// <param name="file">The file this evaluation is for.</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="severity">Determines how severe the finding is.</param>
         /// <param name="result">The result of this evaluation.</param>
-        public PowerShellRuleEvaluation(string ruleId, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
+        public PowerShellRuleEvaluation(string ruleId, string ruleName, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
         {
             RuleId = ruleId;
             RuleDescription = ruleDescription;
@@ -63,7 +64,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             Severity = severity;
             this.directResult = result;
             this.evaluations = Enumerable.Empty<IEvaluation>();
-            HelpUri = $"https://azure.github.io/PSRule.Rules.Azure/en/rules/{ruleId}/";
+            HelpUri = $"https://azure.github.io/PSRule.Rules.Azure/en/rules/{ruleName}/";
         }
     }
 }
