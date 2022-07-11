@@ -139,7 +139,7 @@
       },
       {
         "ResourceName": "/missingprotocols",
-        "Explanation": "Missing Protocols defaults to HTTPs only"
+        "Explanation": "Missing protocols array defaults to HTTPS only"
       },
       {
         "ResourceName": "/emptyprotocols",
