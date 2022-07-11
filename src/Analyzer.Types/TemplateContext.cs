@@ -20,6 +20,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// The template with resolved parameter/variable references and expressions
         /// </summary>
         public JToken ExpandedTemplate { get; set; }
+        
+        /// <summary>
+        /// Whether this template was originally a Bicep file
+        /// </summary>
+        public bool IsBicep { get; set; }
+
+        /// <summary>
+        /// Source map that maps ARM JSON back to source Bicep
+        /// </summary>
+        public object SourceMap { get; set; }
 
         /// <summary>
         /// A unique identifier for the template

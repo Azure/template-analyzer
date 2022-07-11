@@ -5,9 +5,11 @@
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the ARM Template BPA?
-[Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. The Template BPA is an ARM template validator that scans ARM templates to ensure security and best practice checks are being followed before deployment.
+[Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. The Template BPA is an ARM template validator that scans ARM and Bicep templates to ensure security and best practice checks are being followed before deployment.
 
 The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your ARM templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
+
+The Template BPA is also capable of scanning newer [Bicep template](https://docs.microsoft.com/azure/azure-resource-manager/bicep/) files.
 
 ## Getting started with the Template BPA
 Download the latest Template BPA release in [the releases section](https://github.com/Azure/template-analyzer/releases).
@@ -28,15 +30,15 @@ The Template BPA accepts the following inputs:
 
 Argument | Description
 --- | ---
-`<template-path>` | The ARM template to analyze
-`<directory-path>` | The directory in which to search for ARM templates (recursively finds and analyzes all ARM templates in the directory and its subdirectories).<br/>Templates are identified by a '.json' file extension and a [valid top-level *$schema* property](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax#template-format).
+`<template-path>` | The ARM or Bicep template to analyze
+`<directory-path>` | The directory in which to search for ARM and Bicep templates (recursively finds and analyzes all ARM and Bicep templates in the directory and its subdirectories).<br/>ARM Templates are identified by a '.json' file extension and a [valid top-level *$schema* property](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/syntax#template-format)>. Bicep Templates are identified by a '.bicep' file extension.
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files)
 **(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer.<br/>**If argument is not provided, the Template BPA will attempt to load a configuration from *<_ExecutablePath_>/configuration.json* if the file exists.**.
 **(Optional)** `--report-format` | Valid formats:<br/>*Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
 **(Optional)** `-v` or `--verbose` | Shows details about the analysis
 
- The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
+ The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM or Bicep template and its corresponding [template parameters](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions) in the ARM template.
 
 **Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from  your ARM template from Azure Key Vault](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 

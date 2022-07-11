@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
@@ -57,7 +58,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext), logger),
+                JsonRuleEngine.Create(
+                    rules,
+                    templateContext => templateContext.IsBicep
+                        ? new BicepLocationResolver(templateContext)
+                        : new JsonLineNumberResolver(templateContext),
+                    logger),
                 usePowerShell ? new PowerShellRuleEngine(logger) : null,
                 logger);
         }
@@ -72,6 +78,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
+
+            // if the template is bicep, convert to JSON and get source map
+            var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
+            object sourceMap = null;
+            if (isBicep)
+            {
+                try
+                {
+                    (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                }
+                catch (Exception e)
+                {
+                    throw new TemplateAnalyzerException("Error compiling bicep template", e);
+                }
+            }
 
             JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(template, logger: this.logger);
@@ -91,7 +112,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 ExpandedTemplate = templatejObject,
                 IsMainTemplate = true,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
-                TemplateIdentifier = templateFilePath
+                TemplateIdentifier = templateFilePath,
+                IsBicep = isBicep,
+                SourceMap = sourceMap
             };
 
             try
