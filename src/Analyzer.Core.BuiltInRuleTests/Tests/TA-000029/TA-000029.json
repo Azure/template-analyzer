@@ -135,7 +135,7 @@
     "PassingSections": [
       {
         "ResourceName": "/httpsonly",
-        "Explanation": "Protocol only accepts encrypted traffic transerred via HTTPs."
+        "Explanation": "Protocol only accepts encrypted traffic transferred via HTTPs."
       },
       {
         "ResourceName": "/missingprotocols",
