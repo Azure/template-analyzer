@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         {
             var jsonLine = this.jsonLineNumberResolver.ResolveLineNumber(pathInExpandedTemplate);
 
-            // source map line numbers from bicep are 0-indexed
+            // Source map line numbers from bicep are 0-indexed
             jsonLine--;
 
             // TODO: look for mappings in other files/modules once nested templates are supported, for now just entrypoint file
