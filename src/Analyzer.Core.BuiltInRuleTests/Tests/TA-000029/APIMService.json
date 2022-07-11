@@ -81,7 +81,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest1')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/httpsonly')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -100,7 +100,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest2')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/missingprotocols')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -116,7 +116,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest3')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/httponly')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -135,7 +135,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest4')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/wsonly')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -154,7 +154,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest5')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/httpandws')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -174,7 +174,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest6')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/httpandhttps')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -194,7 +194,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest7')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/wsandhttps')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
@@ -214,7 +214,7 @@
     {
       "type": "Microsoft.ApiManagement/service/apis",
       "apiVersion": "2021-12-01-preview",
-      "name": "[concat(parameters('apiManagementServiceName'), '/apimhelloworldtest8')]",
+      "name": "[concat(parameters('apiManagementServiceName'), '/emptyprotocols')]",
       "dependsOn": [
         "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementServiceName'))]"
       ],
