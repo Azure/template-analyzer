@@ -9,9 +9,9 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILocationResolver"/> used for resolving line numbers from a compiled JSON template to the original bicep template.
+    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from a compiled JSON template to the original bicep template.
     /// </summary>
-    public class BicepLocationResolver : ILocationResolver
+    public class BicepLocationResolver : ILineNumberResolver
     {
         private readonly JsonLineNumberResolver jsonLineNumberResolver;
         private readonly SourceMap sourceMap;

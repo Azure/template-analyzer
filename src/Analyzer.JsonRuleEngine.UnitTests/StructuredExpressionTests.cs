@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
-            var mockLineResolver = new Mock<ILocationResolver>().Object;
+            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
 
             // This AllOf will have 2 expressions
             var mockOperator1 = new Mock<LeafExpressionOperator>().Object;
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Setup(r => r.Resolve(It.Is<string>(path => evaluatedPath.Equals(path))))
                 .Returns(() => new[] { mockJsonPathResolver.Object });
 
-            var mockLineResolver = new Mock<ILocationResolver>().Object;
+            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
 
             // Create 2 expressions for the AnyOf.
             // Whether each is evaluated or not is determined by the path passed to each.

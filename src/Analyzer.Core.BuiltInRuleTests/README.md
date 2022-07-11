@@ -5,7 +5,7 @@ This project is designed for quickly adding tests to verify the correctness of b
 A test (or tests) for a given rule consists of 3 parts (each part is described in more detail below):
 1. A new directory, named after the ID of the rule it will test.
 2. Inside the new directory, a new JSON configuration describing the test(s), which also must be named after the ID of the rule it will test.
-3. Inside the new directory, one or more test ARM templates to analyze.  These templates will be analyzed as part of the test, and the results are compared with the test configuration to assert correctness of the rule.
+3. Inside the new directory, one or more test ARM and/or Bicep templates to analyze.  These templates will be analyzed as part of the test, and the results are compared with the test configuration to assert correctness of the rule.
 
 ### 1 & 2: Test Directory & JSON Configuration
 To create a set of tests for a rule, a new directory and JSON configuration file are created.  **The name of the directory and file must be the same as the `id` property of the JSON rule**, with ".json" as the file extension of the JSON configuration.
@@ -31,12 +31,12 @@ The JSON test configuration has the following schema:
 
 Although `Template`, `ReportedFailures`, and `LineNumber` are required properties, the test config is not limited to having only these properties.  If test authors choose, other properties can be created simply by adding them in the JSON file.  This can be helpful for giving additional context, for example to explain why certain resources in a test template do not fail (for testing that the rule does not generate false-positives).
 
-### 3: Test ARM Templates
+### 3: Test ARM and Bicep Templates
 For each template file referenced in a `Template` property of a test configuration, there should be a file within the same directory with the same name.
 
 For example, if a configuration file *TA-000001/TA-000001.json* sets the value of `Template` to "InsecureTemplate.json", there is expected to be a template file at path *TA-000001/InsecureTemplate.json*.
 
-The template can define anything needed to test the rule, but it must be a valid ARM template that can be parsed so it can be analyzed.
+The template can define anything needed to test the rule, but it must be a valid ARM or Bicep template that can be parsed so it can be analyzed.
 
 ## Test Execution
 If running tests in Visual Studio Code, these tests will execute as part of running the 'test' task.  They also run as part of executing `dotnet test`.  This test project can be executed by itself with `dotnet test Analyzer.Core.JsonRuleTests\Analyzer.Core.JsonRuleTests.csproj`.

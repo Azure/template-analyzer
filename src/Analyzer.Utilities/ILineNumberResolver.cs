@@ -6,9 +6,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// <summary>
     /// An interface used for resolving line numbers in a document.
     /// </summary>
-    public interface ILocationResolver
+    public interface ILineNumberResolver
     {
-        // TODO: include source file for bicep once nested templates are supported
+        // TODO: include source file for bicep and rename to ISourceLocationResolver once nested templates are supported
 
         /// <summary>
         /// Find the line number of a path.

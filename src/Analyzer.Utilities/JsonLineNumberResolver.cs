@@ -10,9 +10,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILocationResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
+    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
     /// </summary>
-    public class JsonLineNumberResolver : ILocationResolver
+    public class JsonLineNumberResolver : ILineNumberResolver
     {
         private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
