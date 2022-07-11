@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [ExpectedException(typeof(TemplateAnalyzerException))]
         public void AnalyzeTemplate_BicepTemplateIsInvalid_ThrowTemplateAnalyzerException()
         {
-            var invalidBicep = "param location string = badstring";
+            var invalidBicep = "param location string = badString";
             var templateFilePath = Path.Combine(Directory.GetCurrentDirectory(), "invalid.bicep");
 
             try
