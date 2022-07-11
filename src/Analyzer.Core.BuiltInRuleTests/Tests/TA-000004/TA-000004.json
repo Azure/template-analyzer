@@ -11,5 +11,18 @@
         "Description": "HTTPS property set to false"
       }
     ]
+  },
+  {
+    "Template": "AppServices.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 13,
+        "Description": "HTTPS property not defined"
+      },
+      {
+        "LineNumber": 24,
+        "Description": "HTTPS property set to false"
+      }
+    ]
   }
 ]

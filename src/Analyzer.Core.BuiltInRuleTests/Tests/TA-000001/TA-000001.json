@@ -74,7 +74,97 @@
   },
   {
     "Template": "AppServicesLogs-Passes.json",
-    "ReportedFailures": [ ],
+    "ReportedFailures": [],
+    "PassingSections": [
+      {
+        "ResourceName": "functionAppKind",
+        "Explanation": "Wrong resource kind"
+      },
+      {
+        "ResourceName": "linuxKind",
+        "Explanation": "Wrong resource kind"
+      },
+      {
+        "ResourceName": "withLinuxKind",
+        "Explanation": "Wrong resource kind"
+      },
+      {
+        "ResourceName": "diagLogsEnabledInSiteConfigProperty",
+        "Explanation": "The siteConfig property has the desired values"
+      },
+      {
+        "ResourceNames": [
+          "diagLogsDisabledInSiteConfigPropertyButEnabledInDependentConfig",
+          "sitesConfig/diagLogsEnabled"
+        ],
+        "Explanation": "The site config properties (in a different resource) have the desired values, even though the site resource definition does not"
+      },
+      {
+        "ResourceName": "sitesConfigDependingOnLinuxKind/diagLogsDisabled",
+        "Explanation": "The site config configures a site of the wrong kind"
+      }
+    ]
+  },
+  {
+    "Template": "AppServicesLogs-Failures.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 10,
+        "Description": "detailedErrorLoggingEnabled set to false"
+      },
+      {
+        "LineNumber": 11,
+        "Description": "httpLoggingEnabled set to false"
+      },
+      {
+        "LineNumber": 12,
+        "Description": "requestTracingEnabled set to false"
+      },
+      {
+        "LineNumber": 23,
+        "Description": "detailedErrorLoggingEnabled set to false in properties and in sites/config"
+      },
+      {
+        "LineNumber": 24,
+        "Description": "httpLoggingEnabled set to false in properties and in sites/config"
+      },
+      {
+        "LineNumber": 25,
+        "Description": "requestTracingEnabled set to false in properties and in sites/config"
+      },
+      {
+        "LineNumber": 35,
+        "Description": "detailedErrorLoggingEnabled set to false in sites/config"
+      },
+      {
+        "LineNumber": 36,
+        "Description": "httpLoggingEnabled set to false in sites/config"
+      },
+      {
+        "LineNumber": 37,
+        "Description": "requestTracingEnabled set to false in sites/config"
+      },
+      {
+        "LineNumber": 51,
+        "Description": "httpLoggingEnabled set to false in a resource with detailedErrorLoggingEnabled and requestTracingEnabled as true"
+      },
+      {
+        "LineNumber": 66,
+        "Description": "httpLoggingEnabled is not given a value"
+      },
+      {
+        "LineNumber": 66,
+        "Description": "detailedErrorLoggingEnabled is not given a value"
+      },
+      {
+        "LineNumber": 66,
+        "Description": "requestTracingEnabled is not given a value"
+      }
+    ]
+  },
+  {
+    "Template": "AppServicesLogs-Passes.bicep",
+    "ReportedFailures": [],
     "PassingSections": [
       {
         "ResourceName": "functionAppKind",

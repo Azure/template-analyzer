@@ -89,5 +89,92 @@
         "Explanation": "Resource not defined as child of an Sql server meets the criteria for rule evaluation, and it satisfies every optional requirement in the rule"
       }
     ]
+  },
+  {
+    "Template": "SQLServerAuditingSettings-Failures.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 14,
+        "Description": "isAzureMonitorTargetEnabled set to false"
+      },
+      {
+        "LineNumber": 15,
+        "Description": "storageEndpoint is not an empty string"
+      },
+      {
+        "LineNumber": 16,
+        "Description": "retentionDays is not set to 0 (and also not >= 90)"
+      },
+      {
+        "LineNumber": 16,
+        "Description": "retentionDays is not >= 90 (and also not 0)"
+      },
+      {
+        "LineNumber": 31,
+        "Description": "isAzureMonitorTargetEnabled set to false, in auditingSettings resource defined with full resource type and name"
+      },
+      {
+        "LineNumber": 32,
+        "Description": "storageEndpoint is not an empty string, in auditingSettings resource defined with full resource type and name"
+      },
+      {
+        "LineNumber": 33,
+        "Description": "retentionDays is not set to 0 (and also not >= 90), in auditingSettings child resource defined with full resource type and name"
+      },
+      {
+        "LineNumber": 33,
+        "Description": "retentionDays is not >= 90 (and also not 0), in auditingSettings child resource defined with full resource type and name"
+      }
+    ]
+  },
+  {
+    "Template": "SQLServerAuditingSettings-Passes.bicep",
+    "ReportedFailures": [],
+    "PassingSections": [
+      {
+        "ResourceName": "ASQLServerName",
+        "Explanation": "Resource meets the criteria for rule evaluation, and it satisfies every optional requirement in the rule (isAzureMonitorTargetEnabled is true, with storageEndpoint being empty, and retentionDays >= 90)"
+      },
+      {
+        "ResourceName": "With90RetentionDays",
+        "Explanation": "Resource meets the criteria for rule evaluation, and it satisfies the option of retentionDays >= 90 (equals 90)"
+      },
+      {
+        "ResourceName": "WithMoreThan90RetentionDays",
+        "Explanation": "Resource meets the criteria for rule evaluation, and it satisfies the option of retentionDays >= 90 (greater than 90)"
+      },
+      {
+        "ResourceName": "With0RetentionDays",
+        "Explanation": "Resource meets the criteria for rule evaluation, and it satisfies the option of retentionDays = 0"
+      },
+      {
+        "ResourceName": "WithEmptyStorageEndpointAndAzureMonitorTargetEnabled",
+        "Explanation": "Resource meets the criteria for rule evaluation, and it satisfies the option of isAzureMonitorTargetEnabled = true with storageEndpoint being empty"
+      },
+      {
+        "ResourceName": "WithNoStorageEndpointAndAzureMonitorTargetEnabled",
+        "Explanation": "Resource meets the criteria for rule evaluation, and it satisfies the option of isAzureMonitorTargetEnabled = true with no storageEndpoint defined"
+      },
+      {
+        "ResourceName": "OfAnalyticsKind",
+        "Explanation": "resource is out of scope: server kind contains the word 'analytics'"
+      },
+      {
+        "ResourceName": "WithNonDefaultAuditingSettings",
+        "Explanation": "resource is out of scope: auditing settings not named 'default'"
+      },
+      {
+        "ResourceName": "EndsInDefaultButNotOnlyDefault",
+        "Explanation": "resource is out of scope: 'default' is in name, but doesn't match regular expression'"
+      },
+      {
+        "ResourceName": "StartsWithDefaultButNotOnlyDefault",
+        "Explanation": "resource is out of scope: 'default' is in name, but doesn't match regular expression'"
+      },
+      {
+        "ResourceName": "SecondSegmentIsNotOnlyDefault",
+        "Explanation": "resource is out of scope: 'default' is in name, but doesn't match regular expression'"
+      }
+    ]
   }
 ]
