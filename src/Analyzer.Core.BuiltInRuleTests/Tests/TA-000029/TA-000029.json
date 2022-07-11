@@ -4,51 +4,51 @@
     "ReportedFailures": [
       {
         "LineNumber": 129,
-        "Description": "protocols contains http"
+        "Description": "protocols contains only http"
       },
       {
         "LineNumber": 129,
-        "Description": "protocols contains http"
+        "Description": "protocols contains only http"
       },
       {
         "LineNumber": 129,
-        "Description": "protocols contains http"
+        "Description": "protocols contains only http"
       },
       {
         "LineNumber": 129,
-        "Description": "protocols contains http"
+        "Description": "protocols contains only http"
       },
       {
         "LineNumber": 130,
-        "Description": "protocols contains http"
+        "Description": "protocols contains only http"
       },
       {
         "LineNumber": 130,
-        "Description": "protocols contains"
+        "Description": "protocols contains only http"
       },
       {
         "LineNumber": 148,
-        "Description": "protocols contains ws"
+        "Description": "protocols contains only ws"
       },
       {
         "LineNumber": 148,
-        "Description": "protocols contains"
+        "Description": "protocols contains only ws"
       },
       {
         "LineNumber": 148,
-        "Description": "protocols contains ws"
+        "Description": "protocols contains only ws"
       },
       {
         "LineNumber": 148,
-        "Description": "protocols contains ws"
+        "Description": "protocols contains only ws"
       },
       {
         "LineNumber": 149,
-        "Description": "protocols contains ws"
+        "Description": "protocols contains only ws"
       },
       {
         "LineNumber": 149,
-        "Description": "protocols contains ws"
+        "Description": "protocols contains only ws"
       },
       {
         "LineNumber": 167,
