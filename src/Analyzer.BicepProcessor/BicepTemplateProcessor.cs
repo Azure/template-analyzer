@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// <summary>
         /// Converts Bicep template into JSON template and returns it as a string and its source map
         /// </summary>
-        /// <param name="bicepPath">The Bicep Template file path.</param>
+        /// <param name="bicepPath">The Bicep template file path.</param>
         /// <returns>The compiled template as a <c>JSON</c> string and its source map.</returns>
         public static (string, SourceMap) ConvertBicepToJson(string bicepPath)
         {
