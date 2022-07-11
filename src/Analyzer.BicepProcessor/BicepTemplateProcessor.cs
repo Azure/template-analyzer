@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// </summary>
         /// <param name="bicepPath">The Bicep Template file path.</param>
         /// <returns>The compiled template as a <c>JSON</c> string and its source map.</returns>
-        static public (string, SourceMap) ConvertBicepToJson(string bicepPath)
+        public static (string, SourceMap) ConvertBicepToJson(string bicepPath)
         {
             using var stringWriter = new StringWriter();
 
