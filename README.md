@@ -5,7 +5,7 @@
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the ARM Template BPA?
-[Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. The Template BPA is an ARM template validator that scans ARM templates to ensure security and best practice checks are being followed before deployment.
+[Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview) – Infrastructure-as-code (IaC) for your Azure solutions – are JSON files that define the infrastructure and configuration for your Azure deployments. The Template BPA is an ARM template validator that scans ARM and Bicep templates to ensure security and best practice checks are being followed before deployment.
 
 The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your ARM templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
 
