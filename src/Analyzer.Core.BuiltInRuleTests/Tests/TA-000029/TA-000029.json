@@ -24,7 +24,7 @@
       },
       {
         "LineNumber": 130,
-        "Description": "protocols contains http"
+        "Description": "protocols contains"
       },
       {
         "LineNumber": 148,
@@ -32,7 +32,7 @@
       },
       {
         "LineNumber": 148,
-        "Description": "protocols contains ws"
+        "Description": "protocols contains"
       },
       {
         "LineNumber": 148,
@@ -84,51 +84,51 @@
       },
       {
         "LineNumber": 187,
-        "Description": "protocols contains http"
+        "Description": "protocols contains http and https"
       },
       {
         "LineNumber": 187,
-        "Description": "protocols contains http"
+        "Description": "protocols contains http and https"
       },
       {
         "LineNumber": 187,
-        "Description": "protocols contains http"
+        "Description": "protocols contains http and https"
       },
       {
         "LineNumber": 187,
-        "Description": "protocols contains http"
+        "Description": "protocols contains http and https"
       },
       {
         "LineNumber": 188,
-        "Description": "protocols contains http"
+        "Description": "protocols contains http and https"
       },
       {
         "LineNumber": 188,
-        "Description": "protocols contains http"
+        "Description": "protocols contains http and https"
       },
       {
         "LineNumber": 207,
-        "Description": "protocols contains http"
+        "Description": "protocols contains ws and https"
       },
       {
         "LineNumber": 207,
-        "Description": "protocols contains http"
+        "Description": "protocols contains ws and https"
       },
       {
         "LineNumber": 207,
-        "Description": "protocols contains http"
+        "Description": "protocols contains ws and https"
       },
       {
         "LineNumber": 207,
-        "Description": "protocols contains http"
+        "Description": "protocols contains ws and https"
       },
       {
         "LineNumber": 208,
-        "Description": "protocols contains http"
+        "Description": "protocols contains ws and https"
       },
       {
         "LineNumber": 208,
-        "Description": "protocols contains http"
+        "Description": "protocols contains ws and https"
       }
 
     ],
