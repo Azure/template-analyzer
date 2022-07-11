@@ -201,7 +201,7 @@ Set the data retention for your SQL Server's auditing to storage account destina
 #### Severity: 3
 
 ## TA-000029: Azure API Management APIs should use encrypted protocols only
-Set the protocols property to only include https.
+Set the protocols property to only include HTTPs.
 
 **Recommendation**: To use encrypted protocols only, add (or update) the *protocols* property in the [Microsoft.ApiManagement/service/apis resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.apimanagement/service/apis?tabs=json), to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure.
 #### Severity: 1
