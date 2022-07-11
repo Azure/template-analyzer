@@ -9,7 +9,7 @@
 
 The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your ARM templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
 
-The Template BPA is also capable of scanning newer [Bicep template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/) files.
+The Template BPA is also capable of scanning newer [Bicep template](https://docs.microsoft.com/azure/azure-resource-manager/bicep/) files.
 
 ## Getting started with the Template BPA
 Download the latest Template BPA release in [the releases section](https://github.com/Azure/template-analyzer/releases).
