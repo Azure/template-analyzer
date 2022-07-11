@@ -761,9 +761,9 @@
   },
   {
     "id": "TA-000029",
-    "description": "API Management APIs should use encrypted protocols only",
-    "recommendation": "To use encrypted protocols only, add (or update) the protocols properties to only include https",
-    "helpUri": "https://aka.ms/needtoadd",
+    "description": "Azure API Management APIs should use encrypted protocols only",
+    "recommendation": "To use encrypted protocols only, add (or update) the protocols properties to only include https. Allowing any additional protocols (e.g. http, ws) is insecure",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000029-azure-api-management-apis-should-use-encrypted-protocols-only",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ApiManagement/service/apis",
