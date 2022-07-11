@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
-        { 
+        {
             try
             {
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -327,8 +327,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter?.Dispose();
         }
 
-        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath) =>
-            directoryPath.GetFiles(
+        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath)
+        {
+            var armTemplates = directoryPath.GetFiles(
                 "*.json",
                 new EnumerationOptions
                 {
@@ -337,8 +338,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             ).Where(IsValidTemplate);
 
+            var bicepTemplates = directoryPath.GetFiles(
+                "*.bicep",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
+                });
+
+            return armTemplates.Concat(bicepTemplates);
+        }
+
         private bool IsValidTemplate(FileInfo file)
         {
+            // assume bicep files are valid, they are compiled/verified later
+            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase) )
+            {
+                return true;
+            }
+
             using var fileStream = new StreamReader(file.OpenRead());
             var reader = new JsonTextReader(fileStream);
 
