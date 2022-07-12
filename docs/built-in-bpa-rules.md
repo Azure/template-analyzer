@@ -199,3 +199,9 @@ Set the data retention for your SQL Server's auditing to storage account destina
 
 **Recommendation**: For incident investigation purposes, we recommend setting the data retention for your SQL Server's auditing to storage account destination to at least 90 days, in the [Microsoft.Sql/servers/auditingSettings resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/2020-11-01-preview/servers/auditingsettings?tabs=json#serverblobauditingpolicyproperties-object), using the *retentionDays* property. Confirm that you are meeting the necessary retention rules for the regions in which you are operating. This is sometimes required for compliance with regulatory standards.
 #### Severity: 3
+
+## TA-000029: Azure API Management APIs should use encrypted protocols only
+Set the protocols property to only include HTTPs.
+
+**Recommendation**: To use encrypted protocols only, add (or update) the *protocols* property in the [Microsoft.ApiManagement/service/apis resource properties](https://docs.microsoft.com/en-us/azure/templates/microsoft.apimanagement/service/apis?tabs=json), to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure.
+#### Severity: 1
