@@ -32,6 +32,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("AppServicesLogs-Passes.json", ExitCode.Success, DisplayName = "Success")]
         [DataRow("AppServicesLogs-Failures.bicep", ExitCode.Violation, DisplayName = "Violations found in the Bicep template")]
         [DataRow("AppServicesLogs-Passes.bicep", ExitCode.Success, DisplayName = "Success")]
+        [DataRow("Invalid.bicep", ExitCode.ErrorInvalidBicepTemplate, DisplayName = "Path exists, invalid Bicep template")]
         public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
             var args = new string[] { "analyze-template" , GetFilePath(relativeTemplatePath)}; 
@@ -54,10 +55,12 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual((int)expectedExitCode, result.Result);
         }
 
-        [TestMethod]
-        public void AnalyzeTemplate_UseConfigurationFileOption_ReturnExpectedExitCodeUsingOption()
+        [DataTestMethod]
+        [DataRow("AppServicesLogs-Failures.json")]
+        [DataRow("AppServicesLogs-Failures.bicep")]
+        public void AnalyzeTemplate_UseConfigurationFileOption_ReturnExpectedExitCodeUsingOption(string relativeTemplatePath)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var templatePath = GetFilePath(relativeTemplatePath);
             var configurationPath = GetFilePath("Configuration.json");
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", configurationPath};
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -65,10 +68,12 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual((int)ExitCode.Violation, result.Result);
         }
 
-        [TestMethod]
-        public void AnalyzeTemplate_ReportFormatAsSarif_ReturnExpectedExitCodeUsingOption()
+        [DataTestMethod]
+        [DataRow("AppServicesLogs-Failures.json")]
+        [DataRow("AppServicesLogs-Failures.bicep")]
+        public void AnalyzeTemplate_ReportFormatAsSarif_ReturnExpectedExitCodeUsingOption(string relativeTemplatePath)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var templatePath = GetFilePath(relativeTemplatePath);
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "OutputFile.sarif");
             var args = new string[] { "analyze-template", templatePath, "--report-format", "Sarif", "--output-file-path", outputFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -241,10 +246,12 @@ namespace Analyzer.Cli.FunctionalTests
             }
         }
 
-        [TestMethod]
-        public void FilterRules_ConfigurationPathIsInvalid_ReturnsConfigurationError()
+        [DataTestMethod]
+        [DataRow("AppServicesLogs-Failures.json")]
+        [DataRow("AppServicesLogs-Failures.bicep")]
+        public void FilterRules_ConfigurationPathIsInvalid_ReturnsConfigurationError(string relativeTemplatePath)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Passes.json");
+            var templatePath = GetFilePath(relativeTemplatePath);
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", "NonExistentFile.json" };
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
