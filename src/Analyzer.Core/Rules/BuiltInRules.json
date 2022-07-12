@@ -4,7 +4,7 @@
     "description": "Diagnostic logs in App Services should be enabled",
     "recommendation": "Enable diagnostic Logs in App Services",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000001-diagnostic-logs-in-app-services-should-be-enabled",
-    "severity":  2,
+    "severity": 2,
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
       "where": {
@@ -755,6 +755,34 @@
               "greaterOrEquals": 90
             }
           ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "TA-000029",
+    "description": "Azure API Management APIs should use encrypted protocols only",
+    "recommendation": "To use encrypted protocols only, add (or update) the protocols property to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000029-azure-api-management-apis-should-use-encrypted-protocols-only",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ApiManagement/service/apis",
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "path": "properties.protocols[*]",
+              "equals": "https"
+            }
+          ]
+        },
+        {
+          "path": "properties.protocols",
+          "equals": []
+        },
+        {
+          "path": "properties.protocols",
+          "exists": false
         }
       ]
     }
