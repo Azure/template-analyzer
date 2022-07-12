@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         ///  Constructor for the ARM Template Processing library
         /// </summary>
         /// <param name="armTemplate">The ARM Template <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#</param>
-        /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/en-us/azure/templates/microsoft.resources/allversions</param>
+        /// <param name="apiVersion">The deployment API version. Must be a valid version from the deploymetns list here: https://docs.microsoft.com/azure/templates/microsoft.resources/allversions</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         public ArmTemplateProcessor(string armTemplate, string apiVersion = "2020-01-01", ILogger logger = null)
         {
