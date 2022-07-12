@@ -247,8 +247,8 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow("AppServicesLogs-Failures.json")]
-        [DataRow("AppServicesLogs-Failures.bicep")]
+        [DataRow("AppServicesLogs-Passes.json")]
+        [DataRow("AppServicesLogs-Passes.bicep")]
         public void FilterRules_ConfigurationPathIsInvalid_ReturnsConfigurationError(string relativeTemplatePath)
         {
             var templatePath = GetFilePath(relativeTemplatePath);
