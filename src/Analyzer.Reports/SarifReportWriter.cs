@@ -24,10 +24,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         private IFileInfo reportFile;
         private Stream reportFileStream;
         private StreamWriter outputTextWriter;
-        private SarifLogger sarifLogger;
         private Run sarifRun;
         private IDictionary<string, ReportingDescriptor> rulesDictionary;
         private string rootPath;
+        private int totalResults = 0;
+
+        /// <summary>
+        /// Logger used to output information to the SARIF file
+        /// </summary>
+        public SarifLogger SarifLogger { get; set; }
 
         /// <summary>
         /// Constructor of the SarifReportWriter class
@@ -43,7 +48,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             this.InitRun();
             this.RootPath = targetPath;
 
-            this.sarifLogger = new SarifLogger(
+            this.SarifLogger = new SarifLogger(
                 textWriter: this.outputTextWriter,
                 logFilePersistenceOptions: LogFilePersistenceOptions.PrettyPrint | LogFilePersistenceOptions.OverwriteExistingOutputFile,
                 tool: this.sarifRun.Tool,
@@ -60,14 +65,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             string filePath = isFileInRootPath ?
                 Path.GetRelativePath(this.RootPath, templateFile.FullName) :
                 templateFile.FullName;
-            var sarifResults = new List<Result>();
+
             foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
             {
                 // get rule definition from first level evaluation
-                ReportingDescriptor rule = this.ExtractRule(evaluation);
-                this.ExtractResult(evaluation, evaluation, filePath, isFileInRootPath, sarifResults);
+                this.ExtractRule(evaluation);
+
+                // Log result
+                SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
+                {
+                    RuleId = evaluation.RuleId,
+                    Level = GetLevelFromEvaluation(evaluation),
+                    Message = new Message { Id = "default" }, // should be customized message for each result 
+                    Locations = ExtractLocations(evaluation, filePath, isFileInRootPath).Values.ToArray()
+                });
+
+                totalResults++;
             }
-            this.PersistReport(sarifResults);
         }
 
         internal String RootPath
@@ -109,12 +123,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             };
         }
 
-        private ReportingDescriptor ExtractRule(IEvaluation evaluation)
+        private void ExtractRule(IEvaluation evaluation)
         {
-            if (!rulesDictionary.TryGetValue(evaluation.RuleId, out ReportingDescriptor rule))
+            if (!rulesDictionary.ContainsKey(evaluation.RuleId))
             {
                 var hasUri = Uri.TryCreate(evaluation.HelpUri, UriKind.RelativeOrAbsolute, out Uri uri);
-                rule = new ReportingDescriptor
+                rulesDictionary.Add(evaluation.RuleId, new ReportingDescriptor
                 {
                     Id = evaluation.RuleId,
                     // Name = evaluation.RuleId, TBD issue #198
@@ -126,47 +140,41 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleDescription) } }
                     },
                     DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
-                };
-                rulesDictionary.Add(evaluation.RuleId, rule);
+                });
             }
-            return rule;
         }
 
-        private void ExtractResult(IEvaluation rootEvaluation, IEvaluation evaluation, string filePath, bool pathBelongsToRoot, IList<Result> sarifResults)
+        private Dictionary<int, Location> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, Location> locations = null)
         {
-            foreach (var result in evaluation.Results.Where(r => !r.Passed))
+            locations ??= new Dictionary<int, Location>();
+            if (evaluation.Result != null && !evaluation.Result.Passed)
             {
-                sarifResults.Add(new Result
+                var line = evaluation.Result.LineNumber;
+                if (!locations.ContainsKey(line))
                 {
-                    RuleId = rootEvaluation.RuleId,
-                    Level = GetLevelFromEvaluation(rootEvaluation),
-                    Message = new Message { Id = "default" }, // should be customized message for each result 
-                    Locations = new[]
+                    locations[line] = new Location
                     {
-                        new Location
+                        PhysicalLocation = new PhysicalLocation
                         {
-                            PhysicalLocation = new PhysicalLocation
+                            ArtifactLocation = new ArtifactLocation
                             {
-                                ArtifactLocation = new ArtifactLocation
-                                {
-                                    Uri = new Uri
-                                    (
-                                        UriHelper.MakeValidUri(filePath),
-                                        UriKind.RelativeOrAbsolute
-                                    ),
-                                    UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
-                                },
-                                Region = new Region { StartLine = result.LineNumber },
+                                Uri = new Uri(
+                                    UriHelper.MakeValidUri(filePath),
+                                    UriKind.RelativeOrAbsolute),
+                                UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
                             },
+                            Region = new Region { StartLine = line },
                         },
-                    }
-                });
+                    };
+                }
             }
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                this.ExtractResult(rootEvaluation, eval, filePath, pathBelongsToRoot, sarifResults);
+                this.ExtractLocations(eval, filePath, pathBelongsToRoot, locations);
             }
+
+            return locations;
         }
 
         private FailureLevel GetLevelFromEvaluation(IEvaluation evaluation)
@@ -175,23 +183,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return evaluation.Passed ? FailureLevel.Note : FailureLevel.Error;
         }
 
-        private void PersistReport(IList<Result> sarifResults)
-        {
-            if (sarifResults != null)
-            {
-                foreach (var result in sarifResults)
-                {
-                    sarifLogger.Log(this.rulesDictionary[result.RuleId], result);
-                }
-                sarifResults.Clear();
-            }
-        }
-
         internal static bool IsSubPath(string rootPath, string childFilePath)
         {
             var relativePath = Path.GetRelativePath(rootPath, childFilePath);
             return !relativePath.StartsWith('.') && !Path.IsPathRooted(relativePath);
         }
+
         internal static string AppendPeriod(string text) =>
             text == null ? string.Empty :
             text.EndsWith(PeriodString, StringComparison.OrdinalIgnoreCase) ? text : text + PeriodString;
@@ -209,9 +206,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="disposing"></param>
         public void Dispose(bool disposing)
         {
-            this.sarifLogger?.Dispose();
+            this.SarifLogger?.Dispose();
             this.outputTextWriter?.Dispose();
             this.reportFileStream?.Dispose();
+
+            Console.WriteLine($"{Environment.NewLine}Wrote {totalResults} {(totalResults == 1 ? "result" : "results")} to {reportFile.FullName}");
         }
     }
 }

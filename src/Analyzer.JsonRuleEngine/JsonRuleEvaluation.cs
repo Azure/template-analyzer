@@ -14,17 +14,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
     /// <inheritdoc/>
     internal class JsonRuleEvaluation : IEvaluation
     {
-        private IEnumerable<IResult> resultsEvaluatedTrue;
-        private IEnumerable<IResult> resultsEvaluatedFalse;
-
         private IEnumerable<IEvaluation> evaluationsEvaluatedTrue;
         private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
 
         private IEnumerable<IEvaluation> evaluations;
-        private IEnumerable<IResult> results;
+        private IResult directResult;
 
         private List<IEvaluation> cachedEvaluations;
-        private List<IResult> cachedResults;
 
         /// <summary>
         /// Gets or sets the JSON rule this evaluation is for.
@@ -44,6 +40,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public string HelpUri => RuleDefinition.HelpUri;
 
         /// <inheritdoc/>
+        public Severity Severity => RuleDefinition.Severity;
+
+        /// <inheritdoc/>
         public string FileIdentifier { get; internal set; }
 
         /// <inheritdoc/>
@@ -54,41 +53,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         internal Expression Expression { get; set; }
 
-        public IEnumerable<IResult> Results
-        {
-            get => cachedResults ??= results.ToList();
-        }
+        public IResult Result => directResult;
 
-        public IEnumerable<IEvaluation> Evaluations
-        {
-            get => cachedEvaluations ??= evaluations.ToList();
-        }
+        public IEnumerable<IEvaluation> Evaluations => cachedEvaluations ??= evaluations.ToList();
 
         /// <summary>
         /// Whether or not there are any results associated with this <see cref="JsonRuleEvaluation"/>.
         /// </summary>
-        /// <returns>True if there are any results in this <see cref="JsonRuleEvaluation"/> or a sub-<see cref="JsonRuleEvaluation"/>.
+        /// <returns>True if there is a result in this <see cref="JsonRuleEvaluation"/> or in any sub-<see cref="JsonRuleEvaluation"/>.
         /// False otherwise.</returns>
-        public bool HasResults
-        {
-            get => Results.Any() || Evaluations.Any(e => e.HasResults);
-        }
-
-        /// <summary>
-        /// Gets the collections of results evaluated to true from this evaluation.
-        /// </summary>
-        public IEnumerable<IResult> ResultsEvaluatedTrue
-        { 
-            get => resultsEvaluatedTrue ??= Results.ToList().FindAll(r => r.Passed);
-        }
-
-        /// <summary>
-        /// Gets the collections of results evaluated to false from this evaluation.
-        /// </summary>
-        public IEnumerable<IResult> ResultsEvaluatedFalse
-        {
-            get => resultsEvaluatedFalse ??= Results.ToList().FindAll(r => !r.Passed);
-        }
+        public bool HasResults => Result != null || Evaluations.Any(e => e.HasResults);
 
         /// <summary>
         /// Gets the collections of evaluations evaluated to true from this evaluation.
@@ -107,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         }
 
         /// <summary>
-        /// Creates an <see cref="JsonRuleEvaluation"/> that represents a structured expression.
+        /// Creates a <see cref="JsonRuleEvaluation"/> that represents a structured expression.
         /// </summary>
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
@@ -115,18 +89,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public JsonRuleEvaluation(Expression expression, bool passed, IEnumerable<JsonRuleEvaluation> evaluations)
         {
             this.evaluations = evaluations ?? throw new ArgumentNullException(nameof(evaluations));
-            (this.Expression, this.Passed, this.results) = (expression, passed, Enumerable.Empty<IResult>());
+            (this.Expression, this.Passed, this.directResult) = (expression, passed, null);
         }
 
         /// <summary>
-        /// Creates an <see cref="JsonRuleEvaluation"/> that represents a leaf expression.
+        /// Creates a <see cref="JsonRuleEvaluation"/> that represents a leaf expression.
         /// </summary>
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
-        /// <param name="results"><see cref="IEnumerable"/> of results.</param>
-        public JsonRuleEvaluation(Expression expression, bool passed, IEnumerable<JsonRuleResult> results)
+        /// <param name="result">The result of a leaf evaluation.</param>
+        public JsonRuleEvaluation(Expression expression, bool passed, JsonRuleResult result)
         {
-            this.results = results ?? throw new ArgumentNullException(nameof(results));
+            this.directResult = result ?? throw new ArgumentNullException(nameof(result));
             (this.Expression, this.Passed, this.evaluations) = (expression, passed, Enumerable.Empty<IEvaluation>());
         }
     }

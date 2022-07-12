@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core
@@ -20,21 +21,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
-        private JsonRuleEngine jsonRuleEngine { get; }
+        private JsonRuleEngine jsonRuleEngine;
+        private PowerShellRuleEngine powerShellRuleEngine;
+
+        private ILogger logger;
 
         /// <summary>
         /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
         /// </summary>
         /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
-        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine)
+        /// <param name="powerShellRuleEngine">The <see cref="PowerShellRuleEngine"/> to use in analyzing templates.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
+        private TemplateAnalyzer(JsonRuleEngine jsonRuleEngine, PowerShellRuleEngine powerShellRuleEngine, ILogger logger)
         {
             this.jsonRuleEngine = jsonRuleEngine;
+            this.powerShellRuleEngine = powerShellRuleEngine;
+            this.logger = logger;
         }
 
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        public static TemplateAnalyzer Create()
+        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
+        /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
+        public static TemplateAnalyzer Create(bool usePowerShell, ILogger logger = null)
         {
             string rules;
             try
@@ -43,11 +54,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
-                throw new TemplateAnalyzerException($"Failed to read rules.", e);
+                throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)));
+                JsonRuleEngine.Create(
+                    rules,
+                    templateContext => templateContext.IsBicep
+                        ? new BicepLocationResolver(templateContext)
+                        : new JsonLineNumberResolver(templateContext),
+                    logger),
+                usePowerShell ? new PowerShellRuleEngine(logger) : null,
+                logger);
         }
 
         /// <summary>
@@ -56,14 +74,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
-        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null, bool usePowerShell = true)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
+            // if the template is bicep, convert to JSON and get source map
+            var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
+            object sourceMap = null;
+            if (isBicep)
+            {
+                try
+                {
+                    (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                }
+                catch (Exception e)
+                {
+                    throw new TemplateAnalyzerException("Error compiling bicep template", e);
+                }
+            }
+
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(template);
+            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: this.logger);
 
             try
             {
@@ -80,18 +112,42 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 ExpandedTemplate = templatejObject,
                 IsMainTemplate = true,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
-                TemplateIdentifier = templateFilePath
+                TemplateIdentifier = templateFilePath,
+                IsBicep = isBicep,
+                SourceMap = sourceMap
             };
 
             try
             {
-                IEnumerable<IEvaluation> evaluations = jsonRuleEngine.AnalyzeTemplate(templateContext);
+                IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
 
-                if (usePowerShell && templateContext.TemplateIdentifier != null)
+                if (this.powerShellRuleEngine != null && templateContext.TemplateIdentifier != null)
                 {
-                    var powerShellRuleEngine = new PowerShellRuleEngine();
-                    evaluations = evaluations.Concat(powerShellRuleEngine.AnalyzeTemplate(templateContext));
+                    this.logger?.LogDebug("Running PowerShell rule engine");
+                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
+
+                // For each rule we don't want to report the same line more than once
+                // This is a temporal fix
+                var evalsToValidate = new List<IEvaluation>();
+                var evalsToNotValidate = new List<IEvaluation>();
+                foreach (var eval in evaluations)
+                {
+                    if (!eval.Passed && eval.Result != null)
+                    {
+                        evalsToValidate.Add(eval);
+                    }
+                    else
+                    {
+                        evalsToNotValidate.Add(eval);
+                    }
+                }
+                var uniqueResults = new Dictionary<(string, int), IEvaluation>();
+                foreach (var eval in evalsToValidate)
+                {
+                    uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
+                }
+                evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
 
                 return evaluations;
             }
@@ -105,8 +161,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             return File.ReadAllText(
                 Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    Path.GetDirectoryName(AppContext.BaseDirectory),
                     "Rules/BuiltInRules.json"));
+        }
+
+        /// <summary>
+        /// Modifies the rules to run based on values defined in the configuration file.
+        /// </summary>
+        /// <param name="configuration">The configuration specifying rule modifications.</param>
+        public void FilterRules(ConfigurationDefinition configuration)
+        {
+            jsonRuleEngine.FilterRules(configuration);
         }
     }
 }

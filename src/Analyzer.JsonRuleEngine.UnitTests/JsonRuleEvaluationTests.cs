@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "testRule",
-                new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
                 {
                     RuleDefinition = new RuleDefinition { Id = "testRule" }
                 }
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "test rule",
-                new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
                 {
                     RuleDefinition = new RuleDefinition { Description = "test rule" }
                 }
@@ -42,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "test recommendation",
-                new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
                 {
                     RuleDefinition = new RuleDefinition { Recommendation = "test recommendation" }
                 }
@@ -54,109 +55,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             Assert.AreEqual(
                 "https://helpUri",
-                new JsonRuleEvaluation(null, true, new JsonRuleResult[0])
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
                 {
                     RuleDefinition = new RuleDefinition { HelpUri = "https://helpUri" }
                 }
                 .HelpUri);
         }
 
-        [DataTestMethod]
-        [DataRow(3, 3, DisplayName = "3/3 results are true")]
-        [DataRow(3, 2, DisplayName = "2/3 results are true")]
-        [DataRow(3, 0, DisplayName = "0/3 results are true")]
-        [DataRow(0, 0, DisplayName = "No results")]
-        public void GetResultsEvaluatedTrueFalse_ThreeResults_ExpectedNumberOfResultsReturned(int totalResults, int expectedTrue)
-        {
-            // Arrange
-            int expectedFalse = totalResults - expectedTrue;
-
-            List<JsonRuleResult> results = new List<JsonRuleResult>();
-
-            for (int i = 0; i < expectedTrue; i++)
-            {
-                results.Add(new JsonRuleResult { Passed = true });
-            }
-
-            for (int i = 0; i < expectedFalse; i++)
-            {
-                results.Add(new JsonRuleResult { Passed = false });
-            }
-
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, results);
-
-            // Act
-            var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
-            var resultsEvaluatedFalse = jsonRuleEvaluation.ResultsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(totalResults, results.Count());
-            Assert.AreEqual(expectedTrue, resultsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedFalse, resultsEvaluatedFalse.Count());
-        }
-
         [TestMethod]
-        public void GetResultsEvaluatedTrueFalse_ResultsNotSet_ReturnZeroResults()
+        public void GetSeverity_ReturnsSeverityFromRule()
         {
-            // Arrange
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, new List<JsonRuleEvaluation>());
-
-            // Act
-            var resultsEvaluatedTrue = jsonRuleEvaluation.ResultsEvaluatedTrue;
-            var resultsEvaluatedFalse = jsonRuleEvaluation.ResultsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(0, resultsEvaluatedTrue.Count());
-            Assert.AreEqual(0, resultsEvaluatedFalse.Count());
-        }
-
-        [DataTestMethod]
-        [DataRow(3, 3, DisplayName = "3/3 evaluations are true")]
-        [DataRow(3, 2, DisplayName = "2/3 evaluations are true")]
-        [DataRow(3, 0, DisplayName = "0/3 evaluations are true")]
-        [DataRow(0, 0, DisplayName = "No evaluations")]
-        public void GetEvaluationsEvaluatedTrueFalse_ThreeEvaluations_ExpectedNumberOfEvaluationsReturned(int totalEvaluations, int expectedTrue)
-        {
-            // Arrange
-            int expectedFalse = totalEvaluations - expectedTrue;
-
-            List<JsonRuleEvaluation> evaluations = new List<JsonRuleEvaluation>();
-
-            for (int i = 0; i < expectedTrue; i++)
-            {
-                evaluations.Add(new JsonRuleEvaluation(null, true, new JsonRuleResult[0]));
-            }
-
-            for (int i = 0; i < expectedFalse; i++)
-            {
-                evaluations.Add(new JsonRuleEvaluation(null, false, new JsonRuleResult[0]));
-            }
-
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, evaluations);
-
-            // Act
-            var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
-            var evaluationsEvaluatedFalse = jsonRuleEvaluation.EvaluationsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(totalEvaluations, evaluations.Count());
-            Assert.AreEqual(expectedTrue, evaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(expectedFalse, evaluationsEvaluatedFalse.Count());
-        }
-
-        [TestMethod]
-        public void GetEvaluationsEvaluatedTrueFalse_EvaluationsNotSet_ReturnZeroEvaluations()
-        {
-            // Arrange
-            JsonRuleEvaluation jsonRuleEvaluation = new JsonRuleEvaluation(null, true, new List<JsonRuleResult>());
-
-            // Act
-            var evaluationsEvaluatedTrue = jsonRuleEvaluation.EvaluationsEvaluatedTrue;
-            var evaluationsEvaluatedFalse = jsonRuleEvaluation.EvaluationsEvaluatedFalse;
-
-            // Assert
-            Assert.AreEqual(0, evaluationsEvaluatedTrue.Count());
-            Assert.AreEqual(0, evaluationsEvaluatedFalse.Count());
+            Assert.AreEqual(
+                Severity.High,
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
+                {
+                    RuleDefinition = new RuleDefinition { Severity = Severity.High }
+                }
+                .Severity);
         }
 
         [TestMethod]
@@ -183,29 +98,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void Results_IterateResultsMultipleTimes_IterationIsCached()
-        {
-            int iterationCounter = 0;
-
-            IEnumerable<JsonRuleResult> GenerateResultEnumerable()
-            {
-                iterationCounter++;
-                yield return new JsonRuleResult();
-            }
-
-            var testEvaluation = new JsonRuleEvaluation(null, true, GenerateResultEnumerable());
-
-            // Call each method that would iterate Evaluations, making sure the original Enumerable
-            // is only ever iterated a single time.
-            _ = testEvaluation.Results;
-            _ = testEvaluation.ResultsEvaluatedFalse;
-            _ = testEvaluation.ResultsEvaluatedTrue;
-            _ = testEvaluation.HasResults;
-            _ = testEvaluation.Results;
-            Assert.AreEqual(1, iterationCounter);
-        }
-
-        [TestMethod]
         public void HasResults_NestedEvaluationsWithResults_ReturnsTrue()
         {
             var evaluationWithNestedResults = new JsonRuleEvaluation(
@@ -216,18 +108,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     new JsonRuleEvaluation(
                         null,
                         true,
-                        new []
-                        {
-                            new JsonRuleResult(),
-                            new JsonRuleResult()
-                        }),
+                        new JsonRuleResult()),
                     new JsonRuleEvaluation(
                         null,
                         true,
-                        new []
-                        {
-                            new JsonRuleResult()
-                        })
+                        new JsonRuleResult())
                 });
 
             Assert.IsTrue(evaluationWithNestedResults.HasResults);
@@ -258,7 +143,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullResults_ThrowsException()
         {
-            new JsonRuleEvaluation(null, true, results: null);
+            new JsonRuleEvaluation(null, true, result: null);
         }
 
         [TestMethod]

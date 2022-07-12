@@ -1,0 +1,28 @@
+[
+  {
+    "Template": "AppServices.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 111,
+        "Description": "HTTPS property not defined"
+      },
+      {
+        "LineNumber": 125,
+        "Description": "HTTPS property set to false"
+      }
+    ]
+  },
+  {
+    "Template": "AppServices.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 71,
+        "Description": "HTTPS property not defined"
+      },
+      {
+        "LineNumber": 81,
+        "Description": "HTTPS property set to false"
+      }
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "Template": "AppServicesFTPS.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 97,
+        "Description": "siteConfig.ftpsState set to an undesired value in a resource that does not define a 'kind' property"
+      }
+    ]
+  },
+  {
+    "Template": "AppServicesFTPS.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 78,
+        "Description": "siteConfig.ftpsState set to an undesired value in a resource that does not define a 'kind' property"
+      }
+    ]
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "Template": "Kubernetes.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 42,
+        "Description": "authorizedIPRanges is not given a value"
+      },
+      {
+        "LineNumber": 42,
+        "Description": "enablePrivateCluster is not given a value"
+      },
+      {
+        "LineNumber": 62,
+        "Description": "apiServerAccessProfile is not defined"
+      },
+      {
+        "LineNumber": 63,
+        "Description": "enablePrivateCluster is false"
+      }
+    ]
+  },
+  {
+    "Template": "Kubernetes.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 30,
+        "Description": "authorizedIPRanges is not given a value"
+      },
+      {
+        "LineNumber": 30,
+        "Description": "enablePrivateCluster is not given a value"
+      },
+      {
+        "LineNumber": 49,
+        "Description": "apiServerAccessProfile is not defined"
+      },
+      {
+        "LineNumber": 50,
+        "Description": "enablePrivateCluster is false"
+      }
+    ]
+  }
+]
