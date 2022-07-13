@@ -21,6 +21,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
+        /// <summary>
+        /// Exception message when error during bicep template compilation
+        /// </summary>
+        public static readonly string BicepCompileErrorMessage = "Error compiling bicep template";
+
         private JsonRuleEngine jsonRuleEngine;
         private PowerShellRuleEngine powerShellRuleEngine;
 
@@ -90,7 +95,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 }
                 catch (Exception e)
                 {
-                    throw new TemplateAnalyzerException("Error compiling bicep template", e);
+                    throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
 
