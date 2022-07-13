@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             try
             {
                 // There are 2 different 'Default' functions available:
-                // https://docs.microsoft.com/en-us/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
+                // https://docs.microsoft.com/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
                 // CreateDefault2 appears to not have a dependency on Microsoft.Management.Infrastructure.dll,
                 // which is missing when publishing for 'win-x64', and PowerShell throws an exception creating the InitialSessionState.
                 // Notably, Microsoft.Management.Infrastructure.dll is available when publishing for specific Windows versions (such as win7-x64),
