@@ -74,6 +74,7 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 | Error: Missing file or directory path | 3 |
 | Error: Problem loading configuration file | 4 |
 | Error: Invalid ARM template specified | 10 |
+| Error: Invalid Bicep template specified | 11 |
 | Violation: Scan found rule violations in analyzed template(s) | 20 |
 | Error: An error was encountered trying to analyze a template | 21 |
 | Violation + Error: Scan encountered both violations in template(s) and errors trying to analyze template(s) | 22 |
