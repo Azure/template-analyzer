@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Command line API is setup using https://github.com/dotnet/command-line-api
 
             rootCommand = new();
-            rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
+            rootCommand.Description = "Analyze Azure Resource Manager (ARM) and Bicep Templates for security and best practice issues.";
 
             // Setup analyze-template and analyze-directory commands
             List<Command> allCommands = new()
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     numOfFilesAnalyzed++;
                     issueReported |= res == ExitCode.Violation;
                 }
-                else if (res == ExitCode.ErrorAnalysis)
+                else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
                 {
                     filesFailed.Add(file);
                 }
@@ -282,7 +282,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             catch (Exception exception)
             {
                 logger.LogError(exception, "An exception occurred while analyzing a template");
-                return ExitCode.ErrorAnalysis;
+
+                return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)
+                    ? ExitCode.ErrorInvalidBicepTemplate
+                    : ExitCode.ErrorAnalysis;
             }
         }
 
@@ -327,8 +330,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter?.Dispose();
         }
 
-        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath) =>
-            directoryPath.GetFiles(
+        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath)
+        {
+            var armTemplates = directoryPath.GetFiles(
                 "*.json",
                 new EnumerationOptions
                 {
@@ -337,8 +341,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             ).Where(IsValidTemplate);
 
+            var bicepTemplates = directoryPath.GetFiles(
+                "*.bicep",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
+                });
+
+            return armTemplates.Concat(bicepTemplates);
+        }
+
         private bool IsValidTemplate(FileInfo file)
         {
+            // assume bicep files are valid, they are compiled/verified later
+            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             using var fileStream = new StreamReader(file.OpenRead());
             var reader = new JsonTextReader(fileStream);
 

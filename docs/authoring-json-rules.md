@@ -60,7 +60,7 @@ These operators evaluate a specific JSON property in the template.  All operator
 * yyyy-MM-ddThh:mmK
 * yyyy-MM-dd hh:mm:ssK
 
-More information on the format identifiers can be found [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings).
+More information on the format identifiers can be found [here](https://docs.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings).
 
 The examples given with the operators below will be in the context of the following JSON:
 ```javascript

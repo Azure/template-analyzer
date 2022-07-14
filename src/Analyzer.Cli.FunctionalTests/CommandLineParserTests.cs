@@ -30,6 +30,9 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("Configuration.json", ExitCode.ErrorCommand, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
         [DataRow("AppServicesLogs-Failures.json", ExitCode.Violation, DisplayName = "Violations found in the template")]
         [DataRow("AppServicesLogs-Passes.json", ExitCode.Success, DisplayName = "Success")]
+        [DataRow("AppServicesLogs-Failures.bicep", ExitCode.Violation, DisplayName = "Violations found in the Bicep template")]
+        [DataRow("AppServicesLogs-Passes.bicep", ExitCode.Success, DisplayName = "Success")]
+        [DataRow("Invalid.bicep", ExitCode.ErrorInvalidBicepTemplate, DisplayName = "Path exists, invalid Bicep template")]
         public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
             var args = new string[] { "analyze-template" , GetFilePath(relativeTemplatePath)}; 
@@ -52,10 +55,12 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual((int)expectedExitCode, result.Result);
         }
 
-        [TestMethod]
-        public void AnalyzeTemplate_UseConfigurationFileOption_ReturnExpectedExitCodeUsingOption()
+        [DataTestMethod]
+        [DataRow("AppServicesLogs-Failures.json")]
+        [DataRow("AppServicesLogs-Failures.bicep")]
+        public void AnalyzeTemplate_UseConfigurationFileOption_ReturnExpectedExitCodeUsingOption(string relativeTemplatePath)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var templatePath = GetFilePath(relativeTemplatePath);
             var configurationPath = GetFilePath("Configuration.json");
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", configurationPath};
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -63,10 +68,12 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual((int)ExitCode.Violation, result.Result);
         }
 
-        [TestMethod]
-        public void AnalyzeTemplate_ReportFormatAsSarif_ReturnExpectedExitCodeUsingOption()
+        [DataTestMethod]
+        [DataRow("AppServicesLogs-Failures.json")]
+        [DataRow("AppServicesLogs-Failures.bicep")]
+        public void AnalyzeTemplate_ReportFormatAsSarif_ReturnExpectedExitCodeUsingOption(string relativeTemplatePath)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var templatePath = GetFilePath(relativeTemplatePath);
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "OutputFile.sarif");
             var args = new string[] { "analyze-template", templatePath, "--report-format", "Sarif", "--output-file-path", outputFilePath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -87,7 +94,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 4 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 8 files");
         }
 
         [DataTestMethod]
@@ -125,7 +132,7 @@ namespace Analyzer.Cli.FunctionalTests
             Assert.AreEqual(templateErrorMessage, toolNotifications[1]["message"]["text"]);
 
             var nonJsonFilePath1 = Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json");
-            var nonJsonFilePath2 = Path.Combine(directoryToAnalyze, "AnotherInvalidTemplate.json");
+            var nonJsonFilePath2 = Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep");
             var thirdNotificationMessageText = toolNotifications[2]["message"]["text"].ToString();
             // Both orders have to be considered for Windows and Linux:
             Assert.IsTrue($"Unable to analyze 2 files: {nonJsonFilePath1}, {nonJsonFilePath2}" == thirdNotificationMessageText ||
@@ -198,11 +205,14 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow("myConfig.json", true, DisplayName = "Custom config name specified in command")]
-        [DataRow("configuration.json", false, DisplayName = "Config not specified, default config path applied")]
-        public void FilterRules_ValidConfig_RulesFiltered(string configName, bool specifyInCommand)
+        [DataRow(false, "myConfig.json", true, DisplayName = "Custom config name specified in command")]
+        [DataRow(false, "configuration.json", false, DisplayName = "Config not specified, default config path applied")]
+        [DataRow(true, "myConfig.json", true, DisplayName = "Custom config name specified in command")]
+        [DataRow(true, "configuration.json", false, DisplayName = "Config not specified, default config path applied")]
+        public void FilterRules_ValidConfig_RulesFiltered(bool isBicep, string configName, bool specifyInCommand)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Failures.json");
+            var extension = isBicep ? "bicep" : "json";
+            var templatePath = GetFilePath($"AppServicesLogs-Failures.{extension}");
             var args = new string[] { "analyze-template", templatePath };
 
             // Analyze template without filtering rules to verify there is a failure.
@@ -236,10 +246,12 @@ namespace Analyzer.Cli.FunctionalTests
             }
         }
 
-        [TestMethod]
-        public void FilterRules_ConfigurationPathIsInvalid_ReturnsConfigurationError()
+        [DataTestMethod]
+        [DataRow("AppServicesLogs-Passes.json")]
+        [DataRow("AppServicesLogs-Passes.bicep")]
+        public void FilterRules_ConfigurationPathIsInvalid_ReturnsConfigurationError(string relativeTemplatePath)
         {
-            var templatePath = GetFilePath("AppServicesLogs-Passes.json");
+            var templatePath = GetFilePath(relativeTemplatePath);
             var args = new string[] { "analyze-template", templatePath, "--config-file-path", "NonExistentFile.json" };
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);

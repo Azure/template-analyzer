@@ -11,5 +11,18 @@
         "Description": "siteConfig.ftpsState set to an undesired value"
       }
     ]
+  },
+  {
+    "Template": "AppServicesFTPS.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 16,
+        "Description": "No properties are specified"
+      },
+      {
+        "LineNumber": 26,
+        "Description": "siteConfig.ftpsState set to an undesired value"
+      }
+    ]
   }
 ]
