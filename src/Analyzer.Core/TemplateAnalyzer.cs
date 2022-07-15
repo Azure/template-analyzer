@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
-        /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
+        /// <param name="templateFilePath">The ARM template file path, it's needed to run PowerShell based rules.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {

@@ -17,12 +17,4 @@
     <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
   </ItemGroup>
 
-  <Import Project="..\TTK.targets" />
-
-  <ItemGroup>
-      <Content Include="templates\**">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-  </ItemGroup>
-
 </Project>

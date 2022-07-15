@@ -16,27 +16,5 @@
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
     <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TTKUrl>https://aka.ms/arm-ttk-latest</TTKUrl>
-  </PropertyGroup>
-
-  <Target Name="DownloadTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
-    <DownloadFile SourceUrl="$(TTKUrl)" DestinationFolder="$(IntermediateOutputPath)" DestinationFileName="ttk.zip">
-      <Output TaskParameter="DownloadedFile" ItemName="TTKZip" />
-    </DownloadFile>
-    
-    <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />
-
-    <ItemGroup>
-      <TTKFiles Include="$(IntermediateOutputPath)\TTK\arm-ttk\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(TTKFiles)" DestinationFolder="$(OutputPath)\TTK\%(RecursiveDir)" />
-  </Target>
-
-  <Target Name="CleanTTK" AfterTargets="Clean">
-    <RemoveDir Directories="$(IntermediateOutputPath)\TTK;$(OutputPath)\TTK" />
-    <Delete Files="$(IntermediateOutputPath)\ttk.zip" />
-  </Target>
-
+  
 </Project>
