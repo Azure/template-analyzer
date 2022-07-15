@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
-        /// Logger for logging notable events.
+        /// Logger to report errors and debug information.
         /// </summary>
         private readonly ILogger logger;
 
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var templateFile = tempTemplateFile.Replace(".tmp", ".json");
             File.Move(tempTemplateFile, templateFile);
 
-            var host = new ClientHost(templateContext, logger);
+            var host = new PSRuleHostContext(templateContext, logger);
             var outputOption = new OutputOption
             {
                 Outcome = RuleOutcome.Fail // TODO check if should add .Error here too or that handled by overwriting Error()?
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 Output = outputOption
             };
             var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, host);
-            builder.InputPath(new string[] { PSRuleOption.GetWorkingPath() }); // TODO should be templateFile
+            builder.InputPath(new string[] { templateFile });
             var pipeline = builder.Build();
             pipeline.Begin();
             pipeline.Process(null);

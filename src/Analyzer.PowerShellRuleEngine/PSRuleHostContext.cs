@@ -68,9 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <inheritdoc/>
         public override void Record(IResultRecord record)
         {
-            // base.Record(record); TODO double check
-
-            var ruleRecord = (RuleRecord)record; // TODO doublecheck
+            var ruleRecord = (RuleRecord)record;
 
             var ruleId = ruleRecord.Ref;
             var ruleName = ruleRecord.RuleName;
@@ -86,7 +84,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             foreach (var reason in ruleRecord.Detail.Reason)
             {
                 var lineNumber = 1;
-                try // Temporal, TODO improve anyways?
+                // Temporal try/catch because not all rule evaluations return a proper path yet:
+                try
                 {
                     lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.Path);
                 }
@@ -94,7 +93,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 {
                 }
                
-                // TODO: add reason as a message into result
                 this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, ruleDescription, recommendation,
                         templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
             }
