@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.Azure.Templates.Analyzer.Types;
@@ -13,38 +12,51 @@ using PSRule.Rules;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
-    // TODO rename? and add summaries
-
-    internal sealed class ClientHost : HostContext
+    /// <summary>
+    /// Processes the output of the PSRule analysis.
+    /// </summary>
+    internal sealed class PSRuleHostContext : HostContext
     {
-        public List<PowerShellRuleEvaluation> Evaluations = new();
-
         private readonly TemplateContext templateContext;
         private readonly ILogger logger;
         private readonly JsonLineNumberResolver jsonLineNumberResolver;
 
-        public ClientHost(TemplateContext templateContext, ILogger logger = null)
+        /// <summary>
+        /// Evaluations outputted by the PSRule analysis.
+        /// </summary>
+        public List<PowerShellRuleEvaluation> Evaluations = new();
+
+        /// <summary>
+        /// Creates a new instance of a PSRuleHostContext
+        /// </summary>
+        /// <param name="templateContext">The context of the template under analysis.</param>
+        /// <param name="logger">A logger to report errors and debug information.</param>
+        public PSRuleHostContext(TemplateContext templateContext, ILogger logger = null)
         {
             this.templateContext = templateContext;
             this.logger = logger;
             this.jsonLineNumberResolver = new JsonLineNumberResolver(templateContext);
         }
 
+        /// <inheritdoc/>
         public override bool ShouldProcess(string target, string action)
         {
             return true;
         }
 
+        /// <inheritdoc/>
         public override void Error(ErrorRecord errorRecord)
         {
             logger?.LogError("Error running rule: {error}", errorRecord.Exception.Message);
         }
 
+        /// <inheritdoc/>
         public override void Warning(string text)
         {
             logger?.LogWarning(text);
         }
 
+        /// <inheritdoc/>
         public override void Information(InformationRecord informationRecord)
         {
             if (informationRecord?.MessageData is HostInformationMessage info)
@@ -53,6 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
         }
 
+        /// <inheritdoc/>
         public override void Record(IResultRecord record)
         {
             // base.Record(record); TODO double check
