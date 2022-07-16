@@ -35,14 +35,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Analyzes a template against the rules encoded in PowerShell.
         /// </summary>
-        /// <param name="templateContext">The context of the template under analysis.
-        /// <see cref="TemplateContext.TemplateIdentifier"/> must be the file path of the template to evaluate.</param>
+        /// <param name="templateContext">The context of the template under analysis.</param>
         /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
             if (templateContext?.TemplateIdentifier == null)
             {
                 throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
+            }
+
+            if (templateContext?.ExpandedTemplate == null)
+            {
+                throw new ArgumentException($"{nameof(TemplateContext.ExpandedTemplate)} must not be null.", nameof(templateContext));
             }
 
             // TODO: Temporary work-around: write template to disk so PSRule will analyze it

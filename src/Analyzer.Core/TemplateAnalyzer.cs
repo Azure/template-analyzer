@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     public class TemplateAnalyzer
     {
         /// <summary>
-        /// Exception message when error during bicep template compilation
+        /// Exception message when error during Bicep template compilation.
         /// </summary>
         public static readonly string BicepCompileErrorMessage = "Error compiling bicep template";
 
@@ -76,9 +76,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
-        /// <param name="template">The ARM Template JSON</param>
-        /// <param name="parameters">The parameters for the ARM Template JSON</param>
-        /// <param name="templateFilePath">The ARM template file path, it's needed to run PowerShell based rules.</param>
+        /// <param name="template">The template contents.</param>
+        /// <param name="parameters">The parameters for the template.</param>
+        /// <param name="templateFilePath">The template file path.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {

@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <inheritdoc/>
         public override void Error(ErrorRecord errorRecord)
         {
-            logger?.LogError("Error running rule: {error}", errorRecord.Exception.Message);
+            logger?.LogError("Error running PowerShell rules: {error}", errorRecord.Exception.Message);
         }
 
         /// <inheritdoc/>
