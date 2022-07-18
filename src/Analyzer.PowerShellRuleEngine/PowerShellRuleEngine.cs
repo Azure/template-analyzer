@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
 using PSRule.Configuration;
 using PSRule.Pipeline;
 using PSRule.Rules;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {

@@ -24,8 +24,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         }
 
         [DataTestMethod]
-        [DataRow("template_and_resource_level_results.json", 11, new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, DisplayName = "Template with errors reported in both analysis stages")]
-        // TODO add test case for error (malformed template), warning (rule with severity level of warning?) and informational (also rule with that severity level?)
+        // TODO line numbers should be fixed:
+        [DataRow("template_and_resource_level_results.json", 12, new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, DisplayName = "Template with errors reported in both analysis stages")]
+        // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
         public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
             var templateFilePath = templatesFolder + templateFileName;
@@ -49,7 +50,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             {
                 Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleId));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleDescription));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.HelpUri));
                 Assert.IsNotNull(evaluation.Recommendation);
+                Assert.IsNotNull(evaluation.Severity);
 
                 if (evaluation.Passed)
                 {

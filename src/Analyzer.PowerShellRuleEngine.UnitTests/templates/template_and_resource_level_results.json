@@ -7,7 +7,7 @@
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "storage1",
+      "name": "aStorageAccount",
       "apiVersion": "2016-12-01",
       "location": "",
       "sku": {

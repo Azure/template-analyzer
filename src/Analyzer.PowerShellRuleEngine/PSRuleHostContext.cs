@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public List<PowerShellRuleEvaluation> Evaluations = new();
 
         /// <summary>
-        /// Creates a new instance of a PSRuleHostContext
+        /// Creates a new instance of a PSRuleHostContext.
         /// </summary>
         /// <param name="templateContext">The context of the template under analysis.</param>
         /// <param name="logger">A logger to report errors and debug information.</param>
