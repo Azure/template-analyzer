@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
     [TestClass]
     public class PowerShellRuleEngineTests
     {
-        private readonly string templatesFolder = @"templates\";
+        private readonly string templatesFolder = @"templates";
         private static PowerShellRuleEngine powerShellRuleEngine;
 
         [AssemblyInitialize]
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
         public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, int expectedErrorCount, dynamic lineNumbers)
         {
-            var templateFilePath = templatesFolder + templateFileName;
+            var templateFilePath = Path.Combine(templatesFolder, templateFileName);
 
             var template = File.ReadAllText(templateFilePath);
             var armTemplateProcessor = new ArmTemplateProcessor(template);
