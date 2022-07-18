@@ -55,10 +55,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var templateFile = tempTemplateFile.Replace(".tmp", ".json");
             File.Move(tempTemplateFile, templateFile);
 
-            var host = new PSRuleHostContext(templateContext, logger);
+            var hostContext = new PSRuleHostContext(templateContext, logger);
             var outputOption = new OutputOption
             {
-                Outcome = RuleOutcome.Fail // TODO check if should add .Error here too or that handled by overwriting Error()?
+                Outcome = RuleOutcome.Fail
             };
             var modules = new string[] { "PSRule.Rules.Azure" };
 
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 },
                 Output = outputOption
             };
-            var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, host);
+            var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
             builder.InputPath(new string[] { templateFile });
             var pipeline = builder.Build();
             pipeline.Begin();
@@ -82,7 +82,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             File.Delete(templateFile);
 
             // Run PSRule on resources array, for typed-rules:
-            // TODO try to do it in one run
             var optionsForResourceAnalysis = new PSRuleOption
             {
                 Input = new InputOption
@@ -92,13 +91,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 Output = outputOption
             };
             var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources");
-            builder = CommandLineBuilder.Invoke(modules, optionsForResourceAnalysis, host);
+            builder = CommandLineBuilder.Invoke(modules, optionsForResourceAnalysis, hostContext);
             pipeline = builder.Build();
             pipeline.Begin();
             pipeline.Process(resources.ToString());
             pipeline.End();
 
-            return host.Evaluations;
+            return hostContext.Evaluations;
         }
     }
 }
