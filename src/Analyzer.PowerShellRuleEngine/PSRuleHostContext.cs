@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.Azure.Templates.Analyzer.Types;
@@ -87,7 +88,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // Temporal try/catch because not all rule evaluations return a proper path yet:
                 try
                 {
-                    lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.Path);
+                    lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.FullPath);
                 }
                 catch
                 {
