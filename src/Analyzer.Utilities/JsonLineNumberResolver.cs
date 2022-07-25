@@ -37,7 +37,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// or 1 if it can't be determined.</returns>
         public int ResolveLineNumber(string pathInExpandedTemplate)
         {
-            var currentStackTrace = System.Environment.StackTrace;
             JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
             JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
 
