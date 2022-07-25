@@ -1,6 +1,6 @@
 # Built-in rules
 
-Information about the PowerShell-based rules included by our integration with [PSRule](https://microsoft.github.io/PSRule/) can be found [here](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/).
+Information about the PowerShell-based rules included by our integration with [PSRule](https://microsoft.github.io/PSRule/) can be found [here](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/). The tool will only evaluate these rules if the option `-run-powershell` is used.
 
 ## TA-000001: Diagnostic logs in App Services should be enabled
 Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.
