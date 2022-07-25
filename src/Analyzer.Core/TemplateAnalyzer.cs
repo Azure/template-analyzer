@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
@@ -28,6 +29,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
+
+        /// <summary>
+        /// Exception message when error during bicep template compilation
+        /// </summary>
+        public static readonly string BicepCompileErrorMessage = "Error compiling bicep template";
+
         private JsonRuleEngine jsonRuleEngine;
         private PowerShellRuleEngine powerShellRuleEngine;
 
@@ -96,6 +103,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             if (initialTemplate == null) throw new ArgumentNullException(nameof(initialTemplate));
 
+            // if the template is bicep, convert to JSON and get source map
+            var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
+            object sourceMap = null;
+            if (isBicep)
+            {
+                try
+                {
+                    (initialTemplate, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                }
+                catch (Exception e)
+                {
+                    throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
+                }
+            }
+
             JToken templatejObject; 
             var armTemplateProcessor = new ArmTemplateProcessor(modifiedTemplate, logger: this.logger);
 
@@ -118,9 +140,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 OriginalTemplate = JObject.Parse(initialTemplate),
                 ExpandedTemplate = templatejObject,
-                IsMainTemplate = true, // currently not using this
+                IsMainTemplate = true,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
-                TemplateIdentifier = templateFilePath, 
+                TemplateIdentifier = templateFilePath,
+                IsBicep = isBicep,
+                SourceMap = sourceMap,
                 Offset = offset
             };
 
@@ -133,6 +157,28 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     this.logger?.LogDebug("Running PowerShell rule engine");
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
+
+                // This is a temporal fix
+                var evalsToValidate = new List<IEvaluation>();
+                var evalsToNotValidate = new List<IEvaluation>();
+                foreach (var eval in evaluations)
+                {
+                    if (!eval.Passed && eval.Result != null)
+                    {
+                        evalsToValidate.Add(eval);
+                    }
+                    else
+                    {
+                        evalsToNotValidate.Add(eval);
+                    }
+                }
+                var uniqueResults = new Dictionary<(string, int), IEvaluation>();
+                foreach (var eval in evalsToValidate)
+                {
+                    uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
+                }
+                evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
+
 
                 // START OF MY EXPERIMENTAL CODE
                 dynamic jsonTemplate = JsonConvert.DeserializeObject(initialTemplate);
@@ -226,10 +272,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             evaluations = evaluations.Concat(result);
                         }                       
                     }
-                }
-                foreach (var evaluation in evaluations)
-                {
-                    //evaluation.Result.LineNumber += offset;  // TRY TO MAKE THIS NOT READONLY BECAUSE OTHERWISE IT HELL!!!
                 }
 
                 // END OF MY EXPERIMENTAL CODE
