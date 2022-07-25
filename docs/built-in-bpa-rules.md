@@ -1,35 +1,6 @@
-# Best Practice Related Rules
-More information about the rules covered by our integration with [Azure Resource Manager Template Toolkit](https://github.com/Azure/arm-ttk) can be found [here](https://docs.microsoft.com/azure/azure-resource-manager/templates/test-cases):
+# Built-in rules
 
-#### Admin username should not be a literal
-#### API versions should be recent
-#### Artifacts parameter' best practices
-#### CommandToExecute must use ProtectedSettings for secrets
-#### DependsOn' best practices
-#### Deployment resources must not be debug
-#### DeploymentTemplate must not contain hardcoded URI
-#### DeploymentTemplate schema is correct
-#### Dynamic variable references should not use concat
-#### IDs should be derived from resource IDs
-#### Location should not be hardcoded
-#### ManagedIdentityExtension must not be used
-#### Min and max values are numbers
-#### Outputs must not contain secrets
-#### Parameters must be referenced
-#### Password parameters must be secure
-#### Providers' apiVersions is not permitted
-#### ResourceIDs should not contain
-#### Resources should have locations
-#### Resources should not be ambiguous
-#### Secure parameters in nested deployments
-#### Secure string parameters cannot have defaults
-#### Template should not contain blanks
-#### Variables must be referenced
-#### Virtual machine images should use latest version
-#### Virtual machine size should be a parameter
-#### Virtual machines should not be preview
-
-# Security Related Rules
+Information about the PowerShell-based rules included by our integration with [PSRule](https://microsoft.github.io/PSRule/) can be found [here](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/).
 
 ## TA-000001: Diagnostic logs in App Services should be enabled
 Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.

@@ -1,7 +1,7 @@
 [![Build Status](https://dev.azure.com/azure/template-analyzer/_apis/build/status/BuildAndTest?branchName=main)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 [![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 
-# ARM Template Best Practice Analyzer (BPA)
+# Template Best Practice Analyzer (BPA)
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the ARM Template BPA?
@@ -37,6 +37,7 @@ Argument | Description
 **(Optional)** `--report-format` | Valid formats:<br/>*Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
 **(Optional)** `-v` or `--verbose` | Shows details about the analysis
+**(Optional)** `-run-powershell` | Also runs the PowerShell-based rules
 
  The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided ARM or Bicep template and its corresponding [template parameters](https://docs.microsoft.com/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/azure/azure-resource-manager/templates/template-functions) in the ARM template.
 
