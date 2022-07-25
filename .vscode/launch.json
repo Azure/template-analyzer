@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/TemplateAnalyzer.dll",
+            "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net6.0/TemplateAnalyzer.dll",
 
             // Runs the analyzer CLI, analyzing the file currently active/being viewed in VS Code.
             // Alternatively, change ${file} to the path of a template to analyze that file.
@@ -17,7 +17,7 @@
                 "${file}"
                 //"-p", "path-to-parameters"
             ],
-            "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/",
+            "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net6.0/",
             "console": "internalConsole",
             "stopAtEntry": false
         },
@@ -26,7 +26,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/TemplateAnalyzer.dll",
+            "program": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net6.0/TemplateAnalyzer.dll",
 
             // Runs the analyzer CLI, analyzing the directory of the file currently active/being 
             // viewed in VS Code. Alternatively, change ${fileDirname} to the path of a directory to 
@@ -35,7 +35,7 @@
                 "analyze-directory",
                 "${fileDirname}",
             ],
-            "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net5.0/",
+            "cwd": "${workspaceFolder}/src/Analyzer.Cli/bin/Debug/net6.0/",
             "console": "internalConsole",
             "stopAtEntry": false
         },

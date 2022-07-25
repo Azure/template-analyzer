@@ -43,7 +43,9 @@ Evaluation of ARM templates is performed on the JSON representation of the templ
 
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 
-The behavior of the `resourceType` property is to find a property called "resources" in the current scope that is an array of objects, look for a "type" property in each of the objects, and keep only the resources where the value of "type" matches the string in `resourceType`.  See [Scopes](#scopes) for more information on scopes.
+When `resourceType` is specified, it must be the fully-qualified type name (for example, *Microsoft.Sql/servers/auditingSettings*, instead of simply *auditingSettings* as might be specified in a child resource of *Microsoft.Sql/servers*).
+
+When looking for the specified resource type, the Template BPA will look for the "resources" array property at the current [scopes](#scopes), and if found, compare the "type" property of each resource against the string specified for *resourceType*.  The search will also include looking at child resources - i.e. a "resources" array property defined within a resource.  This will occur if a type-parent of the specified *resourceType* is found in the resources (e.g. if searching for type *Microsoft.Sql/servers/auditingSettings*, resources defined within a resource of type *Microsoft.Sql/servers* will also be searched).
 
 Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 
@@ -58,7 +60,7 @@ These operators evaluate a specific JSON property in the template.  All operator
 * yyyy-MM-ddThh:mmK
 * yyyy-MM-dd hh:mm:ssK
 
-More information on the format identifiers can be found [here](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings).
+More information on the format identifiers can be found [here](https://docs.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings).
 
 The examples given with the operators below will be in the context of the following JSON:
 ```javascript

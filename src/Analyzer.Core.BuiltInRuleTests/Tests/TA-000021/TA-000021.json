@@ -7,7 +7,24 @@
         "Description": "isEncrypted is false"
       },
       {
-        "LineNumber": 37,
+        "LineNumber": 43,
+        "Description": "isEncrypted is not defined, and the resource depends on another"
+      },
+      {
+        "LineNumber": 59,
+        "Description": "isEncrypted is false, in a resource of type variables declared as child of a automationAccounts resource"
+      }
+    ]
+  },
+  {
+    "Template": "AutomationAccountsVariables.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 16,
+        "Description": "isEncrypted is false"
+      },
+      {
+        "LineNumber": 23,
         "Description": "isEncrypted is not defined"
       }
     ]

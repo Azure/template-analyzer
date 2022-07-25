@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private IReportWriter reportWriter;
         private ILogger logger;
         private SummaryLogger summaryLogger;
- 
+
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
         /// </summary>
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Command line API is setup using https://github.com/dotnet/command-line-api
 
             rootCommand = new();
-            rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
+            rootCommand.Description = "Analyze Azure Resource Manager (ARM) and Bicep Templates for security and best practice issues.";
 
             // Setup analyze-template and analyze-directory commands
             List<Command> allCommands = new()
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 SetupAnalyzeTemplateCommand(),
                 SetupAnalyzeDirectoryCommand()
             };
-            
+
             // Add all commands to root command
             allCommands.ForEach(rootCommand.AddCommand);
 
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private void SetupCommonOptionsForCommands(List<Command> commands)
         {
             List<Option> options = new()
-            {            
+            {
                 new Option<FileInfo>(
                     new[] { "-c", "--config-file-path" },
                     "The configuration file to use when parsing the specified ARM template"),
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     "--run-ttk",
                     "Run TTK against templates")
             };
-                
+
             commands.ForEach(c => options.ForEach(c.AddOption));
         }
 
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     numOfFilesAnalyzed++;
                     issueReported |= res == ExitCode.Violation;
                 }
-                else if (res == ExitCode.ErrorAnalysis)
+                else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
                 {
                     filesFailed.Add(file);
                 }
@@ -260,14 +260,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
             }
-            
+
             FinishAnalysis();
-            
+
             return (int)exitCode;
         }
 
         private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
-        { 
+        {
             try
             {
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
@@ -282,7 +282,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             catch (Exception exception)
             {
                 logger.LogError(exception, "An exception occurred while analyzing a template");
-                return ExitCode.ErrorAnalysis;
+
+                return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)
+                    ? ExitCode.ErrorInvalidBicepTemplate
+                    : ExitCode.ErrorAnalysis;
             }
         }
 
@@ -327,8 +330,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter?.Dispose();
         }
 
-        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath) =>
-            directoryPath.GetFiles(
+        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath)
+        {
+            var armTemplates = directoryPath.GetFiles(
                 "*.json",
                 new EnumerationOptions
                 {
@@ -337,8 +341,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             ).Where(IsValidTemplate);
 
+            var bicepTemplates = directoryPath.GetFiles(
+                "*.bicep",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
+                });
+
+            return armTemplates.Concat(bicepTemplates);
+        }
+
         private bool IsValidTemplate(FileInfo file)
         {
+            // assume bicep files are valid, they are compiled/verified later
+            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             using var fileStream = new StreamReader(file.OpenRead());
             var reader = new JsonTextReader(fileStream);
 
@@ -373,7 +394,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null) =>
-            reportFormat switch {
+            reportFormat switch
+            {
                 ReportFormat.Sarif => new SarifReportWriter((FileInfoBase)outputFile, rootFolder),
                 _ => new ConsoleReportWriter()
             };
@@ -445,7 +467,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception e)
             {
-                this.logger.LogError("Unable to read configuration file.", e);
+                this.logger.LogError(e, "Unable to read configuration file.");
                 return false;
             }
 
@@ -462,7 +484,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception e)
             {
-                this.logger.LogError("Failed to parse configuration file.", e);
+                this.logger.LogError(e, "Failed to parse configuration file.");
                 return false;
             }
         }

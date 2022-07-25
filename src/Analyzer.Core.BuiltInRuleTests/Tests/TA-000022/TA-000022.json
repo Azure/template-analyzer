@@ -7,5 +7,14 @@
         "Description": "enableNonSslPort equals true"
       }
     ]
+  },
+  {
+    "Template": "RedisCache.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 15,
+        "Description": "enableNonSslPort equals true"
+      }
+    ]
   }
 ]

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
@@ -188,12 +189,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                             modifiedNestedTemplate.parameters?.Merge(passedParameters);
                             //  -----------THIS IS WHERE I TRY TO GET USER-FORMATTED STRINGS
-                            //int startOfTemplate = 0;
+                            int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
                             //int endOfTemplate = 0;
 
                             // ------------THIS IS THE END OF GETTING USER FORMATTED STRINGS
                             string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
                             string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
+
+                            //---- MAKING REGEX WORK
+
+                            Regex rx = new Regex(@"{[a-zA-Z_][a-zA-Z0-9_]*}\{{{?<BR>\{}|{?<-BR>\}}|[^{}]*}+\}");
+
+                            var match = rx.Match("{}{}{}{}{}{}{}");
+                            var match2 = rx.Match("{al i want is loyalty}");
+
+                            var str = match.Value;
+
+                            //-----MAKING REGEX WORK
                             IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset); // TO DO: FIND OFFSET NUMBER
 
                             evaluations = evaluations.Concat(result);

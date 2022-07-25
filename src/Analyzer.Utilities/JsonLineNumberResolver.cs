@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="pathInExpandedTemplate">The path in the expanded template
         /// to find the line number of in the original template.</param>
         /// <returns>The line number of the equivalent location in the original template,
-        /// or 0 if it can't be determined.</returns>
+        /// or 1 if it can't be determined.</returns>
         public int ResolveLineNumber(string pathInExpandedTemplate)
         {
             var currentStackTrace = System.Environment.StackTrace;
