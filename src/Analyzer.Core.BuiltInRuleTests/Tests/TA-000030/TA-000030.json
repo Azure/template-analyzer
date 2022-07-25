@@ -1,0 +1,34 @@
+[
+  {
+    "Template": "DoubleNestedPass.json",
+    "PassingSections": [
+      {
+        "ResourceName": "stprimary2021",
+        "Explanation": "This part of the test works."
+      }
+    ],
+    "ReportedFailures": [
+    ]
+  },
+
+  {
+    "Template": "DoubleNestedFail.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 12,
+        "Description": "Has wrong API version"
+      },
+      {
+        "LineNumber": 37,
+        "Description": "Has wrong API version"
+      },
+      {
+        "LineNumber": 61,
+        "Description": "Has wrong API version"
+      }
+    ]
+  }
+]
+
+
+

@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// or 0 if it can't be determined.</returns>
         public int ResolveLineNumber(string pathInExpandedTemplate)
         {
+            var currentStackTrace = System.Environment.StackTrace;
             JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
             JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
 
@@ -84,8 +85,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
-
-            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
+            
+            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1;
         }
     }
 }

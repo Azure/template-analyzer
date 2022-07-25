@@ -38,5 +38,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// in the original template.
         /// </summary>
         public Dictionary<string, string> ResourceMappings { get; set; }
+
+        /// <summary>
+        /// Value by which line numbers in the nested template are offset from the parent template
+        /// </summary>
+        public int Offset { get; set; }
     }
 }

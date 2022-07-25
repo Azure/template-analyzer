@@ -1,0 +1,25 @@
+[
+  {
+    "Template": "SimpleNestedPass.json",
+    "PassingSections": [
+      {
+        "ResourceName": "publicIPAddressName",
+        "Explanation": "This part of the test works."
+      }
+    ],
+    "ReportedFailures": [
+    ]
+  },
+  {
+    "Template": "SimpleNestedFail.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 30,
+        "Description": "Has wrong location"
+      }
+    ]
+  }
+]
+
+
+
