@@ -7,7 +7,6 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
@@ -29,7 +28,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     /// </summary>
     public class TemplateAnalyzer
     {
-
         /// <summary>
         /// Exception message when error during bicep template compilation
         /// </summary>
@@ -72,8 +70,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                JsonRuleEngine.Create(rules, templateContext => new JsonLineNumberResolver(templateContext)),
-                usePowerShell ? new PowerShellRuleEngine() : null,
+                 JsonRuleEngine.Create(
+                    rules,
+                    templateContext => templateContext.IsBicep
+                        ? new BicepLocationResolver(templateContext)
+                        : new JsonLineNumberResolver(templateContext),
+                    logger),
+                usePowerShell ? new PowerShellRuleEngine(logger) : null,
                 logger);
         }
 
@@ -118,7 +121,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 }
             }
 
-            JToken templatejObject; 
+            JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(modifiedTemplate, logger: this.logger);
 
             try
@@ -126,7 +129,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 templatejObject = armTemplateProcessor.ProcessTemplate(parameters);
             }
             catch (Exception e)
-            { 
+            {
                 throw new TemplateAnalyzerException("Error while processing template.", e);
             }
             //IDEA
@@ -158,6 +161,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
 
+                // For each rule we don't want to report the same line more than once
                 // This is a temporal fix
                 var evalsToValidate = new List<IEvaluation>();
                 var evalsToNotValidate = new List<IEvaluation>();
@@ -288,7 +292,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             return File.ReadAllText(
                 Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    Path.GetDirectoryName(AppContext.BaseDirectory),
                     "Rules/BuiltInRules.json"));
         }
 
