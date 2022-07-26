@@ -4,7 +4,7 @@
     <id>Azure.Templates.Analyzer.Core</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
-    <description>ARM and Bicep Template scanner for security misconfiguration and best practices</description>
+    <description>ARM and Bicep Template scanner for security misconfigurations and best practices</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Azure/template-analyzer</projectUrl>

@@ -1,4 +1,4 @@
-# Authoring of Template BPA JSON Rules
+# Authoring Template BPA JSON Rules
 <a name="note"></a>***Note**: The Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
