@@ -5,7 +5,7 @@
 ***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the Template BPA?
-The Template BPA is an ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/) validator that scans these types of Infrastructure-as-code (IaC) templates for your Azure solutions to ensure security and best practice checks are being followed before deployment.
+The Template BPA scans ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/)  Infrastructure-as-Code (IaC) templates to ensure security and best practice checks are being followed before deployment of your Azure solutions.
 
 The Template BPA provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
 
