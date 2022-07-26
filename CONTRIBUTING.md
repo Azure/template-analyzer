@@ -1,4 +1,4 @@
-# Contributing to the ARM Template BPA
+# Contributing to the Template BPA
 We welcome community contributions to the Template BPA. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
