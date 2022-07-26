@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             ConsoleColor.Red => "\x1B[1m\x1B[31m",
             ConsoleColor.Yellow => "\x1B[1m\x1B[33m",
-            ConsoleColor.Green => "\x1B[1m\x1B[32m",
+            ConsoleColor.Cyan => "\x1B[1m\x1B[36m",
             _ => DefaultForegroundColor
         };
 
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             else if (logEntry.LogLevel == LogLevel.Debug)
             {
-                textWriter.Write(GetColorForTextWriter(ConsoleColor.Green));
+                textWriter.Write(GetColorForTextWriter(ConsoleColor.Cyan));
                 textWriter.Write("Debug information: ");
             }
 

@@ -151,7 +151,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode")]
         [DataRow(true, DisplayName = "Does not recommend the verbose mode")]
         [DataRow(false, true, DisplayName = "Outputs a recommendation for the verbose mode and uses plural form for 'errors'")]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary(bool usesVerboseMode, bool multipleErrors = false)
+        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedMessages(bool usesVerboseMode, bool multipleErrors = false)
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
@@ -190,12 +190,20 @@ namespace Analyzer.Cli.FunctionalTests
             try
             {
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-
                 var cliConsoleOutput = outputWriter.ToString();
+
                 var indexOfLogSummary = cliConsoleOutput.IndexOf("Execution summary:");
                 Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
-                var logSummary = cliConsoleOutput[indexOfLogSummary..];
 
+                var outputBeforeSummary = cliConsoleOutput[..indexOfLogSummary];
+                Assert.IsTrue(outputBeforeSummary.IndexOf($"Error: An exception occurred while analyzing a template" +
+                    $"{Environment.NewLine}Exception details:" +
+                    $"{Environment.NewLine}Microsoft.Azure.Templates.Analyzer.Core.TemplateAnalyzerException: Error while processing template.") > 0);
+                Assert.IsTrue(outputBeforeSummary.IndexOf($"Warning: An exception occurred when processing the template language expressions" +
+                    $"{Environment.NewLine}Exception details:" +
+                    $"{Environment.NewLine}Azure.Deployments.Templates.Exceptions.TemplateValidationException: The template parameter 'location' is not found.") > 0);
+
+                var logSummary = cliConsoleOutput[indexOfLogSummary..];
                 Assert.AreEqual(expectedLogSummary, logSummary);
             }
             finally
