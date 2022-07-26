@@ -29,7 +29,7 @@ The Template BPA accepts the following inputs:
 Argument | Description
 --- | ---
 `<template-path>` | The path of the template to analyze
-`<directory-path>` | The directory in which to search for templates (recursively finds and analyzes all templates in the directory and its subdirectories).<br/>ARM templates are identified by a '.json' file extension and a [valid top-level *$schema* property](https://docs.microsoft.com/azure/azure-resource-manager/templates/syntax#template-format)>. Bicep templates are identified by a '.bicep' file extension.
+`<directory-path>` | The directory in which to search for templates (recursively finds and analyzes all ARM and Bicep templates in the directory and its subdirectories).<br/>ARM templates are identified by a '.json' file extension and a [valid top-level *$schema* property](https://docs.microsoft.com/azure/azure-resource-manager/templates/syntax#template-format)>. Bicep templates are identified by a '.bicep' file extension.
 **(Optional)** `-p` or `--parameters-file-path` | A [parameters file](https://docs.microsoft.com/azure/azure-resource-manager/templates/parameter-files)
 **(Optional)** `-c` or `--config-file-path` | A [configuration file](docs/customizing-evaluation-outputs.md) which sets custom settings for the analyzer.<br/>**If argument is not provided, the Template BPA will attempt to load a configuration from *<_ExecutablePath_>/configuration.json* if the file exists.**.
 **(Optional)** `--report-format` | Valid formats:<br/>*Console*: output results to the console in plain text. **(default)**<br/>*Sarif*: output results to a file in [SARIF](https://sarifweb.azurewebsites.net) format.
