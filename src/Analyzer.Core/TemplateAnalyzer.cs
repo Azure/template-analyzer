@@ -15,6 +15,7 @@ using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 using Namotion.Reflection;
 using Newtonsoft.Json;
@@ -70,7 +71,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
 
             return new TemplateAnalyzer(
-                 JsonRuleEngine.Create(
+                JsonRuleEngine.Create(
                     rules,
                     templateContext => templateContext.IsBicep
                         ? new BicepLocationResolver(templateContext)
@@ -185,6 +186,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
 
                 // START OF MY EXPERIMENTAL CODE
+
+
                 dynamic jsonTemplate = JsonConvert.DeserializeObject(initialTemplate);
 
                 dynamic jsonResources = jsonTemplate.resources;
@@ -239,23 +242,58 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                             modifiedNestedTemplate.parameters?.Merge(passedParameters);
                             //  -----------THIS IS WHERE I TRY TO GET USER-FORMATTED STRINGS
+                            bool startOfNestingFound = false;
+                            int lineNumberCounter = 1;
+                            int curlyBraceCounter = 0;
                             int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
-                            //int endOfTemplate = 0;
+                            string testing = "";
+                            foreach (var myString in initialTemplate.Split(Environment.NewLine))
+                            {
+                                if (lineNumberCounter < startOfTemplate)
+                                {
+                                    lineNumberCounter += 1;
+                                    continue;
+                                }
+                                if (!startOfNestingFound)
+                                {
+                                    if (myString.Contains('{'))
+                                    {
+                                        testing += myString.Substring(myString.IndexOf('{'));
+                                        testing += Environment.NewLine;
+                                        startOfNestingFound = false;
+                                        lineNumberCounter += 1;
+                                        curlyBraceCounter += 1;
+                                    }
+                                    continue;
+                                }
+                                // after finding the start of nesting, count the opening and closing braces till they match up
+                                int inlineCounter = 1;
+                                foreach (char c in myString)
+                                {
+                                    if (c == '{') curlyBraceCounter++;
+                                    if (c == '}') curlyBraceCounter--;
+                                    if (curlyBraceCounter == 0) // done
+                                    {
+                                        testing += myString.Substring(0, inlineCounter);
+                                        break;
+                                    }
+                                    inlineCounter++;
+                                }
 
-                            // ------------THIS IS THE END OF GETTING USER FORMATTED STRINGS
-                            string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
+                                if (curlyBraceCounter == 0)
+                                {
+                                    break;
+                                }
+
+                                //not done
+                                testing += myString + Environment.NewLine;
+                                lineNumberCounter += 1;
+                            }
+                            //string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
+                            string stringNestedTemplate = testing;
                             string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
 
-                            //---- MAKING REGEX WORK
-
-                            Regex rx = new Regex(@"{[a-zA-Z_][a-zA-Z0-9_]*}\{{{?<BR>\{}|{?<-BR>\}}|[^{}]*}+\}");
-
-                            var match = rx.Match("{}{}{}{}{}{}{}");
-                            var match2 = rx.Match("{al i want is loyalty}");
-
-                            var str = match.Value;
-
-                            //-----MAKING REGEX WORK
+                            
                             IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset); // TO DO: FIND OFFSET NUMBER
 
                             evaluations = evaluations.Concat(result);
@@ -268,13 +306,65 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             modifiedNestedTemplate.variables = jsonTemplate.variables;
                             modifiedNestedTemplate.parameters = jsonTemplate.parameters;
                             modifiedNestedTemplate.functions = jsonTemplate.functions;
-                            string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
+
+                            //  -----------THIS IS WHERE I TRY TO GET USER-FORMATTED STRINGS
+                            bool startOfNestingFound = false;
+                            int lineNumberCounter = 1;
+                            int curlyBraceCounter = 0;
+                            int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
+                            string testing = "";
+                            foreach (var myString in initialTemplate.Split(Environment.NewLine))
+                            {
+                                if (lineNumberCounter < startOfTemplate)
+                                {
+                                    lineNumberCounter += 1;
+                                    continue;
+                                }
+                                if (!startOfNestingFound)
+                                {
+                                    if (myString.Contains('{'))
+                                    {
+                                        testing += myString.Substring(myString.IndexOf('{'));
+                                        testing += Environment.NewLine;
+                                        startOfNestingFound = true;
+                                        lineNumberCounter += 1;
+                                        curlyBraceCounter += 1;
+                                    }
+                                    continue;
+                                }
+                                // after finding the start of nesting, count the opening and closing braces till they match up
+                                int inlineCounter = 1;
+                                foreach (char c in myString)
+                                {
+                                    if (c == '{') curlyBraceCounter++;
+                                    if (c == '}') curlyBraceCounter--;
+                                    if (curlyBraceCounter == 0) // done
+                                    {
+                                        testing += myString.Substring(0, inlineCounter);
+                                        break;
+                                    }
+                                    inlineCounter++;
+                                }
+
+                                if (curlyBraceCounter == 0)
+                                {
+                                    break;
+                                }
+
+                                //not done
+                                testing += myString + Environment.NewLine;
+                                lineNumberCounter += 1;
+                            }
+
+                            //--------------------------------------------------------
+                            //string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
+                            string stringNestedTemplate = testing;
                             string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
                             
                             IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset); // TO DO: FIND OFFSET NUMBER
 
                             evaluations = evaluations.Concat(result);
-                        }                       
+                        }                     
                     }
                 }
 
