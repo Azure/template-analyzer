@@ -155,7 +155,7 @@ namespace Analyzer.Cli.FunctionalTests
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "Analysis output:";
+            var expectedLogSummary = "Execution summary:";
 
             if (!usesVerboseMode)
             {
@@ -192,7 +192,7 @@ namespace Analyzer.Cli.FunctionalTests
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
                 var cliConsoleOutput = outputWriter.ToString();
-                var indexOfLogSummary = cliConsoleOutput.IndexOf("Analysis output:");
+                var indexOfLogSummary = cliConsoleOutput.IndexOf("Execution summary:");
                 Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
                 var logSummary = cliConsoleOutput[indexOfLogSummary..];
 
