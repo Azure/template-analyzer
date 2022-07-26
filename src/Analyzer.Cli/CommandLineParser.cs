@@ -14,6 +14,7 @@ using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -408,11 +409,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 builder
                     .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information)
-                    .AddSimpleConsole(options =>
+                    .AddConsole(options =>
                     {
-                        options.SingleLine = true;
+                        options.FormatterName = "ConsoleLoggerFormatter";
                     })
-                    .AddProvider(new SummaryLoggerProvider(summaryLogger));
+                    .AddProvider(new SummaryLoggerProvider(summaryLogger))
+                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleFormatterOptions>();
             });
 
             if (this.reportWriter is SarifReportWriter sarifWriter)
