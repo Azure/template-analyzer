@@ -411,10 +411,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information)
                     .AddConsole(options =>
                     {
-                        options.FormatterName = "CustomFormatter";
+                        options.FormatterName = "ConsoleLoggerFormatter";
                     })
                     .AddProvider(new SummaryLoggerProvider(summaryLogger))
-                    .AddConsoleFormatter<CustomFormatter, ConsoleFormatterOptions>();
+                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleFormatterOptions>();
             });
 
             if (this.reportWriter is SarifReportWriter sarifWriter)

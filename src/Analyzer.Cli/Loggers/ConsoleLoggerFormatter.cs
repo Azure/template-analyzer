@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging.Console;
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// A <see cref="CustomFormatter"/> for the CLI logger.
+    /// A <see cref="ConsoleLoggerFormatter"/> for the CLI logger.
     /// </summary>
-    public sealed class CustomFormatter : ConsoleFormatter
+    public sealed class ConsoleLoggerFormatter : ConsoleFormatter
     {
         const string DefaultForegroundColor = "\x1B[39m\x1B[22m";
 
@@ -23,16 +23,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         };
 
         /// <summary>
-        /// Creates an instance of <see cref="CustomFormatter"/>.
+        /// Creates an instance of <see cref="ConsoleLoggerFormatter"/>.
         /// </summary>
-        public CustomFormatter() : base("CustomFormatter")
+        public ConsoleLoggerFormatter() : base("ConsoleLoggerFormatter")
         {
         }
 
         /// <inheritdoc/>
         public override void Write<TState>(in LogEntry<TState> logEntry, IExternalScopeProvider scopeProvider, TextWriter textWriter)
         {
-            var message = logEntry.Formatter?.Invoke(logEntry.State, logEntry.Exception); // TODO double check
+            var message = logEntry.Formatter?.Invoke(logEntry.State, logEntry.Exception);
 
             if (message is null)
             {
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             if (logEntry.Exception != null)
             {
                 textWriter.WriteLine("Exception details:");
-                textWriter.WriteLine(logEntry.Exception.ToString()); // TODO double check
+                textWriter.WriteLine(logEntry.Exception.ToString());
             }
 
             textWriter.Write(DefaultForegroundColor);
