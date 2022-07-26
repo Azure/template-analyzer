@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Analyzer.Cli.FunctionalTests
+﻿namespace Analyzer.Cli.FunctionalTests
 {   
     /// <summary>
     /// Constants being passed in as test cases for the CommandLineParserTests.
