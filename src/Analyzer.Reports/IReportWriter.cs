@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="evaluations">Evaluation list</param>
         /// <param name="templateFile">Template file to be analyzed</param>
-        /// <param name="parametersFile">The parameter file to use when parsing the specified ARM template.</param>
+        /// <param name="parametersFile">The parameter file to use when parsing the specified template.</param>
         void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null);
     }
 }
