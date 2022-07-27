@@ -84,8 +84,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
         {
+            if (template == null) throw new ArgumentNullException(nameof(template));
 
-            return DeepAnalyzeTemplate(template, parameters, templateFilePath, template, 0);
+            // if the template is bicep, convert to JSON and get source map
+            var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
+            object sourceMap = null;
+            if (isBicep)
+            {
+                try
+                {
+                    (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                }
+                catch (Exception e)
+                {
+                    throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
+                }
+            }
+            return DeepAnalyzeTemplate(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
         }
 
         /// <summary>
@@ -96,26 +111,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <param name="modifiedTemplate">The ARM Template JSON with inherited parameters, variables, and functions if applicable</param>
         /// <param name="offset">The offset number for line numbers</param>
+        /// <param name="isBicep">Is Bicep or not</param>
+        /// <param name="sourceMap">sourceMap</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        private IEnumerable<IEvaluation> DeepAnalyzeTemplate(string initialTemplate, string parameters, string templateFilePath, string modifiedTemplate, int offset)
+        private IEnumerable<IEvaluation> DeepAnalyzeTemplate(string initialTemplate, string parameters, string templateFilePath, string modifiedTemplate, int offset, bool isBicep, object sourceMap)
         {
-            if (initialTemplate == null) throw new ArgumentNullException(nameof(initialTemplate));
-
-            // if the template is bicep, convert to JSON and get source map
-            var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
-            object sourceMap = null;
-            if (isBicep)
-            {
-                try
-                {
-                    (initialTemplate, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
-                }
-                catch (Exception e)
-                {
-                    throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
-                }
-            }
-
             JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(modifiedTemplate, logger: this.logger);
 
@@ -127,13 +127,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 throw new TemplateAnalyzerException("Error while processing template.", e);
             }
-            //IDEA
-            // MAYBE PASS OFFSET NUMBER TOO SO THE NESTED TEMPLATES KNOW BY HOW MUCH TO BE OFFSET ON TOP OF LINE NUMBERS GOTTEN FROM PARSING
-            // MAYBE FILE PATH TOO, MIGHT NEED TO BE LOOKED INTO 
-            // ************
-            // lower priority
-            // TRY EXTRACTING TEMPLATE USING LINE NUMBERS AS PER VERA'S SUGGESTION TO SEE HOW THAT GOES, MIGHT MAINTAIN THE ORIGINAL STATE OF THE DOCUMENT
-            // IF I EXTRACT NESTED PART FROM THE TEMPLATE STRING WITHOUT DESERIALIZING AND SERIALIZING BACK IT MIGHT PRESERVE USER STUFF
+
             var templateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(initialTemplate),
@@ -178,14 +172,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 }
                 evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
 
-
-                // START OF MY EXPERIMENTAL CODE
-
-
+                // Code to handle nested templates recursively
                 dynamic jsonTemplate = JsonConvert.DeserializeObject(initialTemplate);
-
-                dynamic jsonResources = jsonTemplate.resources;
-                // It seems to me like JObject.Parse(initialTemplate) is the same as templateObject but with line numbers
+                dynamic jsonResources = jsonTemplate.resources; 
+                // It seems to me like JObject.Parse(initialTemplate) is the same as templateObject but with line numbers  TODO ;;;
                 dynamic processedTemplateResources = templatejObject["resources"];
                 dynamic processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"]; //.
 
@@ -200,8 +190,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         dynamic nestedTemplate = currentResource.properties.template;
                         dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template; //.
                         dynamic modifiedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplate));
-                        // get the offset, which is the end of current template and beginning of the nested
-                        int nextOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + offset - 1; // for off by one error
+                        // get the offset
+                        int nextOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + offset - 1; // off by one
                         // check whether scope is set to inner or outer
                         var scope = currentResource.properties.expressionEvaluationOptions?.scope;
                         if (scope == null)
@@ -222,7 +212,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             modifiedNestedTemplate.functions?.Merge(passedFunctions);
 
                             dynamic currentPassedParameter = passedParameters?.First;
-
                             while (currentPassedParameter != null)
                             {
                                 var value = currentPassedParameter.Value.value;
@@ -235,134 +224,36 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             }
 
                             modifiedNestedTemplate.parameters?.Merge(passedParameters);
-                            //  -----------THIS IS WHERE I TRY TO GET USER-FORMATTED STRINGS
-                            bool startOfNestingFound = false;
-                            int lineNumberCounter = 1;
-                            int curlyBraceCounter = 0;
+
                             int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
-                            string testing = "";
-                            foreach (var myString in initialTemplate.Split(Environment.NewLine))
-                            {
-                                if (lineNumberCounter < startOfTemplate)
-                                {
-                                    lineNumberCounter += 1;
-                                    continue;
-                                }
-                                if (!startOfNestingFound)
-                                {
-                                    if (myString.Contains('{'))
-                                    {
-                                        testing += myString.Substring(myString.IndexOf('{'));
-                                        testing += Environment.NewLine;
-                                        startOfNestingFound = false;
-                                        lineNumberCounter += 1;
-                                        curlyBraceCounter += 1;
-                                    }
-                                    continue;
-                                }
-                                // after finding the start of nesting, count the opening and closing braces till they match up
-                                int inlineCounter = 1;
-                                foreach (char c in myString)
-                                {
-                                    if (c == '{') curlyBraceCounter++;
-                                    if (c == '}') curlyBraceCounter--;
-                                    if (curlyBraceCounter == 0) // done
-                                    {
-                                        testing += myString.Substring(0, inlineCounter);
-                                        break;
-                                    }
-                                    inlineCounter++;
-                                }
 
-                                if (curlyBraceCounter == 0)
-                                {
-                                    break;
-                                }
-
-                                //not done
-                                testing += myString + Environment.NewLine;
-                                lineNumberCounter += 1;
-                            }
+                            string stringNestedTemplate = extractNestedTemplate(initialTemplate, startOfTemplate);
                             //string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
-                            string stringNestedTemplate = testing;
                             string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
-
-                            
-                            IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset); // TO DO: FIND OFFSET NUMBER
+                                                      
+                            IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset, isBicep, sourceMap);
 
                             evaluations = evaluations.Concat(result);
                         }
                         else
                         {
                             // inner nested variables and params do not matter and just use whatever the parent passes down
-                            // one option is to modify the structure of the nested template's varaibles and parameters to use that of the parent but this inteferes
-                            // with the structure of the template itself and I am not sure that is a good thing. 
                             modifiedNestedTemplate.variables = jsonTemplate.variables;
                             modifiedNestedTemplate.parameters = jsonTemplate.parameters;
                             modifiedNestedTemplate.functions = jsonTemplate.functions;
 
-                            //  -----------THIS IS WHERE I TRY TO GET USER-FORMATTED STRINGS
-                            bool startOfNestingFound = false;
-                            int lineNumberCounter = 1;
-                            int curlyBraceCounter = 0;
                             int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
-                            string testing = "";
-                            foreach (var myString in initialTemplate.Split(Environment.NewLine))
-                            {
-                                if (lineNumberCounter < startOfTemplate)
-                                {
-                                    lineNumberCounter += 1;
-                                    continue;
-                                }
-                                if (!startOfNestingFound)
-                                {
-                                    if (myString.Contains('{'))
-                                    {
-                                        testing += myString.Substring(myString.IndexOf('{'));
-                                        testing += Environment.NewLine;
-                                        startOfNestingFound = true;
-                                        lineNumberCounter += 1;
-                                        curlyBraceCounter += 1;
-                                    }
-                                    continue;
-                                }
-                                // after finding the start of nesting, count the opening and closing braces till they match up
-                                int inlineCounter = 1;
-                                foreach (char c in myString)
-                                {
-                                    if (c == '{') curlyBraceCounter++;
-                                    if (c == '}') curlyBraceCounter--;
-                                    if (curlyBraceCounter == 0) // done
-                                    {
-                                        testing += myString.Substring(0, inlineCounter);
-                                        break;
-                                    }
-                                    inlineCounter++;
-                                }
 
-                                if (curlyBraceCounter == 0)
-                                {
-                                    break;
-                                }
-
-                                //not done
-                                testing += myString + Environment.NewLine;
-                                lineNumberCounter += 1;
-                            }
-
-                            //--------------------------------------------------------
-                            //string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
-                            string stringNestedTemplate = testing;
+                            string stringNestedTemplate = extractNestedTemplate(initialTemplate, startOfTemplate);
                             string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
                             
-                            IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset); // TO DO: FIND OFFSET NUMBER
+                            IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset, isBicep, sourceMap);
 
                             evaluations = evaluations.Concat(result);
                         }                     
                     }
                 }
 
-                // END OF MY EXPERIMENTAL CODE
                 return evaluations;              
             }
             catch (Exception e)
@@ -371,6 +262,64 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
         }
 
+        /// <summary>
+        /// Extracts a nested template in the exact format as user input, accounting for all white space and formatting
+        /// </summary>
+        /// <param name="template">Parent template containing nested template</param>
+        /// <param name="startOfTemplate">Line number where the nested template starts</param>
+        /// <returns>A nested template string</returns>
+
+        private string extractNestedTemplate(string template, int startOfTemplate)
+        {
+            bool startOfNestingFound = false;
+            int lineNumberCounter = 1;
+            int curlyBraceCounter = 0;
+            string stringNestedTemplate = "";
+            foreach (var myString in template.Split(Environment.NewLine))
+            {
+                if (lineNumberCounter < startOfTemplate)
+                {
+                    lineNumberCounter += 1;
+                    continue;
+                }
+                if (!startOfNestingFound)
+                {
+                    if (myString.Contains('{'))
+                    {
+                        stringNestedTemplate += myString.Substring(myString.IndexOf('{'));
+                        stringNestedTemplate += Environment.NewLine;
+                        startOfNestingFound = true;
+                        lineNumberCounter += 1;
+                        curlyBraceCounter += 1;
+                    }
+                    continue;
+                }
+                // after finding the start of nesting, count the opening and closing braces till they match up
+                int inlineCounter = 1;
+                foreach (char c in myString)
+                {
+                    if (c == '{') curlyBraceCounter++;
+                    if (c == '}') curlyBraceCounter--;
+                    if (curlyBraceCounter == 0) // done
+                    {
+                        stringNestedTemplate += myString[..inlineCounter];
+                        break;
+                    }
+                    inlineCounter++;
+                }
+
+                if (curlyBraceCounter == 0)
+                {
+                    break;
+                }
+
+                //not done
+                stringNestedTemplate += myString + Environment.NewLine;
+                lineNumberCounter += 1;
+            }
+
+            return stringNestedTemplate;
+        }
 
         private static string LoadRules()
         {
