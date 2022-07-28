@@ -14,6 +14,7 @@ using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -99,12 +100,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeTemplateCommand.AddArgument(
                 new Argument<FileInfo>(
                     "template-file-path",
-                    "The ARM template to analyze"));
+                    "The path of the template to analyze"));
 
             analyzeTemplateCommand.AddOption(
                 new Option<FileInfo>(
                     new[] { "-p", "--parameters-file-path" },
-                    "The parameter file to use when parsing the specified ARM template")
+                    "The parameter file to use when parsing the specified template")
             );
 
             // Assign handler method
@@ -126,7 +127,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeDirectoryCommand.AddArgument(
                 new Argument<DirectoryInfo>(
                     "directory-path",
-                    "The directory to find ARM templates"));
+                    "The directory to find templates"));
 
             // Assign handler method
             analyzeDirectoryCommand.Handler = CommandHandler.Create(
@@ -144,7 +145,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 new Option<FileInfo>(
                     new[] { "-c", "--config-file-path" },
-                    "The configuration file to use when parsing the specified ARM template"),
+                    "The configuration file to use when parsing the specified template"),
 
                 new Option<ReportFormat>(
                     "--report-format",
@@ -408,11 +409,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 builder
                     .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information)
-                    .AddSimpleConsole(options =>
+                    .AddConsole(options =>
                     {
-                        options.SingleLine = true;
+                        options.FormatterName = "ConsoleLoggerFormatter";
                     })
-                    .AddProvider(new SummaryLoggerProvider(summaryLogger));
+                    .AddProvider(new SummaryLoggerProvider(summaryLogger))
+                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleFormatterOptions>();
             });
 
             if (this.reportWriter is SarifReportWriter sarifWriter)

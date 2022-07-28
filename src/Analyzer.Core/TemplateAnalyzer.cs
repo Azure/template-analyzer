@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Exception message when error during Bicep template compilation.
         /// </summary>
-        public static readonly string BicepCompileErrorMessage = "Error compiling bicep template";
+        public static readonly string BicepCompileErrorMessage = "Error compiling Bicep template";
 
         private JsonRuleEngine jsonRuleEngine;
         private PowerShellRuleEngine powerShellRuleEngine;
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
-            // if the template is bicep, convert to JSON and get source map
+            // If the template is Bicep, convert to JSON and get source map:
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
             object sourceMap = null;
             if (isBicep)

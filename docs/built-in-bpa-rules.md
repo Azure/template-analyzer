@@ -1,4 +1,4 @@
-# Built-in rules
+# Built-in Rules
 
 Information about the PowerShell-based rules included by our integration with [PSRule](https://microsoft.github.io/PSRule/) can be found [here](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/). The tool will only evaluate these rules if the option `-run-powershell` is used.
 
