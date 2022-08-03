@@ -2,16 +2,19 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("{RuleId}, {_RuleName}")]
     public class PowerShellRuleEvaluation : IEvaluation
     {
         private IEnumerable<IEvaluation> evaluations;
         private IResult directResult;
+        private string _RuleName;
 
         /// <inheritdoc/>
         public string RuleId { get; }
@@ -48,15 +51,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// </summary>
         /// <param name="ruleId">The id of the rule associated with this evaluation.</param>
         /// <param name="ruleName">The name of the rule associated with this evaluation.</param>
+        /// <param name="helpUri">A link to the online help and guidance for the rule.</param>
         /// <param name="ruleDescription">The description of the rule associated with this evaluation.</param>
         /// <param name="recommendation">The recommendation for addressing failures of the result.</param>
         /// <param name="file">The file this evaluation is for.</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="severity">Determines how severe the finding is.</param>
         /// <param name="result">The result of this evaluation.</param>
-        public PowerShellRuleEvaluation(string ruleId, string ruleName, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
+        public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
         {
             RuleId = ruleId;
+            _RuleName = ruleName;
             RuleDescription = ruleDescription;
             Recommendation = recommendation;
             FileIdentifier = file;
@@ -64,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             Severity = severity;
             this.directResult = result;
             this.evaluations = Enumerable.Empty<IEvaluation>();
-            HelpUri = $"https://azure.github.io/PSRule.Rules.Azure/en/rules/{ruleName}/";
+            HelpUri = helpUri;
         }
     }
 }

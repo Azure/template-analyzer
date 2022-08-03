@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using PSRule.Configuration;
 using PSRule.Pipeline;
 using PSRule.Rules;
@@ -71,31 +72,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 },
                 Output = outputOption
             };
+            var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
             var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
             builder.InputPath(new string[] { templateFile });
             var pipeline = builder.Build();
             pipeline.Begin();
-            pipeline.Process(null);
+            foreach (var resource in resources)
+                pipeline.Process(resource);
+
             pipeline.End();
 
             // Remove temporary file:
             File.Delete(templateFile);
-
-            // Run PSRule on resources array, for typed-rules:
-            var optionsForResourceAnalysis = new PSRuleOption
-            {
-                Input = new InputOption
-                {
-                    Format = InputFormat.Json
-                },
-                Output = outputOption
-            };
-            var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources");
-            builder = CommandLineBuilder.Invoke(modules, optionsForResourceAnalysis, hostContext);
-            pipeline = builder.Build();
-            pipeline.Begin();
-            pipeline.Process(resources.ToString());
-            pipeline.End();
 
             return hostContext.Evaluations;
         }
