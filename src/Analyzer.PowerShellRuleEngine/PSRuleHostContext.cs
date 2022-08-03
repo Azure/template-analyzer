@@ -74,6 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var ruleName = ruleRecord.RuleName;
             var ruleDescription = ruleRecord.Info.DisplayName;
             var recommendation = ruleRecord.Recommendation;
+            var helpUri = ruleRecord?.Info?.GetOnlineHelpUrl();
             var severity = ruleRecord.Level switch
             {
                 PSRule.Definitions.Rules.SeverityLevel.Error => Severity.High,
@@ -93,7 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 {
                 }
                
-                this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, ruleDescription, recommendation,
+                this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, helpUri, ruleDescription, recommendation,
                         templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
             }
         }
