@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// </summary>
     public interface ILineNumberResolver
     {
-        // TODO: include source file for bicep and rename to ISourceLocationResolver once nested templates are supported
+        // TODO: include source file for Bicep and rename to ISourceLocationResolver once nested templates are supported
 
         /// <summary>
         /// Find the line number of a path.

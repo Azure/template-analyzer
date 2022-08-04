@@ -9,7 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from a compiled JSON template to the original bicep template.
+    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from a compiled JSON template to the original Bicep template.
     /// </summary>
     public class BicepLocationResolver : ILineNumberResolver
     {
@@ -27,8 +27,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         }
 
         /// <summary>
-        /// Given a JSON path in an expanded JSON template from a compiled bicep file, find the equivalent line number
-        /// in the original bicep template.
+        /// Given a JSON path in an expanded JSON template from a compiled Bicep file, find the equivalent line number
+        /// in the original Bicep template.
         /// </summary>
         /// <param name="pathInExpandedTemplate">The path in the expanded template
         /// to find the line number of in the original template.</param>
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         {
             var jsonLine = this.jsonLineNumberResolver.ResolveLineNumber(pathInExpandedTemplate);
 
-            // Source map line numbers from bicep are 0-indexed
+            // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
             // TODO: look for mappings in other files/modules once nested templates are supported, for now just entrypoint file
