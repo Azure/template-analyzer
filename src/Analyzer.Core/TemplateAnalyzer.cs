@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
         /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
-        /// <param name="LineNumberOffset">The offset number for line numbers. (Used for nested templates.)</param>
+        /// <param name="LineNumberOffset">The offset number for line numbers relative to parent templates. (Used for nested templates.)</param>
         /// <param name="isBicep">Is Bicep or not</param>
         /// <param name="sourceMap">sourceMap</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
@@ -180,12 +180,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 dynamic processedTemplateResources = templatejObject["resources"];
                 dynamic processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"];
 
-                for (int i = 0; i < processedTemplateResourcesWithLineNumbers.Count; i++)
+                for (int i = 0; i < processedTemplateResources.Count; i++)
                 {
                     dynamic currentProcessedResource = processedTemplateResources[i];
                     dynamic currentProcessedResourceWithLineNumbers = processedTemplateResourcesWithLineNumbers[i];
 
-                    if (currentProcessedResourceWithLineNumbers.type == "Microsoft.Resources/deployments")
+                    if (currentProcessedResource.type == "Microsoft.Resources/deployments")
                     {
                         dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
                         dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));

@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 }
             }
             
-            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1;
+            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1; // Adds template's line number to an offset dependent on the parent (if applicable) template's position
         }
     }
 }

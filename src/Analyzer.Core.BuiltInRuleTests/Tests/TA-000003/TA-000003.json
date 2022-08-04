@@ -9,6 +9,14 @@
       {
         "LineNumber": 40,
         "Description": "siteConfig.ftpsState set to an undesired value"
+      },
+      {
+        "LineNumber": 161,
+        "Description": "No properties are specified"
+      },
+      {
+        "LineNumber": 172,
+        "Description": "siteConfig.ftpsState set to an undesired value"
       }
     ]
   },
@@ -22,50 +30,6 @@
       {
         "LineNumber": 26,
         "Description": "siteConfig.ftpsState set to an undesired value"
-      }
-    ]
-  },
-  {
-    "Template": "SimpleNestedFail.json",
-    "ReportedFailures": [
-      {
-        "LineNumber": 43,
-        "Description": "No properties are specified"
-      },
-      {
-        "LineNumber": 55,
-        "Description": "siteConfig.ftpsState set to an undesired value"
-      }
-    ]
-  },
-  {
-    "Template": "DoubleNestedFail.json",
-    "ReportedFailures": [
-      {
-        "LineNumber": 37,
-        "Description": "No properties are specified"
-      },
-      {
-        "LineNumber": 61,
-        "Description": "siteConfig.ftpsState set to an undesired value"
-      }
-    ]
-  },
-  {
-    "Template": "InnerOuterScopeFail.json",
-    "ReportedFailures": [
-      {
-        "LineNumber": 109,
-        "Description": "siteConfig.ftpsState set to an undesired value"
-      }
-    ]
-  },
-  {
-    "Template": "ParameterPassingFail.json",
-    "ReportedFailures": [
-      {
-        "LineNumber": 59,
-        "Description": "No properties are specified"
       }
     ]
   }
