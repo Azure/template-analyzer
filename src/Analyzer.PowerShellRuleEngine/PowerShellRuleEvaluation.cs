@@ -9,12 +9,12 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
-    [DebuggerDisplay("{RuleId}, {_RuleName}")]
+    [DebuggerDisplay("{RuleId}, {ruleName}")]
     public class PowerShellRuleEvaluation : IEvaluation
     {
         private IEnumerable<IEvaluation> evaluations;
         private IResult directResult;
-        private string _RuleName;
+        private string ruleName;
 
         /// <inheritdoc/>
         public string RuleId { get; }
@@ -61,15 +61,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
         {
             RuleId = ruleId;
-            _RuleName = ruleName;
             RuleDescription = ruleDescription;
             Recommendation = recommendation;
             FileIdentifier = file;
             Passed = passed;
             Severity = severity;
-            this.directResult = result;
-            this.evaluations = Enumerable.Empty<IEvaluation>();
             HelpUri = helpUri;
+            directResult = result;
+            evaluations = Enumerable.Empty<IEvaluation>();
+            this.ruleName = ruleName;
         }
     }
 }

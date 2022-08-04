@@ -50,6 +50,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 throw new ArgumentException($"{nameof(TemplateContext.ExpandedTemplate)} must not be null.", nameof(templateContext));
             }
 
+            if (templateContext?.ResourceMappings == null)
+            {
+                throw new ArgumentException($"{nameof(TemplateContext.ResourceMappings)} must not be null.", nameof(templateContext));
+            }
+
             // TODO: Temporary work-around: write template to disk so PSRule will analyze it
             var tempTemplateFile = Path.GetTempFileName();
             File.WriteAllText(tempTemplateFile, templateContext.ExpandedTemplate.ToString());
@@ -57,29 +62,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             File.Move(tempTemplateFile, templateFile);
 
             var hostContext = new PSRuleHostContext(templateContext, logger);
-            var outputOption = new OutputOption
-            {
-                Outcome = RuleOutcome.Fail
-            };
             var modules = new string[] { "PSRule.Rules.Azure" };
-
-            // Run PSRule on full template, for template-level rules to execute:
             var optionsForFileAnalysis = new PSRuleOption
             {
                 Input = new InputOption
                 {
                     Format = InputFormat.File
                 },
-                Output = outputOption
+                Output = new OutputOption
+                {
+                    Outcome = RuleOutcome.Fail
+                }
             };
             var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
+
             var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
             builder.InputPath(new string[] { templateFile });
             var pipeline = builder.Build();
             pipeline.Begin();
             foreach (var resource in resources)
+            {
                 pipeline.Process(resource);
-
+            }
             pipeline.End();
 
             // Remove temporary file:
