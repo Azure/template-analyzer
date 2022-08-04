@@ -14,14 +14,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
     [TestClass]
     public class TemplateAnalyzerTests
     {
-        private static TemplateAnalyzer templateAnalyzer;
-        private static TemplateAnalyzer templateAnalyzerPowerShellOff;
+        private static TemplateAnalyzer templateAnalyzerWithPowerShell;
+        private static TemplateAnalyzer templateAnalyzerWithoutPowerShell;
 
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            templateAnalyzer = TemplateAnalyzer.Create(usePowerShell: true);
-            templateAnalyzerPowerShellOff = TemplateAnalyzer.Create(usePowerShell: false);
+            templateAnalyzerWithPowerShell = TemplateAnalyzer.Create(usePowerShell: true);
+            templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(usePowerShell: false);
         }
 
         [DataTestMethod]
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string[] resourceProperties = { GenerateResource(resource1Properties, resourceType, "resource1"), GenerateResource(resource2Properties, resourceType, "resource2") };
             string template = GenerateTemplate(resourceProperties);
 
-            var evaluations = templateAnalyzerPowerShellOff.AnalyzeTemplate(template, templateFilePath: templateFilePath); // If PowerShell is on then AnalyzeTemplate needs a template file path
+            var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(template, templateFilePath: templateFilePath); // A template file path is not required if PowerShell is not run
             var evaluationsWithResults = evaluations.ToList().FindAll(evaluation => evaluation.HasResults); // EvaluateRulesAgainstTemplate will always return at least an evaluation for each built-in rule
 
             Assert.AreEqual(expectedEvaluationCount, evaluationsWithResults.Count);
@@ -55,14 +55,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string template = GenerateTemplate(resourceProperties);
 
             // Analyze with PowerShell disabled
-            var templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(usePowerShell: false);
             var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(template);
 
             // There should be no PowerShell rule evaluations because the PowerShell engine should not have run
             Assert.IsFalse(evaluations.Any(e => e is PowerShellRuleEvaluation));
 
             // Analyze with PowerShell enabled
-            evaluations = templateAnalyzer.AnalyzeTemplate(template, templateFilePath: "aTemplateFilePath");
+            evaluations = templateAnalyzerWithPowerShell.AnalyzeTemplate(template, templateFilePath: "aTemplateFilePath");
 
             // There should be at least one PowerShell rule evaluation because the PowerShell engine should have run
             Assert.IsTrue(evaluations.Any(e => e is PowerShellRuleEvaluation));
@@ -96,14 +95,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void AnalyzeTemplate_TemplateIsNull_ThrowArgumentNullException()
         {
-            templateAnalyzer.AnalyzeTemplate(null);
+            templateAnalyzerWithPowerShell.AnalyzeTemplate(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(TemplateAnalyzerException))]
         public void AnalyzeTemplate_JsonTemplateIsInvalid_ThrowTemplateAnalyzerException()
         {
-            templateAnalyzer.AnalyzeTemplate("{}");
+            templateAnalyzerWithPowerShell.AnalyzeTemplate("{}");
         }
 
         [TestMethod]
@@ -116,7 +115,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             try
             {
                 File.WriteAllText(templateFilePath, invalidBicep);
-                templateAnalyzer.AnalyzeTemplate(invalidBicep, templateFilePath: templateFilePath);
+                templateAnalyzerWithPowerShell.AnalyzeTemplate(invalidBicep, templateFilePath: templateFilePath);
             }
             finally
             {
@@ -128,7 +127,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [ExpectedException(typeof(TemplateAnalyzerException))]
         public void AnalyzeTemplate_MissingFilePathWithPowerShellOn_ThrowTemplateAnalyzerException()
         {
-            templateAnalyzer.AnalyzeTemplate(@"
+            templateAnalyzerWithPowerShell.AnalyzeTemplate(@"
                 {
                   ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                   ""contentVersion"": ""1.0.0.0"",
@@ -170,7 +169,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [ExpectedException(typeof(ArgumentNullException))]
         public void FilterRules_ConfigurationNull_ExceptionThrown()
         {
-            templateAnalyzer.FilterRules(null);
+            templateAnalyzerWithPowerShell.FilterRules(null);
         }
     }
 }
