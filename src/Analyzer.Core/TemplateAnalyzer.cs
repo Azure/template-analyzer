@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Azure.ResourceManager.Resources.Models;
 using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
@@ -100,24 +101,48 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
-            return DeepAnalyzeTemplate(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
+            IEnumerable<IEvaluation>  evaluations = DeepAnalyzeTemplate(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
+
+            // For each rule we don't want to report the same line more than once
+            // This is a temporal fix
+            var evalsToValidate = new List<IEvaluation>();
+            var evalsToNotValidate = new List<IEvaluation>();
+            foreach (var eval in evaluations)
+            {
+                if (!eval.Passed && eval.Result != null)
+                {
+                    evalsToValidate.Add(eval);
+                }
+                else
+                {
+                    evalsToNotValidate.Add(eval);
+                }
+            }
+            var uniqueResults = new Dictionary<(string, int), IEvaluation>();
+            foreach (var eval in evalsToValidate)
+            {
+                uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
+            }
+            evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
+
+            return evaluations;
         }
 
         /// <summary>
-        /// Runs TemplateAnalyzer logic accounting for nested templates
+        /// Runs TemplateAnalyzer logic covering nested templates
         /// </summary>
-        /// <param name="initialTemplate">The ARM Template JSON</param>
+        /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
-        /// <param name="modifiedTemplate">The ARM Template JSON with inherited parameters, variables, and functions if applicable</param>
-        /// <param name="offset">The offset number for line numbers</param>
+        /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
+        /// <param name="LineNumberOffset">The offset number for line numbers. (Used for nested templates.)</param>
         /// <param name="isBicep">Is Bicep or not</param>
         /// <param name="sourceMap">sourceMap</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        private IEnumerable<IEvaluation> DeepAnalyzeTemplate(string initialTemplate, string parameters, string templateFilePath, string modifiedTemplate, int offset, bool isBicep, object sourceMap)
+        private IEnumerable<IEvaluation> DeepAnalyzeTemplate(string template, string parameters, string templateFilePath, string populatedTemplate, int LineNumberOffset, bool isBicep, object sourceMap)
         {
             JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(modifiedTemplate, logger: this.logger);
+            var armTemplateProcessor = new ArmTemplateProcessor(populatedTemplate, logger: this.logger);
 
             try
             {
@@ -130,14 +155,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             var templateContext = new TemplateContext
             {
-                OriginalTemplate = JObject.Parse(initialTemplate),
+                OriginalTemplate = JObject.Parse(template),
                 ExpandedTemplate = templatejObject,
                 IsMainTemplate = true,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
                 IsBicep = isBicep,
                 SourceMap = sourceMap,
-                Offset = offset
+                Offset = LineNumberOffset
             };
 
             try
@@ -149,67 +174,44 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     this.logger?.LogDebug("Running PowerShell rule engine");
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
-
-                // For each rule we don't want to report the same line more than once
-                // This is a temporal fix
-                var evalsToValidate = new List<IEvaluation>();
-                var evalsToNotValidate = new List<IEvaluation>();
-                foreach (var eval in evaluations)
-                {
-                    if (!eval.Passed && eval.Result != null)
-                    {
-                        evalsToValidate.Add(eval);
-                    }
-                    else
-                    {
-                        evalsToNotValidate.Add(eval);
-                    }
-                }
-                var uniqueResults = new Dictionary<(string, int), IEvaluation>();
-                foreach (var eval in evalsToValidate)
-                {
-                    uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
-                }
-                evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
-
+               
                 // Code to handle nested templates recursively
-                dynamic jsonTemplate = JsonConvert.DeserializeObject(initialTemplate);
-                dynamic jsonResources = jsonTemplate.resources; 
-                // It seems to me like JObject.Parse(initialTemplate) is the same as templateObject but with line numbers  TODO ;;;
+                dynamic jsonTemplate = JsonConvert.DeserializeObject(template);
                 dynamic processedTemplateResources = templatejObject["resources"];
-                dynamic processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"]; //.
+                dynamic processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"];
 
-                for (int i = 0; i < jsonResources.Count; i++)
+                for (int i = 0; i < processedTemplateResourcesWithLineNumbers.Count; i++)
                 {
-                    dynamic currentResource = jsonResources[i];
                     dynamic currentProcessedResource = processedTemplateResources[i];
-                    dynamic currentProcessedResourceWithLineNumbers = processedTemplateResourcesWithLineNumbers[i]; //.
+                    dynamic currentProcessedResourceWithLineNumbers = processedTemplateResourcesWithLineNumbers[i];
 
-                    if (currentResource.type == "Microsoft.Resources/deployments")
+                    if (currentProcessedResourceWithLineNumbers.type == "Microsoft.Resources/deployments")
                     {
-                        dynamic nestedTemplate = currentResource.properties.template;
-                        dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template; //.
-                        dynamic modifiedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplate));
+                        dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
+                        dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));
                         // get the offset
-                        int nextOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + offset - 1; // off by one
+                        int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + LineNumberOffset - 1; // off by one
                         // check whether scope is set to inner or outer
-                        var scope = currentResource.properties.expressionEvaluationOptions?.scope;
+                        var scope = currentProcessedResourceWithLineNumbers.properties.expressionEvaluationOptions?.scope;
+
+                        int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
+                        string jsonNestedTemplate = ExtractNestedTemplate(template, startOfTemplate);
+                        IEnumerable<IEvaluation> result;
+
                         if (scope == null)
                         {
                             scope = "outer";
                         }
                         if (scope == "inner")
                         {
-                            // allow for passing of params, variables and functions but evaluate everything else in the inner context
-                            // check for params, variables and functions in parent, extract them and append them to the params, variables and functions
-                            // of the child, and overwrite those of the child if needed. 
+                            // Pass parameters, variables and functions to child template
                             JToken passedParameters = currentProcessedResource.properties.parameters;
                             JToken passedVariables = currentProcessedResource.properties.variables;
                             JToken passedFunctions = currentProcessedResource.properties.functions;
 
                             // merge 
-                            modifiedNestedTemplate.variables?.Merge(passedVariables);
-                            modifiedNestedTemplate.functions?.Merge(passedFunctions);
+                            populatedNestedTemplate.variables?.Merge(passedVariables);
+                            populatedNestedTemplate.functions?.Merge(passedFunctions);
 
                             dynamic currentPassedParameter = passedParameters?.First;
                             while (currentPassedParameter != null)
@@ -222,35 +224,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                                 }
                                 currentPassedParameter = currentPassedParameter.Next;
                             }
-
-                            modifiedNestedTemplate.parameters?.Merge(passedParameters);
-
-                            int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
-
-                            string stringNestedTemplate = extractNestedTemplate(initialTemplate, startOfTemplate);
-                            //string stringNestedTemplate = JsonConvert.SerializeObject(nestedTemplate, Formatting.Indented);
-                            string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
+                            populatedNestedTemplate.parameters?.Merge(passedParameters);
+                            
+                            string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
                                                       
-                            IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset, isBicep, sourceMap);
-
-                            evaluations = evaluations.Concat(result);
+                            result = DeepAnalyzeTemplate(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
                         }
                         else
                         {
-                            // inner nested variables and params do not matter and just use whatever the parent passes down
-                            modifiedNestedTemplate.variables = jsonTemplate.variables;
-                            modifiedNestedTemplate.parameters = jsonTemplate.parameters;
-                            modifiedNestedTemplate.functions = jsonTemplate.functions;
+                            //variables, parameters and functions inherited from parent template
+                            populatedNestedTemplate.variables = jsonTemplate.variables;
+                            populatedNestedTemplate.parameters = jsonTemplate.parameters;
+                            populatedNestedTemplate.functions = jsonTemplate.functions;
 
-                            int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
-
-                            string stringNestedTemplate = extractNestedTemplate(initialTemplate, startOfTemplate);
-                            string stringModifiedNestedTemplate = JsonConvert.SerializeObject(modifiedNestedTemplate, Formatting.Indented);
+                            string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
                             
-                            IEnumerable<IEvaluation> result = DeepAnalyzeTemplate(stringNestedTemplate, parameters, templateFilePath, stringModifiedNestedTemplate, nextOffset, isBicep, sourceMap);
-
-                            evaluations = evaluations.Concat(result);
-                        }                     
+                            result = DeepAnalyzeTemplate(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
+                        }
+                        evaluations = evaluations.Concat(result);
                     }
                 }
 
@@ -268,8 +259,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">Parent template containing nested template</param>
         /// <param name="startOfTemplate">Line number where the nested template starts</param>
         /// <returns>A nested template string</returns>
-
-        private string extractNestedTemplate(string template, int startOfTemplate)
+        private string ExtractNestedTemplate(string template, int startOfTemplate)
         {
             bool startOfNestingFound = false;
             int lineNumberCounter = 1;
