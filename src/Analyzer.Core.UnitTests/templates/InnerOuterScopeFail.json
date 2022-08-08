@@ -6,7 +6,7 @@
       "type": "string",
       "defaultValue": "default"
     },
-    "ftpsState": {
+    "ftpsState": {  // parameter defined in parent and in child templates
       "type": "string",
       "defaultValue": "FtpsOnly"
     }
@@ -54,7 +54,7 @@
               "location": "[parameters('location')]",
               "properties": {
                 "siteConfig": {
-                  "ftpsState": "[parameters('ftpsState')]"
+                  "ftpsState": "[parameters('ftpsState')]"  // evaluated in outer scope
                 }
               }
             }
@@ -106,7 +106,7 @@
               "location": "[parameters('location')]",
               "properties": {
                 "siteConfig": {
-                  "ftpsState": "[parameters('ftpsState')]"
+                  "ftpsState": "[parameters('ftpsState')]"  // evaluated in inner scope
                 }
               }
             }
