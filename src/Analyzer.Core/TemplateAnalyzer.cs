@@ -128,11 +128,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
-        /// Runs TemplateAnalyzer logic covering nested templates
+        /// Analyzes ARM templates, recursively going through the nested templates
         /// </summary>
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
-        /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
+        /// <param name="templateFilePath">The ARM Template file path</param>
         /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
         /// <param name="LineNumberOffset">The offset number for line numbers relative to parent templates. (Used for nested templates.)</param>
         /// <param name="isBicep">Is Bicep or not</param>
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     }
                 }
 
-                return evaluations;              
+                return evaluations;
             }
             catch (Exception e)
             {
