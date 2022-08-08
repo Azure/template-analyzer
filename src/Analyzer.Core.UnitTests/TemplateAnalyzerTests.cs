@@ -80,7 +80,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
                 }
             }
             var expectedLineNumbers = new List<int>(lineNumbers);
-            expectedLineNumbers.Sort();
             var failingLines = failedEvaluationLines.ToList();
             failingLines.Sort();
 
