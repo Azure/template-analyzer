@@ -160,18 +160,6 @@
 
               "properties": {
               }
-            },
-            {
-              "apiVersion": "2019-08-01",
-              "type": "Microsoft.Web/sites",
-              "kind": "api",
-              "name": "undesiredFtpsState",
-              "location": "[parameters('location')]",
-              "properties": {
-                "siteConfig": {
-                  "ftpsState": "undesiredValue"
-                }
-              }
             }
           ]
         },

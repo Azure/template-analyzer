@@ -13,10 +13,6 @@
       {
         "LineNumber": 161,
         "Description": "No properties are specified"
-      },
-      {
-        "LineNumber": 172,
-        "Description": "siteConfig.ftpsState set to an undesired value"
       }
     ]
   },
