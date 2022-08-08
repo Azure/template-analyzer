@@ -244,7 +244,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     }
                 }
 
-                return evaluations;              
+                return evaluations;
             }
             catch (Exception e)
             {
