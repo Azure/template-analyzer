@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         }
 
         /// <summary>
-        /// Runs TemplateAnalyzer logic covering nested templates
+        /// Analyzes ARM templates, recursively going through the nested templates
         /// </summary>
         /// <param name="template">The ARM Template JSON</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
