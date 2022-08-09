@@ -283,7 +283,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     }
                     continue;
                 }
-                // after finding the start of nesting, count the opening and closing braces till they match up
+                // After finding the start of nesting, count the opening and closing braces till they match up to find the end of the nested template
                 int inlineCounter = 1;
                 foreach (char c in myString)
                 {
