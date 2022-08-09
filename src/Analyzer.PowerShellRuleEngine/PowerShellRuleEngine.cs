@@ -56,10 +56,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
 
             // TODO: Temporary work-around: write template to disk so PSRule will analyze it
-            var tempTemplateFile = Path.GetTempFileName();
+            var tempFile = Path.GetTempFileName();
+            var tempTemplateFile = Path.ChangeExtension(tempFile, ".json");
             File.WriteAllText(tempTemplateFile, templateContext.ExpandedTemplate.ToString());
-            var templateFile = tempTemplateFile.Replace(".tmp", ".json");
-            File.Move(tempTemplateFile, templateFile);
 
             var hostContext = new PSRuleHostContext(templateContext, logger);
             var modules = new string[] { "PSRule.Rules.Azure" };
@@ -77,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
 
             var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
-            builder.InputPath(new string[] { templateFile });
+            builder.InputPath(new string[] { tempTemplateFile });
             var pipeline = builder.Build();
             pipeline.Begin();
             foreach (var resource in resources)
@@ -86,8 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
             pipeline.End();
 
-            // Remove temporary file:
-            File.Delete(templateFile);
+            File.Delete(tempTemplateFile);
 
             return hostContext.Evaluations;
         }
