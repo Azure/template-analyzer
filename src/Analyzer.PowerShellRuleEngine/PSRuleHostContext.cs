@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 }
                
                 this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, helpUri, ruleDescription, recommendation,
-                        templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
+                    templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
             }
         }
     }
