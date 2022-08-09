@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         }
                         else
                         {
-                            //variables, parameters and functions inherited from parent template
+                            // Variables, parameters and functions inherited from parent template
                             populatedNestedTemplate.variables = jsonTemplate.variables;
                             populatedNestedTemplate.parameters = jsonTemplate.parameters;
                             populatedNestedTemplate.functions = jsonTemplate.functions;
