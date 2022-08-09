@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
-            IEnumerable<IEvaluation>  evaluations = DeepAnalyzeTemplate(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
+            IEnumerable<IEvaluation>  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
 
             // For each rule we don't want to report the same line more than once
             // This is a temporal fix
@@ -134,11 +134,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path</param>
         /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
-        /// <param name="LineNumberOffset">The offset number for line numbers relative to parent templates. (Used for nested templates.)</param>
+        /// <param name="lineNumberOffset">The offset for line numbers relative to parent templates representing where the template starts in the file. (Used for nested templates.)</param>
         /// <param name="isBicep">Is Bicep or not</param>
         /// <param name="sourceMap">sourceMap</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        private IEnumerable<IEvaluation> DeepAnalyzeTemplate(string template, string parameters, string templateFilePath, string populatedTemplate, int LineNumberOffset, bool isBicep, object sourceMap)
+        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string template, string parameters, string templateFilePath, string populatedTemplate, int lineNumberOffset, bool isBicep, object sourceMap)
         {
             JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(populatedTemplate, logger: this.logger);
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 TemplateIdentifier = templateFilePath,
                 IsBicep = isBicep,
                 SourceMap = sourceMap,
-                Offset = LineNumberOffset
+                Offset = lineNumberOffset
             };
 
             try
@@ -189,7 +189,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
                         dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));
                         // get the offset
-                        int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + LineNumberOffset - 1; // off by one
+                        int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + lineNumberOffset - 1; // off by one
                         // check whether scope is set to inner or outer
                         var scope = currentProcessedResourceWithLineNumbers.properties.expressionEvaluationOptions?.scope;
 
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             
                             string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
                                                       
-                            result = DeepAnalyzeTemplate(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
+                            result = AnalyzeAllIncludedTemplates(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
                         }
                         else
                         {
@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                             string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
                             
-                            result = DeepAnalyzeTemplate(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
+                            result = AnalyzeAllIncludedTemplates(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
                         }
                         evaluations = evaluations.Concat(result);
                     }
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="template">Parent template containing nested template</param>
         /// <param name="startOfTemplate">Line number where the nested template starts</param>
         /// <returns>A nested template string</returns>
-        private string ExtractNestedTemplate(string template, int startOfTemplate)
+        private static string ExtractNestedTemplate(string template, int startOfTemplate)
         {
             bool startOfNestingFound = false;
             int lineNumberCounter = 1;
