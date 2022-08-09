@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
                
-                // Code to handle nested templates recursively
+                // Recursively handle nested templates 
                 dynamic jsonTemplate = JsonConvert.DeserializeObject(template);
                 dynamic processedTemplateResources = templatejObject["resources"];
                 dynamic processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"];
