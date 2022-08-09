@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             int lineNumberCounter = 1;
             int curlyBraceCounter = 0;
             string stringNestedTemplate = "";
-            foreach (var myString in template.Split(Environment.NewLine))
+            foreach (var line in template.Split(Environment.NewLine))
             {
                 if (lineNumberCounter < startOfTemplate)
                 {
