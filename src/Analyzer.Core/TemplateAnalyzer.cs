@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     {
                         dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
                         dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));
-                        // get the offset
+                        // Get the offset
                         int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + lineNumberOffset - 1; // off by one
                         // Check whether scope is set to inner or outer
                         var scope = currentProcessedResourceWithLineNumbers.properties.expressionEvaluationOptions?.scope;
