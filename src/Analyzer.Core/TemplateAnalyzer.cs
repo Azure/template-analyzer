@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));
                         // get the offset
                         int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + lineNumberOffset - 1; // off by one
-                        // check whether scope is set to inner or outer
+                        // Check whether scope is set to inner or outer
                         var scope = currentProcessedResourceWithLineNumbers.properties.expressionEvaluationOptions?.scope;
 
                         int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
