@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.templateContext = templateContext;
             this.logger = logger;
-            jsonLineNumberResolver = new JsonLineNumberResolver(templateContext);
+            this.jsonLineNumberResolver = new JsonLineNumberResolver(templateContext);
         }
 
         /// <inheritdoc/>
