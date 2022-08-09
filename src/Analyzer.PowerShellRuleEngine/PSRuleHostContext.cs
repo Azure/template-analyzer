@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             foreach (var reason in ruleRecord.Detail.Reason)
             {
                 var lineNumber = 1;
-                // Temporal try/catch because not all rule evaluations return a proper path yet:
+                // Temporary try/catch because not all rule evaluations return a proper path yet:
                 try
                 {
                     lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.FullPath);
