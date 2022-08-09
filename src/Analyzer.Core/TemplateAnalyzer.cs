@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
         /// <param name="lineNumberOffset">The offset for line numbers relative to parent templates representing where the template starts in the file. (Used for nested templates.)</param>
         /// <param name="isBicep">Is Bicep or not</param>
-        /// <param name="sourceMap">sourceMap</param>
+        /// <param name="sourceMap">Source map that maps ARM JSON back to source Bicep</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string template, string parameters, string templateFilePath, string populatedTemplate, int lineNumberOffset, bool isBicep, object sourceMap)
         {
