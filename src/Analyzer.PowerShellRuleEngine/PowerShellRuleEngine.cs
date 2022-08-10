@@ -60,32 +60,39 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var tempTemplateFile = Path.ChangeExtension(tempFile, ".json");
             File.WriteAllText(tempTemplateFile, templateContext.ExpandedTemplate.ToString());
 
-            var hostContext = new PSRuleHostContext(templateContext, logger);
-            var modules = new string[] { "PSRule.Rules.Azure" };
-            var optionsForFileAnalysis = new PSRuleOption
+            PSRuleHostContext hostContext;
+
+            try
             {
-                Input = new InputOption
+                hostContext = new PSRuleHostContext(templateContext, logger);
+                var modules = new string[] { "PSRule.Rules.Azure" };
+                var optionsForFileAnalysis = new PSRuleOption
                 {
-                    Format = InputFormat.File
-                },
-                Output = new OutputOption
+                    Input = new InputOption
+                    {
+                        Format = InputFormat.File
+                    },
+                    Output = new OutputOption
+                    {
+                        Outcome = RuleOutcome.Fail
+                    }
+                };
+                var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
+
+                var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
+                builder.InputPath(new string[] { tempTemplateFile });
+                var pipeline = builder.Build();
+                pipeline.Begin();
+                foreach (var resource in resources)
                 {
-                    Outcome = RuleOutcome.Fail
+                    pipeline.Process(resource);
                 }
-            };
-            var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
-
-            var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
-            builder.InputPath(new string[] { tempTemplateFile });
-            var pipeline = builder.Build();
-            pipeline.Begin();
-            foreach (var resource in resources)
-            {
-                pipeline.Process(resource);
+                pipeline.End();
             }
-            pipeline.End();
-
-            File.Delete(tempTemplateFile);
+            finally
+            {
+                File.Delete(tempTemplateFile);
+            }
 
             return hostContext.Evaluations;
         }
