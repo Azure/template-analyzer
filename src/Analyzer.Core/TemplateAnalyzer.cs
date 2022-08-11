@@ -177,16 +177,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 // Recursively handle nested templates 
                 dynamic jsonTemplate = JsonConvert.DeserializeObject(template);
                 dynamic processedTemplateResources = templatejObject["resources"];
-                dynamic processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"];
+                var processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"];
 
                 for (int i = 0; i < processedTemplateResources.Count; i++)
                 {
-                    dynamic currentProcessedResource = processedTemplateResources[i];
+                    var currentProcessedResource = processedTemplateResources[i];
                     dynamic currentProcessedResourceWithLineNumbers = processedTemplateResourcesWithLineNumbers[i];
 
                     if (currentProcessedResource.type == "Microsoft.Resources/deployments")
                     {
-                        dynamic nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
+                        var nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
                         dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));
                         // Get the offset
                         int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + lineNumberOffset - 1; // off by one
