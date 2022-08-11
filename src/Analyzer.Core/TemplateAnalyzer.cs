@@ -197,7 +197,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         string jsonNestedTemplate = ExtractNestedTemplate(template, startOfTemplate);
                         IEnumerable<IEvaluation> result;
 
-                        if (scope == "inner")
+                        if (scope == null || scope == "outer")
+                        {
+                            // Variables, parameters and functions inherited from parent template
+                            populatedNestedTemplate.variables = jsonTemplate.variables;
+                            populatedNestedTemplate.parameters = jsonTemplate.parameters;
+                            populatedNestedTemplate.functions = jsonTemplate.functions;
+                        }
+                        else // scope is inner
                         {
                             // Pass variables, functions and parameters to child template
                             populatedNestedTemplate.variables?.Merge(currentProcessedResource.properties.variables);
@@ -218,13 +225,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                                 currentParameterToPass = currentParameterToPass.Next;
                             }
                             populatedNestedTemplate.parameters?.Merge(parametersToPass);
-                        }
-                        else // scope is outer
-                        { 
-                            // Variables, parameters and functions inherited from parent template
-                            populatedNestedTemplate.variables = jsonTemplate.variables;
-                            populatedNestedTemplate.parameters = jsonTemplate.parameters;
-                            populatedNestedTemplate.functions = jsonTemplate.functions;                            
                         }
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
