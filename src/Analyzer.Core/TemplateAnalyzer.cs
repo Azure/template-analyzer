@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
-            IEnumerable<IEvaluation>  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
+            var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
 
             // For each rule we don't want to report the same line more than once
             // This is a temporal fix
@@ -201,45 +201,39 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         {
                             scope = "outer";
                         }
+
                         if (scope == "inner")
                         {
-                            // Pass parameters, variables and functions to child template
-                            JToken passedParameters = currentProcessedResource.properties.parameters;
-                            JToken passedVariables = currentProcessedResource.properties.variables;
-                            JToken passedFunctions = currentProcessedResource.properties.functions;
+                            // Pass variables, functions and parameters to child template
+                            populatedNestedTemplate.variables?.Merge(currentProcessedResource.properties.variables);
+                            populatedNestedTemplate.functions?.Merge(currentProcessedResource.properties.functions);
 
-                            // merge 
-                            populatedNestedTemplate.variables?.Merge(passedVariables);
-                            populatedNestedTemplate.functions?.Merge(passedFunctions);
+                            JToken parametersToPass = currentProcessedResource.properties.parameters;
 
-                            dynamic currentPassedParameter = passedParameters?.First;
-                            while (currentPassedParameter != null)
+                            // Change 'value' fields in parametersToPass into 'defaultValue' which is recognized by the template parser
+                            dynamic currentParameterToPass = parametersToPass?.First;
+                            while (currentParameterToPass != null)
                             {
-                                var value = currentPassedParameter.Value.value;
+                                var value = currentParameterToPass.Value.value;
                                 if (value != null)
                                 {
-                                    currentPassedParameter.Value.defaultValue = value;
-                                    currentPassedParameter.Value.Remove("value");
+                                    currentParameterToPass.Value.defaultValue = value;
+                                    currentParameterToPass.Value.Remove("value");
                                 }
-                                currentPassedParameter = currentPassedParameter.Next;
+                                currentParameterToPass = currentParameterToPass.Next;
                             }
-                            populatedNestedTemplate.parameters?.Merge(passedParameters);
-                            
-                            string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
-                                                      
-                            result = AnalyzeAllIncludedTemplates(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
+                            populatedNestedTemplate.parameters?.Merge(parametersToPass);
                         }
                         else
                         {
                             // Variables, parameters and functions inherited from parent template
                             populatedNestedTemplate.variables = jsonTemplate.variables;
                             populatedNestedTemplate.parameters = jsonTemplate.parameters;
-                            populatedNestedTemplate.functions = jsonTemplate.functions;
-
-                            string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
-                            
-                            result = AnalyzeAllIncludedTemplates(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
+                            populatedNestedTemplate.functions = jsonTemplate.functions;                            
                         }
+
+                        string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
+                        result = AnalyzeAllIncludedTemplates(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
                         evaluations = evaluations.Concat(result);
                     }
                 }
@@ -273,9 +267,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 }
                 if (!startOfNestingFound)
                 {
-                    if (myString.Contains('{'))
+                    if (line.Contains('{'))
                     {
-                        stringNestedTemplate += myString.Substring(myString.IndexOf('{'));
+                        stringNestedTemplate += line.Substring(line.IndexOf('{'));
                         stringNestedTemplate += Environment.NewLine;
                         startOfNestingFound = true;
                         lineNumberCounter += 1;
@@ -285,25 +279,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 }
                 // After finding the start of nesting, count the opening and closing braces till they match up to find the end of the nested template
                 int inlineCounter = 1;
-                foreach (char c in myString)
+                foreach (char c in line)
                 {
                     if (c == '{') curlyBraceCounter++;
                     if (c == '}') curlyBraceCounter--;
                     if (curlyBraceCounter == 0) // done
                     {
-                        stringNestedTemplate += myString[..inlineCounter];
-                        break;
+                        return stringNestedTemplate + line[..inlineCounter];
                     }
                     inlineCounter++;
                 }
 
-                if (curlyBraceCounter == 0)
-                {
-                    break;
-                }
-
                 //not done
-                stringNestedTemplate += myString + Environment.NewLine;
+                stringNestedTemplate += line + Environment.NewLine;
                 lineNumberCounter += 1;
             }
 

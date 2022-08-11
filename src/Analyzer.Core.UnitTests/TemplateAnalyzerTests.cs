@@ -63,13 +63,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [DataRow("DoubleNestedFail.json", new int[] { 31, 37, 53, 59, 60,  61}, DisplayName = "Nested templates with two levels")]
         [DataRow("InnerOuterScopeFail.json", new int[] { 49, 55, 56, 101, 107, 108, 109 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
         [DataRow("ParameterPassingFail.json", new int[] { 53, 59, 62, 68, 69 }, DisplayName = "Nested template with parameters passed from parent")]
-        public void AnalyzeTemplate_ValidNestedTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic lineNumbers, string templateFilePath = null)
+        public void AnalyzeTemplate_ValidNestedTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic lineNumbers)
         {
-            string filePath = new(Path.Combine(".", "templates", templateFileName));
-            StreamReader sr = new(filePath);
-            string template = sr.ReadToEnd();
+            string filePath = Path.Combine(".", "templates", templateFileName);
+            string template = File.ReadAllText(filePath);
 
-            var evaluations = templateAnalyzer.AnalyzeTemplate(template, templateFilePath: templateFilePath);
+            var evaluations = templateAnalyzer.AnalyzeTemplate(template, templateFilePath: null);
             HashSet<int> failedEvaluationLines = new();
 
             foreach (var evaluation in evaluations)
