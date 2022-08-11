@@ -197,11 +197,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         string jsonNestedTemplate = ExtractNestedTemplate(template, startOfTemplate);
                         IEnumerable<IEvaluation> result;
 
-                        if (scope == null)
-                        {
-                            scope = "outer";
-                        }
-
                         if (scope == "inner")
                         {
                             // Pass variables, functions and parameters to child template
@@ -224,8 +219,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             }
                             populatedNestedTemplate.parameters?.Merge(parametersToPass);
                         }
-                        else
-                        {
+                        else // scope is outer
+                        { 
                             // Variables, parameters and functions inherited from parent template
                             populatedNestedTemplate.variables = jsonTemplate.variables;
                             populatedNestedTemplate.parameters = jsonTemplate.parameters;
