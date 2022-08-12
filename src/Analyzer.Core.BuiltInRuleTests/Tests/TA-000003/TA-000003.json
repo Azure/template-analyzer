@@ -12,7 +12,7 @@
       },
       {
         "LineNumber": 161,
-        "Description": "No properties are specified"
+        "Description": "No properties are specified in a resource from a nested template"
       }
     ]
   },
