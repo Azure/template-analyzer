@@ -39,7 +39,7 @@
               "kind": "api",
               "name": "withoutSpecifyingProperties",
               "location": "[parameters('location')]",
-
+                                                        // Blank line to test line numbeer matching with poorly-formatted json templates
               "properties": {
               }
             },
