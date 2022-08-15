@@ -84,7 +84,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
-            
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1; // Adds template's line number to an offset dependent on the parent (if applicable) template's position
         }
     }
