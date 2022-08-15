@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -262,6 +263,76 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             }
 
             var expectedLineNumber = (tokenInOriginalTemplate as IJsonLineInfo).LineNumber;
+            Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
+        }
+
+        [DataTestMethod]
+        [DataRow("resources[0].kind", 10, DisplayName = "")]
+        [DataRow("resources[0].location", 12, DisplayName = "")]
+        [DataRow("resources[0].properties.siteConfig.ftpsState", 15, DisplayName = "")]
+        public void ResolveLineNumber_ContextWithOffset_ReturnsCorrectLineNumber(string path, int lineNumber)
+        {
+            TemplateContext myTemplateContext = new()
+            {
+                OriginalTemplate = JObject.Parse(
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {},
+                ""variables"": {},
+                ""resources"": [
+                {
+                    ""apiVersion"": ""2019-08-01"",
+                    ""type"": ""Microsoft.Web/sites"",
+                    ""kind"": ""api"",
+                    ""name"": ""undesiredFtpsState"",
+                    ""location"": ""[parameters('location')]"",
+                    ""properties"": {
+                    ""siteConfig"": {
+                        ""ftpsState"": ""undesiredValue""
+                    }
+                    }
+                }
+                ]
+            }"),
+
+                ExpandedTemplate = JObject.Parse(
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {},
+                ""variables"": {},
+                ""resources"": [
+                {
+                    ""apiVersion"": ""2019-08-01"",
+                    ""type"": ""Microsoft.Web/sites"",
+                    ""kind"": ""api"",
+                    ""name"": ""undesiredFtpsState"",
+                    ""location"": ""[parameters('location')]"",
+                    ""properties"": {
+                    ""siteConfig"": {
+                        ""ftpsState"": ""undesiredValue""
+                    }
+                    }
+                }
+                ]
+            }"),
+
+                ResourceMappings = new Dictionary<string, string>
+            {
+                { "resources[0]", "resources[0]" }
+            },
+                TemplateIdentifier = "templateFilePath",
+                IsBicep = false,
+                Offset = 5
+            };
+
+            // Resolve line number
+            var resolvedLineNumber = new JsonLineNumberResolver(myTemplateContext)
+                .ResolveLineNumber(path);
+
+            int expectedLineNumber = lineNumber + myTemplateContext.Offset; // LineNumber in template plus offset
+
             Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
         }
 
