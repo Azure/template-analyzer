@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             Assert.IsTrue(inequalityOperator.Greater);
             Assert.IsFalse(inequalityOperator.OrEquals);
 
-            var parsedDate = DateTime.FromOADate(inequalityOperator.EffectiveValue);
+            var parsedDate = DateTime.FromOADate(inequalityOperator.EffectiveValue).ToUniversalTime();
 
             Assert.AreEqual(2021, parsedDate.Year);
             Assert.AreEqual(2, parsedDate.Month);
