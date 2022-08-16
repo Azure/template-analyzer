@@ -20,6 +20,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
+        /// Whether or not to run all the rules against the template.
+        /// </summary>
+        private readonly bool runAllRules;
+
+        /// <summary>
         /// Logger to report errors and debug information.
         /// </summary>
         private readonly ILogger logger;
@@ -27,9 +32,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Creates a new instance of a PowerShellRuleEngine.
         /// </summary>
+        /// <param name="runAllRules">Whether or not to run all the rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information.</param>
-        public PowerShellRuleEngine(ILogger logger = null)
+        public PowerShellRuleEngine(bool runAllRules, ILogger logger = null)
         {
+            this.runAllRules = runAllRules;
             this.logger = logger;
         }
 
@@ -81,6 +88,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
                 builder.InputPath(new string[] { tempTemplateFile });
+                if (!runAllRules)
+                {
+                    var baselineString = File.ReadAllText(Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "SecurityBaseline.json"));
+                    builder.Baseline(BaselineOption.FromString(baselineString));
+                }
+
                 var pipeline = builder.Build();
                 pipeline.Begin();
                 foreach (var resource in resources)

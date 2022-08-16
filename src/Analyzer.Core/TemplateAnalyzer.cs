@@ -47,10 +47,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="runAllRules">Whether or not to run all the rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool usePowerShell, ILogger logger = null)
+        public static TemplateAnalyzer Create(bool runAllRules, ILogger logger = null)
         {
             string rules;
             try
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepLocationResolver(templateContext)
                         : new JsonLineNumberResolver(templateContext),
                     logger),
-                usePowerShell ? new PowerShellRuleEngine(logger) : null,
+                new PowerShellRuleEngine(runAllRules, logger),
                 logger);
         }
 
@@ -125,12 +125,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
-
-                if (this.powerShellRuleEngine != null)
-                {
-                    this.logger?.LogDebug("Running PowerShell rule engine");
-                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
-                }
+                evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
 
                 // For each rule we don't want to report the same line more than once
                 // This is a temporal fix

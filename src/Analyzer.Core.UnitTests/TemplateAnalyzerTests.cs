@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            templateAnalyzerWithPowerShell = TemplateAnalyzer.Create(usePowerShell: true);
-            templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(usePowerShell: false);
+            templateAnalyzerWithPowerShell = TemplateAnalyzer.Create(runAllRules: true);
+            templateAnalyzerWithoutPowerShell = TemplateAnalyzer.Create(runAllRules: false);
         }
 
         [DataTestMethod]

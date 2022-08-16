@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            powerShellRuleEngine = new PowerShellRuleEngine();
+            powerShellRuleEngine = new PowerShellRuleEngine(true);
         }
 
         [DataTestMethod]
