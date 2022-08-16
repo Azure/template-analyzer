@@ -90,6 +90,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                             ".ps-rule",
                             Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "SecurityBaseline.Rule.json")
                         }
+                    },
+                    Execution = new ExecutionOption
+                    {
+                        NotProcessedWarning = false
                     }
                 };
                 var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
