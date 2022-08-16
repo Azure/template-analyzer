@@ -1,5 +1,6 @@
 ﻿[
   {
+    // Synopsis: Added a security pillar baseline.
     "kind": "Baseline",
     "metadata": {
       "name": "SecurityBaseline"
