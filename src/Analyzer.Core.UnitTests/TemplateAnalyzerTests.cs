@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             string filePath = Path.Combine("templates", templateFileName);
             string template = File.ReadAllText(filePath);
 
-            var evaluations = templateAnalyzer.AnalyzeTemplate(template, templateFilePath: null);
+            var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(template, templateFilePath: null);
             HashSet<int> failedEvaluationLines = new();
 
             foreach (var evaluation in evaluations)

@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("resources[0].properties.somePath", 14, DisplayName = "")]
         public void ResolveLineNumber_ContextWithOffset_ReturnsCorrectLineNumber(string path, int lineNumber)
         {
-            TemplateContext myTemplateContext = new()
+            TemplateContext templateContextWithOffset = new()
             {
                 OriginalTemplate = JObject.Parse(
                 @"{
@@ -479,14 +479,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
 
             // Resolve line number with offset in context set
-            var resolvedLineNumberWithOffset = new JsonLineNumberResolver(myTemplateContext)
+            var resolvedLineNumberWithOffset = new JsonLineNumberResolver(templateContextWithOffset)
                     .ResolveLineNumber(path);
 
             // Resolve line number with offset in context not set
             var resolvedLineNumberWithoutOffset = new JsonLineNumberResolver(templateContext)
                 .ResolveLineNumber(path);
 
-            int expectedLineNumberWithOffset = lineNumber + myTemplateContext.Offset; // LineNumber in template plus offset
+            int expectedLineNumberWithOffset = lineNumber + templateContextWithOffset.Offset; // LineNumber in template plus offset
             int expectedLineNumberWithoutOffset = lineNumber + templateContext.Offset;
 
             Assert.AreEqual(expectedLineNumberWithOffset, resolvedLineNumberWithOffset);
