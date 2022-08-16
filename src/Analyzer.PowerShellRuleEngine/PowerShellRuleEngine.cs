@@ -82,6 +82,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     Output = new OutputOption
                     {
                         Outcome = RuleOutcome.Fail
+                    },
+                    Include = new IncludeOption
+                    {
+                        Path = new string[]
+                        {
+                            ".ps-rule",
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "SecurityBaseline.Rule.json")
+                        }
                     }
                 };
                 var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
@@ -90,8 +98,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 builder.InputPath(new string[] { tempTemplateFile });
                 if (!runAllRules)
                 {
-                    var baselineString = File.ReadAllText(Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "SecurityBaseline.json"));
-                    builder.Baseline(BaselineOption.FromString(baselineString));
+                    builder.Baseline(BaselineOption.FromString("SecurityBaseline"));
                 }
 
                 var pipeline = builder.Build();
