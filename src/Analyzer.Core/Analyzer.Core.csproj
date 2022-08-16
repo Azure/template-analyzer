@@ -25,6 +25,4 @@
     </None>
   </ItemGroup>
 
-  <Import Project="..\TTK.targets" />
-
 </Project>

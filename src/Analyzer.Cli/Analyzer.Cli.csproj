@@ -18,6 +18,4 @@
     <ProjectReference Include="..\Analyzer.Reports\Analyzer.Reports.csproj" />
   </ItemGroup>
 
-  <Import Project="..\TTK.targets" />
-
 </Project>
