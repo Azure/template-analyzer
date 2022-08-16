@@ -267,73 +267,230 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("resources[0].kind", 10, DisplayName = "")]
-        [DataRow("resources[0].location", 12, DisplayName = "")]
-        [DataRow("resources[0].properties.siteConfig.ftpsState", 15, DisplayName = "")]
+        [DataRow("resources[0].type", 11, DisplayName = "")]
+        [DataRow("resources[0].name", 12, DisplayName = "")]
+        [DataRow("resources[0].properties.somePath", 14, DisplayName = "")]
         public void ResolveLineNumber_ContextWithOffset_ReturnsCorrectLineNumber(string path, int lineNumber)
         {
             TemplateContext myTemplateContext = new()
             {
                 OriginalTemplate = JObject.Parse(
-            @"{
-                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                ""contentVersion"": ""1.0.0.0"",
-                ""parameters"": {},
-                ""variables"": {},
-                ""resources"": [
-                {
-                    ""apiVersion"": ""2019-08-01"",
-                    ""type"": ""Microsoft.Web/sites"",
-                    ""kind"": ""api"",
-                    ""name"": ""undesiredFtpsState"",
-                    ""location"": ""[parameters('location')]"",
-                    ""properties"": {
-                    ""siteConfig"": {
-                        ""ftpsState"": ""undesiredValue""
-                    }
-                    }
-                }
-                ]
-            }"),
+                @"{
+                            ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                            ""parameters"": {
+                                ""parameter1"": {
+                                    ""type"": ""int"",
+                                    ""minValue"": 0
+                                }
+                            },
+                            ""resources"": [
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource0"",
+                                    ""name"": ""resource0"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource1"",
+                                    ""name"": ""resource1"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue"",
+                                        ""anotherProperty"": true
+                                    },
+                                    ""copy"": {
+                                        ""name"": ""copyLoop"",
+                                        ""count"": 2
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource2"",
+                                    ""name"": ""resource2"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource3"",
+                                    ""name"": ""resource3"",
+                                    ""dependsOn"": [ ""resource2"" ],
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    },
+                                    ""resources"": [
+                                        {
+                                            ""type"": ""Microsoft.ResourceProvider/resource3-0"",
+                                            ""name"": ""resource3-0"",
+                                            ""properties"": {
+                                                ""somePath"": ""someValue""
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource4"",
+                                    ""name"": ""resource4"",
+                                    ""dependsOn"": [ ""resource2"" ],
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    }
+                                }
+                            ]
+                        }"),
 
                 ExpandedTemplate = JObject.Parse(
-            @"{
-                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                ""contentVersion"": ""1.0.0.0"",
-                ""parameters"": {},
-                ""variables"": {},
-                ""resources"": [
-                {
-                    ""apiVersion"": ""2019-08-01"",
-                    ""type"": ""Microsoft.Web/sites"",
-                    ""kind"": ""api"",
-                    ""name"": ""undesiredFtpsState"",
-                    ""location"": ""[parameters('location')]"",
-                    ""properties"": {
-                    ""siteConfig"": {
-                        ""ftpsState"": ""undesiredValue""
-                    }
-                    }
-                }
-                ]
-            }"),
+                @"{
+                            ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                            ""parameters"": {
+                                ""parameter1"": {
+                                    ""type"": ""int"",
+                                    ""minValue"": 0
+                                }
+                            },
+                            ""resources"": [
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource0"",
+                                    ""name"": ""resource0"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource2"",
+                                    ""name"": ""resource2"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    },
+                                    ""resources"": [
+                                        {
+                                            ""type"": ""Microsoft.ResourceProvider/resource3"",
+                                            ""name"": ""resource3"",
+                                            ""dependsOn"": [ ""resource2"" ],
+                                            ""properties"": {
+                                                ""somePath"": ""someValue""
+                                            },
+                                            ""resources"": [
+                                                {
+                                                    ""type"": ""Microsoft.ResourceProvider/resource3-0"",
+                                                    ""name"": ""resource3-0"",
+                                                    ""properties"": {
+                                                        ""somePath"": ""someValue""
+                                                    }
+                                                },
+                                                {
+                                                    ""type"": ""Microsoft.ResourceProvider/resource4"",
+                                                    ""name"": ""resource4"",
+                                                    ""dependsOn"": [ ""resource3"" ],
+                                                    ""properties"": {
+                                                        ""somePath"": ""someValue""
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource3"",
+                                    ""name"": ""resource3"",
+                                    ""dependsOn"": [ ""resource2"" ],
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    },
+                                    ""resources"": [
+                                        {
+                                            ""type"": ""Microsoft.ResourceProvider/resource3-0"",
+                                            ""name"": ""resource3-0"",
+                                            ""properties"": {
+                                                ""somePath"": ""someValue""
+                                            }
+                                        },
+                                        {
+                                            ""type"": ""Microsoft.ResourceProvider/resource4"",
+                                            ""name"": ""resource4"",
+                                            ""dependsOn"": [ ""resource3"" ],
+                                            ""properties"": {
+                                                ""somePath"": ""someValue""
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource4"",
+                                    ""name"": ""resource4"",
+                                    ""dependsOn"": [ ""resource3"" ],
+                                    ""properties"": {
+                                        ""somePath"": ""someValue""
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource1"",
+                                    ""name"": ""resource1.0"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue"",
+                                        ""anotherProperty"": true
+                                    },
+                                    ""copy"": {
+                                        ""name"": ""copyLoop"",
+                                        ""count"": 2
+                                    },
+                                    ""anExpandedProperty"": ""anExpandedValue""
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/resource1"",
+                                    ""name"": ""resource1.1"",
+                                    ""properties"": {
+                                        ""somePath"": ""someValue"",
+                                        ""anotherProperty"": true
+                                    },
+                                    ""copy"": {
+                                        ""name"": ""copyLoop"",
+                                        ""count"": 2
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/badResource"",
+                                    ""copy"": {
+                                        ""name"": ""missingSourceCopyInOriginal"",
+                                        ""count"": 2
+                                    }
+                                },
+                                {
+                                    ""type"": ""Microsoft.ResourceProvider/ExtraResourceInExpandedTemplate"",
+                                }
+                            ]
+                        }"),
 
                 ResourceMappings = new Dictionary<string, string>
-            {
-                { "resources[0]", "resources[0]" }
-            },
-                TemplateIdentifier = "templateFilePath",
-                IsBicep = false,
+                        {
+                            { "resources[0]", "resources[0]" },
+                            { "resources[1]", "resources[2]" },
+                            { "resources[1].resources[0]", "resources[3]" },
+                            { "resources[1].resources[0].resources[0]", "resources[3].resources[0]" },
+                            { "resources[1].resources[0].resources[1]", "resources[4]" },
+                            { "resources[2]", "resources[3]" },
+                            { "resources[2].resources[0]", "resources[3].resources[0]" },
+                            { "resources[2].resources[1]", "resources[4]" },
+                            { "resources[3]", "resources[4]" },
+                            { "resources[4]", "resources[1]" },
+                            { "resources[5]", "resources[1]" }
+                        },
                 Offset = 5
             };
 
-            // Resolve line number
-            var resolvedLineNumber = new JsonLineNumberResolver(myTemplateContext)
+
+            // Resolve line number with offset in context set
+            var resolvedLineNumberWithOffset = new JsonLineNumberResolver(myTemplateContext)
+                    .ResolveLineNumber(path);
+
+            // Resolve line number with offset in context not set
+            var resolvedLineNumberWithoutOffset = new JsonLineNumberResolver(templateContext)
                 .ResolveLineNumber(path);
 
-            int expectedLineNumber = lineNumber + myTemplateContext.Offset; // LineNumber in template plus offset
+            int expectedLineNumberWithOffset = lineNumber + myTemplateContext.Offset; // LineNumber in template plus offset
+            int expectedLineNumberWithoutOffset = lineNumber + templateContext.Offset;
 
-            Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
+            Assert.AreEqual(expectedLineNumberWithOffset, resolvedLineNumberWithOffset);
+            Assert.AreEqual(expectedLineNumberWithoutOffset, resolvedLineNumberWithoutOffset);
         }
 
         [DataTestMethod]
