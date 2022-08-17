@@ -387,9 +387,13 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 if (templateResource.Properties != null)
                 {
                     evaluationHelper.OnGetCopyContext = () => templateResource.CopyContext;
+                    InsensitiveHashSet evaluationsToSkip = new InsensitiveHashSet();
+                    evaluationsToSkip.Add("template");  // The tool should skip properties in nested templates to avoid false positive warnings
+
                     templateResource.Properties.Value = ExpressionsEngine.EvaluateLanguageExpressionsRecursive(
                         root: templateResource.Properties.Value,
-                        evaluationContext: evaluationHelper.EvaluationContext);
+                        evaluationContext: evaluationHelper.EvaluationContext, 
+                        skipEvaluationPaths: evaluationsToSkip);
                 }
             }
             catch (Exception ex)
