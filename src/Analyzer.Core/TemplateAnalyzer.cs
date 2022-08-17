@@ -77,10 +77,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
         /// <param name="template">The template contents.</param>
-        /// <param name="parameters">The parameters for the template.</param>
         /// <param name="templateFilePath">The template file path. It's needed to analyze Bicep files and to run the PowerShell based rules.</param>
+        /// <param name="parameters">The parameters for the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string templateFilePath, string parameters = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
 
