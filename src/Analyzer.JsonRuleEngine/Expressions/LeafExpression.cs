@@ -37,18 +37,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Evaluates this leaf expression's resource type and/or path, starting at the specified json scope, with the contained <see cref="LeafExpressionOperator"/>.
         /// </summary>
         /// <param name="jsonScope">The json path to evaluate.</param>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// <param name="sourceLocationResolver">An <see cref="ISourceLocationResolver"/> to
         /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <returns>An <see cref="IEnumerable{JsonRuleEvaluation}"/> with the results of the evaluation.</returns>
-        public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver)
+        public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ISourceLocationResolver sourceLocationResolver)
         {
             return EvaluateInternal(jsonScope, scope =>
             {
+                var sourceLocation = sourceLocationResolver?.ResolveSourceLocation(scope.Path);
                 var result = new JsonRuleResult()
                 {
                     Passed = Operator.EvaluateExpression(scope.JToken),
                     JsonPath = scope.Path,
-                    LineNumber = jsonLineNumberResolver?.ResolveLineNumber(scope.Path) ?? 0,
+                    LineNumber = sourceLocation?.LineNumber ?? 0,
+                    SourceFile = sourceLocation?.FilePath,
                     Expression = this
                 };
 

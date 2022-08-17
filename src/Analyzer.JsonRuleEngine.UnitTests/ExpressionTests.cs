@@ -155,8 +155,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var whereExpression = new Mock<Expression>(new ExpressionCommonProperties());
             whereExpression
-                .Setup(w => w.Evaluate(It.IsAny<IJsonPathResolver>(), It.IsAny<ILineNumberResolver>()))
-                .Returns((IJsonPathResolver pathResolver, ILineNumberResolver lineNumberResolver) =>
+                .Setup(w => w.Evaluate(It.IsAny<IJsonPathResolver>(), It.IsAny<ISourceLocationResolver>()))
+                .Returns((IJsonPathResolver pathResolver, ISourceLocationResolver lineNumberResolver) =>
                 {
                     // If a non-null ILineNumberResolver was passed to this Where condition, record it to assert later.
                     lineNumberResolverWasAlwaysNull &= lineNumberResolver == null;
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Evaluate scope - line number resolver should not be passed into Where condition
-            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ILineNumberResolver>().Object);
+            mockExpression.Evaluate(mockPathResolver.Object, new Mock<ISourceLocationResolver>().Object);
 
             Assert.IsTrue(lineNumberResolverWasAlwaysNull, "A non-null ILineNumberResolver was passed to a Where condition when it shouldn't have.");
         }
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             // Calls EvaluateInternal with Func<IJsonPathResolver, JsonRuleEvaluation>
             new MockExpression(new ExpressionCommonProperties { Path = "path" })
-                .Evaluate(null, new Mock<ILineNumberResolver>().Object);
+                .Evaluate(null, new Mock<ISourceLocationResolver>().Object);
         }
 
         [TestMethod]

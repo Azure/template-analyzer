@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Dynamic;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
@@ -20,6 +21,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// Gets the line number of the file where the rule was evaluated.
         /// </summary>
         public int LineNumber { get; internal set; }
+
+        /// <summary>
+        /// Gets the file where the rule was evaluated.
+        /// </summary>
+        public string SourceFile { get; internal set; }
 
         /// <summary>
         /// Gets or sets the JSON path to the location in the JSON where the rule was evaluated.

@@ -9,18 +9,18 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from a compiled JSON template to the original Bicep template.
+    /// An <see cref="ISourceLocationResolver"/> used for resolving line numbers from a compiled JSON template to the original Bicep template.
     /// </summary>
-    public class BicepLocationResolver : ILineNumberResolver
+    public class BicepSourceLocationResolver : ISourceLocationResolver
     {
-        private readonly JsonLineNumberResolver jsonLineNumberResolver;
+        private readonly JsonSourceLocationResolver jsonLineNumberResolver;
         private readonly SourceMap sourceMap;
 
         /// <summary>
         /// Create a new instance with the given <see cref="TemplateContext"/>.
         /// </summary>
         /// <param name="templateContext">The template context to map JSON paths against.</param>
-        public BicepLocationResolver(TemplateContext templateContext)
+        public BicepSourceLocationResolver(TemplateContext templateContext)
         {
             this.jsonLineNumberResolver = new(templateContext ?? throw new ArgumentNullException(nameof(templateContext)));
             this.sourceMap = (templateContext.SourceMap as SourceMap) ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
@@ -34,20 +34,38 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// to find the line number of in the original template.</param>
         /// <returns>The line number of the equivalent location in the original template,
         /// or 1 if it can't be determined.</returns>
-        public int ResolveLineNumber(string pathInExpandedTemplate)
+        public SourceLocation ResolveSourceLocation(string pathInExpandedTemplate)
         {
-            var jsonLine = this.jsonLineNumberResolver.ResolveLineNumber(pathInExpandedTemplate);
+            var jsonLine = this.jsonLineNumberResolver.ResolveSourceLocation(pathInExpandedTemplate).LineNumber;
 
             // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
-            // TODO: look for mappings in other files/modules once nested templates are supported, for now just entrypoint file
-            var entrypointFile = this.sourceMap.Entries.First(entry => entry.FilePath == this.sourceMap.Entrypoint);
-            var match = entrypointFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+            // search each source file for matching mapping, picking the most specific match (source line maps to least amount of target lines)
 
-            return (match != null)
-                ? match.SourceLine + 1 // convert to 1-indexing
-                : 1;
+            SourceMapEntry bestMatch = null;
+            string bestMatchSourceFile = null;
+            int bestMatchSize = int.MaxValue;
+            foreach(var fileEntry in sourceMap.Entries)
+            {
+                var match = fileEntry.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+                if (match == default) continue;
+
+                var matchSize = fileEntry.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine);
+
+                if (matchSize < bestMatchSize)
+                {
+                    bestMatch = match;
+                    bestMatchSourceFile = fileEntry.FilePath;
+                    bestMatchSize = matchSize;
+                }
+            }
+
+            return (bestMatch != null)
+                ? new SourceLocation(
+                    bestMatch.SourceLine + 1, // convert to 1-indexing
+                    (bestMatchSourceFile != sourceMap.Entrypoint) ? bestMatchSourceFile : default) // show source file if not in entrypoint file
+                : new SourceLocation(1);
         }
     }
 }

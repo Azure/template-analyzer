@@ -34,5 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         public bool Passed { get; set; }
 
         public int LineNumber { get; set; }
-    }
+
+        public string SourceFile { get; set; }
+}
 }

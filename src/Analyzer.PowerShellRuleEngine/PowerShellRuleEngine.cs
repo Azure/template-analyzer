@@ -94,6 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 File.Delete(tempTemplateFile);
             }
 
+            // nichb TODO: line numbers need to be translated back to bicep?
             return hostContext.Evaluations;
         }
     }

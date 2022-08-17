@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
-            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
+            var mockLineResolver = new Mock<ISourceLocationResolver>().Object;
 
             var mockOperator = new Mock<LeafExpressionOperator>().Object;
             mockOperator.IsNegative = true;

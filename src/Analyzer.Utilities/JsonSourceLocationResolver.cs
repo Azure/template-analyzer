@@ -10,9 +10,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
+    /// An <see cref="ISourceLocationResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
     /// </summary>
-    public class JsonLineNumberResolver : ILineNumberResolver
+    public class JsonSourceLocationResolver : ISourceLocationResolver
     {
         private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// Create a new instance with the given <see cref="TemplateContext"/>.
         /// </summary>
         /// <param name="templateContext">The template context to map JSON paths against.</param>
-        public JsonLineNumberResolver(TemplateContext templateContext)
+        public JsonSourceLocationResolver(TemplateContext templateContext)
         {
             this.templateContext = templateContext ?? throw new ArgumentNullException(nameof(templateContext));
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// to find the line number of in the original template.</param>
         /// <returns>The line number of the equivalent location in the original template,
         /// or 1 if it can't be determined.</returns>
-        public int ResolveLineNumber(string pathInExpandedTemplate)
+        public SourceLocation ResolveSourceLocation(string pathInExpandedTemplate)
         {
             JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
             JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // even the first property could not be found in the original template.
             if (tokenFromOriginalTemplate.Equals(originalTemplateRoot))
             {
-                return 1;
+                return new SourceLocation(1);
             }
 
             // If the path is in the resources array of the template
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                 if (!templateContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
                 {
-                    return 1;
+                    return new SourceLocation(1);
                 }
 
                 if (!string.Equals(resourceWithIndex, originalResourcePath))
@@ -84,7 +84,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
-            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1; // Adds template's line number to an offset dependent on the parent (if applicable) template's position
+            
+            return new SourceLocation((tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1); // Adds template's line number to an offset dependent on the parent (if applicable) template's position
         }
     }
 }

@@ -14,6 +14,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <inheritdoc/>
         public int LineNumber { get; internal set; }
 
+        /// <inheritdoc/>
+        public string SourceFile {get; internal set; }
+
         /// <summary>
         /// Creates a <see cref="PowerShellRuleResult"/> that represents a result obtained from a PowerShell rule.
         /// </summary>

@@ -79,15 +79,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Returns(expectedEvaluationResult);
 
             // A line resolver to return a line number for the result
-            var mockLineResolver = new Mock<ILineNumberResolver>();
+            var mockLineResolver = new Mock<ISourceLocationResolver>();
             mockLineResolver
-                .Setup(r => r.ResolveLineNumber(It.Is<string>(p => p == expectedPathEvaluated)))
-                .Returns(lineNumber);
+                .Setup(r => r.ResolveSourceLocation(It.Is<string>(p => p == expectedPathEvaluated)))
+                .Returns(new SourceLocation(lineNumber));
 
             var leafExpression = new LeafExpression(mockLeafExpressionOperator.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
             // Act
-            var evaluationOutcome = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: mockLineResolver.Object).ToList();
+            var evaluationOutcome = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, sourceLocationResolver: mockLineResolver.Object).ToList();
 
             // Assert
             Assert.AreEqual(1, evaluationOutcome.Count);
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .Returns(false);
 
             var leafExpression = new LeafExpression(mockLeafExpressionOperator.Object, new ExpressionCommonProperties { Path = "" });
-            var evaluationOutcome = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, jsonLineNumberResolver: null).ToList();
+            var evaluationOutcome = leafExpression.Evaluate(jsonScope: mockJsonPathResolver.Object, sourceLocationResolver: null).ToList();
 
             Assert.AreEqual(1, evaluationOutcome.Count);
 

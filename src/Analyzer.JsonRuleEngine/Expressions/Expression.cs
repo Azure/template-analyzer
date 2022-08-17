@@ -42,10 +42,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
         /// Executes this <see cref="Expression"/> against a template.
         /// </summary>
         /// <param name="jsonScope">The specific scope to evaluate.</param>
-        /// <param name="jsonLineNumberResolver">An <see cref="ILineNumberResolver"/> to
+        /// <param name="jsonLineNumberResolver">An <see cref="ISourceLocationResolver"/> to
         /// map JSON paths in the returned evaluation to the line number in the JSON evaluated.</param>
         /// <returns>An <see cref="IEnumerable{JsonRuleEvaluation}"/> with the results of the evaluation.</returns>
-        public abstract IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver jsonLineNumberResolver);
+        public abstract IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ISourceLocationResolver jsonLineNumberResolver);
 
         /// <summary>
         /// Performs tasks common across <see cref="Expression"/> implementations, such as

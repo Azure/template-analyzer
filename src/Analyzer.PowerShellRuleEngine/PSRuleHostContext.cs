@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     {
         private readonly TemplateContext templateContext;
         private readonly ILogger logger;
-        private readonly JsonLineNumberResolver jsonLineNumberResolver;
+        private readonly JsonSourceLocationResolver jsonLineNumberResolver;
 
         /// <summary>
         /// Evaluations outputted by the PSRule analysis.
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.templateContext = templateContext;
             this.logger = logger;
-            this.jsonLineNumberResolver = new JsonLineNumberResolver(templateContext);
+            this.jsonLineNumberResolver = new JsonSourceLocationResolver(templateContext);
         }
 
         /// <inheritdoc/>
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // Temporary try/catch because not all rule evaluations return a proper path yet:
                 try
                 {
-                    lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.FullPath);
+                    lineNumber = this.jsonLineNumberResolver.ResolveSourceLocation(reason.FullPath).LineNumber;
                 }
                 catch
                 {

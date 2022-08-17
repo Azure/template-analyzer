@@ -69,8 +69,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 JsonRuleEngine.Create(
                     rules,
                     templateContext => templateContext.IsBicep
-                        ? new BicepLocationResolver(templateContext)
-                        : new JsonLineNumberResolver(templateContext),
+                        ? new BicepSourceLocationResolver(templateContext)
+                        : new JsonSourceLocationResolver(templateContext),
                     logger),
                 usePowerShell ? new PowerShellRuleEngine(logger) : null,
                 logger);
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
 
             // For each rule we don't want to report the same line more than once
-            // This is a temporal fix
+            // This is a temporary fix
             var evalsToValidate = new List<IEvaluation>();
             var evalsToNotValidate = new List<IEvaluation>();
             foreach (var eval in evaluations)

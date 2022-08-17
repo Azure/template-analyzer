@@ -50,6 +50,68 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [DataTestMethod]
+        [DataRow("SimpleNestedFail.bicep", "{ \"SimpleNestedFailModule.bicep\": [12, 16, 20, 24, 25, 26] }", DisplayName = "Simple bicep nested template example")]
+        [DataRow("DoubleNestedFail.bicep", "{ \"DoubleNestedFailModule1.bicep\": [5, 9], \"DoubleNestedFailModule2.bicep\": [4, 8, 9, 10] }", DisplayName = "Nested templates with two levels")]
+        [DataRow("ParameterPassingFail.bicep", "{ \"ParameterPassingFailModule.bicep\": [6, 10, 14, 18, 19] }", DisplayName = "Nested template with parameters passed from parent")]
+        public void AnalyzeTemplate_ValidBicepModuleTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic expectedSourceLocationsJson)
+        {
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "templates", templateFileName);
+            string template = File.ReadAllText(filePath);
+
+            var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(template, templateFilePath: filePath);
+            Dictionary<string, HashSet<int>> failedEvaluationSourceLocations = new();
+
+            foreach (var evaluation in evaluations)
+            {
+                if (!evaluation.Passed)
+                {
+                    foreach(var sourceFile in GetFailedSourceLocations(evaluation))
+                    {
+                        if (!failedEvaluationSourceLocations.ContainsKey(sourceFile.Key))
+                        {
+                            failedEvaluationSourceLocations[sourceFile.Key] = new();
+                        }
+                        failedEvaluationSourceLocations[sourceFile.Key].UnionWith(sourceFile.Value);
+                    }
+                }
+            }
+
+            Dictionary<string, int[]> expectedSourceLocations = JsonConvert.DeserializeObject<Dictionary<string, int[]>>(expectedSourceLocationsJson);
+            foreach (var file in expectedSourceLocations.Keys)
+            {
+                var expectedLineNumbers = new List<int>(expectedSourceLocations[file]);
+                var actualFailingLines = failedEvaluationSourceLocations[file]?.ToList();
+                actualFailingLines.Sort();
+
+                Assert.AreEqual(expectedLineNumbers.Count, actualFailingLines.Count);
+                Assert.IsTrue(expectedLineNumbers.SequenceEqual(actualFailingLines));
+            }
+        }
+
+        private Dictionary<string, HashSet<int>> GetFailedSourceLocations(IEvaluation evaluation, Dictionary<string,HashSet<int>> failedSourceLocations = null)
+        {
+            failedSourceLocations ??= new();
+
+            if (!evaluation.Result?.Passed ?? false)
+            {
+                var sourceFile = evaluation.Result.SourceFile;
+                if (!failedSourceLocations.ContainsKey(sourceFile))
+                {
+                    failedSourceLocations[sourceFile] = new();
+                }
+
+                failedSourceLocations[sourceFile].Add(evaluation.Result.LineNumber);
+            }
+
+            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
+            {
+                GetFailedSourceLocations(eval, failedSourceLocations);
+            }
+
+            return failedSourceLocations;
+        }
+
+
         [DataRow("SimpleNestedFail.json", new int[] { 36, 43, 46, 52, 53, 54 }, DisplayName = "Simple nested template example")]
         [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59,  60}, DisplayName = "Nested templates with two levels")]
         [DataRow("InnerOuterScopeFail.json", new int[] { 49, 55, 56, 101, 107, 108, 109 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
