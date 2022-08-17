@@ -243,10 +243,18 @@ namespace Analyzer.Cli.FunctionalTests
                     .ToString());
                 
                 if (specifyInCommand)
+                {
                     args = args.Concat(new[] { "--config-file-path", configName }).ToArray();
+                }
+
+                using StringWriter outputWriter = new();
+                Console.SetOut(outputWriter);
 
                 result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-                Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+                var cliConsoleOutput = outputWriter.ToString();
+
+                Assert.IsTrue(!cliConsoleOutput.Contains("TA-")); // PSRule rules are not filtered by the config file currently
             }
             finally
             {

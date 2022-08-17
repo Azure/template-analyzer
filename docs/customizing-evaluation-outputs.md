@@ -1,7 +1,7 @@
 # Customizing Evaluation Outputs
 
 ## Overview
-Template BPA customization is authored in JSON.  Custom evaluation settings are written in a separate configuration and used on tool execution. See the main README for details on [how to run Template BPA with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-bpa). 
+Template BPA customization is authored in JSON. Custom evaluation settings are written in a separate configuration and used on tool execution. See the main README for details on [how to run Template BPA with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-bpa). It currently only supports the JSON-based rules.
 
 ## Template BPA Rule Object
 Here are the fields that make up a custom configuration file:
