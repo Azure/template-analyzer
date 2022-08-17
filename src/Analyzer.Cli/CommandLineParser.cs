@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, templateFilePath.FullName, parameterFileContents);
 
                 this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
