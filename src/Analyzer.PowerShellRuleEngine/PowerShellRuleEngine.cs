@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -81,7 +82,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     },
                     Output = new OutputOption
                     {
-                        Outcome = RuleOutcome.Fail
+                        Outcome = RuleOutcome.Fail,
+                        Culture = new string[] { "en-US" } // To avoid warning messages when running tests in Linux
                     },
                     Include = new IncludeOption
                     {
