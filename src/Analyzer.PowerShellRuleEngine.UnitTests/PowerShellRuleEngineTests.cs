@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -28,8 +29,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow("template_and_resource_level_results.json", true, 12, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
         [DataRow("template_and_resource_level_results.json", false, 4, new int[] { 17, 17, 17, 17 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
-        public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, dynamic lineNumbers)
+        public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, dynamic expectedLineNumbers)
         {
+            Assert.AreEqual(expectedErrorCount, expectedLineNumbers.Length);
+
             var templateFilePath = Path.Combine(templatesFolder, templateFileName);
 
             var template = File.ReadAllText(templateFilePath);
@@ -79,11 +82,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             Assert.AreEqual(expectedErrorCount, failedEvaluations.Count);
 
-            Assert.AreEqual(failedEvaluations.Count, lineNumbers.Length);
-            for (int errorNumber = 0; errorNumber < lineNumbers.Length; errorNumber++)
+            // PSRule evaluations can change order depending on the OS:
+            foreach(var expectedLineNumber in expectedLineNumbers)
             {
-                Assert.AreEqual(lineNumbers[errorNumber], failedEvaluations[errorNumber].Result.LineNumber);
+                var matchingEvaluation = failedEvaluations.Find(evaluation => evaluation.Result.LineNumber == expectedLineNumber);
+                failedEvaluations.Remove(matchingEvaluation);
             }
+            Assert.IsTrue(failedEvaluations.IsEmptyEnumerable());
         }
 
         [DataTestMethod]
