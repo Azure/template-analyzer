@@ -1,6 +1,6 @@
 ﻿[
   {
-    // Synopsis: Added a security pillar baseline.
+    // Synopsis: Includes all the rules from the Security pillar except the ones already in TemplateAnalyzer
     "kind": "Baseline",
     "metadata": {
       "name": "SecurityBaseline"
@@ -12,18 +12,13 @@
           "PSRule.Rules.Azure\\Azure.ACR.ContainerScan",
           "PSRule.Rules.Azure\\Azure.ACR.ImageHealth",
           "PSRule.Rules.Azure\\Azure.AKS.AuditLogs",
-          "PSRule.Rules.Azure\\Azure.APIM.HTTPEndpoint",
           "PSRule.Rules.Azure\\Azure.APIM.HTTPBackend",
           "PSRule.Rules.Azure\\Azure.APIM.EncryptValues",
           "PSRule.Rules.Azure\\Azure.APIM.ProductSubscription",
           "PSRule.Rules.Azure\\Azure.APIM.ProductApproval",
           "PSRule.Rules.Azure\\Azure.AppGw.UseHTTPS",
-          "PSRule.Rules.Azure\\Azure.AppService.MinTLS",
-          "PSRule.Rules.Azure\\Azure.AppService.RemoteDebug",
           "PSRule.Rules.Azure\\Azure.AppService.NETVersion",
           "PSRule.Rules.Azure\\Azure.AppService.PHPVersion",
-          "PSRule.Rules.Azure\\Azure.AppService.WebSecureFtp",
-          "PSRule.Rules.Azure\\Azure.Automation.EncryptVariables",
           "PSRule.Rules.Azure\\Azure.Automation.WebHookExpiry",
           "PSRule.Rules.Azure\\Azure.Automation.AuditLogs",
           "PSRule.Rules.Azure\\Azure.CDN.MinTLS",
@@ -48,7 +43,6 @@
           "PSRule.Rules.Azure\\Azure.PostgreSQL.FirewallIPRange",
           "PSRule.Rules.Azure\\Azure.Resource.AllowedRegions",
           "PSRule.Rules.Azure\\Azure.Search.ManagedIdentity",
-          "PSRule.Rules.Azure\\Azure.ServiceFabric.AAD",
           "PSRule.Rules.Azure\\Azure.SQL.FirewallRuleCount",
           "PSRule.Rules.Azure\\Azure.SQL.AllowAzureAccess",
           "PSRule.Rules.Azure\\Azure.SQL.FirewallIPRange",
@@ -56,7 +50,6 @@
           "PSRule.Rules.Azure\\Azure.SQL.Auditing",
           "PSRule.Rules.Azure\\Azure.SQL.AAD",
           "PSRule.Rules.Azure\\Azure.SQL.MinTLS",
-          "PSRule.Rules.Azure\\Azure.SQL.TDE",
           "PSRule.Rules.Azure\\Azure.Storage.SecureTransfer",
           "PSRule.Rules.Azure\\Azure.Storage.BlobPublicAccess",
           "PSRule.Rules.Azure\\Azure.Storage.BlobAccessType",
@@ -85,7 +78,6 @@
           "PSRule.Rules.Azure\\Azure.AKS.SecretStore",
           "PSRule.Rules.Azure\\Azure.AKS.SecretStoreRotation",
           "PSRule.Rules.Azure\\Azure.AKS.HttpAppRouting",
-          "PSRule.Rules.Azure\\Azure.AKS.UseRBAC",
           "PSRule.Rules.Azure\\Azure.APIM.ManagedIdentity",
           "PSRule.Rules.Azure\\Azure.APIM.Protocols",
           "PSRule.Rules.Azure\\Azure.APIM.Ciphers",
@@ -96,7 +88,6 @@
           "PSRule.Rules.Azure\\Azure.AppGw.OWASP",
           "PSRule.Rules.Azure\\Azure.AppGw.WAFRules",
           "PSRule.Rules.Azure\\Azure.AppService.ManagedIdentity",
-          "PSRule.Rules.Azure\\Azure.AppService.UseHTTPS",
           "PSRule.Rules.Azure\\Azure.Automation.ManagedIdentity",
           "PSRule.Rules.Azure\\Azure.CDN.HTTP",
           "PSRule.Rules.Azure\\Azure.Cognitive.PublicAccess",
@@ -110,7 +101,6 @@
           "PSRule.Rules.Azure\\Azure.Firewall.Mode",
           "PSRule.Rules.Azure\\Azure.FrontDoor.WAF.Mode",
           "PSRule.Rules.Azure\\Azure.FrontDoor.WAF.Enabled",
-          "PSRule.Rules.Azure\\Azure.Redis.NonSslPort",
           "PSRule.Rules.Azure\\Azure.Redis.MinTLS",
           "PSRule.Rules.Azure\\Azure.Redis.PublicNetworkAccess",
           "PSRule.Rules.Azure\\Azure.ServiceBus.DisableLocalAuth",

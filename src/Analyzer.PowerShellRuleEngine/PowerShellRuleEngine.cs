@@ -88,7 +88,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                         Path = new string[]
                         {
                             ".ps-rule",
-                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "SecurityBaseline.Rule.json")
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "SecurityBaseline.Rule.json"),
+                            ".ps-rule",
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json")
                         }
                     },
                     Execution = new ExecutionOption
@@ -100,7 +102,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
                 builder.InputPath(new string[] { tempTemplateFile });
-                if (!runAllRules)
+                if (runAllRules)
+                {
+                    builder.Baseline(BaselineOption.FromString("RepeatedRulesBaseline"));
+                }
+                else
                 {
                     builder.Baseline(BaselineOption.FromString("SecurityBaseline"));
                 }

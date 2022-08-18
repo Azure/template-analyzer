@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(9);
+            run.Tool.Driver.Rules.Count.Should().Be(8);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
             run.OriginalUriBaseIds.Count.Should().Be(1);
@@ -171,13 +171,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
                         new List<int> { 23, 24, 25 }
-                    })
-                },
-                { "AZR-000163", (
-                    file: "RedisCache.json",
-                    uriBase: SarifReportWriter.UriBaseIdString,
-                    lines: new List<List<int>> {
-                        new List<int> { 20 }
                     })
                 },
                 { "AZR-000164", (
@@ -224,7 +217,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 }
             };
 
-            run.Results.Count.Should().Be(9);
+            run.Results.Count.Should().Be(8);
             foreach (Result result in run.Results)
             {
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");

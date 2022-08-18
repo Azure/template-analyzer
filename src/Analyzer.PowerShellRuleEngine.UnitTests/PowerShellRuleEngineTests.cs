@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -82,6 +83,69 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             for (int errorNumber = 0; errorNumber < lineNumbers.Length; errorNumber++)
             {
                 Assert.AreEqual(lineNumbers[errorNumber], failedEvaluations[errorNumber].Result.LineNumber);
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow(true, DisplayName = "Repeated rules are excluded when running all the rules")]
+        [DataRow(true, DisplayName = "Repeated rules are excluded when running only the security rules")]
+        public void AnalyzeTemplate_ValidTemplate_ExcludesRepeatedRules(bool runsAllRules)
+        {
+            var templateFilePath = Path.Combine(templatesFolder, "excluded_rules.json");
+
+            var template = File.ReadAllText(templateFilePath);
+            var armTemplateProcessor = new ArmTemplateProcessor(template);
+            var templatejObject = armTemplateProcessor.ProcessTemplate();
+
+            var templateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(template),
+                ExpandedTemplate = templatejObject,
+                ResourceMappings = armTemplateProcessor.ResourceMappings,
+                TemplateIdentifier = templateFilePath
+            };
+
+            IEnumerable<IEvaluation> evaluations;
+            if (runsAllRules)
+            {
+                evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
+            }
+            else
+            {
+                var powerShellRuleEngineSecurityRules = new PowerShellRuleEngine(false);
+                evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
+            }
+
+            Assert.IsTrue(!evaluations.Any(evaluation => evaluation.RuleId == "AZR-000081")); // It's the id of Azure.AppService.RemoteDebug
+
+            // The RepeatedRulesBaseline will only be used when all rules are run:
+            if (runsAllRules)
+            {
+                var baselineLocation = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json");
+                var newBaselineLocation = baselineLocation + ".moved";
+                try
+                {
+                    File.Move(baselineLocation, newBaselineLocation);
+                    var emptyBaseline = File.Create(baselineLocation);
+                    emptyBaseline.Close();
+
+                    if (runsAllRules)
+                    {
+                        evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
+                    }
+                    else
+                    {
+                        var powerShellRuleEngineSecurityRules = new PowerShellRuleEngine(false);
+                        evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
+                    }
+
+                    Assert.IsTrue(evaluations.Any(evaluation => evaluation.RuleId == "AZR-000081"));
+                }
+                finally
+                {
+                    File.Delete(baselineLocation);
+                    File.Move(newBaselineLocation, baselineLocation);
+                }
             }
         }
 
