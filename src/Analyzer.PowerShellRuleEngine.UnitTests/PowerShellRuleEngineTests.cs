@@ -133,17 +133,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                     File.Move(baselineLocation, newBaselineLocation);
                     var emptyBaseline = File.Create(baselineLocation);
                     emptyBaseline.Close();
-
-                    if (runsAllRules)
-                    {
-                        evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
-                    }
-                    else
-                    {
-                        var powerShellRuleEngineSecurityRules = new PowerShellRuleEngine(false);
-                        evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
-                    }
-
+                    
+                    evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
+                    
                     Assert.IsTrue(evaluations.Any(evaluation => evaluation.RuleId == "AZR-000081"));
                 }
                 finally
