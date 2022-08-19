@@ -3,7 +3,7 @@
 ## Overview
 Using an additional JSON configuration file, the Template BPA can be customized in how it runs JSON-based rules.  For example, specific rules can be included in/excluded from execution, or the severity of a rule can be changed. See the main README for details on [how to run Template BPA with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-bpa).
 
-**Note:** The configuration file only affects JSON-based rules; PSRule rules cannot be configured here at this time.
+**Note:** At this time, the configuration file only affects rules written in Json; PSRule rules written in PowerShell cannot be configured here.
 
 ## Template BPA Rule Object
 Here are the fields that make up a custom configuration file:
