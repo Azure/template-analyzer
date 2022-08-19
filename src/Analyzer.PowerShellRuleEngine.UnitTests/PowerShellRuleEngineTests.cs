@@ -121,9 +121,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
             }
 
-            Assert.IsTrue(!evaluations.Any(evaluation => evaluation.RuleId == "AZR-000081")); // It's the id of Azure.AppService.RemoteDebug
+            // AZR-000081 is the id of Azure.AppService.RemoteDebug, one of the rules excluded by RepeatedRuleBaseline,
+            // because there's a JSON rule in TemplateAnalyzer that checks for the same case, TA-000002
+            Assert.IsTrue(!evaluations.Any(evaluation => evaluation.RuleId == "AZR-000081"));
 
-            // The RepeatedRulesBaseline will only be used when all rules are run:
+            // The RepeatedRulesBaseline will only be used when all rules are run
+            // Otherwise SecurityBaseline is used, those rules are not in the "include" array of the baseline so they won't be executed either
+            // Next we validate that when RepeatedRulesBaseline is an empty file then the test file does indeed trigger the excluded rule:
             if (runsAllRules)
             {
                 var baselineLocation = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json");
