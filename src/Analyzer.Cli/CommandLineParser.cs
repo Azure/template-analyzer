@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 new Option(
                     "--run-all-rules",
-                    "Run all the rules against the templates, including non-security ones")
+                    "Run all the rules against the templates, including non-security rules")
             };
 
             commands.ForEach(c => options.ForEach(c.AddOption));
