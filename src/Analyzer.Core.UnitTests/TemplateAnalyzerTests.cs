@@ -114,6 +114,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(TemplateAnalyzerException))]
+        public void AnalyzeTemplate_MissingFilePath_ThrowTemplateAnalyzerException()
+        {
+            templateAnalyzerAllRules.AnalyzeTemplate(@"
+                {
+                  ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                  ""contentVersion"": ""1.0.0.0"",
+                  ""resources"": []
+                }", null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(TemplateAnalyzerException))]
         public void Create_MissingRulesFile_ThrowsException()
         {
             var rulesDir = Path.Combine(
