@@ -43,7 +43,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var expectedLinesForRun = new Dictionary<string, List<List<int>>>
             {
                 { "TA-000028", new List<List<int>> {
-                        new List<int> { 23, 24, 25 }
+                        new List<int> { 23, 24, 25 },
+                        new List<int> { 43, 44, 45 }
                     }
                 },
                 { "AZR-000186", new List<List<int>> {
@@ -51,15 +52,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 },
                 { "AZR-000187", new List<List<int>> {
-                        new List<int> { 14 }
+                        new List<int> { 14 },
+                        new List<int> { 34 }
                     }
                 },
                 { "AZR-000188", new List<List<int>> {
-                        new List<int> { 14 }
+                        new List<int> { 14 },
+                        new List<int> { 34 }
+
                     }
                 },
                 { "AZR-000189", new List<List<int>> {
-                        new List<int> { 14 }
+                        new List<int> { 14 },
+                        new List<int> { 34 }
                     }
                 }
             };
@@ -72,7 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.Tool.Driver.Rules.Count.Should().Be(5);
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-            run.Results.Count.Should().Be(expectedLinesForRun.Count);
+            run.Results.Count.Should().Be(9);
 
             foreach (Result result in run.Results)
             {
@@ -170,7 +175,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 23, 24, 25 }
+                        new List<int> { 23, 24, 25 },
+                        new List<int> { 43, 44, 45 }
                     })
                 },
                 { "AZR-000164", (
@@ -198,26 +204,29 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 14 }
+                        new List<int> { 14 },
+                        new List<int> { 34 }
                     })
                 },
                 { "AZR-000188", (
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 14 }
+                        new List<int> { 14 },
+                        new List<int> { 34 }
                     })
                 },
                 { "AZR-000189", (
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 14 }
+                        new List<int> { 14 },
+                        new List<int> { 34 }
                     })
                 }
             };
 
-            run.Results.Count.Should().Be(8);
+            run.Results.Count.Should().Be(12);
             foreach (Result result in run.Results)
             {
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
