@@ -18,14 +18,17 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
     {
         private readonly string templatesFolder = @"templates";
         private static PowerShellRuleEngine powerShellRuleEngineAllRules;
+        private static PowerShellRuleEngine powerShellRuleEngineSecurityRules;
 
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
             powerShellRuleEngineAllRules = new PowerShellRuleEngine(true);
+            powerShellRuleEngineSecurityRules = new PowerShellRuleEngine(false);
         }
 
         [DataTestMethod]
+        // PSRule detects errors in two analysis stages: when looking at the whole file (through the file path), and when looking at each resource (pipeline.Process(resource)):
         [DataRow("template_and_resource_level_results.json", true, 12, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
         [DataRow("template_and_resource_level_results.json", false, 4, new int[] { 17, 17, 17, 17 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
@@ -47,15 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 TemplateIdentifier = templateFilePath
             };
 
-            IEnumerable<IEvaluation> evaluations;
-            if (runsAllRules)
-            {
-                evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
-            } else
-            {
-                var powerShellRuleEngineSecurityRules = new PowerShellRuleEngine(false);
-                evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
-            }
+            var evaluations = runsAllRules ? powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext) : powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
 
             var failedEvaluations = new List<PowerShellRuleEvaluation>();
 
@@ -96,7 +91,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow(true, DisplayName = "Repeated rules are excluded when running only the security rules")]
         public void AnalyzeTemplate_ValidTemplate_ExcludesRepeatedRules(bool runsAllRules)
         {
-            var templateFilePath = Path.Combine(templatesFolder, "excluded_rules.json");
+            var templateFilePath = Path.Combine(templatesFolder, "triggers_excluded_rules.json");
 
             var template = File.ReadAllText(templateFilePath);
             var armTemplateProcessor = new ArmTemplateProcessor(template);
@@ -110,16 +105,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 TemplateIdentifier = templateFilePath
             };
 
-            IEnumerable<IEvaluation> evaluations;
-            if (runsAllRules)
-            {
-                evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
-            }
-            else
-            {
-                var powerShellRuleEngineSecurityRules = new PowerShellRuleEngine(false);
-                evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
-            }
+            var evaluations = runsAllRules ? powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext) : powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
 
             // AZR-000081 is the id of Azure.AppService.RemoteDebug, one of the rules excluded by RepeatedRuleBaseline,
             // because there's a JSON rule in TemplateAnalyzer that checks for the same case, TA-000002

@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string templateFilePath, string parameters = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
+            if (templateFilePath == null) throw new ArgumentNullException(nameof(templateFilePath));
 
             // If the template is Bicep, convert to JSON and get source map:
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);

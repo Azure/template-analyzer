@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TemplateAnalyzerException))]
+        [ExpectedException(typeof(ArgumentNullException))]
         public void AnalyzeTemplate_MissingFilePath_ThrowTemplateAnalyzerException()
         {
             templateAnalyzerAllRules.AnalyzeTemplate(@"
