@@ -6,14 +6,9 @@ using System.Collections.Generic;
 using System.IO; 
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using Azure.ResourceManager.Resources.Models;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.ResourceStack.Common.Storage;
-using Newtonsoft.Json;
-using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 {
