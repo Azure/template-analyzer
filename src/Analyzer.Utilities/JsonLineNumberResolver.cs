@@ -40,6 +40,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
             JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
 
+            if (templateContext.PathPrefix != null)
+            {
+                pathInExpandedTemplate = templateContext.PathPrefix + pathInExpandedTemplate;
+            }
+
             if (pathInExpandedTemplate == null || originalTemplateRoot == null)
             {
                 throw new ArgumentNullException(pathInExpandedTemplate == null
@@ -48,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             }
 
             // Attempt to find an equivalent JToken in the original template from the expanded template's path directly
-            var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(templateContext.PathPrefix + pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+            var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
 
             // If the JToken returned from looking up the expanded template path is
             // just pointing to the root of the original template, then
@@ -84,6 +89,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
+
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
         }
     }
