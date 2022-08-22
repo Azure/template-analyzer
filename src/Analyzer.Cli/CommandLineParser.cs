@@ -160,7 +160,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     "Shows details about the analysis"),
 
                 new Option(
-                    "--run-all-rules",
+                    "--include-non-security-rules",
                     "Run all the rules against the templates, including non-security rules")
             };
 
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runAllRules,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Check that template file paths exist
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runAllRules, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runAllRules,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             if (!directoryPath.Exists)
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, runAllRules, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             DirectoryInfo directoryToAnalyze,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runAllRules,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Output file path must be specified if SARIF was chosen as the report format
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
             CreateLoggers(verbose);
 
-            this.templateAnalyzer = TemplateAnalyzer.Create(runAllRules, this.logger);
+            this.templateAnalyzer = TemplateAnalyzer.Create(includeNonSecurityRules, this.logger);
 
             if (!TryReadConfigurationFile(configurationFile, out var config))
             {

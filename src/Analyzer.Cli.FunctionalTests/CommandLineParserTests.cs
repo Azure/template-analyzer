@@ -84,6 +84,22 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
+        public void AnalyzeTemplate_IncludesOrNotNonSecurityRules_ReturnsExpectedExitCode()
+        {
+            var templatePath = GetFilePath("TriggersOnlyNonSecurityRules.json");
+
+            var args = new string[] { "analyze-template", templatePath };
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+            args = new string[] { "analyze-template", templatePath, "--include-non-security-rules" };
+            result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Violation, result.Result);
+        }
+
+        [TestMethod]
         public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
         {
             var args = new string[] { "analyze-directory", Directory.GetCurrentDirectory() };
@@ -94,7 +110,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 8 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 9 files");
         }
 
         [DataTestMethod]
