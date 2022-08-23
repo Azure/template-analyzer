@@ -227,10 +227,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             populatedNestedTemplate.parameters?.Merge(parametersToPass);
                         }
 
-                        pathPrefix += nextPathPrefix;
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
 
-                        result = AnalyzeAllIncludedTemplates(rootTemplate,jsonPopulatedNestedTemplate, parameters, templateFilePath, pathPrefix, isBicep, sourceMap);
+                        result = AnalyzeAllIncludedTemplates(rootTemplate,jsonPopulatedNestedTemplate, parameters, templateFilePath, pathPrefix + nextPathPrefix, isBicep, sourceMap);
                         evaluations = evaluations.Concat(result);
                     }
                 }
