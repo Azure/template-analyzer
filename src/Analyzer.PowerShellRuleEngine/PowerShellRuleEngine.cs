@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
@@ -21,9 +20,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
-        /// Whether or not to run all the rules against the template.
+        /// Whether or not to run also non-security rules against the template.
         /// </summary>
-        private readonly bool runAllRules;
+        private readonly bool includeNonSecurityRules;
 
         /// <summary>
         /// Logger to report errors and debug information.
@@ -33,11 +32,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Creates a new instance of a PowerShellRuleEngine.
         /// </summary>
-        /// <param name="runAllRules">Whether or not to run all the rules against the template.</param>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information.</param>
-        public PowerShellRuleEngine(bool runAllRules, ILogger logger = null)
+        public PowerShellRuleEngine(bool includeNonSecurityRules, ILogger logger = null)
         {
-            this.runAllRules = runAllRules;
+            this.includeNonSecurityRules = includeNonSecurityRules;
             this.logger = logger;
         }
 
@@ -103,7 +102,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                 var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
                 builder.InputPath(new string[] { tempTemplateFile });
-                if (runAllRules)
+                if (includeNonSecurityRules)
                 {
                     builder.Baseline(BaselineOption.FromString("RepeatedRulesBaseline"));
                 }

@@ -47,10 +47,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        /// <param name="runAllRules">Whether or not to run all the rules against the template.</param>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool runAllRules, ILogger logger = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null)
         {
             string rules;
             try
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepLocationResolver(templateContext)
                         : new JsonLineNumberResolver(templateContext),
                     logger),
-                new PowerShellRuleEngine(runAllRules, logger),
+                new PowerShellRuleEngine(includeNonSecurityRules, logger),
                 logger);
         }
 
