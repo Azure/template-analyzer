@@ -20,6 +20,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
+        /// Whether or not to run also non-security rules against the template.
+        /// </summary>
+        private readonly bool includeNonSecurityRules;
+
+        /// <summary>
         /// Logger to report errors and debug information.
         /// </summary>
         private readonly ILogger logger;
@@ -27,9 +32,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Creates a new instance of a PowerShellRuleEngine.
         /// </summary>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information.</param>
-        public PowerShellRuleEngine(ILogger logger = null)
+        public PowerShellRuleEngine(bool includeNonSecurityRules, ILogger logger = null)
         {
+            this.includeNonSecurityRules = includeNonSecurityRules;
             this.logger = logger;
         }
 
@@ -74,13 +81,36 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     },
                     Output = new OutputOption
                     {
-                        Outcome = RuleOutcome.Fail
+                        Outcome = RuleOutcome.Fail,
+                        Culture = new string[] { "en-US" } // To avoid warning messages when running tests in Linux
+                    },
+                    Include = new IncludeOption
+                    {
+                        Path = new string[]
+                        {
+                            ".ps-rule",
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "SecurityBaseline.Rule.json"),
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json")
+                        }
+                    },
+                    Execution = new ExecutionOption
+                    {
+                        NotProcessedWarning = false
                     }
                 };
                 var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
 
                 var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
                 builder.InputPath(new string[] { tempTemplateFile });
+                if (includeNonSecurityRules)
+                {
+                    builder.Baseline(BaselineOption.FromString("RepeatedRulesBaseline"));
+                }
+                else
+                {
+                    builder.Baseline(BaselineOption.FromString("SecurityBaseline"));
+                }
+
                 var pipeline = builder.Build();
                 pipeline.Begin();
                 foreach (var resource in resources)

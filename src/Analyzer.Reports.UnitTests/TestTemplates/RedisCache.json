@@ -14,27 +14,10 @@
     {
       "type": "Microsoft.Cache/redis",
       "apiVersion": "2020-06-01",
-      "name": "withoutSpecifyingProperties",
-      "location": "[parameters('location')]",
-      "properties": {
-      }
-    },
-    {
-      "type": "Microsoft.Cache/redis",
-      "apiVersion": "2020-06-01",
       "name": "withAnEnabledNonSslPort",
       "location": "[parameters('location')]",
       "properties": {
         "enableNonSslPort": true
-      }
-    },
-    {
-      "type": "Microsoft.Cache/redis",
-      "apiVersion": "2020-06-01",
-      "name": "withADisabledNonSslPort",
-      "location": "[parameters('location')]",
-      "properties": {
-        "enableNonSslPort": false
       }
     }
   ]
