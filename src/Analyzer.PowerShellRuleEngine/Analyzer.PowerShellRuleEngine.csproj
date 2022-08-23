@@ -8,13 +8,19 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.4" />
-    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.18.0-B0010" />
-    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.3.0-B0130" />
+    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.19.0-B0010" />
+    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.4.0-B0039" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
     <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="baselines\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   
 </Project>
