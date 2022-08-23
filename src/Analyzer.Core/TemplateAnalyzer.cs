@@ -185,6 +185,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     if (currentProcessedResource.type == "Microsoft.Resources/deployments")
                     {
                         var nestedTemplate = currentProcessedResource.properties.template;
+                        if (nestedTemplate == null)
+                        {
+                            continue; // This is a Linked template 
+                        }
                         dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplate));
 
                         // Check whether scope is set to inner or outer
