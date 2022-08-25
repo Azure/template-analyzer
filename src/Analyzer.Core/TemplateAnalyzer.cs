@@ -168,22 +168,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
+                evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
 
-                if (this.powerShellRuleEngine != null)
-                {
-                    this.logger?.LogDebug("Running PowerShell rule engine");
-                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
-                }
-               
                 // Recursively handle nested templates 
-                dynamic jsonTemplate = JsonConvert.DeserializeObject(populatedTemplate);
+                //dynamic jsonTemplate = JsonConvert.DeserializeObject(populatedTemplate);
+                var jsonTemplate = JObject.Parse(populatedTemplate);
                 dynamic processedTemplateResources = templatejObject["resources"];
 
                 for (int i = 0; i < processedTemplateResources.Count; i++)
                 {
                     var currentProcessedResource = processedTemplateResources[i];
 
-                    if (currentProcessedResource.type == "Microsoft.Resources/deployments")
+                    if (String.Equals(currentProcessedResource.type.Value, "Microsoft.Resources/deployments"))
                     {
                         var nestedTemplate = currentProcessedResource.properties.template;
                         if (nestedTemplate == null)
@@ -212,9 +208,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         if (scope == null || scope == "outer")
                         {
                             // Variables, parameters and functions inherited from parent template
-                            populatedNestedTemplate.variables = jsonTemplate.variables;
-                            populatedNestedTemplate.parameters = jsonTemplate.parameters;
-                            populatedNestedTemplate.functions = jsonTemplate.functions;
+                            populatedNestedTemplate.variables = jsonTemplate.InsensitiveToken("variables");
+                            populatedNestedTemplate.parameters = jsonTemplate.InsensitiveToken("parameters");
+                            populatedNestedTemplate.functions = jsonTemplate.InsensitiveToken("functions");
                         }
                         else // scope is inner
                         {
