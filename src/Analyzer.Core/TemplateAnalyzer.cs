@@ -194,7 +194,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         // Check whether scope is set to inner or outer
                         var scope = currentProcessedResource.properties.expressionEvaluationOptions?.scope;
-                        string nextPathPrefix = $"resources[{i}].properties.template.";
+                        string nextPathPrefix = $".properties.template.";
+
+                        // Map the actual resource path to make the final prefix for nested template resource mapping
+                        templateContext.ResourceMappings.TryGetValue($"resources[{i}]", out string originalResourcePath);
+                        if (originalResourcePath != null)
+                        {
+                            nextPathPrefix = originalResourcePath + nextPathPrefix;
+                        }
+                        else
+                        {
+                            nextPathPrefix = $"resources[{i}]" + nextPathPrefix;
+                        }
 
                         IEnumerable<IEvaluation> result;
 

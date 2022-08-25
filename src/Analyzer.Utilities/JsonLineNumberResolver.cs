@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                 if (!string.Equals(resourceWithIndex, originalResourcePath))
                 {
-                    tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
+                    tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{templateContext.PathPrefix + originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;

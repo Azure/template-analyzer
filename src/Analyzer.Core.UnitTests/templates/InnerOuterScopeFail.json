@@ -18,7 +18,11 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2021-04-01",
-      "name": "nestedTemplateOuterScope",
+      "name": "[concat(copyIndex(),'nestedTemplate', uniqueString(resourceGroup().id))]",
+      "copy": {
+        "count": 2,
+        "name": "nestedTemplateOuterScopeLoop"
+      },
       "properties": {
         "mode": "Incremental",
         "template": {
@@ -54,7 +58,7 @@
               "location": "[parameters('location')]",
               "properties": {
                 "siteConfig": {
-                  "ftpsState": "[parameters('ftpsState')]"  // evaluated in outer scope
+                  "ftpsState": "[parameters('ftpsState')]" // evaluated in outer scope
                 }
               }
             }
@@ -102,11 +106,15 @@
               "apiVersion": "2019-08-01",
               "type": "Microsoft.Web/sites",
               "kind": "api",
-              "name": "undesiredFtpsState",
+              "copy": {
+                "count": 2,
+                "name": "aCopyLoop"
+              },
+              "name": "[concat(copyIndex(),'storage', uniqueString(resourceGroup().id))]",
               "location": "[parameters('location')]",
               "properties": {
                 "siteConfig": {
-                  "ftpsState": "[parameters('ftpsState')]"  // evaluated in inner scope
+                  "ftpsState": "[parameters('ftpsState')]" // evaluated in inner scope
                 }
               }
             }
