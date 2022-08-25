@@ -121,8 +121,8 @@ For enhanced authentication security, use a managed identity. On Azure, managed 
 **Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
 #### Severity: 2
 
-### TA-000020: Use built-in roles instead of custom RBAC roles
-You should only use built-in roles instead of cutom RBAC roles. Custom RBAC roles are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.
+### TA-000020: Audit usage of custom RBAC roles
+Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.
 
 **Recommendation**: [Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles)
 #### Severity: 3

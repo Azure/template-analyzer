@@ -583,8 +583,8 @@
   },
   {
     "id": "TA-000020",
-    "description": "Use built-in roles instead of custom RBAC roles",
-    "recommendation": "Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles",
+    "description": "Audit usage of custom RBAC roles",
+    "recommendation": "Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000020-use-built-in-roles-instead-of-custom-rbac-roles",
     "severity": 3,
     "evaluation": {
