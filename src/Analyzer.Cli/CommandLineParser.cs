@@ -14,6 +14,7 @@ using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -99,12 +100,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeTemplateCommand.AddArgument(
                 new Argument<FileInfo>(
                     "template-file-path",
-                    "The ARM template to analyze"));
+                    "The path of the template to analyze"));
 
             analyzeTemplateCommand.AddOption(
                 new Option<FileInfo>(
                     new[] { "-p", "--parameters-file-path" },
-                    "The parameter file to use when parsing the specified ARM template")
+                    "The parameter file to use when parsing the specified template")
             );
 
             // Assign handler method
@@ -126,7 +127,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeDirectoryCommand.AddArgument(
                 new Argument<DirectoryInfo>(
                     "directory-path",
-                    "The directory to find ARM templates"));
+                    "The directory to find templates"));
 
             // Assign handler method
             analyzeDirectoryCommand.Handler = CommandHandler.Create(
@@ -144,7 +145,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 new Option<FileInfo>(
                     new[] { "-c", "--config-file-path" },
-                    "The configuration file to use when parsing the specified ARM template"),
+                    "The configuration file to use when parsing the specified template"),
 
                 new Option<ReportFormat>(
                     "--report-format",
@@ -159,8 +160,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     "Shows details about the analysis"),
 
                 new Option(
-                    "--run-ttk",
-                    "Run TTK against templates")
+                    "--include-non-security-rules",
+                    "Run all the rules against the templates, including non-security rules")
             };
 
             commands.ForEach(c => options.ForEach(c.AddOption));
@@ -173,7 +174,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runTtk,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Check that template file paths exist
@@ -183,7 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -209,7 +210,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runTtk,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             if (!directoryPath.Exists)
@@ -218,7 +219,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -273,7 +274,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, templateFilePath.FullName, parameterFileContents);
 
                 this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
@@ -294,7 +295,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             DirectoryInfo directoryToAnalyze,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runPowershell,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Output file path must be specified if SARIF was chosen as the report format
@@ -307,7 +308,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
             CreateLoggers(verbose);
 
-            this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell, this.logger);
+            this.templateAnalyzer = TemplateAnalyzer.Create(includeNonSecurityRules, this.logger);
 
             if (!TryReadConfigurationFile(configurationFile, out var config))
             {
@@ -408,11 +409,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 builder
                     .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information)
-                    .AddSimpleConsole(options =>
+                    .AddConsole(options =>
                     {
-                        options.SingleLine = true;
+                        options.FormatterName = "ConsoleLoggerFormatter";
                     })
-                    .AddProvider(new SummaryLoggerProvider(summaryLogger));
+                    .AddProvider(new SummaryLoggerProvider(summaryLogger))
+                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleFormatterOptions>();
             });
 
             if (this.reportWriter is SarifReportWriter sarifWriter)

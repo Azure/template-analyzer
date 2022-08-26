@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,32 +8,19 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.4" />
+    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.19.0-B0010" />
+    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.4.0-B0039" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
+    <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TTKUrl>https://aka.ms/arm-ttk-latest</TTKUrl>
-  </PropertyGroup>
-
-  <Target Name="DownloadTTK" AfterTargets="Build" Condition="!Exists('$(OutputPath)\TTK')">
-    <DownloadFile SourceUrl="$(TTKUrl)" DestinationFolder="$(IntermediateOutputPath)" DestinationFileName="ttk.zip">
-      <Output TaskParameter="DownloadedFile" ItemName="TTKZip" />
-    </DownloadFile>
-    
-    <Unzip SourceFiles="@(TTKZip)" DestinationFolder="$(IntermediateOutputPath)\TTK" />
-
-    <ItemGroup>
-      <TTKFiles Include="$(IntermediateOutputPath)\TTK\arm-ttk\**\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(TTKFiles)" DestinationFolder="$(OutputPath)\TTK\%(RecursiveDir)" />
-  </Target>
-
-  <Target Name="CleanTTK" AfterTargets="Clean">
-    <RemoveDir Directories="$(IntermediateOutputPath)\TTK;$(OutputPath)\TTK" />
-    <Delete Files="$(IntermediateOutputPath)\ttk.zip" />
-  </Target>
-
+  <ItemGroup>
+    <None Update="baselines\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
 </Project>

@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>TemplateAnalyzer</AssemblyName>
-    <Description>A command line interface for Microsoft.Azure.Templates.Analyzer.Core - an ARM template scanner for security misconfigurations and best practices</Description>
+    <Description>A command line interface for Microsoft.Azure.Templates.Analyzer.Core - an ARM and Bicep template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +17,5 @@
     <ProjectReference Include="..\Analyzer.Core\Analyzer.Core.csproj" />
     <ProjectReference Include="..\Analyzer.Reports\Analyzer.Reports.csproj" />
   </ItemGroup>
-
-  <Import Project="..\TTK.targets" />
 
 </Project>

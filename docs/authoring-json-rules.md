@@ -1,10 +1,10 @@
-# Template BPA JSON Rules
-<a name="note"></a>***Note**: The ARM Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
+# Authoring Template BPA JSON Rules
+<a name="note"></a>***Note**: The Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-Template BPA rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template BPA built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
 
-## Template BPA Rule Object
+## Rule Object
 Here are the fields that make up a rule definition.
 ```javascript
 {
@@ -39,7 +39,7 @@ The `Evaluation` is comprised of the following basic properties.
 }
 ```
 
-Evaluation of ARM templates is performed on the JSON representation of the template.  Therefore, `Evaluation`s operate on the JSON properties of the template.  Specifying the template property is done by specifying a JSON path for the `path` key.  This path can contain wildcards ('\*') to select multiple paths to evaluate - see [Wildcard Behavior](#wildcard-behavior) for details.
+Evaluation of the templates is performed on the JSON representation of the template. Therefore, `Evaluation`s operate on the JSON properties of the template.  Specifying the template property is done by specifying a JSON path for the `path` key.  This path can contain wildcards ('\*') to select multiple paths to evaluate - see [Wildcard Behavior](#wildcard-behavior) for details.
 
 Since most rules apply only to specific types of Azure resources, the `resourceType` property gives rule authors a shorthand to only evaluate those types of resources.  If `resourceType` is specified, the path specified in `path` becomes relative to the resource selected in the template.
 

@@ -84,6 +84,22 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
+        public void AnalyzeTemplate_IncludesOrNotNonSecurityRules_ReturnsExpectedExitCode()
+        {
+            var templatePath = GetFilePath("TriggersOnlyNonSecurityRules.json");
+
+            var args = new string[] { "analyze-template", templatePath };
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+            args = new string[] { "analyze-template", templatePath, "--include-non-security-rules" };
+            result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Violation, result.Result);
+        }
+
+        [TestMethod]
         public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
         {
             var args = new string[] { "analyze-directory", Directory.GetCurrentDirectory() };
@@ -94,7 +110,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 8 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 9 files");
         }
 
         [DataTestMethod]
@@ -151,11 +167,11 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode")]
         [DataRow(true, DisplayName = "Does not recommend the verbose mode")]
         [DataRow(false, true, DisplayName = "Outputs a recommendation for the verbose mode and uses plural form for 'errors'")]
-        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedLogSummary(bool usesVerboseMode, bool multipleErrors = false)
+        public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedMessages(bool usesVerboseMode, bool multipleErrors = false)
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
 
-            var expectedLogSummary = "Analysis output:";
+            var expectedLogSummary = "Execution summary:";
 
             if (!usesVerboseMode)
             {
@@ -190,12 +206,20 @@ namespace Analyzer.Cli.FunctionalTests
             try
             {
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-
                 var cliConsoleOutput = outputWriter.ToString();
-                var indexOfLogSummary = cliConsoleOutput.IndexOf("Analysis output:");
-                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
-                var logSummary = cliConsoleOutput[indexOfLogSummary..];
 
+                var indexOfLogSummary = cliConsoleOutput.IndexOf("Execution summary:");
+                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
+
+                var outputBeforeSummary = cliConsoleOutput[..indexOfLogSummary];
+                Assert.IsTrue(outputBeforeSummary.IndexOf($"Error: An exception occurred while analyzing a template" +
+                    $"{Environment.NewLine}Exception details:" +
+                    $"{Environment.NewLine}Microsoft.Azure.Templates.Analyzer.Core.TemplateAnalyzerException: Error while processing template.") > 0);
+                Assert.IsTrue(outputBeforeSummary.IndexOf($"Warning: An exception occurred when processing the template language expressions" +
+                    $"{Environment.NewLine}Exception details:" +
+                    $"{Environment.NewLine}Azure.Deployments.Templates.Exceptions.TemplateValidationException: The template parameter 'location' is not found.") > 0);
+
+                var logSummary = cliConsoleOutput[indexOfLogSummary..];
                 Assert.AreEqual(expectedLogSummary, logSummary);
             }
             finally
@@ -235,10 +259,20 @@ namespace Analyzer.Cli.FunctionalTests
                     .ToString());
                 
                 if (specifyInCommand)
+                {
                     args = args.Concat(new[] { "--config-file-path", configName }).ToArray();
+                }
+
+                using StringWriter outputWriter = new();
+                Console.SetOut(outputWriter);
 
                 result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-                Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+                var cliConsoleOutput = outputWriter.ToString();
+
+                // All JSON rules are filtered out; PSRule rules are currently not filtered by the config file and should appear in the output
+                Assert.IsTrue(!cliConsoleOutput.Contains("TA-"));
+                Assert.AreEqual((int)ExitCode.Violation, result.Result);
             }
             finally
             {

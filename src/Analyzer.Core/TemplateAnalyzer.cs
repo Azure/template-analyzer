@@ -22,9 +22,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
     public class TemplateAnalyzer
     {
         /// <summary>
-        /// Exception message when error during bicep template compilation
+        /// Exception message when error during Bicep template compilation.
         /// </summary>
-        public static readonly string BicepCompileErrorMessage = "Error compiling bicep template";
+        public static readonly string BicepCompileErrorMessage = "Error compiling Bicep template";
 
         private JsonRuleEngine jsonRuleEngine;
         private PowerShellRuleEngine powerShellRuleEngine;
@@ -47,10 +47,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool usePowerShell, ILogger logger = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null)
         {
             string rules;
             try
@@ -69,22 +69,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepLocationResolver(templateContext)
                         : new JsonLineNumberResolver(templateContext),
                     logger),
-                usePowerShell ? new PowerShellRuleEngine(logger) : null,
+                new PowerShellRuleEngine(includeNonSecurityRules, logger),
                 logger);
         }
 
         /// <summary>
         /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
-        /// <param name="template">The ARM Template JSON</param>
-        /// <param name="parameters">The parameters for the ARM Template JSON</param>
-        /// <param name="templateFilePath">The ARM Template file path. (Needed to run arm-ttk checks.)</param>
+        /// <param name="template">The template contents.</param>
+        /// <param name="templateFilePath">The template file path. It's needed to analyze Bicep files and to run the PowerShell based rules.</param>
+        /// <param name="parameters">The parameters for the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string templateFilePath, string parameters = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
+            if (templateFilePath == null) throw new ArgumentNullException(nameof(templateFilePath));
 
-            // if the template is bicep, convert to JSON and get source map
+            // If the template is Bicep, convert to JSON and get source map:
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
             object sourceMap = null;
             if (isBicep)
@@ -125,12 +126,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
-
-                if (this.powerShellRuleEngine != null && templateContext.TemplateIdentifier != null)
-                {
-                    this.logger?.LogDebug("Running PowerShell rule engine");
-                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
-                }
+                evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
 
                 // For each rule we don't want to report the same line more than once
                 // This is a temporal fix
