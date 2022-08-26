@@ -388,7 +388,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 {
                     evaluationHelper.OnGetCopyContext = () => templateResource.CopyContext;
                     InsensitiveHashSet evaluationsToSkip = new InsensitiveHashSet();
-                    if (String.Equals(templateResource.Type.Value, "Microsoft.Resources/deployments"))
+                    if (templateResource.Type.Value.Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase))
                     {
                         evaluationsToSkip.Add("template");  // The tool should skip properties in nested templates to avoid false positive warnings
                     }

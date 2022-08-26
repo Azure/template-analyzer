@@ -171,25 +171,26 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
 
                 // Recursively handle nested templates 
-                //dynamic jsonTemplate = JsonConvert.DeserializeObject(populatedTemplate);
                 var jsonTemplate = JObject.Parse(populatedTemplate);
-                dynamic processedTemplateResources = templatejObject["resources"];
+                var processedTemplateResources = templatejObject.InsensitiveToken("resources");
 
-                for (int i = 0; i < processedTemplateResources.Count; i++)
+
+                for (int i = 0; i < processedTemplateResources.Count(); i++)
                 {
                     var currentProcessedResource = processedTemplateResources[i];
 
-                    if (String.Equals(currentProcessedResource.type.Value, "Microsoft.Resources/deployments"))
+                    if (currentProcessedResource.InsensitiveToken("type").ToString().Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase))
                     {
-                        var nestedTemplate = currentProcessedResource.properties.template;
+                        var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
                         if (nestedTemplate == null)
                         {
                             continue; // This is a Linked template 
                         }
-                        dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplate));
+                        //dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplate));
+                        dynamic populatedNestedTemplate = nestedTemplate.DeepClone();
 
                         // Check whether scope is set to inner or outer
-                        var scope = currentProcessedResource.properties.expressionEvaluationOptions?.scope;
+                        var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions")?.InsensitiveToken("scope")?.ToString();
                         string nextPathPrefix = $".properties.template.";
 
                         // Map the actual resource path to make the final prefix for nested template resource mapping
@@ -202,7 +203,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         {
                             nextPathPrefix = $"resources[{i}]" + nextPathPrefix;
                         }
-
+                        //string nextPathPrefix2 = nestedTemplate.Path + '.';
                         IEnumerable<IEvaluation> result;
 
                         if (scope == null || scope == "outer")
@@ -215,13 +216,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         else // scope is inner
                         {
                             // Pass variables, functions and parameters to child template
-                            populatedNestedTemplate.variables?.Merge(currentProcessedResource.properties.variables);
-                            populatedNestedTemplate.functions?.Merge(currentProcessedResource.properties.functions);
+                            populatedNestedTemplate.variables?.Merge(currentProcessedResource.InsensitiveToken("properties.variables)"));
+                            populatedNestedTemplate.functions?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
 
-                            JToken parametersToPass = currentProcessedResource.properties.parameters;
+                            var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
 
                             // Change 'value' fields in parametersToPass into 'defaultValue' which is recognized by the template parser
                             dynamic currentParameterToPass = parametersToPass?.First;
+                            var current = parametersToPass?.First;
                             while (currentParameterToPass != null)
                             {
                                 var value = currentParameterToPass.Value.value;
