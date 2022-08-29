@@ -186,8 +186,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         {
                             continue; // This is a Linked template 
                         }
-                        //dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplate));
-                        dynamic populatedNestedTemplate = nestedTemplate.DeepClone();
+                        var populatedNestedTemplate = nestedTemplate.DeepClone();
 
                         // Check whether scope is set to inner or outer
                         var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions")?.InsensitiveToken("scope")?.ToString();
@@ -203,38 +202,34 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         {
                             nextPathPrefix = $"resources[{i}]" + nextPathPrefix;
                         }
-                        //string nextPathPrefix2 = nestedTemplate.Path + '.';
                         IEnumerable<IEvaluation> result;
 
                         if (scope == null || scope == "outer")
                         {
                             // Variables, parameters and functions inherited from parent template
-                            populatedNestedTemplate.variables = jsonTemplate.InsensitiveToken("variables");
-                            populatedNestedTemplate.parameters = jsonTemplate.InsensitiveToken("parameters");
-                            populatedNestedTemplate.functions = jsonTemplate.InsensitiveToken("functions");
+                            populatedNestedTemplate["variables"] = jsonTemplate.InsensitiveToken("variables");
+                            populatedNestedTemplate["parameters"] = jsonTemplate.InsensitiveToken("parameters");
+                            populatedNestedTemplate["functions"] = jsonTemplate.InsensitiveToken("functions");
                         }
                         else // scope is inner
                         {
                             // Pass variables, functions and parameters to child template
-                            populatedNestedTemplate.variables?.Merge(currentProcessedResource.InsensitiveToken("properties.variables)"));
-                            populatedNestedTemplate.functions?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
+                            (populatedNestedTemplate.InsensitiveToken("variables") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.variables"));
+                            (populatedNestedTemplate.InsensitiveToken("functions") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
 
                             var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
 
                             // Change 'value' fields in parametersToPass into 'defaultValue' which is recognized by the template parser
-                            dynamic currentParameterToPass = parametersToPass?.First;
-                            var current = parametersToPass?.First;
-                            while (currentParameterToPass != null)
+                            if (parametersToPass != null)
                             {
-                                var value = currentParameterToPass.Value.value;
-                                if (value != null)
+                                foreach (var parameterToPass in parametersToPass.Children<JProperty>())
                                 {
-                                    currentParameterToPass.Value.defaultValue = value;
-                                    currentParameterToPass.Value.Remove("value");
+                                    var parameterValue = parameterToPass.Value.InsensitiveToken("value");
+                                    parameterValue?.Parent.Replace(new JProperty("defaultValue", parameterValue.Value<object>()));
                                 }
-                                currentParameterToPass = currentParameterToPass.Next;
                             }
-                            populatedNestedTemplate.parameters?.Merge(parametersToPass);
+
+                            (populatedNestedTemplate.InsensitiveToken("parameters") as JObject)?.Merge(parametersToPass);
                         }
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
