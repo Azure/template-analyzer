@@ -53,5 +53,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// Prefix of path to nested template properties/resources
         /// </summary>
         public string PathPrefix { get; set; }
+
+        /// <summary>
+        /// Template context for the immediate parent template
+        /// </summary>
+        public TemplateContext ParentContext { get; set; }
     }
 }

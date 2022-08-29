@@ -101,7 +101,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
-            var  evaluations = AnalyzeAllIncludedTemplates(template, template, parameters, templateFilePath, "", isBicep, sourceMap);
+
+            var templateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(template),
+                ExpandedTemplate = null,
+                IsMainTemplate = true,
+                ResourceMappings = null,
+                TemplateIdentifier = templateFilePath,
+                IsBicep = isBicep,
+                SourceMap = sourceMap,
+                PathPrefix = "",
+                ParentContext = null
+            };
+            var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, "");
 
             // For each rule we don't want to report the same line more than once
             // This is a temporal fix
@@ -131,15 +144,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Analyzes ARM templates, recursively going through the nested templates
         /// </summary>
-        /// <param name="rootTemplate">The original ARM Template JSON </param>
         /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path</param>
-        /// <param name="pathPrefix">Prefix for resources' path used for line number matching</param>
-        /// <param name="isBicep">Whether this template was originally a Bicep file</param>
-        /// <param name="sourceMap">Source map that maps ARM JSON back to source Bicep</param>
+        /// <param name="parentContext">Template context for the immediate parent template</param>
+        /// <param name="pathPrefix"> path prefix</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string rootTemplate, string populatedTemplate, string parameters, string templateFilePath, string pathPrefix, bool isBicep, object sourceMap)
+        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string populatedTemplate, string parameters, string templateFilePath, TemplateContext parentContext, string pathPrefix)
         {
             JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(populatedTemplate, logger: this.logger);
@@ -155,14 +166,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             var templateContext = new TemplateContext
             {
-                OriginalTemplate = JObject.Parse(rootTemplate),
+                OriginalTemplate = parentContext.OriginalTemplate,
                 ExpandedTemplate = templatejObject,
-                IsMainTemplate = true,
+                IsMainTemplate = parentContext.ParentContext == null,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
-                IsBicep = isBicep,
-                SourceMap = sourceMap,
-                PathPrefix = pathPrefix
+                IsBicep =parentContext.IsBicep,
+                SourceMap = parentContext.SourceMap,
+                PathPrefix = pathPrefix,
+                ParentContext = parentContext
             };
 
             try
@@ -202,14 +214,30 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         {
                             nextPathPrefix = $"resources[{i}]" + nextPathPrefix;
                         }
+
                         IEnumerable<IEvaluation> result;
 
                         if (scope == null || scope == "outer")
                         {
                             // Variables, parameters and functions inherited from parent template
-                            populatedNestedTemplate["variables"] = jsonTemplate.InsensitiveToken("variables");
-                            populatedNestedTemplate["parameters"] = jsonTemplate.InsensitiveToken("parameters");
-                            populatedNestedTemplate["functions"] = jsonTemplate.InsensitiveToken("functions");
+                            string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path;
+                            string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path;
+                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path;
+
+                            if (functionsKey != null)
+                            {
+                                populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
+
+                            }
+                            if (variablesKey != null)
+                            {
+                                populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
+
+                            }
+                            if (parametersKey != null)
+                            {
+                                populatedNestedTemplate[parametersKey] = jsonTemplate.InsensitiveToken("parameters");
+                            }
                         }
                         else // scope is inner
                         {
@@ -234,7 +262,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
 
-                        result = AnalyzeAllIncludedTemplates(rootTemplate,jsonPopulatedNestedTemplate, parameters, templateFilePath, pathPrefix + nextPathPrefix, isBicep, sourceMap);
+                        result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, pathPrefix + nextPathPrefix); //pathprefix + nextpathprefix
                         evaluations = evaluations.Concat(result);
                     }
                 }
