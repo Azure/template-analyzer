@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path</param>
         /// <param name="parentContext">Template context for the immediate parent template</param>
-        /// <param name="pathPrefix"> path prefix</param>
+        /// <param name="pathPrefix"> Prefix for resources' path used for line number mapping in nested templates</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
         private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string populatedTemplate, string parameters, string templateFilePath, TemplateContext parentContext, string pathPrefix)
         {
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 {
                     var currentProcessedResource = processedTemplateResources[i];
 
-                    if (currentProcessedResource.InsensitiveToken("type").ToString().Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase))
+                    if (currentProcessedResource.InsensitiveToken("type")?.ToString().Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase) ?? false)
                     {
                         var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
                         if (nestedTemplate == null)
@@ -202,12 +202,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         // Check whether scope is set to inner or outer
                         var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions")?.InsensitiveToken("scope")?.ToString();
-                        //string nextPathPrefix = $".properties.template.";
                         string nextPathPrefix = nestedTemplate.Path;
-                       
-                        IEnumerable<IEvaluation> result;
-
-                        if (scope == null || scope == "outer")
+                                               
+                        if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
                         {
                             // Variables, parameters and functions inherited from parent template
                             string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path;
@@ -249,7 +246,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
 
-                        result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nextPathPrefix);
+                        IEnumerable<IEvaluation> result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nextPathPrefix);
                         evaluations = evaluations.Concat(result);
                     }
                 }

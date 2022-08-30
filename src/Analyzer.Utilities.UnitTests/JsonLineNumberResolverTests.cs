@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             var expectedLineNumber = (tokenInOriginalTemplate as IJsonLineInfo).LineNumber;
             Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
         }
-      
+
         [DataTestMethod]
         [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
         [DataRow("resources[7].type", DisplayName = "Extra resource")]
