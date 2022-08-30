@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
         {
-            if ((!evaluation.Result?.Passed ?? false) && !results.Any(r => r.LineNumber == evaluation.Result.LineNumber))
+            if ((!evaluation.Result?.Passed ?? false) && !results.Any(r => r.SourceLocation.LineNumber == evaluation.Result.SourceLocation.LineNumber))
             {
                 results.Add(evaluation.Result);
             }
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     for (int j = 0; j < evalResults.Count; j++)
                     {
                         result.Locations[j].PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
-                        result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalResults[j].LineNumber);
+                        result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalResults[j].SourceLocation.LineNumber);
                     }
                 }
             }

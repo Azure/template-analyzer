@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics;
-using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
@@ -17,13 +16,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public bool Passed { get; }
 
         /// <summary>
-        /// Gets the line number of the file where the rule was evaluated.
+        /// Gets the list of file names and line numbers where the rule was evaluated TODO: module
         /// </summary>
-        public int LineNumber { get; }
-
-        /// <summary>
-        /// Gets the source file where the rule was evaluated (if different from entrypoint)
-        /// </summary>
-        public string SourceFile { get; }
+        public SourceLocation SourceLocation { get; }
     }
 }

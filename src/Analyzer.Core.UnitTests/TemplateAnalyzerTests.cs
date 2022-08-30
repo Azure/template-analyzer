@@ -3,16 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO; 
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.Xml;
 using Azure.ResourceManager.Resources.Models;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.ResourceStack.Common.Storage;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
@@ -49,58 +51,90 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             Assert.AreEqual(expectedEvaluationPassCount, evaluationsWithResults.Count(e => e.Passed));
         }
 
+
+        const string SimpleNestedFailExpectedSourceLocations = @"
+            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:12
+            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:16
+            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:20
+            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:24
+            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:25
+            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:26";
+        const string DoubleNestedFailExpectedSourceLocations = @"
+            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:5
+            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:9
+            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:4
+            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:8
+            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:9
+            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:10";
+        const string ParameterPassingFailExpectedSourceLocations = @"
+            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:6
+            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:10
+            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:14
+            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:18
+            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:19";
+
         [DataTestMethod]
-        [DataRow("SimpleNestedFail.bicep", "{ \"SimpleNestedFailModule.bicep\": [12, 16, 20, 24, 25, 26] }", DisplayName = "Simple bicep nested template example")]
-        [DataRow("DoubleNestedFail.bicep", "{ \"DoubleNestedFailModule1.bicep\": [5, 9], \"DoubleNestedFailModule2.bicep\": [4, 8, 9, 10] }", DisplayName = "Nested templates with two levels")]
-        [DataRow("ParameterPassingFail.bicep", "{ \"ParameterPassingFailModule.bicep\": [6, 10, 14, 18, 19] }", DisplayName = "Nested template with parameters passed from parent")]
-        public void AnalyzeTemplate_ValidBicepModuleTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic expectedSourceLocationsJson)
+        [DataRow("SimpleNestedFail.bicep", SimpleNestedFailExpectedSourceLocations, DisplayName = "Simple bicep nested template example")]
+        [DataRow("DoubleNestedFail.bicep", DoubleNestedFailExpectedSourceLocations, DisplayName = "Nested templates with two levels")]
+        [DataRow("ParameterPassingFail.bicep", ParameterPassingFailExpectedSourceLocations, DisplayName = "Nested template with parameters passed from parent")]
+        public void AnalyzeTemplate_ValidBicepModuleTemplate_ReturnsExpectedEvaluations(string templateFileName, string expectedSourceLocationsStr)
         {
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "templates", templateFileName);
-            string template = File.ReadAllText(filePath);
+            var templateDirectory = Path.Combine(Directory.GetCurrentDirectory(), "templates");
+            var filePath = Path.Combine(templateDirectory, templateFileName);
+            var template = File.ReadAllText(filePath);
 
             var evaluations = templateAnalyzerWithoutPowerShell.AnalyzeTemplate(template, templateFilePath: filePath);
-            Dictionary<string, HashSet<int>> failedEvaluationSourceLocations = new();
+            var failedSourceLocations = new List<List<(string fileName, int lineNumber)>>();
 
             foreach (var evaluation in evaluations)
             {
                 if (!evaluation.Passed)
                 {
-                    foreach(var sourceFile in GetFailedSourceLocations(evaluation))
+                    foreach (var newLocation in GetFailedSourceLocations(evaluation))
                     {
-                        if (!failedEvaluationSourceLocations.ContainsKey(sourceFile.Key))
+                        // only add unique source locations
+                        if (!failedSourceLocations.Any(existingLocation => existingLocation.SequenceEqual(newLocation)))
                         {
-                            failedEvaluationSourceLocations[sourceFile.Key] = new();
+                            failedSourceLocations.Add(newLocation);
                         }
-                        failedEvaluationSourceLocations[sourceFile.Key].UnionWith(sourceFile.Value);
                     }
                 }
             }
 
-            Dictionary<string, int[]> expectedSourceLocations = JsonConvert.DeserializeObject<Dictionary<string, int[]>>(expectedSourceLocationsJson);
-            foreach (var file in expectedSourceLocations.Keys)
-            {
-                var expectedLineNumbers = new List<int>(expectedSourceLocations[file]);
-                var actualFailingLines = failedEvaluationSourceLocations[file]?.ToList();
-                actualFailingLines.Sort();
+            var expectedSourceLocations = expectedSourceLocationsStr
+                .Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(locationStr => locationStr
+                    .Split(",", StringSplitOptions.TrimEntries)
+                    .Select(str => (
+                        Path.Combine(templateDirectory, str.Split(":")[0]),
+                        int.Parse(str.Split(":")[1]))).ToList()).ToList();
 
-                Assert.AreEqual(expectedLineNumbers.Count, actualFailingLines.Count);
-                Assert.IsTrue(expectedLineNumbers.SequenceEqual(actualFailingLines));
+            Assert.AreEqual(expectedSourceLocations.Count, failedSourceLocations.Count);
+
+            foreach(var expectedLocation in expectedSourceLocations)
+            {
+                Assert.IsTrue(failedSourceLocations.Any(loc => loc.SequenceEqual(expectedLocation)));
             }
         }
 
-        private Dictionary<string, HashSet<int>> GetFailedSourceLocations(IEvaluation evaluation, Dictionary<string,HashSet<int>> failedSourceLocations = null)
+        private IEnumerable<List<(string fileName, int lineNumber)>> GetFailedSourceLocations(IEvaluation evaluation, ICollection<List<(string fileName, int lineNumber)>> failedSourceLocations = null)
         {
-            failedSourceLocations ??= new();
+            failedSourceLocations ??= new List<List<(string fileName, int lineNumber)>>();
 
             if (!evaluation.Result?.Passed ?? false)
             {
-                var sourceFile = evaluation.Result.SourceFile;
-                if (!failedSourceLocations.ContainsKey(sourceFile))
+                // build a list of file names/line numbers that are referenced
+                var referenceList = new List<(string fileName, int lineNumber)>();
+                var curLocation = evaluation.Result.SourceLocation;
+
+                referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
+                while (curLocation.ReferencedLocation != null)
                 {
-                    failedSourceLocations[sourceFile] = new();
+                    curLocation = curLocation.ReferencedLocation;
+                    referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
                 }
 
-                failedSourceLocations[sourceFile].Add(evaluation.Result.LineNumber);
+                failedSourceLocations.Add(referenceList);
             }
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
@@ -111,9 +145,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             return failedSourceLocations;
         }
 
-
         [DataRow("SimpleNestedFail.json", new int[] { 36, 43, 46, 52, 53, 54 }, DisplayName = "Simple nested template example")]
-        [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59,  60}, DisplayName = "Nested templates with two levels")]
+        [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59, 60 }, DisplayName = "Nested templates with two levels")]
         [DataRow("InnerOuterScopeFail.json", new int[] { 49, 55, 56, 101, 107, 108, 109 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
         [DataRow("ParameterPassingFail.json", new int[] { 53, 59, 62, 68, 69 }, DisplayName = "Nested template with parameters passed from parent")]
         public void AnalyzeTemplate_ValidNestedTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic lineNumbers)
@@ -145,7 +178,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
             if (!evaluation.Result?.Passed ?? false)
             {
-                failedLines.Add(evaluation.Result.LineNumber);
+                failedLines.Add(evaluation.Result.SourceLocation.LineNumber);
             }
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))

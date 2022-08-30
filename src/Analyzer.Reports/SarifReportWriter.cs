@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             locations ??= new Dictionary<int, Location>();
             if (evaluation.Result != null && !evaluation.Result.Passed)
             {
-                var line = evaluation.Result.LineNumber;
+                var line = evaluation.Result.SourceLocation.LineNumber;
                 if (!locations.ContainsKey(line))
                 {
                     locations[line] = new Location

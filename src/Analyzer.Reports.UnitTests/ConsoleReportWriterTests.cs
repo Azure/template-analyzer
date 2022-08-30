@@ -58,10 +58,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var resultString = new StringBuilder();
             if (!evaluation.Passed)
             {
-                if ((!evaluation.Result?.Passed ?? false) && !failedLines.Any(l => l == evaluation.Result.LineNumber))
+                if ((!evaluation.Result?.Passed ?? false) && !failedLines.Any(l => l == evaluation.Result.SourceLocation.LineNumber))
                 {
-                    failedLines.Add(evaluation.Result.LineNumber);
-                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {evaluation.Result.LineNumber}");
+                    failedLines.Add(evaluation.Result.SourceLocation.LineNumber);
+                    resultString.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {evaluation.Result.SourceLocation.LineNumber}");
                 }
 
                 foreach (var innerEvaluation in evaluation.Evaluations)

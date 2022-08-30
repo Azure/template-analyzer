@@ -49,8 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
                 {
                     Passed = Operator.EvaluateExpression(scope.JToken),
                     JsonPath = scope.Path,
-                    LineNumber = sourceLocation?.LineNumber ?? 0,
-                    SourceFile = sourceLocation?.FilePath,
+                    SourceLocation = sourceLocation,
                     Expression = this
                 };
 

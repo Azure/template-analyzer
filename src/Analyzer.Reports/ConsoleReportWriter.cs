@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             if (!evaluation.Result?.Passed ?? false)
             {
-                failedLines.Add(evaluation.Result.LineNumber);
+                failedLines.Add(evaluation.Result.SourceLocation.LineNumber);
             }
 
             foreach(var eval in evaluation.Evaluations.Where(e => !e.Passed))

@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             Assert.AreEqual(1, evaluationOutcome.Count);
 
-            Assert.AreEqual(0, evaluationOutcome[0].Result.LineNumber);
+            Assert.AreEqual(0, evaluationOutcome[0].Result.SourceLocation.LineNumber);
         }
 
         [TestMethod]

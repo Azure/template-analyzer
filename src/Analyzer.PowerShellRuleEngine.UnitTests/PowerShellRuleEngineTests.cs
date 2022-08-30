@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.AreEqual(failedEvaluations.Count, lineNumbers.Length);
             for (int errorNumber = 0; errorNumber < lineNumbers.Length; errorNumber++)
             {
-                Assert.AreEqual(lineNumbers[errorNumber], failedEvaluations[errorNumber].Result.LineNumber);
+                Assert.AreEqual(lineNumbers[errorNumber], failedEvaluations[errorNumber].Result.SourceLocation.LineNumber);
             }
         }
 

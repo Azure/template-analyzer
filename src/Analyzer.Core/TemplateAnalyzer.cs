@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
-            var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
+            var evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
 
             // For each rule we don't want to report the same line more than once
             // This is a temporary fix
@@ -118,10 +118,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     evalsToNotValidate.Add(eval);
                 }
             }
-            var uniqueResults = new Dictionary<(string, int), IEvaluation>();
+            var uniqueResults = new Dictionary<(string ruleId, int lineNumber, string fileName), IEvaluation>();
             foreach (var eval in evalsToValidate)
             {
-                uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
+                var actualLocation = eval.Result.SourceLocation.GetActualLocation();
+                uniqueResults.TryAdd((eval.RuleId, actualLocation.LineNumber, actualLocation.FilePath), eval);
             }
             evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
 

@@ -12,10 +12,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public bool Passed { get; internal set; }
 
         /// <inheritdoc/>
-        public int LineNumber { get; internal set; }
-
-        /// <inheritdoc/>
-        public string SourceFile {get; internal set; }
+        public SourceLocation SourceLocation { get; internal set; }
 
         /// <summary>
         /// Creates a <see cref="PowerShellRuleResult"/> that represents a result obtained from a PowerShell rule.
@@ -25,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public PowerShellRuleResult(bool passed, int lineNumber)
         {
             Passed = passed;
-            LineNumber = lineNumber;
+            SourceLocation = new SourceLocation(lineNumber);
         }
     }
 }

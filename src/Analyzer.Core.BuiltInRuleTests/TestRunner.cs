@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         {
             if (!evaluation.Result?.Passed ?? false)
             {
-                yield return evaluation.Result.LineNumber;
+                yield return evaluation.Result.SourceLocation.LineNumber;
             }
             foreach (var subEvaluation in evaluation.Evaluations.Where(e => !e.Passed))
             {

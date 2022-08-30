@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json;
@@ -84,8 +85,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
                 }
             }
-            
-            return new SourceLocation((tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1); // Adds template's line number to an offset dependent on the parent (if applicable) template's position
+
+            // Adds template's line number to an offset dependent on the parent (if applicable) template's position
+            return new SourceLocation((tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1);
         }
     }
 }
