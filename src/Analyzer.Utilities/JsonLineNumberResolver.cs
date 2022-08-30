@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
@@ -38,8 +39,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// or 1 if it can't be determined.</returns>
         public int ResolveLineNumber(string pathInExpandedTemplate)
         {
-            JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
-            JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
+            var rootTemplateContext = this.templateContext;
+            while (rootTemplateContext != null && !rootTemplateContext.IsMainTemplate)
+            {
+                rootTemplateContext = rootTemplateContext.ParentContext;
+            }
+
+            if (rootTemplateContext == null)
+            {
+                throw new ArgumentNullException(nameof(rootTemplateContext));
+            }
+            if (!rootTemplateContext.IsMainTemplate)
+            {
+                throw new FileNotFoundException(nameof(rootTemplateContext));
+            }
+
+            JToken expandedTemplateRoot = rootTemplateContext.ExpandedTemplate;
+            JToken originalTemplateRoot = rootTemplateContext.OriginalTemplate;
 
             if (pathInExpandedTemplate == null || originalTemplateRoot == null)
             {
@@ -49,7 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             }
 
             // Attempt to find an equivalent JToken in the original template from the expanded template's path directly
-            var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(templateContext.PathPrefix + pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+            var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
 
             // If the JToken returned from looking up the expanded template path is
             // just pointing to the root of the original template, then
@@ -59,31 +75,42 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 return 1;
             }
 
-            // If the path is in the resources array of the template
-            var matches = resourceIndexInPath.Matches(pathInExpandedTemplate);
-            if (matches.Count > 0)
+            // Handle path and prefixes one level at a time to construct an accurate resources' path
+            var currentContext = this.templateContext;
+            var currentPathToEvaluate = pathInExpandedTemplate;
+            string mappedPathInExpandedTemplate = "";
+            while (currentContext != null)
             {
-                // Get the path of the child resource in the expanded template
-                string resourceWithIndex = string.Join('.', matches);
-
-                // Verify the expanded template is available.
-                // (Avoid throwing earlier since this is not always needed.)
-                if (expandedTemplateRoot == null)
+                // If the path is in the resources array of the template
+                var matches = resourceIndexInPath.Matches(currentPathToEvaluate);
+                if (matches.Count > 0)
                 {
-                    throw new ArgumentNullException(nameof(expandedTemplateRoot));
-                }
+                    // Get the path of the child resource in the expanded template
+                    string resourceWithIndex = string.Join('.', matches);
 
-                string remainingPathAtResourceScope = pathInExpandedTemplate[(resourceWithIndex.Length + 1)..];
+                    // Verify the expanded template is available.
+                    // (Avoid throwing earlier since this is not always needed.)
+                    if (expandedTemplateRoot == null)
+                    {
+                        throw new ArgumentNullException(nameof(expandedTemplateRoot));
+                    }
 
-                if (!templateContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
-                {
-                    return 1;
-                }
+                    string remainingPathAtResourceScope = currentPathToEvaluate[(resourceWithIndex.Length + 1)..];
 
-                if (!string.Equals(resourceWithIndex, originalResourcePath))
-                {
-                    tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{templateContext.PathPrefix + originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
+                    if (!currentContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
+                    {
+                        return 1;
+                    }
+
+                    mappedPathInExpandedTemplate = $"{originalResourcePath}.{remainingPathAtResourceScope}.{mappedPathInExpandedTemplate}";
                 }
+                currentPathToEvaluate = currentContext.PathPrefix;
+                currentContext = currentContext.ParentContext;
+            }
+
+            if (mappedPathInExpandedTemplate.Length > 0 && !mappedPathInExpandedTemplate.Equals(pathInExpandedTemplate))
+            {
+                tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
             }
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
         }

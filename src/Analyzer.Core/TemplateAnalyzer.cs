@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             var templateContext = new TemplateContext
             {
-                OriginalTemplate = JObject.Parse(template),
+                OriginalTemplate = null,
                 ExpandedTemplate = null,
                 IsMainTemplate = true,
                 ResourceMappings = null,
@@ -166,12 +166,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             var templateContext = new TemplateContext
             {
-                OriginalTemplate = parentContext.OriginalTemplate,
+                OriginalTemplate = JObject.Parse(populatedTemplate),
                 ExpandedTemplate = templatejObject,
                 IsMainTemplate = parentContext.ParentContext == null,
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
-                IsBicep =parentContext.IsBicep,
+                IsBicep = parentContext.IsBicep,
                 SourceMap = parentContext.SourceMap,
                 PathPrefix = pathPrefix,
                 ParentContext = parentContext
@@ -202,19 +202,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         // Check whether scope is set to inner or outer
                         var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions")?.InsensitiveToken("scope")?.ToString();
-                        string nextPathPrefix = $".properties.template.";
-
-                        // Map the actual resource path to make the final prefix for nested template resource mapping
-                        templateContext.ResourceMappings.TryGetValue($"resources[{i}]", out string originalResourcePath);
-                        if (originalResourcePath != null)
-                        {
-                            nextPathPrefix = originalResourcePath + nextPathPrefix;
-                        }
-                        else
-                        {
-                            nextPathPrefix = $"resources[{i}]" + nextPathPrefix;
-                        }
-
+                        //string nextPathPrefix = $".properties.template.";
+                        string nextPathPrefix = nestedTemplate.Path;
+                       
                         IEnumerable<IEvaluation> result;
 
                         if (scope == null || scope == "outer")
@@ -262,7 +252,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
 
-                        result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, pathPrefix + nextPathPrefix); //pathprefix + nextpathprefix
+                        result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nextPathPrefix); //pathprefix + nextpathprefix
                         evaluations = evaluations.Concat(result);
                     }
                 }

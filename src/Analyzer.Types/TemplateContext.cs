@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Whether this template is the top-level template in a deployment or nested within another template
         /// </summary>
-        public bool IsMainTemplate { get; set; }
+        public bool IsMainTemplate { get; set; } = true;
 
         /// <summary>
         /// Mapping between resources in the expanded template to their original resource in 
