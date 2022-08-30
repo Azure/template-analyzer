@@ -208,23 +208,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         {
                             // Variables, parameters and functions inherited from parent template
                             string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path;
+                            functionsKey ??= "functions";
                             string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path;
+                            variablesKey ??= "variables";
                             string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path;
+                            parametersKey ??= "parameters";
 
-                            if (functionsKey != null)
-                            {
-                                populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
-
-                            }
-                            if (variablesKey != null)
-                            {
-                                populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
-
-                            }
-                            if (parametersKey != null)
-                            {
-                                populatedNestedTemplate[parametersKey] = jsonTemplate.InsensitiveToken("parameters");
-                            }
+                            populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
+                            populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
+                            populatedNestedTemplate[parametersKey] = jsonTemplate.InsensitiveToken("parameters");
                         }
                         else // scope is inner
                         {

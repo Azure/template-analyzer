@@ -47,11 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
             if (rootTemplateContext == null)
             {
-                throw new ArgumentNullException(nameof(rootTemplateContext));
-            }
-            if (!rootTemplateContext.IsMainTemplate)
-            {
-                throw new FileNotFoundException(nameof(rootTemplateContext));
+                throw new Exception("Could not find the context of the root template");
             }
 
             JToken expandedTemplateRoot = rootTemplateContext.ExpandedTemplate;
