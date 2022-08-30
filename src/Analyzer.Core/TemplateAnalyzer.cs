@@ -231,28 +231,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         }
                         else // scope is inner
                         {
-                            // Pass variables, functions and parameters to child template
+                            // Pass variables and functions to child template
                             (populatedNestedTemplate.InsensitiveToken("variables") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.variables"));
                             (populatedNestedTemplate.InsensitiveToken("functions") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
 
+                            // Pass parameters parameters to child template as the 'parameters' argument
                             var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
 
-                            // Change 'value' fields in parametersToPass into 'defaultValue' which is recognized by the template parser
                             if (parametersToPass != null)
                             {
-                                foreach (var parameterToPass in parametersToPass.Children<JProperty>())
-                                {
-                                    var parameterValue = parameterToPass.Value.InsensitiveToken("value");
-                                    parameterValue?.Parent.Replace(new JProperty("defaultValue", parameterValue.Value<object>()));
-                                }
+                                parametersToPass["parameters"] = parametersToPass;
+                                parametersToPass["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+                                parametersToPass["contentVersion"] = "1.0.0.0";
+                                parameters = JsonConvert.SerializeObject(parametersToPass);
                             }
-
-                            (populatedNestedTemplate.InsensitiveToken("parameters") as JObject)?.Merge(parametersToPass);
                         }
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
 
-                        result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nextPathPrefix); //pathprefix + nextpathprefix
+                        result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nextPathPrefix);
                         evaluations = evaluations.Concat(result);
                     }
                 }
