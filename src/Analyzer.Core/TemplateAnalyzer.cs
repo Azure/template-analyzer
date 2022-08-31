@@ -207,12 +207,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
                         {
                             // Variables, parameters and functions inherited from parent template
-                            string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path;
-                            functionsKey ??= "functions";
-                            string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path;
-                            variablesKey ??= "variables";
-                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path;
-                            parametersKey ??= "parameters";
+                            string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path ?? "functions";
+                            string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path ?? "variables";
+                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path ?? "parameters" ;
 
                             populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
                             populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
@@ -224,7 +221,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             (populatedNestedTemplate.InsensitiveToken("variables") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.variables"));
                             (populatedNestedTemplate.InsensitiveToken("functions") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
 
-                            // Pass parameters parameters to child template as the 'parameters' argument
+                            // Pass parameters to child template as the 'parameters' argument
                             var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
 
                             if (parametersToPass != null)
