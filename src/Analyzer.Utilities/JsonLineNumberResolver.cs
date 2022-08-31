@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json;
@@ -60,22 +58,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                     : nameof(originalTemplateRoot));
             }
 
-            // Attempt to find an equivalent JToken in the original template from the expanded template's path directly
-            var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+            JToken tokenFromOriginalTemplate;
 
-            // If the JToken returned from looking up the expanded template path is
-            // just pointing to the root of the original template, then
-            // even the first property could not be found in the original template.
-            if (tokenFromOriginalTemplate.Equals(originalTemplateRoot))
-            {
-                return 1;
-            }
-
-            // Handle path and prefixes one level at a time to construct an accurate resources' path
+            // Handle path and prefixes backwards one level at a time to construct an accurate resources' path
             var currentContext = this.templateContext;
             var currentPathToEvaluate = pathInExpandedTemplate;
             string mappedPathInExpandedTemplate = "";
-            while (currentContext != null)
+
+            while (currentContext != null && currentPathToEvaluate.Length > 0)
             {
                 // If the path is in the resources array of the template
                 var matches = resourceIndexInPath.Matches(currentPathToEvaluate);
@@ -100,14 +90,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                     mappedPathInExpandedTemplate = $"{originalResourcePath}.{remainingPathAtResourceScope}.{mappedPathInExpandedTemplate}";
                 }
+                else
+                {
+                    mappedPathInExpandedTemplate = $"{currentPathToEvaluate}.{mappedPathInExpandedTemplate}";
+                }
                 currentPathToEvaluate = currentContext.PathPrefix;
                 currentContext = currentContext.ParentContext;
             }
 
-            if (mappedPathInExpandedTemplate.Length > 0 && !mappedPathInExpandedTemplate.Equals(pathInExpandedTemplate))
-            {
-                tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
-            }
+            tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
         }
     }
