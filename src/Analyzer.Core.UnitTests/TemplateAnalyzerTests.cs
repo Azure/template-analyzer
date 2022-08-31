@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("SimpleNestedFail.json", new int[] { 27, 36, 42, 45, 51, 52, 53 }, DisplayName = "Simple nested template example")]
+        [DataRow("SimpleNestedFail.json", new int[] { 29, 41, 47, 48, 53, 59, 60, 61 }, DisplayName = "Simple nested template example, outer scope with no collisions")]
         [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59,  60}, DisplayName = "Nested templates with two levels")]
         [DataRow("InnerOuterScopeFail.json", new int[] { 53, 59, 60, 105, 115, 116, 117 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
         [DataRow("ParameterPassingFail.json", new int[] { 53, 59, 62, 68, 69 }, DisplayName = "Nested template with parameters passed from parent")]

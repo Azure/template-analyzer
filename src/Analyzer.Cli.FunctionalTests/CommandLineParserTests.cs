@@ -287,13 +287,10 @@ namespace Analyzer.Cli.FunctionalTests
             var templatePath = GetFilePath(relativeTemplatePath);
             var args = new string[] { "analyze-template", templatePath };
 
-            // Analyze template without filtering rules to verify there is a failure.
-            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-
             using StringWriter outputWriter = new();
             Console.SetOut(outputWriter);
 
-            result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             var cliConsoleOutput = outputWriter.ToString();
 
