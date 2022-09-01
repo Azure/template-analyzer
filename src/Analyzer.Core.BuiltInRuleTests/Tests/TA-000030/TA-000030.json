@@ -1,0 +1,17 @@
+﻿[
+  {
+    "Template": "VMs.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 6,
+        "Description": "The resource is of type Microsoft.ClassicCompute/virtualMachines"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "anotherTypeOfVM",
+        "Explanation": "The resource is not of type Microsoft.ClassicCompute/virtualMachines"
+      }
+    ]
+  }
+]
