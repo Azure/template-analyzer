@@ -9,7 +9,7 @@
     ],
     "PassingSections": [
       {
-        "ResourceName": "anotherTypeOfVM",
+        "ResourceName": "anotherTypeOfStorageAccount",
         "Explanation": "The resource is not of type Microsoft.ClassicStorage/storageAccounts"
       }
     ]
