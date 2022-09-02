@@ -95,7 +95,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     },
                     Execution = new ExecutionOption
                     {
-                        NotProcessedWarning = false
+                        NotProcessedWarning = false,
+
+                        // PSRule internally creates a PowerShell initial state with InitialSessionState.CreateDefault().
+                        // There are 2 different 'Default' functions available:
+                        // https://docs.microsoft.com/en-us/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
+                        //
+                        // CreateDefault has a dependency on Microsoft.Management.Infrastructure.dll, which is missing when publishing for 'win-x64',
+                        // and PowerShell throws an exception creating the InitialSessionState.
+                        //
+                        // CreateDefault2 does NOT have this dependency.
+                        // SessionState.Minimal causes PSRule to use CreateDefault2 instead of CreateDefault.
+                        // Notably, Microsoft.Management.Infrastructure.dll is available when publishing for specific Windows versions (such as win7-x64),
+                        // but since this libary is not needed in our usage of PowerShell, we can eliminate the dependency.
+                        InitialSessionState = SessionState.Minimal
                     }
                 };
                 var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
