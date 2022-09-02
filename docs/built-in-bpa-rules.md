@@ -182,7 +182,7 @@ Set the protocols property to only include HTTPs.
 #### Severity: 1
 
 ### TA-000030: Migrate your Classic Compute VM to ARM
-Azure supports two deployment models: classic and Azure Resource Manager (ARM), and ARM provides several security enhancements to the classic model. You can learn more about the differences [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/deployment-models).
+Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model. You can learn more about the differences [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/deployment-models).
 
 **Recommendation**: Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.
 #### Severity: 1
