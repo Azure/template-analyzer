@@ -104,16 +104,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         {
             var deployment = JObject.Parse(@"
             {
-                ""name"": ""deploymentname"",
-                ""type"": ""deploymenttype"",
+                ""name"": ""placeholderDeploymentName"",
+                ""type"": ""placeholderDeploymentType"",
                 ""location"": ""westus2"",
-                ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"",
+                ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/placeholderResourceGroup"",
                 ""properties"": {
                     ""templateLink"": {
                         ""uri"": ""https://deploymenturi"",
                         ""contentVersion"": ""0.0"",
                         ""metadata"": {
-                            ""metadata"": ""deploymentmetadata""
+                            ""metadata"": ""placeholderDeploymentMetadata""
                         }
                     }
                 }
@@ -160,14 +160,14 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }                    
             }");
 
-            var managementGroupInfo = JObject.Parse(@"
+            var managementGroup = JObject.Parse(@"
             {
-                ""id"": ""/providers/Microsoft.Management/managementGroups/examplemg1"",
-                ""name"": ""examplemg1"",
+                ""id"": ""/providers/Microsoft.Management/managementGroups/placeholderManagementGroup"",
+                ""name"": ""placeholderManagementGroup"",
                 ""properties"": {
                   ""details"": {
                     ""parent"": {
-                      ""displayName"": ""Tenant Root Group"",
+                      ""displayName"": ""Placeholder Tenant"",
                       ""id"": ""/providers/Microsoft.Management/managementGroups/00000000-0000-0000-0000-000000000000"",
                       ""name"": ""00000000-0000-0000-0000-000000000000""
                     },
@@ -175,26 +175,47 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     ""updatedTime"": ""2020-07-23T21:05:52.661306Z"",
                     ""version"": ""1""
                   },
-                  ""displayName"": ""Example MG 1"",
+                  ""displayName"": ""Placeholder Management Group"",
                   ""tenantId"": ""00000000-0000-0000-0000-000000000000""
                 },
                 ""type"": ""/providers/Microsoft.Management/managementGroups""
             }");
 
+            var subscription = JObject.Parse(@"
+            {
+                ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000"",
+                ""subscriptionId"": ""00000000-0000-0000-0000-000000000000"",
+                ""tenantId"": ""00000000-0000-0000-0000-000000000000"",
+                ""displayName"": ""Placeholder Subscription Name""
+            }");
+
+            var resourceGroup = JObject.Parse(@"
+            {
+                ""id"": ""/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/placeholderResourceGroup"",
+                ""name"": ""placeholderResourceGroup"",
+                ""type"":""Microsoft.Resources/resourceGroups"",
+                ""location"": ""westus2"",
+                ""properties"": {
+                    ""provisioningState"": ""Succeeded""
+                }
+            }");
+
+            var tenant = JObject.Parse(@"
+            {
+                ""countryCode"": ""US"",
+                ""displayName"": ""Placeholder Tenant"",
+                ""id"": ""/tenants/00000000-0000-0000-0000-000000000000"",
+                ""tenantId"": ""00000000-0000-0000-0000-000000000000""
+            }");
+
             var metadata = new InsensitiveDictionary<JToken>
             {
-                { "subscription", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
-                    new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("displayName", "aSubscriptionName")) },
-                { "resourceGroup", new JObject(
-                    new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
-                    new JProperty("location", "westus2"),
-                    new JProperty("name", "resource-group")) },
-                { "managementGroup", managementGroupInfo },
+                { "subscription", subscription },
+                { "resourceGroup", resourceGroup },
+                { "managementGroup", managementGroup },
                 { "deployment", deployment },
                 { "tenantId", "00000000-0000-0000-0000-000000000000" },
+                { "tenant", tenant },
                 { "providers", providers },
                 { "environment", environment }
             };
