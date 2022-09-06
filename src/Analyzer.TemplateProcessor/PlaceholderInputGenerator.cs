@@ -186,7 +186,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 { "subscription", new JObject(
                     new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000"),
                     new JProperty("subscriptionId", "00000000-0000-0000-0000-000000000000"),
-                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000")) },
+                    new JProperty("tenantId", "00000000-0000-0000-0000-000000000000"),
+                    new JProperty("displayName", "aSubscriptionName")) },
                 { "resourceGroup", new JObject(
                     new JProperty("id", "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName"),
                     new JProperty("location", "westus2"),
