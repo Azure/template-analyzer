@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using PSRule.Configuration;
 using PSRule.Pipeline;
 using PSRule.Rules;
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -38,6 +41,56 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.includeNonSecurityRules = includeNonSecurityRules;
             this.logger = logger;
+
+            // We need to unlock the PowerShell scripts on Windows to allow them to run
+            // If a script is not unblocked, even if it's signed, PowerShell prompts for confirmation before executing
+            // This prompting would throw an exception, because there's no interaction with a user that would allow for confirmation
+            if (Platform.IsWindows)
+            {
+                try
+                {
+                    // There are 2 different 'Default' functions available:
+                    // https://docs.microsoft.com/en-us/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
+                    //
+                    // CreateDefault has a dependency on Microsoft.Management.Infrastructure.dll, which is missing when publishing for 'win-x64',
+                    // and PowerShell throws an exception creating the InitialSessionState.
+                    //
+                    // CreateDefault2 does NOT have this dependency.
+                    // Notably, Microsoft.Management.Infrastructure.dll is available when publishing for specific Windows versions (such as win7-x64),
+                    // but since this libary is not needed in our usage of PowerShell, we can eliminate the dependency.
+                    var initialState = InitialSessionState.CreateDefault2();
+
+                    // Ensure we can execute the signed bundled scripts
+                    // This sets the policy at the Process scope
+                    initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
+
+                    var powershell = Powershell.Create(initialState);
+
+                    var path = Path.Combine(AppContext.BaseDirectory, "Modules");
+
+                    powershell
+                        .AddCommand("Get-ChildItem")
+                        .AddParameter("Path", Path.Combine(AppContext.BaseDirectory, "Modules"))
+                        .AddParameter("Recurse")
+                        .AddCommand("Unblock-File")
+                        .Invoke();
+
+                    if (powershell.HadErrors)
+                    {
+                        this.logger?.LogError("There was an error unblocking the PowerShell scripts");
+
+                        foreach (var error in powershell.Streams.Error)
+                        {
+                            this.logger?.LogError(error.ErrorDetails.Message);
+                        }
+                    }
+                }
+                catch(Exception exception)
+                {
+                    this.logger?.LogError(exception, "There was an exception while unblocking the PowerShell scripts");
+                }
+
+            }
         }
 
         /// <summary>
@@ -98,17 +151,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                         NotProcessedWarning = false,
 
                         // PSRule internally creates a PowerShell initial state with InitialSessionState.CreateDefault().
-                        // There are 2 different 'Default' functions available:
-                        // https://docs.microsoft.com/en-us/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
-                        //
-                        // CreateDefault has a dependency on Microsoft.Management.Infrastructure.dll, which is missing when publishing for 'win-x64',
-                        // and PowerShell throws an exception creating the InitialSessionState.
-                        //
-                        // CreateDefault2 does NOT have this dependency.
                         // SessionState.Minimal causes PSRule to use CreateDefault2 instead of CreateDefault.
-                        // Notably, Microsoft.Management.Infrastructure.dll is available when publishing for specific Windows versions (such as win7-x64),
-                        // but since this libary is not needed in our usage of PowerShell, we can eliminate the dependency.
-                        InitialSessionState = SessionState.Minimal
+                        InitialSessionState = PSRule.Configuration.SessionState.Minimal
                     }
                 };
                 var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
