@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             this.includeNonSecurityRules = includeNonSecurityRules;
             this.logger = logger;
 
-            // We need to unlock the PowerShell scripts on Windows to allow them to run
+            // We need to unblock the PowerShell scripts on Windows to allow them to run
             // If a script is not unblocked, even if it's signed, PowerShell prompts for confirmation before executing
             // This prompting would throw an exception, because there's no interaction with a user that would allow for confirmation
             if (Platform.IsWindows)
@@ -65,8 +65,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
 
                     var powershell = Powershell.Create(initialState);
-
-                    var path = Path.Combine(AppContext.BaseDirectory, "Modules");
 
                     powershell
                         .AddCommand("Get-ChildItem")
