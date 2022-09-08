@@ -68,8 +68,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                     powershell
                         .AddCommand("Get-ChildItem")
-                        .AddParameter("Path", Path.Combine(AppContext.BaseDirectory, "Modules"))
+                        .AddParameter("Path", Path.Combine(AppContext.BaseDirectory, "Modules", "PSRule.Rules.Azure"))
                         .AddParameter("Recurse")
+                        .AddParameter("Filter", "*.ps1")
                         .AddCommand("Unblock-File")
                         .Invoke();
 
@@ -79,7 +80,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
                         foreach (var error in powershell.Streams.Error)
                         {
-                            this.logger?.LogError(error.ErrorDetails.Message);
+                            this.logger?.LogError(error.ToString());
                         }
                     }
                 }
