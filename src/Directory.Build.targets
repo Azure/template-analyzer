@@ -4,4 +4,17 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <!-- Move platform-specific runtime modules directly into the publish directory -->
+  <Target Name="UpdatePSRuntimeModules" AfterTargets="Publish">
+    <PropertyGroup>
+      <OSDirectory Condition="'$(OS)' == 'Unix'">unix</OSDirectory>
+      <OSDirectory Condition="'$(OS)' != 'Unix'">win</OSDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <Modules Include="$(PublishDir)\runtimes\$(OSDirectory)\lib\$(TargetFramework)\Modules\**\*" />
+    </ItemGroup>
+    <Move SourceFiles="@(Modules)" DestinationFolder="$(PublishDir)\Modules\%(RecursiveDir)" />
+    <RemoveDir Directories="$(PublishDir)\runtimes" />
+  </Target>
 </Project>
