@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockLineResolver.Setup(r =>
                 r.ResolveSourceLocation(
                     It.IsAny<string>()))
-                .Returns(new SourceLocation(expectedLineNumber));
+                .Returns(new SourceLocation(default, expectedLineNumber));
 
             var ruleEngine = JsonRuleEngine.Create(rules, t => {
                     // Verify the test context was passed
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockLineResolver.Setup(r =>
                 r.ResolveSourceLocation(
                     It.IsAny<string>()))
-                .Returns(new SourceLocation(expectedLineNumber));
+                .Returns(new SourceLocation(default, expectedLineNumber));
 
             var ruleEngine = JsonRuleEngine.Create(rules, t =>
             {

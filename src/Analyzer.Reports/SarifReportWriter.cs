@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.CodeAnalysis.Sarif;
+using Microsoft.CodeAnalysis.Sarif.Baseline;
 using Microsoft.CodeAnalysis.Sarif.Writers;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
@@ -21,13 +23,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         internal const string UriBaseIdString = "ROOTPATH";
         internal const string PeriodString = ".";
 
-        private IFileInfo reportFile;
-        private Stream reportFileStream;
-        private StreamWriter outputTextWriter;
+        private readonly List<string> filesAlreadyOutput = new List<string>();
+        private readonly IFileInfo reportFile;
+        private readonly Stream reportFileStream;
+        private readonly StreamWriter outputTextWriter;
         private Run sarifRun;
-        private IDictionary<string, ReportingDescriptor> rulesDictionary;
+        private readonly IDictionary<string, ReportingDescriptor> rulesDictionary;
         private string rootPath;
         private int totalResults = 0;
+
 
         /// <summary>
         /// Logger used to output information to the SARIF file
@@ -61,32 +65,80 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public void WriteResults(IEnumerable<IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parameterFile = null)
         {
             this.RootPath ??= templateFile.DirectoryName;
-            bool isFileInRootPath = IsSubPath(this.rootPath, templateFile.FullName);
-            string filePath = isFileInRootPath ?
-                Path.GetRelativePath(this.RootPath, templateFile.FullName) :
-                templateFile.FullName;
 
-            foreach (var evaluation in evaluations.Where(eva => !eva.Passed))
+
+            var rule3 = evaluations.Where(e => e.RuleId == "TA-000003").ToList();
+
+            var resultsByFile = ReportsHelper.GetResultsByFile(evaluations, filesAlreadyOutput);
+
+            // output files in sorted order, but always output root first
+            var filesWithResults = resultsByFile.Keys.ToList();
+            filesWithResults.Sort();
+
+            int rootIndex = filesWithResults.IndexOf(templateFile.FullName);
+            if (rootIndex != -1)
             {
-                // get rule definition from first level evaluation
-                this.ExtractRule(evaluation);
-
-                // Log result
-                SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
-                {
-                    RuleId = evaluation.RuleId,
-                    Level = GetLevelFromEvaluation(evaluation),
-                    Message = new Message { Id = "default" }, // should be customized message for each result 
-                    Locations = ExtractLocations(evaluation, filePath, isFileInRootPath).Values.ToArray()
-                });
-
-                totalResults++;
+                filesWithResults.RemoveAt(rootIndex);
+                filesWithResults.Insert(0, templateFile.FullName);
             }
+
+            foreach (var fileWithResults in filesWithResults)
+            {
+                // add analysis target if result not in root template
+                ArtifactLocation analysisTarget = null;
+                if (fileWithResults != templateFile.FullName)
+                {
+                    (var pathBelongsToRoot, var filePath) = GetFilePathInfo(templateFile.FullName);
+                    analysisTarget = new ArtifactLocation
+                    {
+                        Uri = new Uri(
+                            UriHelper.MakeValidUri(filePath),
+                            UriKind.RelativeOrAbsolute),
+                        UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
+                    };
+                }
+
+                foreach ((var evaluation, var failedLines) in resultsByFile[fileWithResults])
+                {
+                    // get rule definition from first level evaluation
+                    this.ExtractRule(evaluation);
+
+                    // create location for each individual result
+                    (var pathBelongsToRoot, var filePath) = GetFilePathInfo(fileWithResults);
+                    var locations = failedLines.Select(line => new Location
+                    {
+                        PhysicalLocation = new PhysicalLocation
+                        {
+                            ArtifactLocation = new ArtifactLocation
+                            {
+                                Uri = new Uri(
+                                    UriHelper.MakeValidUri(filePath),
+                                    UriKind.RelativeOrAbsolute),
+                                UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
+                            },
+                            Region = new Region { StartLine = line },
+                        },
+                    }).ToList();
+
+                    // Log result
+                    SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
+                    {
+                        RuleId = evaluation.RuleId,
+                        Level = GetLevelFromEvaluation(evaluation),
+                        Message = new Message { Id = "default" }, // should be customized message for each result 
+                        Locations = locations,
+                        AnalysisTarget = analysisTarget,
+                    });
+
+                    totalResults++;
+                }
+            }
+
         }
 
-        internal String RootPath
-        { 
-            get => this.rootPath; 
+        internal string RootPath
+        {
+            get => this.rootPath;
             set
             {
                 if (string.IsNullOrWhiteSpace(rootPath) && !string.IsNullOrWhiteSpace(value))
@@ -144,37 +196,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             }
         }
 
-        private Dictionary<int, Location> ExtractLocations(IEvaluation evaluation, string filePath, bool pathBelongsToRoot, Dictionary<int, Location> locations = null)
+        private (bool, string) GetFilePathInfo(string fileFullName)
         {
-            locations ??= new Dictionary<int, Location>();
-            if (evaluation.Result != null && !evaluation.Result.Passed)
-            {
-                var line = evaluation.Result.SourceLocation.LineNumber;
-                if (!locations.ContainsKey(line))
-                {
-                    locations[line] = new Location
-                    {
-                        PhysicalLocation = new PhysicalLocation
-                        {
-                            ArtifactLocation = new ArtifactLocation
-                            {
-                                Uri = new Uri(
-                                    UriHelper.MakeValidUri(filePath),
-                                    UriKind.RelativeOrAbsolute),
-                                UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
-                            },
-                            Region = new Region { StartLine = line },
-                        },
-                    };
-                }
-            }
+            bool isFileInRootPath = IsSubPath(this.RootPath, fileFullName);
+            string filePath = isFileInRootPath ?
+                Path.GetRelativePath(this.RootPath, fileFullName) :
+                fileFullName;
 
-            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                this.ExtractLocations(eval, filePath, pathBelongsToRoot, locations);
-            }
-
-            return locations;
+            return (isFileInRootPath, filePath);
         }
 
         private FailureLevel GetLevelFromEvaluation(IEvaluation evaluation)

@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // even the first property could not be found in the original template.
             if (tokenFromOriginalTemplate.Equals(originalTemplateRoot))
             {
-                return new SourceLocation(1);
+                return new SourceLocation(this.templateContext.TemplateIdentifier, 1);
             }
 
             // If the path is in the resources array of the template
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                 if (!templateContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
                 {
-                    return new SourceLocation(1);
+                    return new SourceLocation(this.templateContext.TemplateIdentifier, 1);
                 }
 
                 if (!string.Equals(resourceWithIndex, originalResourcePath))
@@ -87,7 +87,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             }
 
             // Adds template's line number to an offset dependent on the parent (if applicable) template's position
-            return new SourceLocation((tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1);
+            return new SourceLocation(
+                this.templateContext.TemplateIdentifier,
+                (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1);
         }
     }
 }

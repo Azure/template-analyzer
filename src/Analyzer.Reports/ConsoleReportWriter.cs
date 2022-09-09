@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.CodeAnalysis.Sarif;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -17,61 +20,60 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         internal static string IndentedNewLine = Environment.NewLine + "\t";
         internal static string TwiceIndentedNewLine = Environment.NewLine + "\t\t";
 
+        private readonly List<string> filesAlreadyOutput = new List<string>();
+
         /// <inheritdoc/>
         public void WriteResults(IEnumerable<Types.IEvaluation> evaluations, IFileInfo templateFile, IFileInfo parametersFile = null)
         {
-            // Log info on file to be analyzed
-            string fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile}";
-            if (parametersFile != null)
+            var resultsByFile = ReportsHelper.GetResultsByFile(evaluations, filesAlreadyOutput, out int passedEvaluations);
+
+            // output files in sorted order, but always output root first
+            var filesWithResults = resultsByFile.Keys.ToList();
+            filesWithResults.Sort();
+
+            int rootIndex = filesWithResults.IndexOf(templateFile.FullName);
+            if (rootIndex != -1)
             {
-                fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile}";
+                filesWithResults.RemoveAt(rootIndex);
+                filesWithResults.Insert(0, templateFile.FullName);
             }
-            Console.WriteLine(fileMetadata);
 
-            OutputToConsole(evaluations);
-        }
-
-        private void OutputToConsole(IEnumerable<Types.IEvaluation> evaluations)
-        {
-            var passedEvaluations = 0;
-
-            foreach (var evaluation in evaluations)
+            foreach(var fileWithResults in filesWithResults)
             {
-                if (!evaluation.Passed)
+                string fileMetadata;
+                fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {fileWithResults}";
+
+                if (fileWithResults == templateFile.FullName)
                 {
-                    string resultString = string.Concat(
-                        GetFailedLines(evaluation)
-                        .Select(l => $"{TwiceIndentedNewLine}Line: {l}"));
+                    if (parametersFile != null)
+                    {
+                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile}";
+                    }
+                }
+                else
+                {
+                    fileMetadata += Environment.NewLine + $"Root Template: {templateFile}";
+                }
+
+                Console.WriteLine(fileMetadata);
+
+                foreach ((var evaluation, var failedLines) in resultsByFile[fileWithResults])
+                {
+                    if (evaluation.RuleId != "TA-000003") continue; // DEbug
+
+                    string resultString = string.Concat(failedLines.Select(l => $"{TwiceIndentedNewLine}Line: {l}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
-                        $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
+                        $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" +
                         (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                         $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                         $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                     Console.WriteLine(output);
                 }
-                else
-                {
-                    passedEvaluations++;
-                }
             }
+
+            filesAlreadyOutput.AddRange(filesWithResults);
+
             Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
-        }
-
-        private HashSet<int> GetFailedLines(IEvaluation evaluation, HashSet<int> failedLines = null)
-        {
-            failedLines ??= new HashSet<int>();
-
-            if (!evaluation.Result?.Passed ?? false)
-            {
-                failedLines.Add(evaluation.Result.SourceLocation.LineNumber);
-            }
-
-            foreach(var eval in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                GetFailedLines(eval, failedLines);
-            }
-
-            return failedLines;
         }
 
         /// <inheritdoc/>

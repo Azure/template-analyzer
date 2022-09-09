@@ -24,11 +24,83 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         public void AnalyzeTemplateTests()
         {
             // arrange
-            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Azure");
-            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
+            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
+            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "TemplateWithReference.bicep"));
 
             var results = TemplateAnalyzer.Create(false).AnalyzeTemplate(
-                template: ReadTemplate("SQLServerAuditingSettings.json"),
+                template: ReadTemplate("TemplateWithReference.bicep"),
+                parameters: null,
+                templateFilePath: templateFilePath.FullName);
+
+            // act
+            var memStream = new MemoryStream();
+            using (var writer = SetupWriter(memStream))
+            {
+                writer.WriteResults(results, (FileInfoBase)templateFilePath);
+            }
+
+            File.WriteAllText($@"C:\Users\nichb\Desktop\output.txt", Encoding.UTF8.GetString(memStream.ToArray()));
+
+            // assert
+            string ruleId = "TA-000028";
+            var expectedLinesForRun = new List<List<int>>
+            {
+                //new List<int> { 23, 24, 25 },
+                //new List<int> { 43, 44, 45 }
+                new List<int> { 14, 15, 16 },
+                new List<int> { 31, 32, 33 },
+            };
+
+            string artifactUriString = templateFilePath.Name;
+            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
+            sarifLog.Should().NotBeNull();
+
+            Run run = sarifLog.Runs.First();
+            run.Tool.Driver.Rules.Count.Should().Be(1);
+            run.Tool.Driver.Rules.First().Id.Should().BeEquivalentTo(ruleId);
+            run.OriginalUriBaseIds.Count.Should().Be(1);
+            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
+            run.Results.Count.Should().Be(expectedLinesForRun.Count);
+
+            foreach (Result result in run.Results)
+            {
+                result.RuleId.Should().BeEquivalentTo(ruleId);
+                result.Level.Should().Be(FailureLevel.Error);
+
+                var expectedLines = expectedLinesForRun.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
+                expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
+                expectedLinesForRun.Remove(expectedLines);
+
+                // Verify lines reported equal the expected lines
+                result.Locations.Count.Should().Be(expectedLines.Count);
+                foreach (var location in result.Locations)
+                {
+                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
+                    var line = location.PhysicalLocation.Region.StartLine;
+
+                    // Verify line is expected, and remove from the collection
+                    expectedLines.Contains(line).Should().BeTrue();
+                    expectedLines.Remove(line);
+                }
+
+                // Verify all lines were reported
+                expectedLines.Should().BeEmpty();
+            }
+
+            // Verify all lines were reported
+            expectedLinesForRun.Should().BeEmpty();
+        }
+
+
+        [TestMethod]
+        public void AnalyzeTemplateWithExternalReferencesTests()
+        {
+            // arrange
+            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
+            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "Main.bicep"));
+
+            var results = TemplateAnalyzer.Create(false).AnalyzeTemplate(
+                template: ReadTemplate("Main.bicep"),
                 parameters: null,
                 templateFilePath: templateFilePath.FullName);
 
@@ -41,11 +113,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // assert
             string ruleId = "TA-000028";
-            List<List<int>> expectedLinesForRun = new List<List<int>>
+            var expectedLinesForRun = new List<List<int>>
             {
-                new List<int> { 23, 24, 25 },
-                new List<int> { 43, 44, 45 }
+                //new List<int> { 23, 24, 25 },
+                //new List<int> { 43, 44, 45 }
+                new List<int> { 14, 15, 16 },
+                new List<int> { 31, 32, 33 },
             };
+
+            File.WriteAllText($@"C:\Users\nichb\Desktop\output.txt", Encoding.UTF8.GetString(memStream.ToArray()));
 
             string artifactUriString = templateFilePath.Name;
             SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));

@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLineResolver = new Mock<ISourceLocationResolver>();
             mockLineResolver
                 .Setup(r => r.ResolveSourceLocation(It.Is<string>(p => p == expectedPathEvaluated)))
-                .Returns(new SourceLocation(lineNumber));
+                .Returns(new SourceLocation(default, lineNumber));
 
             var leafExpression = new LeafExpression(mockLeafExpressionOperator.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             var result = iresult as JsonRuleResult;
             Assert.AreEqual(expectedPathEvaluated, result.JsonPath);
-            Assert.AreEqual(lineNumber, result.LineNumber);
+            Assert.AreEqual(lineNumber, result.SourceLocation.LineNumber);
         }
 
         [TestMethod]

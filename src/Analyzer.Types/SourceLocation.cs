@@ -9,19 +9,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
     public class SourceLocation
     {
         /// <summary>
-        /// TODO: Null if entrypoint?
+        /// The file path of the source file
         /// </summary>
-        public string FilePath;
+        public readonly string FilePath;
 
         /// <summary>
-        /// TODO
+        /// The line number in the soruce file
         /// </summary>
-        public int LineNumber;
+        public readonly int LineNumber;
 
         /// <summary>
-        /// The source location where the current line is referencing (i.e. bicep module)
+        /// The source location where the current location is referencing (i.e. line for bicep module)
         /// </summary>
-        public SourceLocation ReferencedLocation;
+        public readonly SourceLocation ReferencedLocation;
+
+        // <summary>
+        // TODO 
+        // </summary>
+        //public readonly SourceLocation ActualLocation;
+
 
         /// <summary>
         /// 
@@ -29,11 +35,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <param name="filePath"></param>
         /// <param name="lineNumber"></param>
         /// <param name="referencedLocation"></param>
-        public SourceLocation(int lineNumber, string filePath = default, SourceLocation referencedLocation = null)
+        public SourceLocation(string filePath, int lineNumber, SourceLocation referencedLocation = null)
         {
             this.FilePath = filePath;
             this.LineNumber = lineNumber;
             this.ReferencedLocation = referencedLocation;
+            //this.ActualLocation = this.GetActualLocation();
         }
 
         /// <summary>
@@ -44,12 +51,46 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         {
             SourceLocation curLocation = this;
 
-            while (curLocation.ReferencedLocation == null)
+            while (curLocation.ReferencedLocation != null)
             {
                 curLocation = curLocation.ReferencedLocation;
             }
 
             return curLocation;
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return FilePath.GetHashCode() ^ LineNumber.GetHashCode();
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            var result = obj as SourceLocation;
+            return (result != null) && Equals(result);
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(SourceLocation other)
+        {
+            var thisActual = this.GetActualLocation();
+            var otherActual = other.GetActualLocation();
+
+            return thisActual.FilePath.Equals(otherActual.FilePath)
+                && thisActual.LineNumber.Equals(otherActual.LineNumber);
         }
     }
 }

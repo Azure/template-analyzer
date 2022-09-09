@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     {
         private readonly TemplateContext templateContext;
         private readonly ILogger logger;
-        private readonly JsonSourceLocationResolver jsonLineNumberResolver;
+        private readonly ISourceLocationResolver sourceLocationResolver;
 
         /// <summary>
         /// Evaluations outputted by the PSRule analysis.
@@ -35,7 +35,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.templateContext = templateContext;
             this.logger = logger;
-            this.jsonLineNumberResolver = new JsonSourceLocationResolver(templateContext);
+            this.sourceLocationResolver = templateContext.IsBicep
+                ? new BicepSourceLocationResolver(templateContext)
+                : new JsonSourceLocationResolver(templateContext);
         }
 
         /// <inheritdoc/>
@@ -84,18 +86,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
             foreach (var reason in ruleRecord.Detail.Reason)
             {
-                var lineNumber = 1;
+                SourceLocation sourceLocation = default;
+
                 // Temporary try/catch because not all rule evaluations return a proper path yet:
                 try
                 {
-                    lineNumber = this.jsonLineNumberResolver.ResolveSourceLocation(reason.FullPath).LineNumber;
+                    sourceLocation = this.sourceLocationResolver.ResolveSourceLocation(reason.FullPath);
                 }
                 catch
                 {
                 }
                
                 this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, helpUri, ruleDescription, recommendation,
-                    templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
+                    templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, sourceLocation))); 
             }
         }
     }

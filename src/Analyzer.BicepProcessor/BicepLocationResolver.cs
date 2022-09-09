@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         private readonly string EntrypointFilePath;
         private readonly JsonSourceLocationResolver jsonLineNumberResolver;
         private readonly SourceMap sourceMap;
+        private readonly TemplateContext templateContext;
 
         /// <summary>
         /// Create a new instance with the given <see cref="TemplateContext"/>.
@@ -26,6 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="templateContext">The template context to map JSON paths against.</param>
         public BicepSourceLocationResolver(TemplateContext templateContext)
         {
+            this.templateContext = templateContext;
             this.EntrypointFilePath = (templateContext ?? throw new ArgumentNullException(nameof(templateContext))).TemplateIdentifier;
             this.jsonLineNumberResolver = new(templateContext);
             this.sourceMap = (templateContext.SourceMap as SourceMap) ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
@@ -62,10 +64,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // sort largest to smallest map size to sort into reference order
             matches.Sort((x, y) => x.mapSize.CompareTo(y.mapSize));
 
-            // default source location if no matches
+            // default to result from JSON if no matches (i.e. a bicep module references a JSON template that wouldn't be in source map)
             if (matches.Count == 0)
             {
-                new SourceLocation(1);
+                return new SourceLocation(this.EntrypointFilePath, jsonLine + 1); // convert line number back to 1-indexing
             }
 
             // TODO: verify entrypoint file should always be top of call stack
@@ -76,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             foreach (var match in matches)
             {
                 var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, match.filePathRelativeToEntrypoint));
-                sourceLocation = new SourceLocation(match.lineNumber + 1, matchFullFilePath, sourceLocation); // convert line number back to 1-indexing
+                sourceLocation = new SourceLocation(matchFullFilePath, match.lineNumber + 1, sourceLocation); // convert line number back to 1-indexing
             }
 
             return sourceLocation;

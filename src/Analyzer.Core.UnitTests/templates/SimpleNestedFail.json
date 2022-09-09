@@ -54,6 +54,42 @@
                   "ftpsState": "undesiredValue"
                 }
               }
+            },
+            {
+              "apiVersion": "2019-08-01",
+              "type": "Microsoft.Web/sites",
+              "kind": "api",
+              "name": "undesiredFtpsState2",
+              "location": "[parameters('location')]",
+              "properties": {
+                "siteConfig": {
+                  "ftpsState": "undesiredValue"
+                }
+              }
+            },
+            {
+              "apiVersion": "2019-08-01",
+              "type": "Microsoft.Web/sites",
+              "kind": "api",
+              "name": "undesiredFtpsState3",
+              "location": "[parameters('location')]",
+              "properties": {
+                "siteConfig": {
+                  "ftpsState": "undesiredValue"
+                }
+              }
+            },
+            {
+              "apiVersion": "2019-08-01",
+              "type": "Microsoft.Web/sites",
+              "kind": "api",
+              "name": "undesiredFtpsState4",
+              "location": "[parameters('location')]",
+              "properties": {
+                "siteConfig": {
+                  "ftpsState": "undesiredValue"
+                }
+              }
             }
           ]
         },

@@ -110,7 +110,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
                         int.Parse(str.Split(":")[1]))).ToList()).ToList();
 
             Assert.AreEqual(expectedSourceLocations.Count, failedSourceLocations.Count);
-
             foreach(var expectedLocation in expectedSourceLocations)
             {
                 Assert.IsTrue(failedSourceLocations.Any(loc => loc.SequenceEqual(expectedLocation)));

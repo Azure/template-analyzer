@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(10) }
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 10) }
                     }
                 }
             },
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(65) }
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 65) }
                     },
                     new MockEvaluation
                     {
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(120) }
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 120) }
                     }
                 }
             },
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(65) }
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 65) }
                     },
                     new MockEvaluation
                     {
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(65) }
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 65) }
                     },
                     new MockEvaluation
                     {
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(120) }
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 120) }
                     }
                 }
             },
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                                     }
                                 }
                             },
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(117) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 117) }
                             },
                         },
                     }
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                                     }
                                 }
                             },
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(23) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 23) }
                             },
                         },
                     },
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -190,13 +190,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(245) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 245) }
                                     }
                                 }
                             },
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                                     }
                                 }
                             },
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(23) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 23) }
                             },
                         },
                     },
@@ -252,7 +252,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -263,13 +263,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(245) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 245) }
                                     }
                                 }
                             },
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -299,13 +299,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(245) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 245) }
                                     }
                                 }
                             },
@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                                     }
                                 }
                             },
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(117) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 117) }
                             },
                         },
                     },
@@ -361,7 +361,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -372,13 +372,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(618) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 618) }
                                     }
                                 }
                             },
@@ -397,7 +397,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -408,13 +408,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(618) }
+                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 618) }
                                     }
                                 }
                             },
@@ -445,7 +445,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                                     }
                                 }
                             },
@@ -453,7 +453,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(117) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 117) }
                             },
                         },
                     },
@@ -470,7 +470,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -481,13 +481,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(618) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 618) }
                                     }
                                 }
                             },
@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -517,13 +517,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(618) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 618) }
                                     }
                                 }
                             },
@@ -542,7 +542,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -553,13 +553,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 130) }
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(618) }
+                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 618) }
                                     }
                                 }
                             },
@@ -590,7 +590,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(9) }
+                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 9) }
                                     }
                                 }
                             },
@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(117) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 117) }
                             },
                         },
                     },
@@ -615,7 +615,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(25) }
+                                Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 25) }
                             },
                             new MockEvaluation
                             {
@@ -626,7 +626,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(130) }
+                                        Result = new MockResult { Passed = true, SourceLocation = new Types.SourceLocation(default, 130) }
                                     }
                                 }
                             },
@@ -652,19 +652,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(9) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 9) }
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(15) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 15) }
                             }
                         },
                     },
@@ -681,19 +681,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(45) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 45) }
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(45) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 45) }
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(50) }
+                                Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(default, 50) }
                             }
                         }
                     }
