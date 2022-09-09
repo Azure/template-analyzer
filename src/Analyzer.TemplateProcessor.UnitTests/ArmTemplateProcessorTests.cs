@@ -1114,7 +1114,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             JToken template = armTemplateProcessor.ProcessTemplate();
 
-            Assert.AreEqual("/providers/Microsoft.Management/managementGroups/examplemg1", template["resources"][0]["properties"]["details"]["parent"]["id"]);
+            Assert.AreEqual("/providers/Microsoft.Management/managementGroups/placeholderManagementGroup", template["resources"][0]["properties"]["details"]["parent"]["id"]);
         }
 
         private string GenerateTemplateWithOutputs(string outputValue)
