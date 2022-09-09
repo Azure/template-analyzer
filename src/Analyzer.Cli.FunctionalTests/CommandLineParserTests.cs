@@ -102,7 +102,7 @@ namespace Analyzer.Cli.FunctionalTests
         [TestMethod]
         public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
         {
-            var args = new string[] { "analyze-directory", Directory.GetCurrentDirectory() };
+            var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests") };
 
             using StringWriter outputWriter = new();
             Console.SetOut(outputWriter);
