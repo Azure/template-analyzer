@@ -66,9 +66,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         {
             this.RootPath ??= templateFile.DirectoryName;
 
-
-            var rule3 = evaluations.Where(e => e.RuleId == "TA-000003").ToList();
-
             var resultsByFile = ReportsHelper.GetResultsByFile(evaluations, filesAlreadyOutput);
 
             // output files in sorted order, but always output root first
@@ -98,14 +95,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     };
                 }
 
-                foreach ((var evaluation, var failedLines) in resultsByFile[fileWithResults])
+                foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
                     // get rule definition from first level evaluation
                     this.ExtractRule(evaluation);
 
                     // create location for each individual result
                     (var pathBelongsToRoot, var filePath) = GetFilePathInfo(fileWithResults);
-                    var locations = failedLines.Select(line => new Location
+                    var locations = failedResults.Select(result => new Location
                     {
                         PhysicalLocation = new PhysicalLocation
                         {
@@ -116,7 +113,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                                     UriKind.RelativeOrAbsolute),
                                 UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
                             },
-                            Region = new Region { StartLine = line },
+                            Region = new Region { StartLine = result.SourceLocation.GetActualLocation().LineNumber },
                         },
                     }).ToList();
 

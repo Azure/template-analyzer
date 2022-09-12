@@ -73,6 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // TODO: verify entrypoint file should always be top of call stack
             if (Path.GetFileName(this.EntrypointFilePath) != matches.Last().filePathRelativeToEntrypoint) throw new Exception();
 
+            // TODO: use actual location more than anything, beneficial to reverse order of linked list?
             SourceLocation sourceLocation = null;
             var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
             foreach (var match in matches)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
@@ -16,7 +17,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="evaluations"></param>
         /// <param name="filesToSkip"></param>
         /// <returns></returns>
-        public static Dictionary<string, List<(IEvaluation, int[])>> GetResultsByFile(
+        public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
             IEnumerable<string> filesToSkip)
         {
@@ -30,22 +31,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="filesToSkip"></param>
         /// <param name="passedEvaluations"></param>
         /// <returns></returns>
-        public static Dictionary<string, List<(IEvaluation, int[])>> GetResultsByFile(
+        public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
             IEnumerable<string> filesToSkip,
             out int passedEvaluations)
         {
-            var resultsByFile = new Dictionary<string, List<(IEvaluation, int[])>>();
+            var resultsByFile = new Dictionary<string, List<(IEvaluation, IList<IResult>)>>();
             passedEvaluations = 0;
 
 
             foreach (var evaluation in evaluations)
             {
-                if (evaluation.RuleId != "TA-000003") continue; // DEbug
+                //if (evaluation.RuleId != "TA-000003") continue; // DEbug
 
                 if (!evaluation.Passed)
                 {
-                    (var actualFile, var failedLines) = GetEvaluationResultInfo(evaluation);
+                    (var actualFile, var failedResults) = GetResultsByFileInternal(evaluation);
 
                     // a file's results may have already been output if analyzing directory
                     if (filesToSkip.Contains(actualFile))
@@ -55,12 +56,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
                     if (!resultsByFile.ContainsKey(actualFile))
                     {
-                        resultsByFile[actualFile] = new List<(IEvaluation, int[])>();
+                        resultsByFile[actualFile] = new List<(IEvaluation, IList<IResult>)>();
                     }
 
-                    if (!resultsByFile[actualFile].Select(i => i.Item2).Contains(failedLines))
+                    // skip any evaluations with duplicate results (i.e. two source locations from other templates refer to same result)
+                    if (!resultsByFile[actualFile].Select(i => i.Item2).Any(results => Enumerable.SequenceEqual(results, failedResults)))
                     {
-                        resultsByFile[actualFile].Add((evaluation, failedLines));
+                        resultsByFile[actualFile].Add((evaluation, failedResults));
                     }
                 }
                 else
@@ -84,20 +86,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="evaluation"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static (string, int[]) GetEvaluationResultInfo(Types.IEvaluation evaluation)
+        public static (string, IList<IResult>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
             // get all distinct failed results in evaluation
             var failedResults = GetFailedResults(evaluation).Distinct().ToList();
+            failedResults.Sort((x, y) => x.SourceLocation.GetActualLocation().LineNumber.CompareTo(y.SourceLocation.GetActualLocation().LineNumber));
 
             // assumption: all results in a top-level evaluation are in a single resource and therefore in a single source file, so we can just look at the first to get them all
             // TODO: validating assumption
-            var failedActualFiles = failedResults.Select(r => r.SourceLocation.GetActualLocation().FilePath).Distinct().ToList();
-            if (failedActualFiles.Count != 1) throw new Exception("not 1 actual source file in top level eval");
+            if (failedResults.Select(r => r.SourceLocation.GetActualLocation().FilePath).Distinct().Count() != 1) throw new Exception("not 1 actual source file in top level eval");
 
             var actualFile = failedResults.First().SourceLocation.GetActualLocation().FilePath;
-            var failedLines = failedResults.Select(r => r.SourceLocation.GetActualLocation().LineNumber).ToArray();
 
-            return (actualFile, failedLines);
+            return (actualFile, failedResults);
         }
 
         /// <summary>

@@ -21,14 +21,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     public class SarifReportWriterE2ETests
     {
         [TestMethod]
-        public void AnalyzeTemplateTests()
+        [DataRow("SQLServerAuditingSettings.json", new int[] { 23, 24, 25 }, new int[] { 43, 44, 45 }, false)]
+        [DataRow("SQLServerAuditingSettings.bicep", new int[] { 14, 15, 16 }, new int[] { 31, 32, 33 }, false)]
+        [DataRow("TemplateWithReference.bicep", new int[] { 14, 15, 16 }, new int[] { 31, 32, 33 }, true)]
+        public void AnalyzeTemplateTests(string template, int[] expectedLinesR1, int[] expectedLinesR2, bool isReferenced)
         {
             // arrange
             string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
-            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "TemplateWithReference.bicep"));
+            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, template));
 
             var results = TemplateAnalyzer.Create(false).AnalyzeTemplate(
-                template: ReadTemplate("TemplateWithReference.bicep"),
+                template: ReadTemplate(template),
                 parameters: null,
                 templateFilePath: templateFilePath.FullName);
 
@@ -39,17 +42,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
             }
 
-            File.WriteAllText($@"C:\Users\nichb\Desktop\output.txt", Encoding.UTF8.GetString(memStream.ToArray()));
+            //File.WriteAllText($@"C:\Users\nichb\Desktop\output.txt", Encoding.UTF8.GetString(memStream.ToArray()));
 
             // assert
             string ruleId = "TA-000028";
-            var expectedLinesForRun = new List<List<int>>
-            {
-                //new List<int> { 23, 24, 25 },
-                //new List<int> { 43, 44, 45 }
-                new List<int> { 14, 15, 16 },
-                new List<int> { 31, 32, 33 },
-            };
+            var expectedLinesForRun = new List<List<int>> { expectedLinesR1.ToList(), expectedLinesR2.ToList() };
 
             string artifactUriString = templateFilePath.Name;
             SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
@@ -67,78 +64,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 result.RuleId.Should().BeEquivalentTo(ruleId);
                 result.Level.Should().Be(FailureLevel.Error);
 
-                var expectedLines = expectedLinesForRun.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
-                expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
-                expectedLinesForRun.Remove(expectedLines);
-
-                // Verify lines reported equal the expected lines
-                result.Locations.Count.Should().Be(expectedLines.Count);
-                foreach (var location in result.Locations)
+                if (isReferenced)
                 {
-                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
-                    var line = location.PhysicalLocation.Region.StartLine;
-
-                    // Verify line is expected, and remove from the collection
-                    expectedLines.Contains(line).Should().BeTrue();
-                    expectedLines.Remove(line);
+                    result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
                 }
 
-                // Verify all lines were reported
-                expectedLines.Should().BeEmpty();
-            }
-
-            // Verify all lines were reported
-            expectedLinesForRun.Should().BeEmpty();
-        }
-
-
-        [TestMethod]
-        public void AnalyzeTemplateWithExternalReferencesTests()
-        {
-            // arrange
-            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
-            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "Main.bicep"));
-
-            var results = TemplateAnalyzer.Create(false).AnalyzeTemplate(
-                template: ReadTemplate("Main.bicep"),
-                parameters: null,
-                templateFilePath: templateFilePath.FullName);
-
-            // act
-            var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream))
-            {
-                writer.WriteResults(results, (FileInfoBase)templateFilePath);
-            }
-
-            // assert
-            string ruleId = "TA-000028";
-            var expectedLinesForRun = new List<List<int>>
-            {
-                //new List<int> { 23, 24, 25 },
-                //new List<int> { 43, 44, 45 }
-                new List<int> { 14, 15, 16 },
-                new List<int> { 31, 32, 33 },
-            };
-
-            File.WriteAllText($@"C:\Users\nichb\Desktop\output.txt", Encoding.UTF8.GetString(memStream.ToArray()));
-
-            string artifactUriString = templateFilePath.Name;
-            SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
-            sarifLog.Should().NotBeNull();
-
-            Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(1);
-            run.Tool.Driver.Rules.First().Id.Should().BeEquivalentTo(ruleId);
-            run.OriginalUriBaseIds.Count.Should().Be(1);
-            run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-            run.Results.Count.Should().Be(expectedLinesForRun.Count);
-
-            foreach (Result result in run.Results)
-            {
-                result.RuleId.Should().BeEquivalentTo(ruleId);
-                result.Level.Should().Be(FailureLevel.Error);
-
                 var expectedLines = expectedLinesForRun.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
                 expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
                 expectedLinesForRun.Remove(expectedLines);
@@ -147,10 +77,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 result.Locations.Count.Should().Be(expectedLines.Count);
                 foreach (var location in result.Locations)
                 {
-                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
-                    var line = location.PhysicalLocation.Region.StartLine;
+                    if (isReferenced)
+                    {
+                        location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().NotBeEquivalentTo(artifactUriString);
+                    }
+                    else
+                    {
+                        location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
+                    }
 
                     // Verify line is expected, and remove from the collection
+                    var line = location.PhysicalLocation.Region.StartLine;
                     expectedLines.Contains(line).Should().BeTrue();
                     expectedLines.Remove(line);
                 }

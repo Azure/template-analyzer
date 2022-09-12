@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public bool Equals(PowerShellRuleResult other)
         {
             return Passed.Equals(other.Passed) &&
-                SourceLocation.GetActualLocation().Equals(other.SourceLocation.GetActualLocation());
+                SourceLocation.Equals(other.SourceLocation);
         }
 
         /// <inheritdoc/>
@@ -43,7 +43,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            int a = Passed.GetHashCode();
+            var actualLocation = SourceLocation.GetActualLocation();
+            int locHash = actualLocation.GetHashCode();
+            int result = a ^ locHash;
+            return result;
         }
     }
 }

@@ -57,11 +57,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
                 Console.WriteLine(fileMetadata);
 
-                foreach ((var evaluation, var failedLines) in resultsByFile[fileWithResults])
+                foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
                     if (evaluation.RuleId != "TA-000003") continue; // DEbug
 
-                    string resultString = string.Concat(failedLines.Select(l => $"{TwiceIndentedNewLine}Line: {l}"));
+                    string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.GetActualLocation().LineNumber}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                         $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" +
                         (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
