@@ -49,11 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
         public override int GetHashCode()
         {
-            int a = Passed.GetHashCode();
-            var actualLocation = SourceLocation.GetActualLocation();
-            int locHash = actualLocation.GetHashCode();
-            int result = a ^ locHash;
-            return result;
+            return Passed.GetHashCode() ^ SourceLocation.GetHashCode();
         }
     }
 }

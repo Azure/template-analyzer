@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// The source location where the current location is referencing (i.e. line for bicep module)
         /// </summary>
-        public readonly SourceLocation ReferencedLocation;
+        public readonly SourceLocation ReferencedBy;
 
         // <summary>
         // TODO 
@@ -34,30 +34,30 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="lineNumber"></param>
-        /// <param name="referencedLocation"></param>
-        public SourceLocation(string filePath, int lineNumber, SourceLocation referencedLocation = null)
+        /// <param name="referencedBy"></param>
+        public SourceLocation(string filePath, int lineNumber, SourceLocation referencedBy = null)
         {
             this.FilePath = filePath;
             this.LineNumber = lineNumber;
-            this.ReferencedLocation = referencedLocation;
+            this.ReferencedBy = referencedBy;
             //this.ActualLocation = this.GetActualLocation();
         }
 
-        /// <summary>
-        /// Returns the actual source location, not a reference location (i.e. module)
-        /// </summary>
-        /// <returns></returns>
-        public SourceLocation GetActualLocation()
-        {
-            SourceLocation curLocation = this;
+        ///// <summary>
+        ///// Returns the actual source location, not a reference location (i.e. module)
+        ///// </summary>
+        ///// <returns></returns>
+        //public SourceLocation GetActualLocation()
+        //{
+        //    SourceLocation curLocation = this;
 
-            while (curLocation.ReferencedLocation != null)
-            {
-                curLocation = curLocation.ReferencedLocation;
-            }
+        //    while (curLocation.ReferencedBy != null)
+        //    {
+        //        curLocation = curLocation.ReferencedBy;
+        //    }
 
-            return curLocation;
-        }
+        //    return curLocation;
+        //}
 
         /// <summary>
         /// TODO
@@ -86,11 +86,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <returns></returns>
         public bool Equals(SourceLocation other)
         {
-            var thisActual = this.GetActualLocation();
-            var otherActual = other.GetActualLocation();
-
-            return thisActual.FilePath.Equals(otherActual.FilePath)
-                && thisActual.LineNumber.Equals(otherActual.LineNumber);
+            return this.FilePath.Equals(other.FilePath)
+                && this.LineNumber.Equals(other.LineNumber);
         }
     }
 }

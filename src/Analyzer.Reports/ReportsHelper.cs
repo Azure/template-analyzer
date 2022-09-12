@@ -90,13 +90,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         {
             // get all distinct failed results in evaluation
             var failedResults = GetFailedResults(evaluation).Distinct().ToList();
-            failedResults.Sort((x, y) => x.SourceLocation.GetActualLocation().LineNumber.CompareTo(y.SourceLocation.GetActualLocation().LineNumber));
+            failedResults.Sort((x, y) => x.SourceLocation.LineNumber.CompareTo(y.SourceLocation.LineNumber));
 
             // assumption: all results in a top-level evaluation are in a single resource and therefore in a single source file, so we can just look at the first to get them all
             // TODO: validating assumption
-            if (failedResults.Select(r => r.SourceLocation.GetActualLocation().FilePath).Distinct().Count() != 1) throw new Exception("not 1 actual source file in top level eval");
+            if (failedResults.Select(r => r.SourceLocation.FilePath).Distinct().Count() != 1) throw new Exception("not 1 actual source file in top level eval");
 
-            var actualFile = failedResults.First().SourceLocation.GetActualLocation().FilePath;
+            var actualFile = failedResults.First().SourceLocation.FilePath;
 
             return (actualFile, failedResults);
         }

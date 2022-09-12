@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     if (evaluation.RuleId != "TA-000003") continue; // DEbug
 
-                    string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.GetActualLocation().LineNumber}"));
+                    string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.LineNumber}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                         $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" +
                         (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +

@@ -118,11 +118,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     evalsToNotValidate.Add(eval);
                 }
             }
-            var uniqueResults = new Dictionary<(string ruleId, int lineNumber, string fileName), IEvaluation>();
+            var uniqueResults = new Dictionary<(string ruleId, string fileName, int lineNumber), IEvaluation>();
             foreach (var eval in evalsToValidate)
             {
-                var actualLocation = eval.Result.SourceLocation.GetActualLocation();
-                uniqueResults.TryAdd((eval.RuleId, actualLocation.LineNumber, actualLocation.FilePath), eval);
+                uniqueResults.TryAdd((eval.RuleId, eval.Result.SourceLocation.FilePath, eval.Result.SourceLocation.LineNumber), eval);
             }
             evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
 

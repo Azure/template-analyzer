@@ -61,8 +61,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 }
             }
 
-            // sort largest to smallest map size to sort into reference order
-            matches.Sort((x, y) => x.mapSize.CompareTo(y.mapSize));
+            // sort smallest to largest map size to sort into reference order
+            matches.Sort((x, y) => y.mapSize.CompareTo(x.mapSize));
 
             // default to result from JSON if no matches (i.e. a bicep module references a JSON template that wouldn't be in source map)
             if (matches.Count == 0)
@@ -71,9 +71,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             }
 
             // TODO: verify entrypoint file should always be top of call stack
-            if (Path.GetFileName(this.EntrypointFilePath) != matches.Last().filePathRelativeToEntrypoint) throw new Exception();
+            if (Path.GetFileName(this.EntrypointFilePath) != matches.First().filePathRelativeToEntrypoint) throw new Exception();
 
-            // TODO: use actual location more than anything, beneficial to reverse order of linked list?
             SourceLocation sourceLocation = null;
             var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
             foreach (var match in matches)

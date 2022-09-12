@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                                     UriKind.RelativeOrAbsolute),
                                 UriBaseId = pathBelongsToRoot ? UriBaseIdString : null,
                             },
-                            Region = new Region { StartLine = result.SourceLocation.GetActualLocation().LineNumber },
+                            Region = new Region { StartLine = result.SourceLocation.LineNumber },
                         },
                     }).ToList();
 

@@ -127,9 +127,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
                 var curLocation = evaluation.Result.SourceLocation;
 
                 referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
-                while (curLocation.ReferencedLocation != null)
+                while (curLocation.ReferencedBy != null)
                 {
-                    curLocation = curLocation.ReferencedLocation;
+                    curLocation = curLocation.ReferencedBy;
                     referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
                 }
 
