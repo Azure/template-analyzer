@@ -786,5 +786,29 @@
         }
       ]
     }
+  },
+  {
+    "id": "TA-000030",
+    "description": "Migrate your Classic Compute VM to ARM",
+    "recommendation": "Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000030-migrate-your-classic-compute-vm-to-arm",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ClassicCompute/virtualMachines",
+      "path": "type",
+      "notEquals": "Microsoft.ClassicCompute/virtualMachines"
+    }
+  },
+  {
+    "id": "TA-000031",
+    "description": "Migrate your Classic Storage Account to ARM",
+    "recommendation": "Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000031-migrate-your-classic-storage-account-to-arm",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ClassicStorage/storageAccounts",
+      "path": "type",
+      "notEquals": "Microsoft.ClassicStorage/storageAccounts"
+    }
   }
 ]

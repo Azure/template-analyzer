@@ -180,3 +180,15 @@ Set the protocols property to only include HTTPs.
 
 **Recommendation**: To use encrypted protocols only, add (or update) the *protocols* property in the [Microsoft.ApiManagement/service/apis resource properties](https://docs.microsoft.com/azure/templates/microsoft.apimanagement/service/apis?tabs=json), to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure.
 #### Severity: 1
+
+### TA-000030: Migrate your Classic Compute VM to ARM
+Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model. You can learn more about the differences [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/deployment-models).
+
+**Recommendation**: Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.
+#### Severity: 1
+
+### TA-000031: Migrate your Classic Storage Account to ARM
+Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model. You can learn more about the differences [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/deployment-models).
+
+**Recommendation**: Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.
+#### Severity: 1
