@@ -367,212 +367,103 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("resources[0].properties.expressionEvaluationOptions", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "expressionEvaluationOptions" }, DisplayName = "Two levels nested template resource property found")]
         [DataRow("contentVersion", 3, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "template", "contentVersion" }, DisplayName = "Three levels nested template property found")]
         [DataRow("resources[0].location", 3, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "template", "resources", 0, "location" }, DisplayName = "Three levels nested template resource property found")]
-        public void ResolveLineNumber_ReturnsCorrectLineNumberForNestedTemplates(string path, int templateContextIndex, object[] pathInOriginalTemplate)
+        public void ResolveLineNumber_TemplatesWithNestedTemplates_ReturnsCorrectLineNumber(string path, int templateContextIndex, object[] pathInOriginalTemplate)
         {
-            string parentTemplate =
-                    @"{
-                        ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
-                        ""contentVersion"": ""1.0.0.0"",
-                        ""resources"": [
-                        {
-                            ""type"": ""Microsoft.Resources/deployments"",
-                            ""apiVersion"": ""2019-10-01"",
-                            ""name"": ""nestedTemplate"",
-                            ""resourceGroup"": ""my-rg"",
-                            ""properties"": {
+            string thirdChildTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2019-08-01"",
+                        ""type"": ""Microsoft.Web/sites"",
+                        ""kind"": ""api"",
+                        ""name"": ""resourceToFlag"",
+                        ""location"": ""US"",
+                        ""properties"": {}
+                    }
+                ]
+            }";
+
+            string secondChildTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2016-09-01"",
+                        ""name"": ""nestedTemplate3"",
+                        ""resourceGroup"": ""aResourceGroup"",
+                        ""properties"": {
                             ""mode"": ""Incremental"",
                             ""expressionEvaluationOptions"": {
                                 ""scope"": ""inner""
                             },
-                            ""template"": {
-                                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                                ""contentVersion"": ""1.0.0.0"",
-                                ""parameters"": {
-                                ""ftpsState"": {
-                                    ""type"": ""string"",
-                                    ""defaultValue"": ""undesiredValue""
-                                }
-                                },
-                                ""resources"": [
-                                {
-                                    ""apiVersion"": ""2019-08-01"",
-                                    ""type"": ""Microsoft.Web/sites"",
-                                    ""kind"": ""api"",
-                                    ""name"": ""withoutSpecifyingProperties"",
-                                    ""location"": ""US"",
-                                    ""properties"": {
-                                    ""siteConfig"": {
-                                        ""ftpsState"": ""[parameters('ftpsState')]""
-                                    }
-                                    }
-                                }, 
-                                {
-                                    ""type"": ""Microsoft.Resources/deployments"",
-                                    ""apiVersion"": ""2016-09-01"",
-                                    ""name"": ""nestedTemplate2"",
-                                    ""resourceGroup"": ""my-rg2"",
-                                    ""properties"": {
-                                    ""mode"": ""Incremental"",
-                                    ""expressionEvaluationOptions"": {
-                                        ""scope"": ""inner""
-                                    },
-                                    ""template"": {
-                                        ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                                        ""contentVersion"": ""1.0.0.0"",
-                                        ""resources"": [
-                                        {
-                                            ""type"": ""Microsoft.Resources/deployments"",
-                                            ""apiVersion"": ""2016-09-01"",
-                                            ""name"": ""nestedTemplate3"",
-                                            ""resourceGroup"": ""my-rg2"",
-                                            ""properties"": {
-                                            ""mode"": ""Incremental"",
-                                            ""expressionEvaluationOptions"": {
-                                                ""scope"": ""inner""
-                                            },
-                                            ""template"": {
-                                                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                                                ""contentVersion"": ""1.0.0.0"",
-                                                ""resources"": [
-                                                {
-                                                    ""apiVersion"": ""2019-08-01"",
-                                                    ""type"": ""Microsoft.Web/sites"",
-                                                    ""kind"": ""api"",
-                                                    ""name"": ""withoutSpecifyingProperties2"",
-                                                    ""location"": ""US"",
-                                                    ""properties"": {}
-                                                }
-                                                ]
-                                            }
-                                            }
-                                        }
-                                        ]
-                                    }
-                                    }
-                                }
-                                ]
-                            }
-                            }
+                            ""template"": " + thirdChildTemplate + @"
                         }
-                        ]
-                    }";
+                    }
+                ]
+            }";
+
             string firstChildTemplate =
-                    @"{
-                        ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                        ""contentVersion"": ""1.0.0.0"",
-                        ""parameters"": {
-                        ""ftpsState"": {
-                            ""type"": ""string"",
-                            ""defaultValue"": ""undesiredValue""
-                        }
-                        },
-                        ""resources"": [
-                        {
-                            ""apiVersion"": ""2019-08-01"",
-                            ""type"": ""Microsoft.Web/sites"",
-                            ""kind"": ""api"",
-                            ""name"": ""withoutSpecifyingProperties"",
-                            ""location"": ""US"",
-                            ""properties"": {
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {
+                    ""ftpsState"": {
+                        ""type"": ""string"",
+                        ""defaultValue"": ""undesiredValue""
+                    }
+                },
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2019-08-01"",
+                        ""type"": ""Microsoft.Web/sites"",
+                        ""kind"": ""api"",
+                        ""name"": ""anotherResourceToFlag"",
+                        ""location"": ""US"",
+                        ""properties"": {
                             ""siteConfig"": {
                                 ""ftpsState"": ""[parameters('ftpsState')]""
                             }
-                            }
-                        }, 
-                        {
-                            ""type"": ""Microsoft.Resources/deployments"",
-                            ""apiVersion"": ""2016-09-01"",
-                            ""name"": ""nestedTemplate2"",
-                            ""resourceGroup"": ""my-rg2"",
-                            ""properties"": {
+                        }
+                    }, 
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2016-09-01"",
+                        ""name"": ""nestedTemplate2"",
+                        ""resourceGroup"": ""aResourceGroup"",
+                        ""properties"": {
                             ""mode"": ""Incremental"",
                             ""expressionEvaluationOptions"": {
                                 ""scope"": ""inner""
                             },
-                            ""template"": {
-                                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                                ""contentVersion"": ""1.0.0.0"",
-                                ""resources"": [
-                                {
-                                    ""type"": ""Microsoft.Resources/deployments"",
-                                    ""apiVersion"": ""2016-09-01"",
-                                    ""name"": ""nestedTemplate3"",
-                                    ""resourceGroup"": ""my-rg2"",
-                                    ""properties"": {
-                                    ""mode"": ""Incremental"",
-                                    ""expressionEvaluationOptions"": {
-                                        ""scope"": ""inner""
-                                    },
-                                    ""template"": {
-                                        ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                                        ""contentVersion"": ""1.0.0.0"",
-                                        ""resources"": [
-                                        {
-                                            ""apiVersion"": ""2019-08-01"",
-                                            ""type"": ""Microsoft.Web/sites"",
-                                            ""kind"": ""api"",
-                                            ""name"": ""withoutSpecifyingProperties2"",
-                                            ""location"": ""US"",
-                                            ""properties"": {}
-                                        }
-                                        ]
-                                    }
-                                    }
-                                }
-                                ]
-                            }
-                            }
+                            ""template"": " + secondChildTemplate + @"
                         }
-                        ]
-                    }";
-            string secondChildTemplate =
-                    @"{
-                        ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                        ""contentVersion"": ""1.0.0.0"",
-                        ""resources"": [
-                        {
-                            ""type"": ""Microsoft.Resources/deployments"",
-                            ""apiVersion"": ""2016-09-01"",
-                            ""name"": ""nestedTemplate3"",
-                            ""resourceGroup"": ""my-rg2"",
-                            ""properties"": {
+                    }
+                ]
+            }";
+
+            string parentTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2019-10-01"",
+                        ""name"": ""nestedTemplate"",
+                        ""properties"": {
                             ""mode"": ""Incremental"",
                             ""expressionEvaluationOptions"": {
                                 ""scope"": ""inner""
                             },
-                            ""template"": {
-                                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                                ""contentVersion"": ""1.0.0.0"",
-                                ""resources"": [
-                                {
-                                    ""apiVersion"": ""2019-08-01"",
-                                    ""type"": ""Microsoft.Web/sites"",
-                                    ""kind"": ""api"",
-                                    ""name"": ""withoutSpecifyingProperties2"",
-                                    ""location"": ""US"",
-                                    ""properties"": {}
-                                }
-                                ]
-                            }
-                            }
+                            ""template"": " + firstChildTemplate + @"
                         }
-                        ]
-                    }";
-            string thirdChildTemplate =
-                    @"{
-                        ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                        ""contentVersion"": ""1.0.0.0"",
-                        ""resources"": [
-                        {
-                            ""apiVersion"": ""2019-08-01"",
-                            ""type"": ""Microsoft.Web/sites"",
-                            ""kind"": ""api"",
-                            ""name"": ""withoutSpecifyingProperties2"",
-                            ""location"": ""US"",
-                            ""properties"": {}
-                        }
-                        ]
-                    }";
+                    }
+                ]
+            }";
 
             TemplateContext parentTemplateContext = new TemplateContext
             {
@@ -583,6 +474,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                     { "resources[0]", "resources[0]" },
                 }
             };
+
             TemplateContext firstChildTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(firstChildTemplate),
@@ -596,6 +488,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 PathPrefix = "resources[0].properties.template",
                 ParentContext = parentTemplateContext
             };
+
             TemplateContext secondChildTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(secondChildTemplate),
@@ -608,6 +501,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                 PathPrefix = "resources[1].properties.template",
                 ParentContext = firstChildTemplateContext
             };
+
             TemplateContext thirdChildTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(thirdChildTemplate),
@@ -636,6 +530,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
             }
 
             var expectedLineNumber = (tokenInOriginalTemplate as IJsonLineInfo).LineNumber;
+
             Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
         }
     }
