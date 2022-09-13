@@ -196,7 +196,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
                         if (nestedTemplate == null)
                         {
-                            continue; // This is a Linked template 
+                            this.logger?.LogWarning("Linked templates are currently not supported");
+
+                            continue;
                         }
                         var populatedNestedTemplate = nestedTemplate.DeepClone();
 
