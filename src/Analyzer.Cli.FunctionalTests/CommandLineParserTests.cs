@@ -110,7 +110,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 9 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 10 files");
         }
 
         [DataTestMethod]
@@ -278,6 +278,24 @@ namespace Analyzer.Cli.FunctionalTests
             {
                 File.Delete(configName);
             }
+        }
+
+        [DataTestMethod]
+        [DataRow("nestedOnlyDefinedProperties.json", DisplayName = "Variable/Parameter name not found warning should not be generated")]
+        public void ProcessTemplateResourceLanguageExpressions_PropertiesDefinedInInnerTemplateOnly_NoWarning(string relativeTemplatePath)
+        {
+            var templatePath = GetFilePath(relativeTemplatePath);
+            var args = new string[] { "analyze-template", templatePath };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            var cliConsoleOutput = outputWriter.ToString();
+
+            // All JSON rules are filtered out; PSRule rules are currently not filtered by the config file and should appear in the output
+            Assert.IsTrue(!cliConsoleOutput.Contains("Warning"));
         }
 
         [DataTestMethod]
