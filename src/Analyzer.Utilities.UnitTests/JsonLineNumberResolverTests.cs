@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -363,6 +364,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("resources[0].properties.template", 0, new object[] { "resources", 0, "properties", "template"}, DisplayName = "Parent template resource property found")]
         [DataRow("resources[0].properties.siteConfig.ftpsState", 1, new object[] { "resources", 0, "properties", "template", "resources", 0, "properties", "siteConfig", "ftpsState" }, DisplayName = "One level nested template resource property found")]
         [DataRow("parameters.ftpsState.defaultValue", 1, new object[] { "resources", 0, "properties", "template", "parameters", "ftpsState", "defaultValue" }, DisplayName = "One level nested template parameter found")]
+        [DataRow("resources[0].resources[0].properties.template", 1, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template" }, DisplayName = "Original resource found, from a resource dependant")]
         [DataRow("resources[0].resourceGroup", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "resourceGroup" }, DisplayName = "Two levels nested template resource property found")]
         [DataRow("resources[0].properties.expressionEvaluationOptions", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "expressionEvaluationOptions" }, DisplayName = "Two levels nested template resource property found")]
         [DataRow("resources[1].properties", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties" }, DisplayName = "Original resource found, from a nested template resource copy")]
@@ -390,53 +392,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                     }
                 ]
             }";
-
-            string expandedThirdChildTemplate =
-            @"{
-                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                ""contentVersion"": ""1.0.0.0"",
-                ""resources"": [
-                    {
-                        ""type"": ""Microsoft.Web/sites"",
-                        ""apiVersion"": ""2019-08-01"",
-                        ""name"": ""0_aResourceToFlag"",
-                        ""location"": ""US"",
-                        ""dependsOn"": [],
-                        ""kind"": ""api"",
-                        ""properties"": {},
-                        ""copy"": {
-                            ""name"": ""aCopyLoop"",
-                            ""count"": 3
-                        }
-                    },
-                    {
-                        ""type"": ""Microsoft.Web/sites"",
-                        ""apiVersion"": ""2019-08-01"",
-                        ""name"": ""1_aResourceToFlag"",
-                        ""location"": ""US"",
-                        ""dependsOn"": [],
-                        ""kind"": ""api"",
-                        ""properties"": {},
-                        ""copy"": {
-                            ""name"": ""aCopyLoop"",
-                            ""count"": 3
-                        }
-                    },
-                    {
-                        ""type"": ""Microsoft.Web/sites"",
-                        ""apiVersion"": ""2019-08-01"",
-                        ""name"": ""2_aResourceToFlag"",
-                        ""location"": ""US"",
-                        ""dependsOn"": [],
-                        ""kind"": ""api"",
-                        ""properties"": {},
-                        ""copy"": {
-                            ""name"": ""aCopyLoop"",
-                            ""count"": 3
-                        }
-                    }
-                ]
-            }";
+            var templateProcessorThirdChild = new ArmTemplateProcessor(originalThirdChildTemplate);
+            var expandedThirdChildTemplate = templateProcessorThirdChild.ProcessTemplate();
 
             string templateEnding = @"
                         }
@@ -452,6 +409,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                     {
                         ""type"": ""Microsoft.Resources/deployments"",
                         ""apiVersion"": ""2016-09-01"",
+                        ""copy"": {
+                            ""count"": 2,
+                            ""name"": ""anotherCopyLoop""
+                        },
                         ""name"": ""[concat(copyIndex(),'_nestedTemplate3')]"",
                         ""resourceGroup"": ""aResourceGroup"",
                         ""properties"": {
@@ -459,51 +420,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                             ""expressionEvaluationOptions"": {
                                 ""scope"": ""inner""
                             },
-                            ""copy"": {
-                                ""count"": 2,
-                                ""name"": ""anotherCopyLoop""
-                            },
                             ""template"": " + originalThirdChildTemplate + templateEnding;
+            var templateProcessorSecondChild = new ArmTemplateProcessor(originalSecondChildTemplate);
+            var expandedSecondChildTemplate = templateProcessorSecondChild.ProcessTemplate();
 
-            string expandedSecondChildTemplate =
-            @"{
-                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
-                ""contentVersion"": ""1.0.0.0"",
-                ""resources"": [
-                    {
-                        ""type"": ""Microsoft.Resources/deployments"",
-                        ""apiVersion"": ""2016-09-01"",
-                        ""name"": ""0_nestedTemplate3"",
-                        ""resourceGroup"": ""aResourceGroup"",
-                        ""properties"": {
-                            ""mode"": ""Incremental"",
-                            ""expressionEvaluationOptions"": {
-                                ""scope"": ""inner""
-                            },
-                            ""copy"": {
-                                ""count"": 2,
-                                ""name"": ""anotherCopyLoop""
-                            },
-                            ""template"": " + expandedThirdChildTemplate +
-                        @"}
-                    },
-                    {
-                        ""type"": ""Microsoft.Resources/deployments"",
-                        ""apiVersion"": ""2016-09-01"",
-                        ""name"": ""1_nestedTemplate3"",
-                        ""resourceGroup"": ""aResourceGroup"",
-                        ""properties"": {
-                            ""mode"": ""Incremental"",
-                            ""expressionEvaluationOptions"": {
-                                ""scope"": ""inner""
-                            },
-                            ""copy"": {
-                                ""count"": 2,
-                                ""name"": ""anotherCopyLoop""
-                            },
-                            ""template"": " + expandedThirdChildTemplate + templateEnding;
-                       
-            string startOfFirstChildTemplate =
+            string originalFirstChildTemplate =
             @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
                 ""contentVersion"": ""1.0.0.0"",
@@ -531,16 +452,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                         ""apiVersion"": ""2016-09-01"",
                         ""name"": ""nestedTemplate2"",
                         ""resourceGroup"": ""aResourceGroup"",
+                        ""dependsOn"": [
+                            ""anotherResourceToFlag""
+                        ],
                         ""properties"": {
                             ""mode"": ""Incremental"",
                             ""expressionEvaluationOptions"": {
                                 ""scope"": ""inner""
                             },
-                            ""template"": ";
-            string originalFirstChildTemplate = startOfFirstChildTemplate + originalSecondChildTemplate + templateEnding;
-            string expandedFirstChildTemplate = startOfFirstChildTemplate + expandedSecondChildTemplate + templateEnding;
+                            ""template"": " + originalSecondChildTemplate + templateEnding;
+            var templateProcessorFirstChild = new ArmTemplateProcessor(originalFirstChildTemplate);
+            var expandedFirstChildTemplate = templateProcessorFirstChild.ProcessTemplate();
 
-            string startOfParentTemplate =
+            string originalParentTemplate =
             @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
                 ""contentVersion"": ""1.0.0.0"",
@@ -554,59 +478,42 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                             ""expressionEvaluationOptions"": {
                                 ""scope"": ""inner""
                             },
-                            ""template"": ";
-            string originalParentTemplate = startOfParentTemplate + originalFirstChildTemplate + templateEnding;
-            string expandedParentTemplate = startOfParentTemplate + expandedFirstChildTemplate + templateEnding;
-            
+                            ""template"": " + originalFirstChildTemplate + templateEnding;
+            var templateProcessorOriginalParent = new ArmTemplateProcessor(originalParentTemplate);
+            var expandedParentTemplate = templateProcessorOriginalParent.ProcessTemplate();
 
-            TemplateContext parentTemplateContext = new TemplateContext
+            var parentTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(originalParentTemplate),
-                ExpandedTemplate = JObject.Parse(expandedParentTemplate),
-                ResourceMappings = new Dictionary<string, string>
-                {
-                    { "resources[0]", "resources[0]" },
-                }
+                ExpandedTemplate = expandedParentTemplate,
+                ResourceMappings = templateProcessorOriginalParent.ResourceMappings
             };
 
-            TemplateContext firstChildTemplateContext = new TemplateContext
+            var firstChildTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(originalFirstChildTemplate),
-                ExpandedTemplate = JObject.Parse(expandedFirstChildTemplate),
-                ResourceMappings = new Dictionary<string, string>
-                {
-                    { "resources[0]", "resources[0]" },
-                    { "resources[1]", "resources[1]" }
-                },
+                ExpandedTemplate = expandedFirstChildTemplate,
+                ResourceMappings = templateProcessorFirstChild.ResourceMappings,
                 IsMainTemplate = false,
                 PathPrefix = "resources[0].properties.template",
                 ParentContext = parentTemplateContext
             };
 
-            TemplateContext secondChildTemplateContext = new TemplateContext
+            var secondChildTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(originalSecondChildTemplate),
-                ExpandedTemplate = JObject.Parse(expandedSecondChildTemplate),
-                ResourceMappings = new Dictionary<string, string>
-                {
-                    { "resources[0]", "resources[0]" },
-                    { "resources[1]", "resources[0]" },
-                },
+                ExpandedTemplate = expandedSecondChildTemplate,
+                ResourceMappings = templateProcessorSecondChild.ResourceMappings,
                 IsMainTemplate = false,
                 PathPrefix = "resources[1].properties.template",
                 ParentContext = firstChildTemplateContext
             };
 
-            TemplateContext thirdChildTemplateContext = new TemplateContext
+            var thirdChildTemplateContext = new TemplateContext
             {
                 OriginalTemplate = JObject.Parse(originalThirdChildTemplate),
-                ExpandedTemplate = JObject.Parse(expandedThirdChildTemplate),
-                ResourceMappings = new Dictionary<string, string>
-                {
-                    { "resources[0]", "resources[0]" },
-                    { "resources[1]", "resources[0]" },
-                    { "resources[2]", "resources[0]" }
-                },
+                ExpandedTemplate = expandedThirdChildTemplate,
+                ResourceMappings = templateProcessorThirdChild.ResourceMappings,
                 IsMainTemplate = false,
                 PathPrefix = "resources[0].properties.template",
                 ParentContext = secondChildTemplateContext
@@ -616,8 +523,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
             // Resolve line number
             var currentTemplateContext = templateContexts[numberOfTemplate];
-            var resolvedLineNumber = new JsonLineNumberResolver(currentTemplateContext)
-                .ResolveLineNumber(pathInTheExpandedTemplate);
+            var resolvedLineNumber = new JsonLineNumberResolver(currentTemplateContext).ResolveLineNumber(pathInTheExpandedTemplate);
 
             // Get expected line number
             var tokenInOriginalTemplate = parentTemplateContext.OriginalTemplate;
