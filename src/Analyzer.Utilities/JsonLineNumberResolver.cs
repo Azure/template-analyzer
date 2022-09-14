@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // Handle path and prefixes backwards one level at a time to construct an accurate resources' path
             var currentContext = this.templateContext;
             var currentPathToEvaluate = pathInExpandedTemplate;
-            string mappedPathInExpandedTemplate = "";
+            string fullPathFromExpandedParentTemplate = "";
 
             while (currentContext != null && currentPathToEvaluate.Length > 0)
             {
@@ -89,17 +89,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                         return 1;
                     }
 
-                    mappedPathInExpandedTemplate = $"{originalResourcePath}.{remainingPathAtResourceScope}.{mappedPathInExpandedTemplate}";
+                    fullPathFromExpandedParentTemplate = $"{originalResourcePath}.{remainingPathAtResourceScope}.{fullPathFromExpandedParentTemplate}";
                 }
                 else
                 {
-                    mappedPathInExpandedTemplate = $"{currentPathToEvaluate}.{mappedPathInExpandedTemplate}";
+                    fullPathFromExpandedParentTemplate = $"{currentPathToEvaluate}.{fullPathFromExpandedParentTemplate}";
                 }
                 currentPathToEvaluate = currentContext.PathPrefix;
                 currentContext = currentContext.ParentContext;
             }
 
-            JToken tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+            JToken tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(fullPathFromExpandedParentTemplate, InsensitivePathNotFoundBehavior.LastValid);
 
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
         }
