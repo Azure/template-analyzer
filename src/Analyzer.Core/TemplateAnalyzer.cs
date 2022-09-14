@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
                         if (nestedTemplate == null)
                         {
-                            this.logger?.LogWarning("Linked templates are currently not supported");
+                            this.logger?.LogWarning($"A linked template was found on: {templateFilePath}, linked templates are currently not supported");
 
                             continue;
                         }
