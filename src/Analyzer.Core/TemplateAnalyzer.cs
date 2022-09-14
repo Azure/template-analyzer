@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 OriginalTemplate = JObject.Parse(populatedTemplate),
                 ExpandedTemplate = templatejObject,
-                IsMainTemplate = parentContext.ParentContext == null,
+                IsMainTemplate = parentContext.OriginalTemplate == null, // Even the top level context will have a parent defined, but it won't represent a processed template
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
                 IsBicep = parentContext.IsBicep,
@@ -203,8 +203,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         var populatedNestedTemplate = nestedTemplate.DeepClone();
 
                         // Check whether scope is set to inner or outer
-                        var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions")?.InsensitiveToken("scope")?.ToString();
-                        string nextPathPrefix = nestedTemplate.Path;
+                        var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions.scope")?.ToString();
                                                
                         if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
                         {
@@ -237,7 +236,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
 
-                        IEnumerable<IEvaluation> result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nextPathPrefix);
+                        IEnumerable<IEvaluation> result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nestedTemplate.Path);
                         evaluations = evaluations.Concat(result);
                     }
                 }
