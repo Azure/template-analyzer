@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Whether this template is the top-level template in a deployment or nested within another template
         /// </summary>
-        public bool IsMainTemplate { get; set; }
+        public bool IsMainTemplate { get; set; } = true;
 
         /// <summary>
         /// Mapping between resources in the expanded template to their original resource in 
@@ -50,8 +50,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public Dictionary<string, string> ResourceMappings { get; set; }
 
         /// <summary>
-        /// Value by which line numbers in the nested template are offset from the parent template
+        /// Prefix of path to nested template properties/resources
         /// </summary>
-        public int Offset { get; set; }
+        public string PathPrefix { get; set; }
+
+        /// <summary>
+        /// Template context for the immediate parent template
+        /// </summary>
+        public TemplateContext ParentContext { get; set; }
     }
 }

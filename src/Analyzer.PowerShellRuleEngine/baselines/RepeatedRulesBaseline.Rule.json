@@ -1,0 +1,26 @@
+﻿[
+  {
+    // Synopsis: Excludes the rules that are already in TemplateAnalyzer
+    "kind": "Baseline",
+    "metadata": {
+      "name": "RepeatedRulesBaseline"
+    },
+    "apiVersion": "github.com/microsoft/PSRule/v1",
+    "spec": {
+      "rule": {
+        "exclude": [
+          "PSRule.Rules.Azure\\Azure.AppService.RemoteDebug", // TA-000002
+          "PSRule.Rules.Azure\\Azure.AppService.WebSecureFtp", // TA-000003
+          "PSRule.Rules.Azure\\Azure.AppService.UseHTTPS", // TA-000004
+          "PSRule.Rules.Azure\\Azure.AppService.MinTLS", // TA-000005 and TA-000017
+          "PSRule.Rules.Azure\\Azure.Automation.EncryptVariables", // TA-000021
+          "PSRule.Rules.Azure\\Azure.Redis.NonSslPort", // TA-000022
+          "PSRule.Rules.Azure\\Azure.AKS.UseRBAC", // TA-000024
+          "PSRule.Rules.Azure\\Azure.ServiceFabric.AAD", // TA-000026
+          "PSRule.Rules.Azure\\Azure.SQL.TDE", // TA-000027
+          "PSRule.Rules.Azure\\Azure.APIM.HTTPEndpoint" // TA-000029
+        ]
+      }
+    }
+  }
+]

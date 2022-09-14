@@ -85,9 +85,25 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
+        public void AnalyzeTemplate_IncludesOrNotNonSecurityRules_ReturnsExpectedExitCode()
+        {
+            var templatePath = GetFilePath("TriggersOnlyNonSecurityRules.json");
+
+            var args = new string[] { "analyze-template", templatePath };
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+            args = new string[] { "analyze-template", templatePath, "--include-non-security-rules" };
+            result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Violation, result.Result);
+        }
+
+        [TestMethod]
         public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
         {
-            var args = new string[] { "analyze-directory", Directory.GetCurrentDirectory() };
+            var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests") };
 
             using StringWriter outputWriter = new();
             Console.SetOut(outputWriter);
@@ -95,7 +111,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 8 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 10 files");
         }
 
         [DataTestMethod]
@@ -244,15 +260,43 @@ namespace Analyzer.Cli.FunctionalTests
                     .ToString());
                 
                 if (specifyInCommand)
+                {
                     args = args.Concat(new[] { "--config-file-path", configName }).ToArray();
+                }
+
+                using StringWriter outputWriter = new();
+                Console.SetOut(outputWriter);
 
                 result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-                Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+                var cliConsoleOutput = outputWriter.ToString();
+
+                // All JSON rules are filtered out; PSRule rules are currently not filtered by the config file and should appear in the output
+                Assert.IsTrue(!cliConsoleOutput.Contains("TA-"));
+                Assert.AreEqual((int)ExitCode.Violation, result.Result);
             }
             finally
             {
                 File.Delete(configName);
             }
+        }
+
+        [DataTestMethod]
+        [DataRow("nestedOnlyDefinedProperties.json", DisplayName = "Variable/Parameter name not found warning should not be generated")]
+        public void ProcessTemplateResourceLanguageExpressions_PropertiesDefinedInInnerTemplateOnly_NoWarning(string relativeTemplatePath)
+        {
+            var templatePath = GetFilePath(relativeTemplatePath);
+            var args = new string[] { "analyze-template", templatePath };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            var cliConsoleOutput = outputWriter.ToString();
+
+            // All JSON rules are filtered out; PSRule rules are currently not filtered by the config file and should appear in the output
+            Assert.IsTrue(!cliConsoleOutput.Contains("Warning"));
         }
 
         [DataTestMethod]

@@ -160,8 +160,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     "Shows details about the analysis"),
 
                 new Option(
-                    "--run-powershell",
-                    "Run PowerShell based checks against templates")
+                    "--include-non-security-rules",
+                    "Run all the rules against the templates, including non-security rules")
             };
 
             commands.ForEach(c => options.ForEach(c.AddOption));
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runPowerShell,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Check that template file paths exist
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runPowerShell, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -210,7 +210,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runPowerShell,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             if (!directoryPath.Exists)
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, runPowerShell, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, templateFilePath.FullName, parameterFileContents);
 
                 this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             DirectoryInfo directoryToAnalyze,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runPowerShell,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Output file path must be specified if SARIF was chosen as the report format
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
             CreateLoggers(verbose);
 
-            this.templateAnalyzer = TemplateAnalyzer.Create(runPowerShell, this.logger);
+            this.templateAnalyzer = TemplateAnalyzer.Create(includeNonSecurityRules, this.logger);
 
             if (!TryReadConfigurationFile(configurationFile, out var config))
             {

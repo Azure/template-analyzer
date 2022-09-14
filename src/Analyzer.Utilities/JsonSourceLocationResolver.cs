@@ -38,58 +38,73 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// or 1 if it can't be determined.</returns>
         public SourceLocation ResolveSourceLocation(string pathInExpandedTemplate)
         {
-            JToken expandedTemplateRoot = this.templateContext.ExpandedTemplate;
-            JToken originalTemplateRoot = this.templateContext.OriginalTemplate;
-
-            if (pathInExpandedTemplate == null || originalTemplateRoot == null)
+            if (pathInExpandedTemplate == null)
             {
-                throw new ArgumentNullException(pathInExpandedTemplate == null
-                    ? nameof(pathInExpandedTemplate)
-                    : nameof(originalTemplateRoot));
+                throw new ArgumentNullException(nameof(pathInExpandedTemplate));
             }
 
-            // Attempt to find an equivalent JToken in the original template from the expanded template's path directly
-            var tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
-
-            // If the JToken returned from looking up the expanded template path is
-            // just pointing to the root of the original template, then
-            // even the first property could not be found in the original template.
-            if (tokenFromOriginalTemplate.Equals(originalTemplateRoot))
+            var rootTemplateContext = this.templateContext;
+            while (rootTemplateContext != null && !rootTemplateContext.IsMainTemplate)
             {
-                return new SourceLocation(this.templateContext.TemplateIdentifier, 1);
+                rootTemplateContext = rootTemplateContext.ParentContext;
             }
 
-            // If the path is in the resources array of the template
-            var matches = resourceIndexInPath.Matches(pathInExpandedTemplate);
-            if (matches.Count > 0)
+            if (rootTemplateContext == null)
             {
-                // Get the path of the child resource in the expanded template
-                string resourceWithIndex = string.Join('.', matches);
-
-                // Verify the expanded template is available.
-                // (Avoid throwing earlier since this is not always needed.)
-                if (expandedTemplateRoot == null)
-                {
-                    throw new ArgumentNullException(nameof(expandedTemplateRoot));
-                }
-
-                string remainingPathAtResourceScope = pathInExpandedTemplate[(resourceWithIndex.Length + 1)..];
-
-                if (!templateContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
-                {
-                    return new SourceLocation(this.templateContext.TemplateIdentifier, 1);
-                }
-
-                if (!string.Equals(resourceWithIndex, originalResourcePath))
-                {
-                    tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken($"{originalResourcePath}.{remainingPathAtResourceScope}", InsensitivePathNotFoundBehavior.LastValid);
-                }
+                throw new Exception("Could not find the context of the root template");
             }
 
-            // Adds template's line number to an offset dependent on the parent (if applicable) template's position
+            JToken expandedTemplateRoot = rootTemplateContext.ExpandedTemplate;
+            JToken originalTemplateRoot = rootTemplateContext.OriginalTemplate;
+
+            if (originalTemplateRoot == null)
+            {
+                throw new ArgumentNullException(nameof(originalTemplateRoot));
+            }
+
+            // Handle path and prefixes backwards one level at a time to construct an accurate resources' path
+            var currentContext = this.templateContext;
+            var currentPathToEvaluate = pathInExpandedTemplate;
+            string mappedPathInExpandedTemplate = "";
+
+            while (currentContext != null && currentPathToEvaluate.Length > 0)
+            {
+                // If the path is in the resources array of the template
+                var matches = resourceIndexInPath.Matches(currentPathToEvaluate);
+                if (matches.Count > 0)
+                {
+                    // Get the path of the child resource in the expanded template
+                    string resourceWithIndex = string.Join('.', matches);
+
+                    // Verify the expanded template is available.
+                    // (Avoid throwing earlier since this is not always needed.)
+                    if (expandedTemplateRoot == null)
+                    {
+                        throw new ArgumentNullException(nameof(expandedTemplateRoot));
+                    }
+
+                    string remainingPathAtResourceScope = currentPathToEvaluate[(resourceWithIndex.Length + 1)..];
+
+                    if (!currentContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
+                    {
+                        return new SourceLocation(currentContext.TemplateIdentifier, 1);
+                    }
+
+                    mappedPathInExpandedTemplate = $"{originalResourcePath}.{remainingPathAtResourceScope}.{mappedPathInExpandedTemplate}";
+                }
+                else
+                {
+                    mappedPathInExpandedTemplate = $"{currentPathToEvaluate}.{mappedPathInExpandedTemplate}";
+                }
+                currentPathToEvaluate = currentContext.PathPrefix;
+                currentContext = currentContext.ParentContext;
+            }
+
+            JToken tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+
             return new SourceLocation(
                 this.templateContext.TemplateIdentifier,
-                (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber + this.templateContext.Offset ?? 1);
+                (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1);
         }
     }
 }

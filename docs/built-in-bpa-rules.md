@@ -2,7 +2,7 @@
 
 ## PowerShell-Based Rules:
 
-Information about the PowerShell-based rules included by our integration with [PSRule](https://microsoft.github.io/PSRule/) can be found [here](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/). The tool will only evaluate these rules if the option `-run-powershell` is used.
+Information about the PowerShell-based rules included by our integration with [PSRule for Azure](https://aka.ms/ps-rule-azure/rules). The tool will only evaluate the rules under the [Security pillar](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#security) unless the option `--include-non-security-rules` is used.
 
 ## JSON-Based Rules:
 
@@ -121,8 +121,8 @@ For enhanced authentication security, use a managed identity. On Azure, managed 
 **Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
 #### Severity: 2
 
-### TA-000020: Use built-in roles instead of custom RBAC roles
-You should only use built-in roles instead of cutom RBAC roles. Custom RBAC roles are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.
+### TA-000020: Audit usage of custom RBAC roles
+Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.
 
 **Recommendation**: [Use built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles)
 #### Severity: 3
@@ -179,4 +179,16 @@ Set the data retention for your SQL Server's auditing to storage account destina
 Set the protocols property to only include HTTPs.
 
 **Recommendation**: To use encrypted protocols only, add (or update) the *protocols* property in the [Microsoft.ApiManagement/service/apis resource properties](https://docs.microsoft.com/azure/templates/microsoft.apimanagement/service/apis?tabs=json), to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure.
+#### Severity: 1
+
+### TA-000030: Migrate your Classic Compute VM to ARM
+Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model. You can learn more about the differences [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/deployment-models).
+
+**Recommendation**: Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.
+#### Severity: 1
+
+### TA-000031: Migrate your Classic Storage Account to ARM
+Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model. You can learn more about the differences [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/deployment-models).
+
+**Recommendation**: Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.
 #### Severity: 1

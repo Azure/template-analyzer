@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Azure.ResourceManager.Resources.Models;
 using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
@@ -50,10 +49,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Creates a new <see cref="TemplateAnalyzer"/> instance with the default built-in rules.
         /// </summary>
-        /// <param name="usePowerShell">Whether or not to use PowerShell rules to analyze the template.</param>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool usePowerShell, ILogger logger = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null)
         {
             string rules;
             try
@@ -72,7 +71,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
                     logger),
-                usePowerShell ? new PowerShellRuleEngine(logger) : null,
+                new PowerShellRuleEngine(includeNonSecurityRules, logger),
                 logger);
         }
 
@@ -80,12 +79,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// Runs the TemplateAnalyzer logic given the template and parameters passed to it.
         /// </summary>
         /// <param name="template">The template contents.</param>
-        /// <param name="parameters">The parameters for the template.</param>
         /// <param name="templateFilePath">The template file path. It's needed to analyze Bicep files and to run the PowerShell based rules.</param>
+        /// <param name="parameters">The parameters for the template.</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string parameters = null, string templateFilePath = null)
+        public IEnumerable<IEvaluation> AnalyzeTemplate(string template, string templateFilePath, string parameters = null)
         {
             if (template == null) throw new ArgumentNullException(nameof(template));
+            if (templateFilePath == null) throw new ArgumentNullException(nameof(templateFilePath));
 
             // If the template is Bicep, convert to JSON and get source map:
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
@@ -101,7 +101,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     throw new TemplateAnalyzerException(BicepCompileErrorMessage, e);
                 }
             }
-            var evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, template, 0, isBicep, sourceMap);
+
+            var templateContext = new TemplateContext
+            {
+                OriginalTemplate = null,
+                ExpandedTemplate = null,
+                IsMainTemplate = true,
+                ResourceMappings = null,
+                TemplateIdentifier = templateFilePath,
+                IsBicep = isBicep,
+                SourceMap = sourceMap,
+                PathPrefix = "",
+                ParentContext = null
+            };
+            var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, "");
 
             // For each rule we don't want to report the same line more than once
             // This is a temporary fix
@@ -131,15 +144,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Analyzes ARM templates, recursively going through the nested templates
         /// </summary>
-        /// <param name="template">The ARM Template JSON</param>
+        /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path</param>
-        /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
-        /// <param name="lineNumberOffset">The offset for line numbers relative to parent templates representing where the template starts in the file. (Used for nested templates.)</param>
-        /// <param name="isBicep">Whether this template was originally a Bicep file</param>
-        /// <param name="sourceMap">Source map that maps ARM JSON back to source Bicep</param>
+        /// <param name="parentContext">Template context for the immediate parent template</param>
+        /// <param name="pathPrefix"> Prefix for resources' path used for line number mapping in nested templates</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string template, string parameters, string templateFilePath, string populatedTemplate, int lineNumberOffset, bool isBicep, object sourceMap)
+        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string populatedTemplate, string parameters, string templateFilePath, TemplateContext parentContext, string pathPrefix)
         {
             JToken templatejObject;
             var armTemplateProcessor = new ArmTemplateProcessor(populatedTemplate, logger: this.logger);
@@ -155,143 +166,85 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             var templateContext = new TemplateContext
             {
-                OriginalTemplate = JObject.Parse(template),
+                OriginalTemplate = JObject.Parse(populatedTemplate),
                 ExpandedTemplate = templatejObject,
-                IsMainTemplate = true,
+                IsMainTemplate = parentContext.OriginalTemplate == null, // Even the top level context will have a parent defined, but it won't represent a processed template
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
-                IsBicep = isBicep,
-                SourceMap = sourceMap,
-                Offset = lineNumberOffset
+                IsBicep = parentContext.IsBicep,
+                SourceMap = parentContext.SourceMap,
+                PathPrefix = pathPrefix,
+                ParentContext = parentContext
             };
 
             try
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
+                evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
 
-                if (this.powerShellRuleEngine != null)
-                {
-                    this.logger?.LogDebug("Running PowerShell rule engine");
-                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
-                }
-               
                 // Recursively handle nested templates 
-                dynamic jsonTemplate = JsonConvert.DeserializeObject(template);
-                dynamic processedTemplateResources = templatejObject["resources"];
-                var processedTemplateResourcesWithLineNumbers = templateContext.OriginalTemplate["resources"];
+                var jsonTemplate = JObject.Parse(populatedTemplate);
+                var processedTemplateResources = templatejObject.InsensitiveToken("resources");
 
-                for (int i = 0; i < processedTemplateResources.Count; i++)
+                for (int i = 0; i < processedTemplateResources.Count(); i++)
                 {
                     var currentProcessedResource = processedTemplateResources[i];
-                    dynamic currentProcessedResourceWithLineNumbers = processedTemplateResourcesWithLineNumbers[i];
 
-                    if (currentProcessedResource.type == "Microsoft.Resources/deployments")
+                    if (currentProcessedResource.InsensitiveToken("type")?.ToString().Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase) ?? false)
                     {
-                        var nestedTemplateWithLineNumbers = currentProcessedResourceWithLineNumbers.properties.template;
-                        dynamic populatedNestedTemplate = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(nestedTemplateWithLineNumbers));
-                        // Get the offset
-                        int nextLineNumberOffset = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber + lineNumberOffset - 1; // off by one
+                        var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
+                        if (nestedTemplate == null)
+                        {
+                            this.logger?.LogWarning($"A linked template was found on: {templateFilePath}, linked templates are currently not supported");
+
+                            continue;
+                        }
+                        var populatedNestedTemplate = nestedTemplate.DeepClone();
+
                         // Check whether scope is set to inner or outer
-                        var scope = currentProcessedResourceWithLineNumbers.properties.expressionEvaluationOptions?.scope;
+                        var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions.scope")?.ToString();
 
-                        int startOfTemplate = (nestedTemplateWithLineNumbers as IJsonLineInfo).LineNumber;
-                        string jsonNestedTemplate = ExtractNestedTemplate(template, startOfTemplate);
-                        IEnumerable<IEvaluation> result;
-
-                        if (scope == null || scope == "outer")
+                        if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
                         {
                             // Variables, parameters and functions inherited from parent template
-                            populatedNestedTemplate.variables = jsonTemplate.variables;
-                            populatedNestedTemplate.parameters = jsonTemplate.parameters;
-                            populatedNestedTemplate.functions = jsonTemplate.functions;
+                            string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path ?? "functions";
+                            string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path ?? "variables";
+                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path ?? "parameters" ;
+
+                            populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
+                            populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
+                            populatedNestedTemplate[parametersKey] = jsonTemplate.InsensitiveToken("parameters");
                         }
                         else // scope is inner
                         {
-                            // Pass variables, functions and parameters to child template
-                            populatedNestedTemplate.variables?.Merge(currentProcessedResource.properties.variables);
-                            populatedNestedTemplate.functions?.Merge(currentProcessedResource.properties.functions);
+                            // Pass variables and functions to child template
+                            (populatedNestedTemplate.InsensitiveToken("variables") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.variables"));
+                            (populatedNestedTemplate.InsensitiveToken("functions") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
 
-                            JToken parametersToPass = currentProcessedResource.properties.parameters;
+                            // Pass parameters to child template as the 'parameters' argument
+                            var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
 
-                            // Change 'value' fields in parametersToPass into 'defaultValue' which is recognized by the template parser
-                            dynamic currentParameterToPass = parametersToPass?.First;
-                            while (currentParameterToPass != null)
+                            if (parametersToPass != null)
                             {
-                                var value = currentParameterToPass.Value.value;
-                                if (value != null)
-                                {
-                                    currentParameterToPass.Value.defaultValue = value;
-                                    currentParameterToPass.Value.Remove("value");
-                                }
-                                currentParameterToPass = currentParameterToPass.Next;
+                                parametersToPass["parameters"] = parametersToPass;
+                                parametersToPass["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+                                parametersToPass["contentVersion"] = "1.0.0.0";
+                                parameters = JsonConvert.SerializeObject(parametersToPass);
                             }
-                            populatedNestedTemplate.parameters?.Merge(parametersToPass);
                         }
 
                         string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
-                        result = AnalyzeAllIncludedTemplates(jsonNestedTemplate, parameters, templateFilePath, jsonPopulatedNestedTemplate, nextLineNumberOffset, isBicep, sourceMap);
+
+                        IEnumerable<IEvaluation> result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nestedTemplate.Path);
                         evaluations = evaluations.Concat(result);
                     }
                 }
-
                 return evaluations;
             }
             catch (Exception e)
             {
                 throw new TemplateAnalyzerException("Error while evaluating rules.", e);
             }
-        }
-
-        /// <summary>
-        /// Extracts a nested template in the exact format as user input, accounting for all white space and formatting
-        /// </summary>
-        /// <param name="template">Parent template containing nested template</param>
-        /// <param name="startOfTemplate">Line number where the nested template starts</param>
-        /// <returns>A nested template string</returns>
-        private static string ExtractNestedTemplate(string template, int startOfTemplate)
-        {
-            bool startOfNestingFound = false;
-            int lineNumberCounter = 1;
-            int curlyBraceCounter = 0;
-            string stringNestedTemplate = "";
-            foreach (var line in template.Split(Environment.NewLine))
-            {
-                if (lineNumberCounter < startOfTemplate)
-                {
-                    lineNumberCounter += 1;
-                    continue;
-                }
-                if (!startOfNestingFound)
-                {
-                    if (line.Contains('{'))
-                    {
-                        stringNestedTemplate += line.Substring(line.IndexOf('{'));
-                        stringNestedTemplate += Environment.NewLine;
-                        startOfNestingFound = true;
-                        lineNumberCounter += 1;
-                        curlyBraceCounter += 1;
-                    }
-                    continue;
-                }
-                // After finding the start of nesting, count the opening and closing braces till they match up to find the end of the nested template
-                int inlineCounter = 1;
-                foreach (char c in line)
-                {
-                    if (c == '{') curlyBraceCounter++;
-                    if (c == '}') curlyBraceCounter--;
-                    if (curlyBraceCounter == 0) // done
-                    {
-                        return stringNestedTemplate + line[..inlineCounter];
-                    }
-                    inlineCounter++;
-                }
-
-                //not done
-                stringNestedTemplate += line + Environment.NewLine;
-                lineNumberCounter += 1;
-            }
-
-            return stringNestedTemplate;
         }
 
         private static string LoadRules()

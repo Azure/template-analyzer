@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Management.Automation;
+using System.Management.Automation.Runspaces;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
@@ -11,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using PSRule.Configuration;
 using PSRule.Pipeline;
 using PSRule.Rules;
+using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -20,6 +23,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEngine : IRuleEngine
     {
         /// <summary>
+        /// Whether or not to run also non-security rules against the template.
+        /// </summary>
+        private readonly bool includeNonSecurityRules;
+
+        /// <summary>
         /// Logger to report errors and debug information.
         /// </summary>
         private readonly ILogger logger;
@@ -27,10 +35,61 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <summary>
         /// Creates a new instance of a PowerShellRuleEngine.
         /// </summary>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information.</param>
-        public PowerShellRuleEngine(ILogger logger = null)
+        public PowerShellRuleEngine(bool includeNonSecurityRules, ILogger logger = null)
         {
+            this.includeNonSecurityRules = includeNonSecurityRules;
             this.logger = logger;
+
+            // We need to unblock the PowerShell scripts on Windows to allow them to run
+            // If a script is not unblocked, even if it's signed, PowerShell prompts for confirmation before executing
+            // This prompting would throw an exception, because there's no interaction with a user that would allow for confirmation
+            if (Platform.IsWindows)
+            {
+                try
+                {
+                    // There are 2 different 'Default' functions available:
+                    // https://docs.microsoft.com/en-us/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
+                    //
+                    // CreateDefault has a dependency on Microsoft.Management.Infrastructure.dll, which is missing when publishing for 'win-x64',
+                    // and PowerShell throws an exception creating the InitialSessionState.
+                    //
+                    // CreateDefault2 does NOT have this dependency.
+                    // Notably, Microsoft.Management.Infrastructure.dll is available when publishing for specific Windows versions (such as win7-x64),
+                    // but since this libary is not needed in our usage of PowerShell, we can eliminate the dependency.
+                    var initialState = InitialSessionState.CreateDefault2();
+
+                    // Ensure we can execute the signed bundled scripts
+                    // This sets the policy at the Process scope
+                    initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
+
+                    var powershell = Powershell.Create(initialState);
+
+                    powershell
+                        .AddCommand("Get-ChildItem")
+                        .AddParameter("Path", Path.Combine(AppContext.BaseDirectory, "Modules", "PSRule.Rules.Azure"))
+                        .AddParameter("Recurse")
+                        .AddParameter("Filter", "*.ps1")
+                        .AddCommand("Unblock-File")
+                        .Invoke();
+
+                    if (powershell.HadErrors)
+                    {
+                        this.logger?.LogError("There was an error unblocking the PowerShell scripts");
+
+                        foreach (var error in powershell.Streams.Error)
+                        {
+                            this.logger?.LogError(error.ToString());
+                        }
+                    }
+                }
+                catch(Exception exception)
+                {
+                    this.logger?.LogError(exception, "There was an exception while unblocking the PowerShell scripts");
+                }
+
+            }
         }
 
         /// <summary>
@@ -74,13 +133,40 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                     },
                     Output = new OutputOption
                     {
-                        Outcome = RuleOutcome.Fail
+                        Outcome = RuleOutcome.Fail,
+                        Culture = new string[] { "en-US" } // To avoid warning messages when running tests in Linux
+                    },
+                    Include = new IncludeOption
+                    {
+                        Path = new string[]
+                        {
+                            ".ps-rule",
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "SecurityBaseline.Rule.json"),
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json")
+                        }
+                    },
+                    Execution = new ExecutionOption
+                    {
+                        NotProcessedWarning = false,
+
+                        // PSRule internally creates a PowerShell initial state with InitialSessionState.CreateDefault().
+                        // SessionState.Minimal causes PSRule to use CreateDefault2 instead of CreateDefault.
+                        InitialSessionState = PSRule.Configuration.SessionState.Minimal
                     }
                 };
                 var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
 
                 var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
                 builder.InputPath(new string[] { tempTemplateFile });
+                if (includeNonSecurityRules)
+                {
+                    builder.Baseline(BaselineOption.FromString("RepeatedRulesBaseline"));
+                }
+                else
+                {
+                    builder.Baseline(BaselineOption.FromString("SecurityBaseline"));
+                }
+
                 var pipeline = builder.Build();
                 pipeline.Begin();
                 foreach (var resource in resources)

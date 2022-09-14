@@ -5,10 +5,14 @@
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources."
-      }
+    },
+    "ftpsState": {
+      "type": "string",
+      "defaultValue": "FtpsOnly"
     }
+  },
+  "variables": {
+    "ftpsState": "FtpsOnly"
   },
   "resources": [
     {
@@ -21,8 +25,6 @@
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
-          "parameters": {},
-          "variables": {},
           "resources": [
             {
               "apiVersion": "2019-08-01",
@@ -31,6 +33,9 @@
               "name": "linuxKind",
               "location": "[parameters('location')]",
               "properties": {
+                "siteConfig": {
+                  "ftpsState": "[parameters('ftpsState')]"
+                }
               }
             },
             {
@@ -39,8 +44,10 @@
               "kind": "api",
               "name": "withoutSpecifyingProperties",
               "location": "[parameters('location')]",
-                                                        // Blank line to test line number matching with poorly-formatted json templates
               "properties": {
+                "siteConfig": {
+                  "ftpsState": "[variables('ftpsState')]"
+                }
               }
             },
             {

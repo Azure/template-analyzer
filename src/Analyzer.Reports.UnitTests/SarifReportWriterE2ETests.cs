@@ -21,11 +21,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     public class SarifReportWriterE2ETests
     {
         [TestMethod]
-        [DataRow("SQLServerAuditingSettings.json", new int[] { 23, 24, 25 }, new int[] { 43, 44, 45 }, false)]
-        [DataRow("SQLServerAuditingSettings.bicep", new int[] { 14, 15, 16 }, new int[] { 31, 32, 33 }, false)]
-        [DataRow("TemplateWithReference.bicep", new int[] { 14, 15, 16 }, new int[] { 31, 32, 33 }, true)]
-        public void AnalyzeTemplateTests(string template, int[] expectedLinesR1, int[] expectedLinesR2, bool isReferenced)
+        [DataRow("SQLServerAuditingSettings.json", false)]
+        [DataRow("SQLServerAuditingSettings.bicep", false)]
+        [DataRow("TemplateWithReference.bicep", true)]
+        public void AnalyzeTemplateTests(string template, bool isReferenced)
         {
+            var isBicep = template.EndsWith(".bicep");
+
             // arrange
             string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
             var templateFilePath = new FileInfo(Path.Combine(targetDirectory, template));
@@ -43,23 +45,47 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             }
 
             // assert
-            string ruleId = "TA-000028";
-            var expectedLinesForRun = new List<List<int>> { expectedLinesR1.ToList(), expectedLinesR2.ToList() };
+            var expectedLinesForRun = new Dictionary<string, List<List<int>>>
+            {
+                { "TA-000028", new List<List<int>> {
+                        isBicep ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
+                        isBicep ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
+                    }
+                },
+                { "AZR-000186", new List<List<int>> {
+                        new List<int> { 1 }
+                    }
+                },
+                { "AZR-000187", new List<List<int>> {
+                        isBicep ? new List<int> { 6 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 23 } : new List<int> { 34 }
+                    }
+                },
+                { "AZR-000188", new List<List<int>> {
+                        isBicep ? new List<int> { 6 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 23 } : new List<int> { 34 }
+                    }
+                },
+                { "AZR-000189", new List<List<int>> {
+                        isBicep ? new List<int> { 6 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 23 } : new List<int> { 34 }
+                    }
+                }
+            };
 
             string artifactUriString = templateFilePath.Name;
             SarifLog sarifLog = JsonConvert.DeserializeObject<SarifLog>(Encoding.UTF8.GetString(memStream.ToArray()));
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(1);
-            run.Tool.Driver.Rules.First().Id.Should().BeEquivalentTo(ruleId);
+            run.Tool.Driver.Rules.Count.Should().Be(5);
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-            run.Results.Count.Should().Be(expectedLinesForRun.Count);
+            run.Results.Count.Should().Be(9);
 
             foreach (Result result in run.Results)
             {
-                result.RuleId.Should().BeEquivalentTo(ruleId);
+                expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
                 result.Level.Should().Be(FailureLevel.Error);
 
                 if (isReferenced)
@@ -67,9 +93,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
                 }
 
-                var expectedLines = expectedLinesForRun.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
+                var linesForResult = expectedLinesForRun[result.RuleId];
+                var expectedLines = linesForResult.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
                 expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
-                expectedLinesForRun.Remove(expectedLines);
+                linesForResult.Remove(expectedLines);
 
                 // Verify lines reported equal the expected lines
                 result.Locations.Count.Should().Be(expectedLines.Count);
@@ -92,6 +119,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
                 // Verify all lines were reported
                 expectedLines.Should().BeEmpty();
+
+                // Remove record for rule if all lines have been reported
+                if (linesForResult.Count == 0)
+                {
+                    expectedLinesForRun.Remove(result.RuleId);
+                }
             }
 
             // Verify all lines were reported
@@ -166,7 +199,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(2);
+            run.Tool.Driver.Rules.Count.Should().Be(8);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
             run.OriginalUriBaseIds.Count.Should().Be(1);
@@ -189,11 +222,59 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 { "TA-000028", (
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
-                    lines: secondTemplateLines)
+                    lines: new List<List<int>> {
+                        new List<int> { 23, 24, 25 },
+                        new List<int> { 43, 44, 45 }
+                    })
+                },
+                { "AZR-000164", (
+                    file: "RedisCache.json",
+                    uriBase: SarifReportWriter.UriBaseIdString,
+                    lines: new List<List<int>> {
+                        new List<int> { 19 }
+                    })
+                },
+                { "AZR-000165", (
+                    file: "RedisCache.json",
+                    uriBase: SarifReportWriter.UriBaseIdString,
+                    lines: new List<List<int>> {
+                        new List<int> { 19 }
+                    })
+                },
+                { "AZR-000186", (
+                    file: expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        new List<int> { 1 }
+                    })
+                },
+                { "AZR-000187", (
+                    file: expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        new List<int> { 14 },
+                        new List<int> { 34 }
+                    })
+                },
+                { "AZR-000188", (
+                    file: expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        new List<int> { 14 },
+                        new List<int> { 34 }
+                    })
+                },
+                { "AZR-000189", (
+                    file: expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        new List<int> { 14 },
+                        new List<int> { 34 }
+                    })
                 }
             };
 
-            run.Results.Count.Should().Be(3);
+            run.Results.Count.Should().Be(12);
             foreach (Result result in run.Results)
             {
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
