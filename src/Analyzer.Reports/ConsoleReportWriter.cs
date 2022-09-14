@@ -27,16 +27,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         {
             var resultsByFile = ReportsHelper.GetResultsByFile(evaluations, filesAlreadyOutput, out int passedEvaluations);
 
-            // output files in sorted order, but always output root first
+            // output files in sorted order, but always output root first and regardless if no results
             var filesWithResults = resultsByFile.Keys.ToList();
+            filesWithResults.Remove(templateFile.FullName);
             filesWithResults.Sort();
-
-            int rootIndex = filesWithResults.IndexOf(templateFile.FullName);
-            if (rootIndex != -1)
-            {
-                filesWithResults.RemoveAt(rootIndex);
-                filesWithResults.Insert(0, templateFile.FullName);
-            }
+            filesWithResults.Insert(0, templateFile.FullName);
 
             foreach(var fileWithResults in filesWithResults)
             {
@@ -57,9 +52,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
                 Console.WriteLine(fileMetadata);
 
+                // needed for all passing results case
+                if (!resultsByFile.ContainsKey(fileWithResults))
+                {
+                    continue;
+                }
+
                 foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
-                    if (evaluation.RuleId != "TA-000003") continue; // DEbug
+                    //if (evaluation.RuleId != "TA-000003") continue; // DEbug
 
                     string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.LineNumber}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +

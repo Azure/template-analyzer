@@ -32,6 +32,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
         [DynamicData(nameof(GetTests), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
         public void TestRules(TestConfiguration ruleExpectations)
         {
+            if (ruleExpectations.RuleId != "TA-000023") return;
+
             // Verify test config is valid (decided in GetTests function below).
             // Reason for failure is described in RuleId.
             if (ruleExpectations.RuleId.StartsWith("Invalid test"))

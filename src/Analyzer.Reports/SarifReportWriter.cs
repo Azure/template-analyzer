@@ -131,6 +131,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 }
             }
 
+            filesAlreadyOutput.AddRange(filesWithResults);
         }
 
         internal string RootPath

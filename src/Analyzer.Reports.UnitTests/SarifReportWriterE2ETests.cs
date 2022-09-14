@@ -42,8 +42,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 writer.WriteResults(results, (FileInfoBase)templateFilePath);
             }
 
-            //File.WriteAllText($@"C:\Users\nichb\Desktop\output.txt", Encoding.UTF8.GetString(memStream.ToArray()));
-
             // assert
             string ruleId = "TA-000028";
             var expectedLinesForRun = new List<List<int>> { expectedLinesR1.ToList(), expectedLinesR2.ToList() };
@@ -101,38 +99,66 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(true, DisplayName = "Templates in root directory")]
-        [DataRow(true, "subPath", DisplayName = "Template in subdirectory")]
-        [DataRow(false, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
-        public void AnalyzeDirectoryTests(bool secondTemplateUsesRelativePath, params string[] secondTemplatePathPieces)
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, DisplayName = "Templates in root directory")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "subPath", DisplayName = "Template in subdirectory")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
+        [DataRow("RedisCache.bicep", "RedisAndSQL.bicep", "SQLServerAuditingSettings.bicep", DisplayName = "RedisCache template results have multiple references, file results should be deduped")]
+        public void AnalyzeDirectoryTests(string firstTemplate, string secondTemplate, string thirdTemplate, params string[] secondTemplatePathPieces)
         {
+            var secondTemplateUsesRelativePath = !secondTemplatePathPieces.Contains("..");
+
             // arrange
-            var targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
-            var secondTemplateName = "SQLServerAuditingSettings.json";
+            var targetDirectory = Path.Combine(Path.GetTempPath(), "repo");
+
+            var firstTemplatePath = Path.Combine(targetDirectory, firstTemplate);
+            var firstTemplateFileInfo = new FileInfo(firstTemplatePath);
+            var firstTemplateString = ReadTemplate(firstTemplate);
+
             var secondTemplateDirectory = Path.Combine(secondTemplatePathPieces.Prepend(targetDirectory).ToArray());
-            var secondTemplatePath = Path.Combine(secondTemplateDirectory, secondTemplateName);
+            var secondTemplatePath = Path.Combine(secondTemplateDirectory, secondTemplate);
+            var secondTemplateString = ReadTemplate(secondTemplate);
             var secondTemplateFileInfo = new FileInfo(secondTemplatePath);
             var expectedSecondTemplateFilePathInSarif = secondTemplateUsesRelativePath
-                ? UriHelper.MakeValidUri(Path.Combine(secondTemplatePathPieces.Append(secondTemplateName).ToArray()))
+                ? UriHelper.MakeValidUri(Path.Combine(secondTemplatePathPieces.Append(secondTemplate).ToArray()))
                 : new Uri(secondTemplatePath).AbsoluteUri;
 
             // act
             var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream, targetDirectory))
+            try
             {
+                if (Directory.Exists(targetDirectory))
+                {
+                    Directory.Delete(targetDirectory, true);
+                }
+                Directory.CreateDirectory(targetDirectory);
+                Directory.CreateDirectory(secondTemplateDirectory);
+                File.WriteAllText(firstTemplatePath, firstTemplateString);
+                File.WriteAllText(secondTemplatePath, secondTemplateString);
+                if (thirdTemplate != null)
+                {
+                    File.WriteAllText(
+                        Path.Combine(targetDirectory, thirdTemplate),
+                        ReadTemplate(thirdTemplate));
+                }
+
+                using var writer = SetupWriter(memStream, targetDirectory);
                 var analyzer = TemplateAnalyzer.Create(false);
-                var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
+
                 var results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("RedisCache.json"),
+                    template: firstTemplateString,
                     parameters: null,
-                    templateFilePath: templateFilePath.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePath);
+                    templateFilePath: firstTemplateFileInfo.FullName);
+                writer.WriteResults(results, (FileInfoBase)firstTemplateFileInfo);
 
                 results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("SQLServerAuditingSettings.json"),
+                    template: secondTemplateString,
                     parameters: null,
                     templateFilePath: secondTemplateFileInfo.FullName);
                 writer.WriteResults(results, (FileInfoBase)secondTemplateFileInfo);
+            }
+            finally
+            {
+                Directory.Delete(targetDirectory, true);
             }
 
             // assert
@@ -146,22 +172,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
 
+            var firstTemplateLine = (firstTemplateFileInfo.Extension == ".bicep") ? 15 : 28;
+            var secondTemplateLines = (secondTemplateFileInfo.Extension == ".bicep")
+                ? new List<List<int>> { new List<int> { 14, 15, 16 }, new List<int> { 31, 32, 33 } }
+                : new List<List<int>> { new List<int> { 23, 24, 25 }, new List<int> { 43, 44, 45 } };
+
             var expectedLinesForRun = new Dictionary<string, (string file, string uriBase, List<List<int>> lines)>
             {
                 { "TA-000022", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        new List<int> { 28 }
+                        new List<int> { firstTemplateLine }
                     })
                 },
                 { "TA-000028", (
                     file: expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
-                    lines: new List<List<int>> {
-                        new List<int> { 23, 24, 25 },
-                        new List<int> { 43, 44, 45 }
-                    })
+                    lines: secondTemplateLines)
                 }
             };
 
@@ -182,6 +210,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 result.Locations.Count.Should().Be(expectedLines.Count);
                 foreach (var location in result.Locations)
                 {
+                    if (thirdTemplate != null && fileName == secondTemplate)
+                    {
+                        result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(fileName);
+                        fileName = thirdTemplate;
+                    }
+
                     location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(fileName);
                     location.PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(uriBase);
                     var line = location.PhysicalLocation.Region.StartLine;

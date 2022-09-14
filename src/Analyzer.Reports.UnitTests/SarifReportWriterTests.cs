@@ -8,6 +8,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using FluentAssertions;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -20,11 +21,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     {
         [DataTestMethod]
         [DynamicData("UnitTestCases", typeof(TestCases), DynamicDataSourceType.Property, DynamicDataDisplayName = "GetTestCaseName", DynamicDataDisplayNameDeclaringType = typeof(TestCases))]
-        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string _, MockEvaluation[] evaluations)
+        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string name, MockEvaluation[] evaluations)
         {
-            string currentFolder = Path.Combine(Directory.GetCurrentDirectory(), "testRepo");
-            var templateFilePath = new FileInfo(Path.Combine(currentFolder, "AppServices.json"));
-            
+            if (name != "Multiple nested evaluations with duplicate rules") return;
+
+            var templateFilePath = new FileInfo(TestCases.TestTemplateFilePath);
+
             var memStream = new MemoryStream();
             using (var writer = SetupWriter(memStream))
             {
@@ -68,18 +70,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 .Setup(x => x.Create())
                 .Returns(() => stream);
             return new SarifReportWriter(mockFileSystem.Object);
-        }
-
-        private void TraverseResults(IList<Types.IResult> results, Types.IEvaluation evaluation)
-        {
-            if ((!evaluation.Result?.Passed ?? false) && !results.Any(r => r.SourceLocation.LineNumber == evaluation.Result.SourceLocation.LineNumber))
-            {
-                results.Add(evaluation.Result);
-            }
-            foreach (var child in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                TraverseResults(results, child);
-            }
         }
 
         private int GetResultsCount(IEnumerable<Types.IEvaluation> evaluations)
@@ -138,25 +128,39 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 }
 
-                run.Results.Count.Should().Be(failedEvaluations.Count);
-
+                var outputResults = new List<List<IResult>>();
                 for (int i = 0; i < failedEvaluations.Count; i++)
                 {
                     var evaluation = failedEvaluations[i];
-                    var result = run.Results[i];
+                    var evalResults = ReportsHelper.GetFailedResults(evaluation).Distinct().ToList();
+
+                    // dedupe results
+                    if (outputResults.Any(results => results.SequenceEqual(evalResults)))
+                    {
+                        continue;
+                    }
+
+                    var result = run.Results[outputResults.Count];
                     result.RuleId.Should().BeEquivalentTo(evaluation.RuleId);
                     result.Message.Id.Should().BeEquivalentTo("default");
                     result.Level.Should().Be(FailureLevel.Error);
 
-                    var evalResults = new List<Types.IResult>();
-                    TraverseResults(evalResults, evaluation);
-                    result.Locations.Count.Should().Be(evalResults.Count);
+                    if (evalResults.First().SourceLocation.FilePath != templateFilePath.FullName)
+                    {
+                        result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
+                    }
+
                     for (int j = 0; j < evalResults.Count; j++)
                     {
-                        result.Locations[j].PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
+                        var evalResultFileName = (new FileInfo(evalResults[j].SourceLocation.FilePath)).Name;
+                        result.Locations[j].PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(evalResultFileName);
                         result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalResults[j].SourceLocation.LineNumber);
                     }
+
+                    outputResults.Add(evalResults);
                 }
+
+                run.Results.Count.Should().Be(outputResults.Count);
             }
         }
 

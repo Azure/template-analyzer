@@ -53,25 +53,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
 
         const string SimpleNestedFailExpectedSourceLocations = @"
-            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:12
-            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:16
-            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:20
-            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:24
-            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:25
-            SimpleNestedFail.bicep:4, SimpleNestedFailModule.bicep:26";
+            SimpleNestedFailModule.bicep:12, SimpleNestedFail.bicep:4
+            SimpleNestedFailModule.bicep:16, SimpleNestedFail.bicep:4
+            SimpleNestedFailModule.bicep:20, SimpleNestedFail.bicep:4
+            SimpleNestedFailModule.bicep:24, SimpleNestedFail.bicep:4
+            SimpleNestedFailModule.bicep:25, SimpleNestedFail.bicep:4
+            SimpleNestedFailModule.bicep:26, SimpleNestedFail.bicep:4";
         const string DoubleNestedFailExpectedSourceLocations = @"
-            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:5
-            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:9
-            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:4
-            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:8
-            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:9
-            DoubleNestedFail.bicep:6, DoubleNestedFailModule1.bicep:13, DoubleNestedFailModule2.bicep:10";
+            DoubleNestedFailModule1.bicep:5, DoubleNestedFail.bicep:6
+            DoubleNestedFailModule1.bicep:9, DoubleNestedFail.bicep:6
+            DoubleNestedFailModule2.bicep:4, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6
+            DoubleNestedFailModule2.bicep:8, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6
+            DoubleNestedFailModule2.bicep:9, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6
+            DoubleNestedFailModule2.bicep:10, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6";
         const string ParameterPassingFailExpectedSourceLocations = @"
-            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:6
-            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:10
-            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:14
-            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:18
-            ParameterPassingFail.bicep:7, ParameterPassingFailModule.bicep:19";
+            ParameterPassingFailModule.bicep:6, ParameterPassingFail.bicep:7
+            ParameterPassingFailModule.bicep:10, ParameterPassingFail.bicep:7
+            ParameterPassingFailModule.bicep:14, ParameterPassingFail.bicep:7
+            ParameterPassingFailModule.bicep:18, ParameterPassingFail.bicep:7
+            ParameterPassingFailModule.bicep:19, ParameterPassingFail.bicep:7";
 
         [DataTestMethod]
         [DataRow("SimpleNestedFail.bicep", SimpleNestedFailExpectedSourceLocations, DisplayName = "Simple bicep nested template example")]

@@ -95,6 +95,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 }
                 catch
                 {
+                    sourceLocation = new SourceLocation(templateContext.TemplateIdentifier, 1);
                 }
                
                 this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, helpUri, ruleDescription, recommendation,

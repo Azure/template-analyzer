@@ -46,7 +46,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             return (other != null) && Equals(result);
         }
 
-
         public override int GetHashCode()
         {
             return Passed.GetHashCode() ^ SourceLocation.GetHashCode();

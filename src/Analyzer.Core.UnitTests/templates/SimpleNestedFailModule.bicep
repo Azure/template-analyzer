@@ -27,36 +27,3 @@ resource undesiredFtpsState 'Microsoft.Web/sites@2019-08-01' = {
     }
   }
 }
-
-resource undesiredFtpsState2 'Microsoft.Web/sites@2019-08-01' = {
-  kind: 'api'
-  name: 'undesiredFtpsState2'
-  location: location
-  properties: {
-    siteConfig: {
-      ftpsState: 'undesiredValue'
-    }
-  }
-}
-
-resource undesiredFtpsState3 'Microsoft.Web/sites@2019-08-01' = {
-  kind: 'api'
-  name: 'undesiredFtpsState3'
-  location: location
-  properties: {
-    siteConfig: {
-      ftpsState: 'undesiredValue'
-    }
-  }
-}
-
-resource undesiredFtpsState4 'Microsoft.Web/sites@2019-08-01' = {
-  kind: 'api'
-  name: 'undesiredFtpsState4'
-  location: location
-  properties: {
-    siteConfig: {
-      ftpsState: 'undesiredValue'
-    }
-  }
-}

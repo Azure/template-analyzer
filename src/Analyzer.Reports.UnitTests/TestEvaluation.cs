@@ -35,6 +35,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public SourceLocation SourceLocation { get; set; }
 
-        public string SourceFile { get; set; }
-}
+        public bool Equals(MockResult other)
+        {
+            return Passed.Equals(other.Passed)
+                && SourceLocation.Equals(other.SourceLocation);
+        }
+
+        public override bool Equals(object other)
+        {
+            var result = other as MockResult;
+            return (other != null) && Equals(result);
+        }
+
+        public override int GetHashCode()
+        {
+            return Passed.GetHashCode() ^ SourceLocation.GetHashCode();
+        }
+    }
 }
