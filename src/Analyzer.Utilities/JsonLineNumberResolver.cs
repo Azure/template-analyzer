@@ -37,6 +37,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// or 1 if it can't be determined.</returns>
         public int ResolveLineNumber(string pathInExpandedTemplate)
         {
+            if (pathInExpandedTemplate == null)
+            {
+                throw new ArgumentNullException(nameof(pathInExpandedTemplate));
+            }
+
             var rootTemplateContext = this.templateContext;
             while (rootTemplateContext != null && !rootTemplateContext.IsMainTemplate)
             {
@@ -51,14 +56,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             JToken expandedTemplateRoot = rootTemplateContext.ExpandedTemplate;
             JToken originalTemplateRoot = rootTemplateContext.OriginalTemplate;
 
-            if (pathInExpandedTemplate == null || originalTemplateRoot == null)
+            if (originalTemplateRoot == null)
             {
-                throw new ArgumentNullException(pathInExpandedTemplate == null
-                    ? nameof(pathInExpandedTemplate)
-                    : nameof(originalTemplateRoot));
+                throw new ArgumentNullException(nameof(originalTemplateRoot));
             }
-
-            JToken tokenFromOriginalTemplate;
 
             // Handle path and prefixes backwards one level at a time to construct an accurate resources' path
             var currentContext = this.templateContext;
@@ -98,7 +99,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 currentContext = currentContext.ParentContext;
             }
 
-            tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+            JToken tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(mappedPathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
 
             return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
         }
