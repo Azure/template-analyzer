@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.CodeAnalysis.Sarif;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -42,8 +43,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var evaluation in evaluations)
             {
-                //if (evaluation.RuleId != "TA-000003") continue; // DEbug
-
                 if (!evaluation.Passed)
                 {
                     (var actualFile, var failedResults) = GetResultsByFileInternal(evaluation);
@@ -60,7 +59,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     }
 
                     // skip any evaluations with duplicate results (i.e. two source locations from other templates refer to same result)
-                    if (!resultsByFile[actualFile].Select(i => i.Item2).Any(results => Enumerable.SequenceEqual(results, failedResults)))
+                    if (!resultsByFile[actualFile].Any(resultsTuple => evaluation.RuleId.Equals(resultsTuple.Item1.RuleId)
+                        && Enumerable.SequenceEqual(resultsTuple.Item2, failedResults)))
                     {
                         resultsByFile[actualFile].Add((evaluation, failedResults));
                     }

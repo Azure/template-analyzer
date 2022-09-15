@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <inheritdoc/>
         public bool Equals(PowerShellRuleResult other)
         {
-            return Passed.Equals(other.Passed) &&
+            return Passed.Equals(other?.Passed) &&
                 SourceLocation.Equals(other.SourceLocation);
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public override bool Equals(object other)
         {
             var result = other as PowerShellRuleResult;
-            return (other != null) && Equals(result);
+            return (result != null) && Equals(result);
         }
 
         /// <inheritdoc/>

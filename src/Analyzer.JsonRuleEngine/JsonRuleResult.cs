@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
 
         public bool Equals(JsonRuleResult other)
         {
-            return Passed.Equals(other.Passed)
+            return Passed.Equals(other?.Passed)
                 && SourceLocation.Equals(other.SourceLocation);
         }
 

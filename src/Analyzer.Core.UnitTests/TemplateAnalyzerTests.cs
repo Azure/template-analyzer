@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,14 +42,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             Assert.AreEqual(expectedEvaluationPassCount, evaluationsWithResults.Count(e => e.Passed));
         }
 
-
         const string SimpleNestedFailExpectedSourceLocations = @"
-            SimpleNestedFailModule.bicep:12, SimpleNestedFail.bicep:4
-            SimpleNestedFailModule.bicep:16, SimpleNestedFail.bicep:4
-            SimpleNestedFailModule.bicep:20, SimpleNestedFail.bicep:4
-            SimpleNestedFailModule.bicep:24, SimpleNestedFail.bicep:4
-            SimpleNestedFailModule.bicep:25, SimpleNestedFail.bicep:4
-            SimpleNestedFailModule.bicep:26, SimpleNestedFail.bicep:4";
+            SimpleNestedFailModule.bicep:5, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:16, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:20, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:21, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:27, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:31, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:32, SimpleNestedFail.bicep:6
+            SimpleNestedFailModule.bicep:33, SimpleNestedFail.bicep:6";
         const string DoubleNestedFailExpectedSourceLocations = @"
             DoubleNestedFailModule1.bicep:5, DoubleNestedFail.bicep:6
             DoubleNestedFailModule1.bicep:9, DoubleNestedFail.bicep:6
@@ -64,9 +66,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             ParameterPassingFailModule.bicep:19, ParameterPassingFail.bicep:7";
 
         [DataTestMethod]
-        [DataRow("SimpleNestedFail.json", new int[] { 29, 41, 47, 48, 53, 59, 60, 61 }, DisplayName = "Simple nested template example, outer scope with no collisions")]
-        [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59,  60}, DisplayName = "Nested templates with two levels")]
-        [DataRow("InnerOuterScopeFail.json", new int[] { 53, 59, 60, 105, 115, 116, 117 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
         [DataRow("SimpleNestedFail.bicep", SimpleNestedFailExpectedSourceLocations, DisplayName = "Simple bicep nested template example")]
         [DataRow("DoubleNestedFail.bicep", DoubleNestedFailExpectedSourceLocations, DisplayName = "Nested templates with two levels")]
         [DataRow("ParameterPassingFail.bicep", ParameterPassingFailExpectedSourceLocations, DisplayName = "Nested template with parameters passed from parent")]
@@ -83,7 +82,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             {
                 if (!evaluation.Passed)
                 {
-                    foreach (var newLocation in GetFailedSourceLocations(evaluation))
+                    var newFailedSourceLocations = ReportsHelper.GetFailedResults(evaluation).Select(result =>
+                    {
+                        // turn source location into list of tuples
+                        var referenceList = new List<(string fileName, int lineNumber)>();
+                        var curLocation = result.SourceLocation;
+
+                        referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
+                        while (curLocation.ReferencedBy != null)
+                        {
+                            curLocation = curLocation.ReferencedBy;
+                            referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
+                        }
+
+                        return referenceList;
+                    });
+
+                    foreach (var newLocation in newFailedSourceLocations)
                     {
                         // only add unique source locations
                         if (!failedSourceLocations.Any(existingLocation => existingLocation.SequenceEqual(newLocation)))
@@ -109,37 +124,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             }
         }
 
-        private IEnumerable<List<(string fileName, int lineNumber)>> GetFailedSourceLocations(IEvaluation evaluation, ICollection<List<(string fileName, int lineNumber)>> failedSourceLocations = null)
-        {
-            failedSourceLocations ??= new List<List<(string fileName, int lineNumber)>>();
-
-            if (!evaluation.Result?.Passed ?? false)
-            {
-                // build a list of file names/line numbers that are referenced
-                var referenceList = new List<(string fileName, int lineNumber)>();
-                var curLocation = evaluation.Result.SourceLocation;
-
-                referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
-                while (curLocation.ReferencedBy != null)
-                {
-                    curLocation = curLocation.ReferencedBy;
-                    referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
-                }
-
-                failedSourceLocations.Add(referenceList);
-            }
-
-            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                GetFailedSourceLocations(eval, failedSourceLocations);
-            }
-
-            return failedSourceLocations;
-        }
-
-        [DataRow("SimpleNestedFail.json", new int[] { 36, 43, 46, 52, 53, 54 }, DisplayName = "Simple nested template example")]
+        [DataTestMethod]
+        [DataRow("SimpleNestedFail.json", new int[] { 29, 41, 47, 48, 53, 59, 60, 61 }, DisplayName = "Simple nested template example, outer scope with no collisions")]
         [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59, 60 }, DisplayName = "Nested templates with two levels")]
-        [DataRow("InnerOuterScopeFail.json", new int[] { 49, 55, 56, 101, 107, 108, 109 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
+        [DataRow("InnerOuterScopeFail.json", new int[] { 53, 59, 60, 105, 115, 116, 117 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
         [DataRow("ParameterPassingFail.json", new int[] { 53, 59, 62, 68, 69 }, DisplayName = "Nested template with parameters passed from parent")]
         public void AnalyzeTemplate_ValidNestedTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic lineNumbers)
         {
@@ -153,7 +141,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             {
                 if (!evaluation.Passed)
                 {
-                    failedEvaluationLines.UnionWith(GetFailedLines(evaluation));
+                    var failedLines = ReportsHelper.GetFailedResults(evaluation).Select(r => r.SourceLocation.LineNumber);
+                    failedEvaluationLines.UnionWith(failedLines);
                 }
             }
             var expectedLineNumbers = new List<int>(lineNumbers);
@@ -162,23 +151,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
             Assert.AreEqual(expectedLineNumbers.Count, failingLines.Count);
             Assert.IsTrue(expectedLineNumbers.SequenceEqual(failingLines));
-        }
-
-        private IEnumerable<int> GetFailedLines(IEvaluation evaluation, HashSet<int> failedLines = null)
-        {
-            failedLines ??= new HashSet<int>();
-
-            if (!evaluation.Result?.Passed ?? false)
-            {
-                failedLines.Add(evaluation.Result.SourceLocation.LineNumber);
-            }
-
-            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                GetFailedLines(eval, failedLines);
-            }
-
-            return failedLines;
         }
 
         [TestMethod]

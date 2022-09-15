@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
@@ -29,7 +31,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         public bool HasResults { get; set; }
     }
 
-    public class MockResult : IResult
+    public class MockResult : IResult, IEquatable<MockResult>
     {
         public bool Passed { get; set; }
 
@@ -37,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public bool Equals(MockResult other)
         {
-            return Passed.Equals(other.Passed)
+            return Passed.Equals(other?.Passed)
                 && SourceLocation.Equals(other.SourceLocation);
         }
 
