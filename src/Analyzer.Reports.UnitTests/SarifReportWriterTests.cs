@@ -21,10 +21,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     {
         [DataTestMethod]
         [DynamicData("UnitTestCases", typeof(TestCases), DynamicDataSourceType.Property, DynamicDataDisplayName = "GetTestCaseName", DynamicDataDisplayNameDeclaringType = typeof(TestCases))]
-        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string name, MockEvaluation[] evaluations)
+        public void WriteResults_Evalutions_ReturnExpectedSarifLog(string _, MockEvaluation[] evaluations)
         {
-            if (name != "Multiple nested evaluations with duplicate rules") return;
-
             var templateFilePath = new FileInfo(TestCases.TestTemplateFilePath);
 
             var memStream = new MemoryStream();

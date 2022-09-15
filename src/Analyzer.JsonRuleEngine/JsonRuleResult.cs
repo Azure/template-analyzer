@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
@@ -20,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public bool Passed { get; internal set; }
 
         /// <summary>
-        /// TODO
+        /// Gets the source location where the rule was evaluated.
         /// </summary>
         public SourceLocation SourceLocation { get; internal set; }
 

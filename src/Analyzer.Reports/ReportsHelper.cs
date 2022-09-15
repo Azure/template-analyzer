@@ -13,10 +13,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     public class ReportsHelper
     {
         /// <summary>
-        /// 
+        /// Get all distinct results in an evaluation organized by source location file
         /// </summary>
-        /// <param name="evaluations"></param>
-        /// <param name="filesToSkip"></param>
+        /// <param name="evaluations">Evaluations to get results for</param>
+        /// <param name="filesToSkip">Files to not include results from</param>
         /// <returns></returns>
         public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
@@ -26,11 +26,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         }
 
         /// <summary>
-        /// 
+        /// Get all distinct results in an evaluation organized by source location file
         /// </summary>
-        /// <param name="evaluations"></param>
-        /// <param name="filesToSkip"></param>
-        /// <param name="passedEvaluations"></param>
+        /// <param name="evaluations">Evaluations to get results for</param>
+        /// <param name="filesToSkip">Files to not include results from</param>
+        /// <param name="passedEvaluations">Out parameter that gives number of evaluations that passed</param>
         /// <returns></returns>
         public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
 
         /// <summary>
-        /// 
+        /// Gets all failed results in an evaluation, sorts, and returns with rule ID
         /// </summary>
         /// <param name="evaluation"></param>
         /// <returns></returns>
@@ -92,20 +92,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             var failedResults = GetFailedResults(evaluation).Distinct().ToList();
             failedResults.Sort((x, y) => x.SourceLocation.LineNumber.CompareTo(y.SourceLocation.LineNumber));
 
-            // assumption: all results in a top-level evaluation are in a single resource and therefore in a single source file, so we can just look at the first to get them all
-            // TODO: validating assumption
-            if (failedResults.Select(r => r.SourceLocation.FilePath).Distinct().Count() != 1) throw new Exception("not 1 actual source file in top level eval");
-
             var actualFile = failedResults.First().SourceLocation.FilePath;
 
             return (actualFile, failedResults);
         }
 
         /// <summary>
-        /// 
+        /// Gets all failed results in an evaluation and returns in a flattened list
         /// </summary>
-        /// <param name="evaluation"></param>
-        /// <param name="failedResults"></param>
+        /// <param name="evaluation">The evaluation to get results from</param>
+        /// <param name="failedResults">Accumulator used inrecursive calls</param>
         /// <returns></returns>
         public static List<IResult> GetFailedResults(Types.IEvaluation evaluation, List<IResult> failedResults = null)
         {

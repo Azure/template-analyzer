@@ -30,10 +30,4 @@
     <ProjectReference Include="..\Analyzer.Reports\Analyzer.Reports.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Module2.bicep">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

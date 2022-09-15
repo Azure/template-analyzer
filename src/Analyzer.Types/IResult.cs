@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public bool Passed { get; }
 
         /// <summary>
-        /// Gets the list of file names and line numbers where the rule was evaluated TODO: module
+        /// Gets the source location where the rule was evaluated.
         /// </summary>
         public SourceLocation SourceLocation { get; }
     }

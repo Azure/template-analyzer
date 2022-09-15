@@ -23,18 +23,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         public readonly SourceLocation ReferencedBy;
 
-        // <summary>
-        // TODO 
-        // </summary>
-        //public readonly SourceLocation ActualLocation;
-
-
         /// <summary>
-        /// 
+        /// Instantiate instance of SourceLocation
         /// </summary>
-        /// <param name="filePath"></param>
-        /// <param name="lineNumber"></param>
-        /// <param name="referencedBy"></param>
+        /// <param name="filePath">File path of the source location</param>
+        /// <param name="lineNumber">Line number of source location</param>
+        /// <param name="referencedBy">Source location that refers to this location (i.e. line for bicep module)</param>
         public SourceLocation(string filePath, int lineNumber, SourceLocation referencedBy = null)
         {
             this.FilePath = filePath;
@@ -43,24 +37,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
             //this.ActualLocation = this.GetActualLocation();
         }
 
-        ///// <summary>
-        ///// Returns the actual source location, not a reference location (i.e. module)
-        ///// </summary>
-        ///// <returns></returns>
-        //public SourceLocation GetActualLocation()
-        //{
-        //    SourceLocation curLocation = this;
-
-        //    while (curLocation.ReferencedBy != null)
-        //    {
-        //        curLocation = curLocation.ReferencedBy;
-        //    }
-
-        //    return curLocation;
-        //}
-
         /// <summary>
-        /// TODO
+        /// Gets the hashcode
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
@@ -69,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         }
 
         /// <summary>
-        /// TODO
+        /// Compare with object for equality
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
@@ -80,7 +58,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         }
 
         /// <summary>
-        /// TODO
+        /// Compare with source location for equality
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>

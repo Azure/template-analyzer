@@ -60,8 +60,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
                 foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
-                    //if (evaluation.RuleId != "TA-000003") continue; // DEbug
-
                     string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.LineNumber}"));
                     var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
                         $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" +
