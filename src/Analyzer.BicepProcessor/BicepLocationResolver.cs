@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
-            // find all files with match, record line number, file name, and map size (how many other target lines the source line maps to)
+            // Find all files with match, record line number, file name, and map size (how many other target lines the source line maps to)
             var matches = new List<(int lineNumber, string filePathRelativeToEntrypoint, int mapSize)>();
             foreach (var fileEntry in sourceMap.Entries)
             {
