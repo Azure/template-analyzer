@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
 
         /// <summary>
-        /// Gets all failed results in an evaluation, sorts, and returns with rule ID
+        /// Gets all failed results in an evaluation, sorts, and returns rule ID
         /// </summary>
         /// <param name="evaluation"></param>
         /// <returns></returns>
