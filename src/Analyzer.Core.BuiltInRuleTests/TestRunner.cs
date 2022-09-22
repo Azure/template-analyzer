@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             // Get all lines reported as failed
             var failingLines = thisRuleEvaluations
                 .Where(e => !e.Passed)
-                .SelectMany(e => ReportsHelper.GetFailedResults(e).Select(r => r.SourceLocation.LineNumber))
+                .SelectMany(e => ReportsHelper.GetFailedResultsAsList(e).Select(r => r.SourceLocation.LineNumber))
                 .ToList();
 
             failingLines.Sort();
