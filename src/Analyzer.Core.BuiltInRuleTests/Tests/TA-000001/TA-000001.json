@@ -159,6 +159,22 @@
       {
         "LineNumber": 66,
         "Description": "requestTracingEnabled is not given a value"
+      },
+      {
+        "LineNumber": 76,
+        "Description": "detailedErrorLoggingEnabled is not given a value in properties.siteConfig"
+      },
+      {
+        "LineNumber": 76,
+        "Description": "httpLoggingEnabled is not given a value in properties.siteConfig"
+      },
+      {
+        "LineNumber": 76,
+        "Description": "requestTracingEnabled is not given a value in properties.siteConfig"
+      },
+      {
+        "LineNumber": 85,
+        "Description": "httpLoggingEnabled set to false in config child resource"
       }
     ]
   },

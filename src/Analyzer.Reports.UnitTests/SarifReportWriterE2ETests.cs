@@ -155,6 +155,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var memStream = new MemoryStream();
             try
             {
+                // secondTemplateDirectory is always equal to or under targetDirectory
                 if (Directory.Exists(targetDirectory))
                 {
                     Directory.Delete(targetDirectory, true);
@@ -201,37 +202,36 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
 
-            var firstIsBicep = (firstTemplateFileInfo.Extension == ".bicep");
-            var secondIsBicep = (secondTemplateFileInfo.Extension == ".bicep");
+            var isBicep = (firstTemplateFileInfo.Extension == ".bicep");
             var expectedLinesForRun = new Dictionary<string, (string file, string uriBase, List<List<int>> lines)>
             {
                 { "TA-000022", (
                     file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        firstIsBicep ? new List<int> { 8 } : new List<int> { 20 }
+                        isBicep ? new List<int> { 8 } : new List<int> { 20 }
                     })
                 },
                 { "TA-000028", (
-                    file: secondIsBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        secondIsBicep ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
-                        secondIsBicep ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
+                        isBicep ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
+                        isBicep ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
                     })
                 },
                 { "AZR-000164", (
                     file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        firstIsBicep ? new List<int> { 7 } : new List<int> { 19 }
+                        isBicep ? new List<int> { 7 } : new List<int> { 19 }
                     })
                 },
                 { "AZR-000165", (
                     file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        firstIsBicep ? new List<int> { 7 } : new List<int> { 19 }
+                        isBicep ? new List<int> { 7 } : new List<int> { 19 }
                     })
                 },
                 { "AZR-000186", (
@@ -242,27 +242,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     })
                 },
                 { "AZR-000187", (
-                    file: secondIsBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        secondIsBicep ? new List<int> { 5 } : new List<int> { 14 },
-                        secondIsBicep ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     })
                 },
                 { "AZR-000188", (
-                    file: secondIsBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        secondIsBicep ? new List<int> { 5 } : new List<int> { 14 },
-                        secondIsBicep ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     })
                 },
                 { "AZR-000189", (
-                    file: secondIsBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        secondIsBicep ? new List<int> { 5 } : new List<int> { 14 },
-                        secondIsBicep ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     })
                 }
             };

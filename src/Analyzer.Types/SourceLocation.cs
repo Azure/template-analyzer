@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
             this.FilePath = filePath;
             this.LineNumber = lineNumber;
             this.ReferencedBy = referencedBy;
-            //this.ActualLocation = this.GetActualLocation();
         }
 
         /// <summary>
@@ -60,12 +59,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <summary>
         /// Compare with source location for equality
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="sourceLocation"></param>
         /// <returns></returns>
-        public bool Equals(SourceLocation other)
+        public bool Equals(SourceLocation sourceLocation)
         {
-            return this.FilePath.Equals(other.FilePath)
-                && this.LineNumber.Equals(other.LineNumber);
+            return this.FilePath.Equals(sourceLocation.FilePath)
+                && this.LineNumber.Equals(sourceLocation.LineNumber);
         }
     }
 }

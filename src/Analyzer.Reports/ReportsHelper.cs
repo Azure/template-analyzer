@@ -40,7 +40,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             var resultsByFile = new Dictionary<string, List<(IEvaluation, IList<IResult>)>>();
             passedEvaluations = 0;
 
-
             foreach (var evaluation in evaluations)
             {
                 if (!evaluation.Passed)
@@ -78,7 +77,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             return resultsByFile;
         }
-
 
         /// <summary>
         /// Gets all failed results in an evaluation, sorts, and returns with rule ID

@@ -96,7 +96,7 @@
         {
           "apiVersion": "2019-08-01",
           "type": "config",
-          "name": "configAsChildResource",
+          "name": "web",
           "dependsOn": [
             "withConfigAsChildResource"
           ],

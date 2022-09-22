@@ -11,10 +11,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     public interface ISourceLocationResolver
     {
         /// <summary>
-        /// Find the line number of a path.
+        /// Find the source location of a path.
         /// </summary>
         /// <param name="path">The path describing the location in the document.</param>
-        /// <returns>TODO</returns>
+        /// <returns>source location to path</returns>
         public SourceLocation ResolveSourceLocation(string path);
     }
 }
