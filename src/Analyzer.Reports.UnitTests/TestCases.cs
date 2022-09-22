@@ -2,14 +2,19 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
     public class TestCases
     {
-        public static string TestTemplateFilePath = @"C:\Users\User\Azure\AppServices.json";
+        public static readonly string TestTemplateDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? @"C:\Users\User\Azure"
+            : "/home/user/azure";
+        public static readonly string TestTemplateFilePath = Path.Combine(TestTemplateDirectory, "AppServices.json");
 
         public static string GetTestCaseName(MethodInfo _, object[] testData) => (string)testData[0];
 
@@ -724,7 +729,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(@"C:\Users\User\Azure\RedisCache.json", 15,
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15,
                             new Types.SourceLocation(TestTemplateFilePath, 20)) }
                     },
                     new MockEvaluation
@@ -735,7 +740,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(@"C:\Users\User\Azure\SqlServer.json", 15,
+                        Result = new MockResult { Passed = false, SourceLocation = new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15,
                             new Types.SourceLocation(TestTemplateFilePath, 30)) }
                     }
                 }
