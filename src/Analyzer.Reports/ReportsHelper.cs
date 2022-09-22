@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public static (string, IList<IResult>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
             // get all distinct failed results in evaluation
-            var failedResults = GetFailedResults(evaluation).Distinct().ToList();
+            var failedResults = GetFailedResultsAsList(evaluation).Distinct().ToList();
             failedResults.Sort((x, y) => x.SourceLocation.LineNumber.CompareTo(y.SourceLocation.LineNumber));
 
             var actualFile = failedResults.First().SourceLocation.FilePath;
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
             {
-                GetFailedResults(eval, failedResults);
+                GetFailedResultsAsList(eval, failedResults);
             }
 
             return failedResults;

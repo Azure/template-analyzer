@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var outputResults = new List<List<IResult>>();
             foreach (var evaluation in testcases.Where(e => !e.Passed))
             {
-                var failedResults = ReportsHelper.GetFailedResults(evaluation).Distinct().ToList();
+                var failedResults = ReportsHelper.GetFailedResultsAsList(evaluation).Distinct().ToList();
 
                 // dedupe results
                 if (outputResults.Any(results => results.SequenceEqual(failedResults)))

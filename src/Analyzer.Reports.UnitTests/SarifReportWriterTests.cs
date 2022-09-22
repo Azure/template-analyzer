@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 for (int i = 0; i < failedEvaluations.Count; i++)
                 {
                     var evaluation = failedEvaluations[i];
-                    var evalResults = ReportsHelper.GetFailedResults(evaluation).Distinct().ToList();
+                    var evalResults = ReportsHelper.GetFailedResultsAsList(evaluation).Distinct().ToList();
 
                     // dedupe results
                     if (outputResults.Any(results => results.SequenceEqual(evalResults)))
