@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="evaluations">Evaluations to get results for</param>
         /// <param name="filesToSkip">Files to not include results from</param>
-        /// <param name="passedEvaluations">Out parameter that gives number of evaluations that passed</param>
+        /// <param name="passedEvaluations">Out parameter that gives number of passed evaluations</param>
         /// <returns></returns>
         public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
