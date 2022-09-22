@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="evaluation">The evaluation to get results from</param>
         /// <param name="failedResults">Accumulator used inrecursive calls</param>
         /// <returns></returns>
-        public static List<IResult> GetFailedResults(Types.IEvaluation evaluation, List<IResult> failedResults = null)
+        public static List<IResult> GetFailedResultsAsList(Types.IEvaluation evaluation, List<IResult> failedResults = null)
         {
             failedResults ??= new List<IResult>();
 
