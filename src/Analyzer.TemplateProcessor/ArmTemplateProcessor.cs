@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     }
                     catch (Exception)
                     {
-                        logger?.LogWarning("The parsing of a template output failed. Output name: {outputName}. Output value: {outputValue}", outputKey, template.Outputs[outputKey]?.Value?.Value);
+                        logger?.LogWarning("The parsing of a template output failed. Output name: {outputName}. Output value: {outputValue}", outputKey, template.Outputs[outputKey]?.Value?.Value?.ToString());
 
                         template.Outputs[outputKey].Value.Value = new JValue("NOT_PARSED");
                     }
