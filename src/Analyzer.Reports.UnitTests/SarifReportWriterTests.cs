@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
                     for (int j = 0; j < evalResults.Count; j++)
                     {
-                        var evalResultFileName = (new FileInfo(evalResults[j].SourceLocation.FilePath)).Name;
+                        var evalResultFileName = Path.GetFileName(evalResults[j].SourceLocation.FilePath);
                         result.Locations[j].PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(evalResultFileName);
                         result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalResults[j].SourceLocation.LineNumber);
                     }
