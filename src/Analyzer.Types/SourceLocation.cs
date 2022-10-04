@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
+
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
     /// <summary>
     /// Represents a location in a source file
     /// </summary>
-    public class SourceLocation
+    public class SourceLocation : IEquatable<SourceLocation>
     {
         /// <summary>
         /// The file path of the source file

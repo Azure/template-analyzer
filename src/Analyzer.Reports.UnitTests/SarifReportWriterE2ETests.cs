@@ -88,11 +88,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
                 result.Level.Should().Be(FailureLevel.Error);
 
+                // determine which template file was evaluated for this SARIF result (all locations will be in same file, so taking first)
+                // depending on if eval file matches the original target file, verify if analysis target is present or not
                 var evalFile = result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString;
                 var resultInOtherFile = evalFile != artifactUriString;
                 if (resultInOtherFile)
                 {
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
+                }
+                else
+                {
+                    result.AnalysisTarget.Should().BeNull();
                 }
 
                 var linesForResult = expectedLinesForRun[result.RuleId];
@@ -284,6 +290,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 if (fileName == nestedTemplate)
                 {
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(secondTemplate);
+                }
+                else
+                {
+                    result.AnalysisTarget.Should().BeNull();
                 }
 
                 // Verify lines reported equal the expected lines

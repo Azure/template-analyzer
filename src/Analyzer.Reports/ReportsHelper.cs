@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
     public class ReportsHelper
     {
         /// <summary>
-        /// Get all distinct results in an evaluation organized by source location file
+        /// Get all distinct results in an evaluation bucketed by source location file
         /// </summary>
         /// <param name="evaluations">Evaluations to get results for</param>
         /// <param name="filesToSkip">Files to not include results from</param>
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         }
 
         /// <summary>
-        /// Get all distinct results in an evaluation organized by source location file
+        /// Get all distinct results in an evaluation bucketed by source location file
         /// </summary>
         /// <param name="evaluations">Evaluations to get results for</param>
         /// <param name="filesToSkip">Files to not include results from</param>
@@ -81,9 +81,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <summary>
         /// Gets all failed results in an evaluation, sorts, and returns rule ID
         /// </summary>
-        /// <param name="evaluation"></param>
+        /// <param name="evaluation">The evaluation to get results for</param>
         /// <returns></returns>
-        /// <exception cref="Exception"></exception>
         public static (string, IList<IResult>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
             // get all distinct failed results in evaluation

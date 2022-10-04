@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Azure.Identity;
 using Bicep.Core.Emit;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
@@ -27,8 +26,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="templateContext">The template context to map JSON paths against.</param>
         public BicepSourceLocationResolver(TemplateContext templateContext)
         {
-            this.templateContext = templateContext;
             this.EntrypointFilePath = (templateContext ?? throw new ArgumentNullException(nameof(templateContext))).TemplateIdentifier;
+            this.templateContext = templateContext;
             this.jsonLineNumberResolver = new(templateContext);
             this.sourceMap = (templateContext.SourceMap as SourceMap) ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
         }

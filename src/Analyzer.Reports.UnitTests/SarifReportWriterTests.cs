@@ -147,6 +147,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
                     }
+                    else
+                    {
+                        result.AnalysisTarget.Should().BeNull();
+                    }
 
                     for (int j = 0; j < evalResults.Count; j++)
                     {

@@ -7,10 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.CodeAnalysis.Sarif;
-using Microsoft.CodeAnalysis.Sarif.Baseline;
 using Microsoft.CodeAnalysis.Sarif.Writers;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
