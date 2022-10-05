@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Sarif;
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
-    /// 
+    /// Helper class for ReportsWriters
     /// </summary>
     public class ReportsHelper
     {
@@ -70,11 +70,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 }
             }
 
-            foreach (var file in resultsByFile.Keys)
-            {
-                resultsByFile[file] = resultsByFile[file].Distinct().ToList();
-            }
-
             return resultsByFile;
         }
 
@@ -82,7 +77,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// Gets all failed results in an evaluation, sorts, and returns rule ID
         /// </summary>
         /// <param name="evaluation">The evaluation to get results for</param>
-        /// <returns></returns>
+        /// <returns>A list of distinct failed results</returns>
         public static (string, IList<IResult>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
             // get all distinct failed results in evaluation
@@ -99,7 +94,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="evaluation">The evaluation to get results from</param>
         /// <param name="failedResults">Accumulator used inrecursive calls</param>
-        /// <returns></returns>
+        /// <returns>A list of failed results</returns>
         public static List<IResult> GetFailedResultsAsList(Types.IEvaluation evaluation, List<IResult> failedResults = null)
         {
             failedResults ??= new List<IResult>();
