@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var expected = new StringBuilder();
             expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {templateFilePath}{Environment.NewLine}");
 
-            var outputResults = new List<List<IResult>>();
+            var outputResults = new List<List<Result>>();
             foreach (var evaluation in testcases.Where(e => !e.Passed))
             {
                 var failedResults = ReportsHelper.GetFailedResultsAsList(evaluation).Distinct().ToList();

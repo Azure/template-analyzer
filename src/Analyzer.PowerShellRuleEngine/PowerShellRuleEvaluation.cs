@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEvaluation : IEvaluation
     {
         private IEnumerable<IEvaluation> evaluations;
-        private IResult directResult;
+        private Result directResult;
         private string ruleName;
 
         /// <inheritdoc/>
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public IEnumerable<IEvaluation> Evaluations => evaluations;
 
         /// <inheritdoc/>
-        public IResult Result => directResult;
+        public Result Result => directResult;
 
         /// <inheritdoc/>
         public bool HasResults => Result != null || Evaluations.Any(e => e.HasResults);

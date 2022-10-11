@@ -11,6 +11,8 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.CodeAnalysis.Sarif.Writers;
 
+using SarifResult = Microsoft.CodeAnalysis.Sarif.Result;
+
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
@@ -116,7 +118,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     }).ToList();
 
                     // Log result
-                    SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new Result
+                    SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new SarifResult
                     {
                         RuleId = evaluation.RuleId,
                         Level = GetLevelFromEvaluation(evaluation),

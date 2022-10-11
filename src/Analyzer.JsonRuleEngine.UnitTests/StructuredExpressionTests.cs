@@ -58,15 +58,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpression1 = new Mock<LeafExpression>(mockOperator1, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
             var mockLeafExpression2 = new Mock<LeafExpression>(mockOperator2, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
 
-            var jsonRuleResult1 = new JsonRuleResult
-            {
-                Passed = evaluation1
-            };
-
-            var jsonRuleResult2 = new JsonRuleResult
-            {
-                Passed = evaluation2
-            };
+            var jsonRuleResult1 = new JsonRuleResult(evaluation1);
+            var jsonRuleResult2 = new JsonRuleResult(evaluation2);
 
             mockJsonPathResolver
                 .Setup(s => s.Resolve(It.Is<string>(path => path == "some.path")))
@@ -142,14 +135,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpression1 = new MockExpression(new ExpressionCommonProperties { Path = firstExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => firstExpressionPass.HasValue
-                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new JsonRuleResult { Passed = firstExpressionPass.Value }) }
+                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new JsonRuleResult(firstExpressionPass.Value)) }
                         : Enumerable.Empty<JsonRuleEvaluation>()
             };
 
             var mockLeafExpression2 = new MockExpression(new ExpressionCommonProperties { Path = secondExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => secondExpressionPass.HasValue
-                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new JsonRuleResult { Passed = secondExpressionPass.Value }) }
+                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new JsonRuleResult(secondExpressionPass.Value)) }
                         : Enumerable.Empty<JsonRuleEvaluation>()
             };
 

@@ -26,32 +26,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public IEnumerable<IEvaluation> Evaluations { get; set; }
 
-        public IResult Result { get; set; }
+        public Result Result { get; set; }
 
         public bool HasResults { get; set; }
     }
 
-    public class MockResult : IResult, IEquatable<MockResult>
+    public class MockResult : Result
     {
-        public bool Passed { get; set; }
-
-        public SourceLocation SourceLocation { get; set; }
-
-        public bool Equals(MockResult other)
+        public MockResult(bool passed, SourceLocation sourceLocation) : base(passed, sourceLocation)
         {
-            return Passed.Equals(other?.Passed)
-                && SourceLocation.Equals(other.SourceLocation);
-        }
-
-        public override bool Equals(object other)
-        {
-            var result = other as MockResult;
-            return (other != null) && Equals(result);
-        }
-
-        public override int GetHashCode()
-        {
-            return Passed.GetHashCode() ^ SourceLocation.GetHashCode();
         }
     }
 }

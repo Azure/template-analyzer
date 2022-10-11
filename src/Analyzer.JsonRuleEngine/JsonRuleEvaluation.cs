@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
 
         private IEnumerable<IEvaluation> evaluations;
-        private IResult directResult;
+        private Result directResult;
 
         private List<IEvaluation> cachedEvaluations;
 
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         internal Expression Expression { get; set; }
 
-        public IResult Result => directResult;
+        public Result Result => directResult;
 
         public IEnumerable<IEvaluation> Evaluations => cachedEvaluations ??= evaluations.ToList();
 

@@ -14,6 +14,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 
+using TAResult = Microsoft.Azure.Templates.Analyzer.Types.Result;
+
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
     [TestClass]
@@ -126,7 +128,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 }
 
-                var outputResults = new List<List<IResult>>();
+                var outputResults = new List<List<TAResult>>();
                 for (int i = 0; i < failedEvaluations.Count; i++)
                 {
                     var evaluation = failedEvaluations[i];

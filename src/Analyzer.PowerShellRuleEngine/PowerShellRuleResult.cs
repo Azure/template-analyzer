@@ -1,49 +1,20 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
-    public class PowerShellRuleResult : IResult, IEquatable<PowerShellRuleResult>
+    public class PowerShellRuleResult : Result
     {
-        /// <inheritdoc/>
-        public bool Passed { get; internal set; }
-
-        /// <inheritdoc/>
-        public SourceLocation SourceLocation { get; internal set; }
-
         /// <summary>
         /// Creates a <see cref="PowerShellRuleResult"/> that represents a result obtained from a PowerShell rule.
         /// </summary>
         /// <param name="passed">Whether or not the rule for this result passed.</param>
         /// <param name="sourceLocation">The source location where the rule was evaluated.</param>
-        public PowerShellRuleResult(bool passed, SourceLocation sourceLocation)
+        public PowerShellRuleResult(bool passed, SourceLocation sourceLocation) : base(passed, sourceLocation)
         {
-            Passed = passed;
-            SourceLocation = sourceLocation;
-        }
-
-        /// <inheritdoc/>
-        public bool Equals(PowerShellRuleResult other)
-        {
-            return Passed.Equals(other?.Passed) &&
-                SourceLocation.Equals(other.SourceLocation);
-        }
-
-        /// <inheritdoc/>
-        public override bool Equals(object other)
-        {
-            var result = other as PowerShellRuleResult;
-            return (result != null) && Equals(result);
-        }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Passed.GetHashCode() ^ SourceLocation.GetHashCode();
         }
     }
 }

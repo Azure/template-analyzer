@@ -30,11 +30,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             mockOperator.IsNegative = true;
 
             var mockLeafExpression = new Mock<LeafExpression>(mockOperator, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
-
-            var jsonRuleResult = new JsonRuleResult
-            {
-                Passed = expectedEvaluationResult
-            };
+            var jsonRuleResult = new JsonRuleResult(expectedEvaluationResult);
 
             mockJsonPathResolver
                 .Setup(s => s.Resolve(It.Is<string>(p => p == path)))

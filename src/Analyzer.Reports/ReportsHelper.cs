@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
-using Microsoft.CodeAnalysis.Sarif;
+//using Microsoft.CodeAnalysis.Sarif;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="evaluations">Evaluations to get results for</param>
         /// <param name="filesToSkip">Files to not include results from</param>
         /// <returns></returns>
-        public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
+        public static Dictionary<string, List<(IEvaluation, IList<Result>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
             IEnumerable<string> filesToSkip)
         {
@@ -32,12 +32,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="filesToSkip">Files to not include results from</param>
         /// <param name="passedEvaluations">Out parameter that gives number of passed evaluations</param>
         /// <returns></returns>
-        public static Dictionary<string, List<(IEvaluation, IList<IResult>)>> GetResultsByFile(
+        public static Dictionary<string, List<(IEvaluation, IList<Result>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
             IEnumerable<string> filesToSkip,
             out int passedEvaluations)
         {
-            var resultsByFile = new Dictionary<string, List<(IEvaluation, IList<IResult>)>>();
+            var resultsByFile = new Dictionary<string, List<(IEvaluation, IList<Result>)>>();
             passedEvaluations = 0;
 
             foreach (var evaluation in evaluations)
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
                     if (!resultsByFile.ContainsKey(actualFile))
                     {
-                        resultsByFile[actualFile] = new List<(IEvaluation, IList<IResult>)>();
+                        resultsByFile[actualFile] = new List<(IEvaluation, IList<Result>)>();
                     }
 
                     // skip any evaluations with duplicate results (i.e. two source locations from other templates refer to same result)
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="evaluation">The evaluation to get results for</param>
         /// <returns>A list of distinct failed results</returns>
-        public static (string, IList<IResult>) GetResultsByFileInternal(Types.IEvaluation evaluation)
+        public static (string, IList<Result>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
             // get all distinct failed results in evaluation
             var failedResults = GetFailedResultsAsList(evaluation).Distinct().ToList();
@@ -95,9 +95,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="evaluation">The evaluation to get results from</param>
         /// <param name="failedResults">Accumulator used inrecursive calls</param>
         /// <returns>A list of failed results</returns>
-        public static List<IResult> GetFailedResultsAsList(Types.IEvaluation evaluation, List<IResult> failedResults = null)
+        public static List<Result> GetFailedResultsAsList(Types.IEvaluation evaluation, List<Result> failedResults = null)
         {
-            failedResults ??= new List<IResult>();
+            failedResults ??= new List<Result>();
 
             if (!evaluation.Result?.Passed ?? false)
             {

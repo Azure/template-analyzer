@@ -45,13 +45,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 var sourceLocation = sourceLocationResolver?.ResolveSourceLocation(scope.Path) ?? new SourceLocation(null, 0);
-                var result = new JsonRuleResult()
-                {
-                    Passed = Operator.EvaluateExpression(scope.JToken),
-                    JsonPath = scope.Path,
-                    SourceLocation = sourceLocation,
-                    Expression = this
-                };
+                var result = new JsonRuleResult(
+                    passed: Operator.EvaluateExpression(scope.JToken),
+                    sourceLocation: sourceLocation,
+                    jsonPath: scope.Path,
+                    expression: this);
 
                 return new JsonRuleEvaluation(this, result.Passed, result);
             });
