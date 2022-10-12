@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             {
                 if (!evaluation.Passed)
                 {
-                    var newFailedSourceLocations = ReportsHelper.GetFailedResultsAsList(evaluation).Select(result =>
+                    var newFailedSourceLocations = evaluation.GetFailedResults().Select(result =>
                     {
                         // turn source location into list of tuples
                         var referenceList = new List<(string fileName, int lineNumber)>();
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             {
                 if (!evaluation.Passed)
                 {
-                    var failedLines = ReportsHelper.GetFailedResultsAsList(evaluation).Select(r => r.SourceLocation.LineNumber);
+                    var failedLines = evaluation.GetFailedResults().Select(r => r.SourceLocation.LineNumber);
                     failedEvaluationLines.UnionWith(failedLines);
                 }
             }

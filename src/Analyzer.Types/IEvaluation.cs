@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Types
 {
@@ -60,5 +61,34 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// </summary>
         /// <returns>Whether this evaluation has corresponding results</returns>
         public bool HasResults { get; }
+    }
+
+    /// <summary>
+    /// Extension methods for IEvaluation interface
+    /// </summary>
+    public static class IEvaluationExtensions
+    {
+        /// <summary>
+        /// Gets all failed results in an evaluation and returns in a flattened list
+        /// </summary>
+        /// <param name="evaluation">The evaluation to get results from</param>
+        /// <param name="failedResults">Accumulator used inrecursive calls</param>
+        /// <returns>A list of failed results</returns>
+        public static List<Result> GetFailedResults(this Types.IEvaluation evaluation, List<Result> failedResults = null)
+        {
+            failedResults ??= new List<Result>();
+
+            if (!evaluation.Result?.Passed ?? false)
+            {
+                failedResults.Add(evaluation.Result);
+            }
+
+            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
+            {
+                GetFailedResults(eval, failedResults);
+            }
+
+            return failedResults;
+        }
     }
 }

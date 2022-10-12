@@ -132,10 +132,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 for (int i = 0; i < failedEvaluations.Count; i++)
                 {
                     var evaluation = failedEvaluations[i];
-                    var evalResults = ReportsHelper.GetFailedResultsAsList(evaluation).Distinct().ToList();
+                    var evalDistinctResults = evaluation.GetFailedResults().Distinct().ToList();
 
                     // dedupe results
-                    if (outputResults.Any(results => results.SequenceEqual(evalResults)))
+                    if (outputResults.Any(results => results.SequenceEqual(evalDistinctResults)))
                     {
                         continue;
                     }
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     result.Message.Id.Should().BeEquivalentTo("default");
                     result.Level.Should().Be(FailureLevel.Error);
 
-                    if (evalResults.First().SourceLocation.FilePath != templateFilePath.FullName)
+                    if (evalDistinctResults.First().SourceLocation.FilePath != templateFilePath.FullName)
                     {
                         result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(templateFilePath.Name);
                     }
@@ -154,14 +154,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         result.AnalysisTarget.Should().BeNull();
                     }
 
-                    for (int j = 0; j < evalResults.Count; j++)
+                    for (int j = 0; j < evalDistinctResults.Count; j++)
                     {
-                        var evalResultFileName = Path.GetFileName(evalResults[j].SourceLocation.FilePath);
+                        var evalResultFileName = Path.GetFileName(evalDistinctResults[j].SourceLocation.FilePath);
                         result.Locations[j].PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(evalResultFileName);
-                        result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalResults[j].SourceLocation.LineNumber);
+                        result.Locations[j].PhysicalLocation.Region.StartLine.Should().Be(evalDistinctResults[j].SourceLocation.LineNumber);
                     }
 
-                    outputResults.Add(evalResults);
+                    outputResults.Add(evalDistinctResults);
                 }
 
                 run.Results.Count.Should().Be(outputResults.Count);

@@ -43,23 +43,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var outputResults = new List<List<Result>>();
             foreach (var evaluation in testcases.Where(e => !e.Passed))
             {
-                var failedResults = ReportsHelper.GetFailedResultsAsList(evaluation).Distinct().ToList();
+                var distinctFailedResults = evaluation.GetFailedResults().Distinct().ToList();
 
                 // dedupe results
-                if (outputResults.Any(results => results.SequenceEqual(failedResults)))
+                if (outputResults.Any(results => results.SequenceEqual(distinctFailedResults)))
                 {
                     continue;
                 }
-                outputResults.Add(failedResults);
+                outputResults.Add(distinctFailedResults);
 
-                var resultFilePath = failedResults.First().SourceLocation.FilePath;
+                var resultFilePath = distinctFailedResults.First().SourceLocation.FilePath;
                 if (resultFilePath != TestCases.TestTemplateFilePath)
                 {
                     expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {resultFilePath}");
                     expected.Append($"{Environment.NewLine}Root Template: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
                 }
 
-                var lineNumbers = failedResults
+                var lineNumbers = distinctFailedResults
                     .Select(r => $"{ConsoleReportWriter.TwiceIndentedNewLine}Line: {r.SourceLocation.LineNumber}")
                     .Aggregate((x, y) => x + y);
 

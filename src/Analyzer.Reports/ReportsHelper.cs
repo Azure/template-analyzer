@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
-//using Microsoft.CodeAnalysis.Sarif;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
@@ -81,35 +80,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         public static (string, IList<Result>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
             // get all distinct failed results in evaluation
-            var failedResults = GetFailedResultsAsList(evaluation).Distinct().ToList();
+            var failedResults = evaluation.GetFailedResults().Distinct().ToList();
             failedResults.Sort((x, y) => x.SourceLocation.LineNumber.CompareTo(y.SourceLocation.LineNumber));
 
             var actualFile = failedResults.First().SourceLocation.FilePath;
 
             return (actualFile, failedResults);
-        }
-
-        /// <summary>
-        /// Gets all failed results in an evaluation and returns in a flattened list
-        /// </summary>
-        /// <param name="evaluation">The evaluation to get results from</param>
-        /// <param name="failedResults">Accumulator used inrecursive calls</param>
-        /// <returns>A list of failed results</returns>
-        public static List<Result> GetFailedResultsAsList(Types.IEvaluation evaluation, List<Result> failedResults = null)
-        {
-            failedResults ??= new List<Result>();
-
-            if (!evaluation.Result?.Passed ?? false)
-            {
-                failedResults.Add(evaluation.Result);
-            }
-
-            foreach (var eval in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                GetFailedResultsAsList(eval, failedResults);
-            }
-
-            return failedResults;
         }
     }
 }
