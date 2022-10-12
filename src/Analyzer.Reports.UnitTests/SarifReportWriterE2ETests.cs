@@ -21,10 +21,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     public class SarifReportWriterE2ETests
     {
         [TestMethod]
-        [DataRow("SQLServerAuditingSettings.json", false)]
-        [DataRow("SQLServerAuditingSettings.bicep", false)]
-        [DataRow("TemplateWithReference.bicep", true)]
-        public void AnalyzeTemplateTests(string template, bool isReferenced)
+        [DataRow("SQLServerAuditingSettings.json")]
+        [DataRow("SQLServerAuditingSettings.bicep")]
+        [DataRow("TemplateWithReference.bicep")]
+        public void AnalyzeTemplateTests(string template)
         {
             var isBicep = template.EndsWith(".bicep");
 
@@ -90,14 +90,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
                 // determine which template file was evaluated for this SARIF result (all locations will be in same file, so taking first)
                 // depending on if eval file matches the original target file, verify if analysis target is present or not
-                var evalFile = result.Locations.First().PhysicalLocation.ArtifactLocation.Uri.OriginalString;
-                var resultInOtherFile = evalFile != artifactUriString;
+                var distinctEvalFiles = result.Locations.Select(loc => loc.PhysicalLocation.ArtifactLocation.Uri.OriginalString).Distinct().ToList();
+
+                if (distinctEvalFiles.Count != 1) throw new Exception("Multiple eval files for single SARIF result");
+
+                var resultInOtherFile = distinctEvalFiles.First() != artifactUriString;
+                string evalFile = null;
                 if (resultInOtherFile)
                 {
+                    evalFile = "SQLServerAuditingSettings.bicep";
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
                 }
                 else
                 {
+                    evalFile = artifactUriString;
                     result.AnalysisTarget.Should().BeNull();
                 }
 
