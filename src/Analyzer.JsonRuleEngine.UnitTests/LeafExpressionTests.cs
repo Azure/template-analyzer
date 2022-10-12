@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             // Assert
             Assert.AreEqual(1, evaluationOutcome.Count);
 
-            var iresult = evaluationOutcome[0].Result;
+            var result = evaluationOutcome[0].Result;
 
             // Verify actions on resolvers.
 
@@ -113,9 +113,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             Assert.AreEqual(expectedEvaluationResult, evaluationOutcome[0].Passed);
 
-            Assert.AreEqual(expectedEvaluationResult, iresult.Passed);
+            Assert.AreEqual(expectedEvaluationResult, result.Passed);
 
-            var result = iresult as JsonRuleResult;
             Assert.AreEqual(expectedPathEvaluated, result.JsonPath);
             Assert.AreEqual(lineNumber, result.SourceLocation.LineNumber);
         }

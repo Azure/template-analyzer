@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Expressions
             return EvaluateInternal(jsonScope, scope =>
             {
                 var sourceLocation = sourceLocationResolver?.ResolveSourceLocation(scope.Path) ?? new SourceLocation(null, 0);
-                var result = new JsonRuleResult(
+                var result = new Result(
                     passed: Operator.EvaluateExpression(scope.JToken),
                     sourceLocation: sourceLocation,
                     jsonPath: scope.Path,

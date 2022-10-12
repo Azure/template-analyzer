@@ -58,8 +58,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpression1 = new Mock<LeafExpression>(mockOperator1, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
             var mockLeafExpression2 = new Mock<LeafExpression>(mockOperator2, new ExpressionCommonProperties { ResourceType = "ResourceProvider/resource", Path = "some.path" });
 
-            var jsonRuleResult1 = new JsonRuleResult(evaluation1);
-            var jsonRuleResult2 = new JsonRuleResult(evaluation2);
+            var result1 = new Result(evaluation1);
+            var result2 = new Result(evaluation2);
 
             mockJsonPathResolver
                 .Setup(s => s.Resolve(It.Is<string>(path => path == "some.path")))
@@ -74,11 +74,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             mockLeafExpression1
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, jsonRuleResult1) });
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression1.Object, evaluation1, result1) });
 
             mockLeafExpression2
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, jsonRuleResult2) });
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression2.Object, evaluation2, result2) });
 
             var expressionArray = new Expression[] { mockLeafExpression1.Object, mockLeafExpression2.Object };
 
@@ -135,14 +135,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             var mockLeafExpression1 = new MockExpression(new ExpressionCommonProperties { Path = firstExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => firstExpressionPass.HasValue
-                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new JsonRuleResult(firstExpressionPass.Value)) }
+                        ? new[] { new JsonRuleEvaluation(null, firstExpressionPass.Value, new Result(firstExpressionPass.Value)) }
                         : Enumerable.Empty<JsonRuleEvaluation>()
             };
 
             var mockLeafExpression2 = new MockExpression(new ExpressionCommonProperties { Path = secondExpressionPass.HasValue ? evaluatedPath : notEvaluatedPath })
             {
                 EvaluationCallback = pathResolver => secondExpressionPass.HasValue
-                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new JsonRuleResult(secondExpressionPass.Value)) }
+                        ? new[] { new JsonRuleEvaluation(null, secondExpressionPass.Value, new Result(secondExpressionPass.Value)) }
                         : Enumerable.Empty<JsonRuleEvaluation>()
             };
 

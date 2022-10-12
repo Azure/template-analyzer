@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="severity">Determines how severe the finding is.</param>
         /// <param name="result">The result of this evaluation.</param>
-        public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
+        public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleDescription, string recommendation, string file, bool passed, Severity severity, Result result)
         {
             RuleId = ruleId;
             RuleDescription = ruleDescription;

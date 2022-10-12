@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 EvaluationCallback = pathResolver =>
                 {
                     whereConditionWasEvaluated = true;
-                    return new[] { new JsonRuleEvaluation(null, passed: false, result: new JsonRuleResult()) };
+                    return new[] { new JsonRuleEvaluation(null, passed: false, result: new Result()) };
                 }
             };
 
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 EvaluationCallback = pathResolver =>
                 {
                     whereConditionWasEvaluated = true;
-                    return new[] { new JsonRuleEvaluation(null, passed: true, result: new JsonRuleResult()) };
+                    return new[] { new JsonRuleEvaluation(null, passed: true, result: new Result()) };
                 }
             };
 

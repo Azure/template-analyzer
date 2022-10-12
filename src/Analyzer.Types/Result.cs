@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
     /// <summary>
     /// Describes the result of a TemplateAnalyzer rule against an ARM or Bicep template.
     /// </summary>
-    public abstract class Result : IEquatable<Result>
+    public class Result : IEquatable<Result>
     {
         /// <summary>
         /// Gets a value indicating whether or not the rule for this result passed.
@@ -21,22 +21,42 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public SourceLocation SourceLocation { get; }
 
         /// <summary>
+        /// Gets or sets the JSON path to the location in the JSON where the rule was evaluated.
+        /// </summary>
+        public string JsonPath { get; set; }
+
+        /// <summary>
+        /// Gets the expression object associated with this result
+        /// </summary>
+        public object Expression { get; set; }
+
+        /// <summary>
         /// Creates a <see cref="Result"/> that represents a result obtained from a rule.
         /// </summary>
         /// <param name="passed">Whether or not the rule for this result passed.</param>
         /// <param name="sourceLocation">The source location where the rule was evaluated.</param>
-        public Result(bool passed, SourceLocation sourceLocation)
+        /// <param name="jsonPath">The JSON path to the location in the JSON where the rule was evaluated</param>
+        /// <param name="expression">The expression associated with this result</param>
+        public Result(bool passed = false, SourceLocation sourceLocation = null, string jsonPath = null, object expression = null)
         {
             Passed = passed;
             SourceLocation = sourceLocation;
+            JsonPath = jsonPath;
+            Expression = expression;
         }
 
         /// <inheritdoc/>
         public bool Equals(Result other)
         {
-            return GetType().Equals(other.GetType())
-                && Passed.Equals(other?.Passed)
-                && SourceLocation.Equals(other.SourceLocation);
+            if (!Passed.Equals(other?.Passed)) return false;
+
+            if (SourceLocation != null)
+            {
+                if (!SourceLocation.Equals(other.SourceLocation)) return false;
+            }
+            else if (other.SourceLocation != null) return false;
+
+            return true;
         }
 
         /// <inheritdoc/>
@@ -49,7 +69,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return Passed.GetHashCode() ^ SourceLocation.GetHashCode();
+            return Passed.GetHashCode()
+                ^ SourceLocation?.GetHashCode() ?? 0;
         }
     }
 }
