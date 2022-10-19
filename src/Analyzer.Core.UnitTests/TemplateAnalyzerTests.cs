@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             }
 
             var expectedSourceLocations = expectedSourceLocationsStr
-                .Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(locationStr => locationStr
                     .Split(",", StringSplitOptions.TrimEntries)
                     .Select(str => (
