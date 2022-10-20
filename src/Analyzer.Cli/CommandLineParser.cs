@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         options.FormatterName = "ConsoleLoggerFormatter";
                     })
                     .AddProvider(new SummaryLoggerProvider(summaryLogger))
-                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleFormatterOptions>();
+                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleLoggerFormatterOptions>(options => options.Verbose = verbose);
             });
 
             if (this.reportWriter is SarifReportWriter sarifWriter)
