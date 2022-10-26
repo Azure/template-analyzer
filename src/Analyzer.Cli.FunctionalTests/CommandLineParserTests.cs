@@ -164,8 +164,8 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode and exception details")]
-        [DataRow(true, DisplayName = "Does not recommend the verbose mode or prints exception details")]
+        [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode, omits exception details")]
+        [DataRow(true, DisplayName = "Does not recommend the verbose mode and prints exception details")]
         [DataRow(false, true, DisplayName = "Uses plural form for 'errors'")]
         public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedMessages(bool usesVerboseMode, bool multipleErrors = false)
         {
