@@ -9,7 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
-    [DebuggerDisplay("{RuleId}, {ruleName}")]
+    [DebuggerDisplay("{RuleId}, {RuleName}")]
     public class PowerShellRuleEvaluation : IEvaluation
     {
         private IEnumerable<IEvaluation> evaluations;

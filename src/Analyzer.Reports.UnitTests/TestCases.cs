@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -38,6 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -48,6 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
@@ -65,6 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -75,6 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -85,6 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
@@ -102,6 +108,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -139,6 +146,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -169,6 +177,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -212,6 +221,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -242,6 +252,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -278,6 +289,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -321,6 +333,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -351,6 +364,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -387,6 +401,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000003",
+                        RuleName = "Rule000003",
                         RuleDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
                         HelpUri = "https://domain.com/help#0000003",
@@ -430,6 +445,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -460,6 +476,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -496,6 +513,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -532,6 +550,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000003",
+                        RuleName = "Rule000003",
                         RuleDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
                         HelpUri = "https://domain.com/help#0000003",
@@ -575,6 +594,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -605,6 +625,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
@@ -642,6 +663,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
@@ -671,6 +693,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
