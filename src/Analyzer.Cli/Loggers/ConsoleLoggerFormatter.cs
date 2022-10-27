@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
@@ -11,7 +12,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     public sealed class ConsoleLoggerFormatter : ConsoleFormatter
     {
-        const string DefaultForegroundColor = "\x1B[39m\x1B[22m";
+        private const string defaultForegroundColor = "\x1B[39m\x1B[22m";
+        private ConsoleLoggerFormatterOptions formatterOptions;
+        private readonly IDisposable optionsReloadToken;
 
         static string GetColorForTextWriter(ConsoleColor color) =>
         color switch
@@ -19,15 +22,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             ConsoleColor.Red => "\x1B[1m\x1B[31m",
             ConsoleColor.Yellow => "\x1B[1m\x1B[33m",
             ConsoleColor.Cyan => "\x1B[1m\x1B[36m",
-            _ => DefaultForegroundColor
+            _ => defaultForegroundColor
         };
 
         /// <summary>
         /// Creates an instance of <see cref="ConsoleLoggerFormatter"/>.
         /// </summary>
-        public ConsoleLoggerFormatter() : base("ConsoleLoggerFormatter")
+        /// <param name="options">The formatter options.</param>
+        public ConsoleLoggerFormatter(IOptionsMonitor<ConsoleLoggerFormatterOptions> options)
+            : base("ConsoleLoggerFormatter") =>
+            (this.optionsReloadToken, this.formatterOptions) = (options.OnChange(ReloadLoggerOptions), options.CurrentValue);
+
+        private void ReloadLoggerOptions(ConsoleLoggerFormatterOptions options)
         {
+            this.formatterOptions = options;
         }
+
+        /// <inheritdoc/>
+        public void Dispose() => optionsReloadToken?.Dispose();
 
         /// <inheritdoc/>
         public override void Write<TState>(in LogEntry<TState> logEntry, IExternalScopeProvider scopeProvider, TextWriter textWriter)
@@ -57,13 +69,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             textWriter.WriteLine(message);
 
-            if (logEntry.Exception != null)
+            if (this.formatterOptions.Verbose && logEntry.Exception != null)
             {
                 textWriter.WriteLine("Exception details:");
                 textWriter.WriteLine(logEntry.Exception.ToString());
             }
 
-            textWriter.Write(DefaultForegroundColor);
+            textWriter.Write(defaultForegroundColor);
         }
     }
 }

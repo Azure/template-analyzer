@@ -179,9 +179,9 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
-        [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode")]
-        [DataRow(true, DisplayName = "Does not recommend the verbose mode")]
-        [DataRow(false, true, DisplayName = "Outputs a recommendation for the verbose mode and uses plural form for 'errors'")]
+        [DataRow(false, DisplayName = "Outputs a recommendation for the verbose mode, omits exception details")]
+        [DataRow(true, DisplayName = "Does not recommend the verbose mode and prints exception details")]
+        [DataRow(false, true, DisplayName = "Uses plural form for 'errors'")]
         public void AnalyzeDirectory_ExecutionWithErrorAndWarning_PrintsExpectedMessages(bool usesVerboseMode, bool multipleErrors = false)
         {
             var directoryToAnalyze = GetFilePath("ToTestSummaryLogger");
@@ -192,11 +192,14 @@ namespace Analyzer.Cli.FunctionalTests
             {
                 expectedLogSummary += $"{Environment.NewLine}\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.";
             }
-            
+
+            var warningMessage = "An exception occurred when processing the template language expressions";
+            var errorMessage = "An exception occurred while analyzing a template";
+
             expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\tSummary of the warnings:" +
-                $"{Environment.NewLine}\t\t1 instance of: An exception occurred when processing the template language expressions{Environment.NewLine}") +
+                $"{Environment.NewLine}\t\t1 instance of: {warningMessage}{Environment.NewLine}") +
                 $"{Environment.NewLine}\tSummary of the errors:" +
-                $"{Environment.NewLine}\t\t{(multipleErrors ? "2 instances" : "1 instance")} of: An exception occurred while analyzing a template";
+                $"{Environment.NewLine}\t\t{(multipleErrors ? "2 instances" : "1 instance")} of: {errorMessage}";
             
             expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\t1 Warning" +
                 $"{Environment.NewLine}\t{(multipleErrors ? "2 Errors" : "1 Error")}{Environment.NewLine}");
@@ -224,15 +227,20 @@ namespace Analyzer.Cli.FunctionalTests
                 var cliConsoleOutput = outputWriter.ToString();
 
                 var indexOfLogSummary = cliConsoleOutput.IndexOf("Execution summary:");
-                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output.  Found:{Environment.NewLine}{cliConsoleOutput}");
+                Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output. Found:{Environment.NewLine}{cliConsoleOutput}");
 
+                var errorLog = $"Error: {errorMessage}";
+                var warningLog = $"Warning: {warningMessage}";
+                if (usesVerboseMode)
+                {
+                    errorLog += $"{Environment.NewLine}Exception details:" +
+                        $"{Environment.NewLine}Microsoft.Azure.Templates.Analyzer.Core.TemplateAnalyzerException: Error while processing template.";
+                    warningLog += $"{Environment.NewLine}Exception details:" +
+                        $"{Environment.NewLine}Azure.Deployments.Templates.Exceptions.TemplateValidationException: The template parameter 'location' is not found.";
+                }
                 var outputBeforeSummary = cliConsoleOutput[..indexOfLogSummary];
-                Assert.IsTrue(outputBeforeSummary.IndexOf($"Error: An exception occurred while analyzing a template" +
-                    $"{Environment.NewLine}Exception details:" +
-                    $"{Environment.NewLine}Microsoft.Azure.Templates.Analyzer.Core.TemplateAnalyzerException: Error while processing template.") > 0);
-                Assert.IsTrue(outputBeforeSummary.IndexOf($"Warning: An exception occurred when processing the template language expressions" +
-                    $"{Environment.NewLine}Exception details:" +
-                    $"{Environment.NewLine}Azure.Deployments.Templates.Exceptions.TemplateValidationException: The template parameter 'location' is not found.") > 0);
+                Assert.IsTrue(outputBeforeSummary.IndexOf(errorLog) > 0);
+                Assert.IsTrue(outputBeforeSummary.IndexOf(warningLog) > 0);
 
                 var logSummary = cliConsoleOutput[indexOfLogSummary..];
                 Assert.AreEqual(expectedLogSummary, logSummary);
