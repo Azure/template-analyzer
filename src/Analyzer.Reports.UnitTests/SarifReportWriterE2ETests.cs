@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [TestMethod]
         [DataRow("SQLServerAuditingSettings.json")]
         [DataRow("SQLServerAuditingSettings.bicep")]
-        [DataRow("TemplateWithReference.bicep")]
-        public void AnalyzeTemplateTests(string template)
+        [DataRow("TemplateWithReference.bicep", "SQLServerAuditingSettings.bicep")]
+        public void AnalyzeTemplateTests(string template, string referencedTemplate = null)
         {
             var isBicep = template.EndsWith(".bicep");
 
@@ -94,9 +94,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
                 if (distinctEvalFiles.Count != 1) throw new Exception("Multiple eval files for single SARIF result");
 
-                var resultInOtherFile = distinctEvalFiles.First() != artifactUriString;
                 string evalFile = null;
-                if (resultInOtherFile)
+                if (referencedTemplate != null && result.RuleId != "AZR-000186") // special case for rule, not in referenced template regardless
                 {
                     evalFile = "SQLServerAuditingSettings.bicep";
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
@@ -145,7 +144,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [DataRow("RedisCache.bicep", "RedisAndSQL.bicep", "SQLServerAuditingSettings.bicep", DisplayName = "RedisCache template results have multiple references, file results should be deduped")]
         public void AnalyzeDirectoryTests(string firstTemplate, string secondTemplate, string nestedTemplate, params string[] secondTemplatePathPieces)
         {
-
             var secondTemplateUsesRelativePath = !secondTemplatePathPieces.Contains("..");
 
             // arrange
@@ -293,7 +291,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 linesForResult.Remove(expectedLines);
 
                 // Validate analysis target if result is from nested template
-                if (fileName == nestedTemplate)
+                if (fileName == nestedTemplate && result.RuleId != "AZR-000186") // special case for rule, not in referenced template regardless
                 {
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(secondTemplate);
                 }

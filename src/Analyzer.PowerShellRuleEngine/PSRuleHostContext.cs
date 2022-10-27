@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
             foreach (var reason in ruleRecord.Detail.Reason)
             {
-                SourceLocation sourceLocation = default;
+                SourceLocation sourceLocation;
 
                 // Temporary try/catch because not all rule evaluations return a proper path yet:
                 try

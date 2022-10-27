@@ -9,8 +9,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Bicep.Core" Version="0.8.9" />
+    <PackageReference Include="Azure.Bicep.Core" Version="0.11.1" />
+    <PackageReference Include="Azure.Bicep.Types" Version="0.3.28" /> <!-- temp -->
+    <PackageReference Include="Azure.Bicep.Types.Az" Version="0.2.170" /> <!-- temp -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
-  
+    
 </Project>

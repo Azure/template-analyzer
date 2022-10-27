@@ -5,8 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Bicep.Core.Emit;
+using Bicep.Core.Extensions;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
@@ -17,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     {
         private readonly string EntrypointFilePath;
         private readonly JsonSourceLocationResolver jsonLineNumberResolver;
-        private readonly SourceMap sourceMap;
+        private readonly BicepMetadata metadata;
         private readonly TemplateContext templateContext;
 
         /// <summary>
@@ -29,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             this.EntrypointFilePath = (templateContext ?? throw new ArgumentNullException(nameof(templateContext))).TemplateIdentifier;
             this.templateContext = templateContext;
             this.jsonLineNumberResolver = new(templateContext);
-            this.sourceMap = (templateContext.SourceMap as SourceMap) ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
+            this.metadata = (templateContext.BicepMetadata as BicepMetadata) ?? throw new ArgumentNullException(nameof(templateContext.BicepMetadata));
         }
 
         /// <summary>
@@ -47,40 +52,45 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
-            // Find all files with match, record line number, file name, and map size (how many other target lines the source line maps to)
-            var matches = new List<(int lineNumber, string filePathRelativeToEntrypoint, int mapSize)>();
-            foreach (var fileEntry in sourceMap.Entries)
-            {
-                var match = fileEntry.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
-
-                if (match != default)
+            // find the most specific match in source map
+            var bestMatch = metadata.SourceMap.Entries
+                .Select(sourceFile =>
                 {
-                    var matchSize = fileEntry.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine);
-                    matches.Add((match.SourceLine, fileEntry.FilePath, matchSize)); 
-                }
-            }
+                    var match = sourceFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+                    var matchSize = match != default
+                        ? sourceFile.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine)
+                        : int.MaxValue;
+                    return (sourceFile.FilePath, match?.SourceLine, matchSize);
+                })
+                .MinBy(tuple => tuple.matchSize);
 
-            // sort smallest to largest map size to sort into reference order
-            matches.Sort((x, y) => y.mapSize.CompareTo(x.mapSize));
-
-            // default to result from JSON if no matches (i.e. a bicep module references a JSON template that wouldn't be in source map)
-            if (matches.Count == 0)
+            // default to result from JSON if no matches
+            if (!bestMatch.SourceLine.HasValue)
             {
                 return new SourceLocation(this.EntrypointFilePath, jsonLine + 1); // convert line number back to 1-indexing
             }
 
-            // TODO: verify entrypoint file should always be top of call stack
-            if (Path.GetFileName(this.EntrypointFilePath) != matches.First().filePathRelativeToEntrypoint) throw new Exception();
-
-            SourceLocation sourceLocation = null;
-            var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
-            foreach (var match in matches)
+            // check if match is an ARM module reference, if so return location in that template
+            var moduleMetadata = this.metadata.ModuleInfo.FirstOrDefault(info => info.FileName == bestMatch.FilePath);
+            if (moduleMetadata != default && moduleMetadata.Modules.ContainsKey(bestMatch.SourceLine.Value))
             {
-                var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, match.filePathRelativeToEntrypoint));
-                sourceLocation = new SourceLocation(matchFullFilePath, match.lineNumber + 1, sourceLocation); // convert line number back to 1-indexing
+                var modulePath = moduleMetadata.Modules[bestMatch.SourceLine.Value];
+                if (modulePath.EndsWith(".json") && File.Exists(modulePath))
+                {
+                    var template = JObject.Parse(File.ReadAllText(modulePath)); // TODO bad template? TODO: cache parsed template for future lookup
+                    var token = template.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+                    var lineNumber = (token as IJsonLineInfo)?.LineNumber;
+
+                    if (lineNumber != null)
+                    {
+                        return new SourceLocation(modulePath, lineNumber.Value);
+                    }
+                }
             }
 
-            return sourceLocation;
+            var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
+            var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, bestMatch.FilePath));
+            return new SourceLocation(matchFullFilePath, bestMatch.SourceLine.Value + 1); // convert line number back to 1-indexing
         }
     }
 }

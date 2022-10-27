@@ -106,7 +106,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             TemplateEngine.ParameterizeTemplate(
                 inputParameters: parameters,
                 template: template,
-                metadata: metadata);
+                metadata: metadata,
+                diagnostics: null);
 
             SetOriginalResourceNames(template);
 
@@ -128,7 +129,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion);
+                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion, null);
             }
             catch (Exception ex)
             {
@@ -434,7 +435,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 metadata: template.Metadata,
                 functionsLookup: functionsLookup,
                 parametersLookup: parametersLookup,
-                variablesLookup: variablesLookup);
+                variablesLookup: variablesLookup,
+                diagnostics: null);
 
             // Set reference lookup
             helper.OnGetTemplateReference = (TemplateReference templateReference) =>

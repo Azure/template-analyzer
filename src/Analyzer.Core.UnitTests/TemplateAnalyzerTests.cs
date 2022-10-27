@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.AccessControl;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 {
@@ -42,85 +44,44 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             Assert.AreEqual(expectedEvaluationPassCount, evaluationsWithResults.Count(e => e.Passed));
         }
 
-        const string SimpleNestedFailExpectedSourceLocations = @"
-            SimpleNestedFailModule.bicep:5, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:16, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:20, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:21, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:27, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:31, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:32, SimpleNestedFail.bicep:6
-            SimpleNestedFailModule.bicep:33, SimpleNestedFail.bicep:6";
-        const string DoubleNestedFailExpectedSourceLocations = @"
-            DoubleNestedFailModule1.bicep:5, DoubleNestedFail.bicep:6
-            DoubleNestedFailModule1.bicep:9, DoubleNestedFail.bicep:6
-            DoubleNestedFailModule2.bicep:4, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6
-            DoubleNestedFailModule2.bicep:8, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6
-            DoubleNestedFailModule2.bicep:9, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6
-            DoubleNestedFailModule2.bicep:10, DoubleNestedFailModule1.bicep:13, DoubleNestedFail.bicep:6";
-        const string ParameterPassingFailExpectedSourceLocations = @"
-            ParameterPassingFailModule.bicep:6, ParameterPassingFail.bicep:7
-            ParameterPassingFailModule.bicep:10, ParameterPassingFail.bicep:7
-            ParameterPassingFailModule.bicep:14, ParameterPassingFail.bicep:7
-            ParameterPassingFailModule.bicep:18, ParameterPassingFail.bicep:7
-            ParameterPassingFailModule.bicep:19, ParameterPassingFail.bicep:7";
-
         [DataTestMethod]
-        [DataRow("SimpleNestedFail.bicep", SimpleNestedFailExpectedSourceLocations, DisplayName = "Simple bicep nested template example")]
-        [DataRow("DoubleNestedFail.bicep", DoubleNestedFailExpectedSourceLocations, DisplayName = "Nested templates with two levels")]
-        [DataRow("ParameterPassingFail.bicep", ParameterPassingFailExpectedSourceLocations, DisplayName = "Nested template with parameters passed from parent")]
-        public void AnalyzeTemplate_ValidBicepModuleTemplate_ReturnsExpectedEvaluations(string templateFileName, string expectedSourceLocationsStr)
+        [DataRow("SimpleNestedFail.bicep", "{ \"SimpleNestedFailModule.bicep\": [5, 16, 20, 21, 27, 31, 32, 33] }", DisplayName = "Simple bicep nested template example")]
+        [DataRow("DoubleNestedFail.bicep", "{ \"DoubleNestedFailModule1.bicep\": [5, 9], \"DoubleNestedFailModule2.bicep\": [4, 8, 9, 10] }", DisplayName = "Nested templates with two levels")]
+        [DataRow("ParameterPassingFail.bicep", "{ \"ParameterPassingFailModule.bicep\": [6, 10, 14, 18, 19] }", DisplayName = "Nested template with parameters passed from parent")]
+        public void AnalyzeTemplate_ValidBicepModuleTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic expectedSourceLocationsJson)
         {
-            var templateDirectory = Path.Combine(Directory.GetCurrentDirectory(), "templates");
-            var filePath = Path.Combine(templateDirectory, templateFileName);
-            var template = File.ReadAllText(filePath);
+            string directory = Path.Combine(Directory.GetCurrentDirectory(), "templates");
+            string filePath = Path.Combine(directory, templateFileName);
+            string template = File.ReadAllText(filePath);
 
             var evaluations = templateAnalyzerSecurityRules.AnalyzeTemplate(template, templateFilePath: filePath);
-            var failedSourceLocations = new List<List<(string fileName, int lineNumber)>>();
 
+            Dictionary<string, HashSet<int>> failedEvaluationSourceLocations = new();
             foreach (var evaluation in evaluations)
             {
-                if (!evaluation.Passed)
+                var failedResults = evaluation.GetFailedResults();
+                foreach (var failedResult in failedResults)
                 {
-                    var newFailedSourceLocations = evaluation.GetFailedResults().Select(result =>
+                    var resultFilePath = failedResult.SourceLocation.FilePath;
+                    if (!failedEvaluationSourceLocations.ContainsKey(resultFilePath))
                     {
-                        // turn source location into list of tuples
-                        var referenceList = new List<(string fileName, int lineNumber)>();
-                        var curLocation = result.SourceLocation;
-
-                        referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
-                        while (curLocation.ReferencedBy != null)
-                        {
-                            curLocation = curLocation.ReferencedBy;
-                            referenceList.Add((curLocation.FilePath, curLocation.LineNumber));
-                        }
-
-                        return referenceList;
-                    });
-
-                    foreach (var newLocation in newFailedSourceLocations)
-                    {
-                        // only add unique source locations
-                        if (!failedSourceLocations.Any(existingLocation => existingLocation.SequenceEqual(newLocation)))
-                        {
-                            failedSourceLocations.Add(newLocation);
-                        }
+                        failedEvaluationSourceLocations[resultFilePath] = new();
                     }
+
+                    failedEvaluationSourceLocations[resultFilePath].Add(failedResult.SourceLocation.LineNumber);
                 }
             }
 
-            var expectedSourceLocations = expectedSourceLocationsStr
-                .Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(locationStr => locationStr
-                    .Split(",", StringSplitOptions.TrimEntries)
-                    .Select(str => (
-                        Path.Combine(templateDirectory, str.Split(":")[0]),
-                        int.Parse(str.Split(":")[1]))).ToList()).ToList();
-
-            Assert.AreEqual(expectedSourceLocations.Count, failedSourceLocations.Count);
-            foreach(var expectedLocation in expectedSourceLocations)
+            Dictionary<string, int[]> expectedSourceLocations = JsonConvert.DeserializeObject<Dictionary<string, int[]>>(expectedSourceLocationsJson);
+            foreach (var file in expectedSourceLocations.Keys)
             {
-                Assert.IsTrue(failedSourceLocations.Any(loc => loc.SequenceEqual(expectedLocation)));
+                var expectedLineNumbers = new List<int>(expectedSourceLocations[file]);
+                var fullFilePath = Path.Combine(directory, file);
+                var actualFailingLines = failedEvaluationSourceLocations[fullFilePath]?.ToList();
+                actualFailingLines.Sort();
+
+                Assert.AreEqual(expectedLineNumbers.Count, actualFailingLines.Count);
+                Assert.IsTrue(expectedLineNumbers.SequenceEqual(actualFailingLines));
             }
         }
 

@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // Handle path and prefixes backwards one level at a time to construct an accurate resources' path
             var currentContext = this.templateContext;
             var currentPathToEvaluate = pathInExpandedTemplate;
-            string fullPathFromExpandedParentTemplate = "";
+            string fullPathFromExpandedParentTemplate = string.Empty;
 
             while (currentContext != null && currentPathToEvaluate.Length > 0)
             {

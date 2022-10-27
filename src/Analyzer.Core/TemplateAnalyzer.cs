@@ -89,12 +89,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             // If the template is Bicep, convert to JSON and get source map:
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
-            object sourceMap = null;
+            object bicepMetadata = null;
             if (isBicep)
             {
                 try
                 {
-                    (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                    (template, bicepMetadata) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
                 }
                 catch (Exception e)
                 {
@@ -110,11 +110,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 ResourceMappings = null,
                 TemplateIdentifier = templateFilePath,
                 IsBicep = isBicep,
-                SourceMap = sourceMap,
+                BicepMetadata = bicepMetadata,
                 PathPrefix = "",
                 ParentContext = null
             };
-            var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, "");
+            var evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, "");
 
             // For each rule we don't want to report the same line more than once
             // This is a temporary fix
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
                 IsBicep = parentContext.IsBicep,
-                SourceMap = parentContext.SourceMap,
+                BicepMetadata = parentContext.BicepMetadata,
                 PathPrefix = pathPrefix,
                 ParentContext = parentContext
             };

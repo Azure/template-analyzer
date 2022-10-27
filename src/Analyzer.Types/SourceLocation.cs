@@ -21,21 +21,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public readonly int LineNumber;
 
         /// <summary>
-        /// The source location where the current location is referencing (i.e. line for bicep module)
-        /// </summary>
-        public readonly SourceLocation ReferencedBy;
-
-        /// <summary>
         /// Instantiate instance of SourceLocation
         /// </summary>
         /// <param name="filePath">File path of the source location</param>
         /// <param name="lineNumber">Line number of source location</param>
-        /// <param name="referencedBy">Source location that refers to this location (i.e. line for bicep module)</param>
-        public SourceLocation(string filePath, int lineNumber, SourceLocation referencedBy = null)
+        public SourceLocation(string filePath, int lineNumber)
         {
             this.FilePath = filePath;
             this.LineNumber = lineNumber;
-            this.ReferencedBy = referencedBy;
         }
 
         /// <summary>

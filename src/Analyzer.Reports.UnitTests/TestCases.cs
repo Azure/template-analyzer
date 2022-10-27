@@ -729,8 +729,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15,
-                            new Types.SourceLocation(TestTemplateFilePath, 20)))
+                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
                     },
                     new MockEvaluation
                     {
@@ -740,8 +739,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15,
-                            new Types.SourceLocation(TestTemplateFilePath, 30)))
+                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
                     }
                 }
             },
