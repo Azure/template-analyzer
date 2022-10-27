@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging.Console;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
