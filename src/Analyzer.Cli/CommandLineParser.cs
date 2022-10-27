@@ -236,7 +236,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             var filesFailed = new List<FileInfo>();
             foreach (FileInfo file in filesToAnalyze)
             {
-                ExitCode res = AnalyzeTemplate(file, null);
+                // Check if a {template}.parameters.json file is present, and if so use it as the parametersFile input
+                FileInfo parametersFile = null;
+                string defaultParametersFileLocation = Path.Combine(file.Directory.FullName, Path.GetFileNameWithoutExtension(file.Name) + ".parameters.json");
+                if (File.Exists(defaultParametersFileLocation))
+                {
+                    parametersFile = new FileInfo(defaultParametersFileLocation);
+                }
+
+                ExitCode res = AnalyzeTemplate(file, parametersFile);
 
                 if (res == ExitCode.Success || res == ExitCode.Violation)
                 {

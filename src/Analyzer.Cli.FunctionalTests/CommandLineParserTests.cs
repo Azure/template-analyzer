@@ -110,7 +110,22 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 10 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 11 files");
+        }
+
+        [TestMethod]
+        public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFilesWithParameters()
+        {
+            var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile") };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 1 file");
+            StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters.json"));
         }
 
         [DataTestMethod]
