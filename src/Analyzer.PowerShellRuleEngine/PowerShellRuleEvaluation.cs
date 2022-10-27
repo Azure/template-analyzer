@@ -14,10 +14,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     {
         private IEnumerable<IEvaluation> evaluations;
         private IResult directResult;
-        private string ruleName;
 
         /// <inheritdoc/>
         public string RuleId { get; }
+
+        /// <inheritdoc/>
+        public string RuleName { get; }
 
         /// <inheritdoc/>
         public string RuleDescription { get; }
@@ -61,6 +63,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
         {
             RuleId = ruleId;
+            RuleName = ruleName;
             RuleDescription = ruleDescription;
             Recommendation = recommendation;
             FileIdentifier = file;
@@ -69,7 +72,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             HelpUri = helpUri;
             directResult = result;
             evaluations = Enumerable.Empty<IEvaluation>();
-            this.ruleName = ruleName;
         }
     }
 }
