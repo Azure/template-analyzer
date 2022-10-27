@@ -404,7 +404,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             {
                 // Do not throw if there was an issue with evaluating language expressions
 
-                logger?.LogWarning(ex, "An exception occurred while evaluating the properties of a resource");
+                // We are using the resource name instead of the resource path because nested templates have a relative path that could be ambiguous:
+                logger?.LogWarning(ex, "An exception occurred while evaluating the properties of the resource named {resourceName}", templateResource.OriginalName);
                 logger?.LogDebug("Properties: {properties}", templateResource.Properties.Value);
 
                 return;
