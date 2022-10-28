@@ -465,7 +465,7 @@
   },
   {
     "id": "TA-000016",
-    "name": "ApServiceWebApp.OnlyHTTPS",
+    "name": "AppServiceWebApp.OnlyHTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000016-web-application-should-only-be-accessible-over-https",
