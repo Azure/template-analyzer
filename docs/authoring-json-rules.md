@@ -22,7 +22,7 @@ Here are the fields that make up a rule definition.
 | Property Name | Description | Is required for contributing<br/>a built-in rule | Is required<br/>in schema | Default Value |
 |---|---|---|---|---|
 | id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md). | yes | yes | - |
-| name | A human-readable identifier | yes | yes | - |
+| name | A human-readable identifier, more details [here](https://github.com/microsoft/sarif-tutorials/blob/main/docs/Authoring-rule-metadata-and-result-messages.md#human-readable-identifier). | yes | yes | - |
 | description | Brief description of what the rule is evaluating | yes | yes | - |
 | recommendation | The `recommendation` should provide clear but concise guidance on how to modify a template if the rule fails.<br/>If some details are somewhat complex, or the rule takes a bit more to understand, add those details to a guide accessible at the URI in `helpUri`. | yes | no | none |
 | helpUri | The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository. | yes | no | none |
