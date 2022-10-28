@@ -708,7 +708,7 @@
   },
   {
     "id": "TA-000026",
-    "name": "ServiceFabric.OnlyClientAADAuth",
+    "name": "ServiceFabric.OnlyAADClientAuth",
     "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000026-service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
