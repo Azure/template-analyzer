@@ -465,7 +465,7 @@
   },
   {
     "id": "TA-000016",
-    "name": "ApServiceWebApp.OnlyHTTPS",
+    "name": "AppServiceWebApp.OnlyHTTPS",
     "description": "Web Application should only be accessible over HTTPS",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000016-web-application-should-only-be-accessible-over-https",
@@ -818,7 +818,7 @@
   },
   {
     "id": "TA-000030",
-    "name": "ClassicCompute.Migrate",
+    "name": "ClassicCompute.MigrateToARM",
     "description": "Migrate your Classic Compute VM to ARM",
     "recommendation": "Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000030-migrate-your-classic-compute-vm-to-arm",
@@ -831,7 +831,7 @@
   },
   {
     "id": "TA-000031",
-    "name": "ClassicStorage.Migrate",
+    "name": "ClassicStorage.MigrateToARM",
     "description": "Migrate your Classic Storage Account to ARM",
     "recommendation": "Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000031-migrate-your-classic-storage-account-to-arm",
