@@ -200,7 +200,7 @@
   },
   {
     "id": "TA-000007",
-    "name": "AppServiceAPIApp.ManagedIdentity",
+    "name": "AppServiceAPIApp.UseManagedIdentity",
     "description": "Managed identity should be used in your API App",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000007-managed-identity-should-be-used-in-your-api-app",
@@ -365,7 +365,7 @@
   },
   {
     "id": "TA-000013",
-    "name": "AppServiceFunctionApp.ManagedIdentity",
+    "name": "AppServiceFunctionApp.UseManagedIdentity",
     "description": "Managed identity should be used in your Function App",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000013-managed-identity-should-be-used-in-your-function-app",
@@ -570,7 +570,7 @@
   },
   {
     "id": "TA-000019",
-    "name": "AppServiceWebApp.ManagedIdentity",
+    "name": "AppServiceWebApp.UseManagedIdentity",
     "description": "Managed identity should be used in your Web App",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000019-managed-identity-should-be-used-in-your-web-app",
