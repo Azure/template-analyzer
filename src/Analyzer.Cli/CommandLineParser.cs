@@ -198,7 +198,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidARMTemplate;
             }
 
-            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFilePath);
+            // If a parameters file is not supplied, check if a {template}.parameters.json file is present, and if so use it as the parametersFile input
+            FileInfo parametersFile = parametersFilePath == null ? FindParameterFileForTemplate(templateFilePath) : parametersFilePath;
+
+            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFile);
 
             FinishAnalysis();
             return (int)analysisResult;
@@ -237,12 +240,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             foreach (FileInfo file in filesToAnalyze)
             {
                 // Check if a {template}.parameters.json file is present, and if so use it as the parametersFile input
-                FileInfo parametersFile = null;
-                string defaultParametersFileLocation = Path.Combine(file.Directory.FullName, Path.GetFileNameWithoutExtension(file.Name) + ".parameters.json");
-                if (File.Exists(defaultParametersFileLocation))
-                {
-                    parametersFile = new FileInfo(defaultParametersFileLocation);
-                }
+                FileInfo parametersFile = FindParameterFileForTemplate(file);
 
                 ExitCode res = AnalyzeTemplate(file, parametersFile);
 
@@ -359,6 +357,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 });
 
             return armTemplates.Concat(bicepTemplates);
+        }
+
+        private FileInfo FindParameterFileForTemplate(FileInfo template)
+        {
+            FileInfo parametersFile = null;
+            string defaultParametersFileLocation = Path.Combine(template.Directory.FullName, Path.GetFileNameWithoutExtension(template.Name) + ".parameters.json");
+            if (File.Exists(defaultParametersFileLocation))
+            {
+                parametersFile = new FileInfo(defaultParametersFileLocation);
+            }
+
+            return parametersFile;
         }
 
         private bool IsValidTemplate(FileInfo file)

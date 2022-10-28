@@ -100,6 +100,22 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
+        public void AnalyzeTemplate_ValidInputValues_AnalyzesUsingAutoDetectedParameters()
+        {
+            var templatePath = GetFilePath(Path.Combine("ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.bicep"));
+
+            var args = new string[] { "analyze-template", templatePath };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+            StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters.json"));
+        }
+
+        [TestMethod]
         public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
         {
             var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests") };
@@ -114,7 +130,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
-        public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFilesWithParameters()
+        public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFilesWithAutoDetectedParameters()
         {
             var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile") };
 
