@@ -831,7 +831,7 @@
   },
   {
     "id": "TA-000031",
-    "name": "ClassicStorage.Migrate",
+    "name": "ClassicStorage.MigrateToARM",
     "description": "Migrate your Classic Storage Account to ARM",
     "recommendation": "Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000031-migrate-your-classic-storage-account-to-arm",
