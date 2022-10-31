@@ -194,7 +194,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     }
                     catch (Exception)
                     {
-                        logger?.LogWarning("The parsing of a template output failed. Output name: {outputName}. Output value: {outputValue}", outputKey, template.Outputs[outputKey]?.Value?.Value?.ToString());
+                        logger?.LogWarning("The parsing of the template output named {outputName} failed", outputKey);
+                        logger?.LogDebug("Output value: {outputValue}", template.Outputs[outputKey]?.Value?.Value?.ToString());
 
                         template.Outputs[outputKey].Value.Value = new JValue("NOT_PARSED");
                     }
@@ -404,7 +405,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             {
                 // Do not throw if there was an issue with evaluating language expressions
 
-                logger?.LogWarning(ex, "An exception occurred while evaluating the properties of a resource. Properties: {properties}", templateResource.Properties.Value);
+                // We are using the resource name instead of the resource path because nested templates have a relative path that could be ambiguous:
+                logger?.LogWarning(ex, "An exception occurred while evaluating the properties of the resource named {resourceName}", templateResource.OriginalName);
+                logger?.LogDebug("Properties: {properties}", templateResource.Properties.Value);
 
                 return;
             }
