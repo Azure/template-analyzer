@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bicep.Core.Extensions;
@@ -74,10 +75,11 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var modulePath = moduleMetadata.Modules[bestMatch.SourceLine.Value];
                 if (modulePath.EndsWith(".json") && File.Exists(modulePath))
                 {
-                    var template = JObject.Parse(File.ReadAllText(modulePath)); // TODO bad template? TODO: cache parsed template for future lookup
+                    var template = ArmTemplateCache.GetArmTemplate(modulePath);
                     var token = template.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
                     var lineNumber = (token as IJsonLineInfo)?.LineNumber;
 
+                    // fall back to location of module refernce in parent file if failing to get line number
                     if (lineNumber != null)
                     {
                         return new SourceLocation(modulePath, lineNumber.Value);
@@ -88,6 +90,22 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
             var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, bestMatch.FilePath));
             return new SourceLocation(matchFullFilePath, bestMatch.SourceLine.Value + 1); // convert line number back to 1-indexing
+        }
+
+        private static class ArmTemplateCache
+        {
+            private static readonly Dictionary<string, JObject> Templates = new();
+
+            public static JObject GetArmTemplate(string templatePath)
+            {
+                if (!Templates.ContainsKey(templatePath))
+                {
+                    // assumption: template has already been previously parsed by Bicep library and was valid
+                    Templates[templatePath] = JObject.Parse(File.ReadAllText(templatePath));
+                }
+
+                return Templates[templatePath];
+            }
         }
     }
 }
