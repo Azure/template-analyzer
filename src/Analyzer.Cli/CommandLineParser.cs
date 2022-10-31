@@ -198,13 +198,56 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidARMTemplate;
             }
 
-            // If a parameters file is not supplied, check if a {template}.parameters.json file is present, and if so use it as the parametersFile input
-            FileInfo parametersFile = parametersFilePath == null ? FindParameterFileForTemplate(templateFilePath) : parametersFilePath;
+            ExitCode exitCode;
+            if (parametersFilePath != null)
+            {
+                exitCode = AnalyzeTemplate(templateFilePath, parametersFilePath);
+            }
+            else
+            {
+                // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
+                var parametersFiles = FindParameterFileForTemplate(templateFilePath);
+                int numOfFilesAnalyzed = 0;
+                bool issueReported = false;
+                var filesFailed = new List<FileInfo>();
 
-            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFile);
+                if (parametersFiles.Count() > 0)
+                {
+                    foreach (FileInfo parametersFile in parametersFiles)
+                    {
+                        ExitCode res = AnalyzeTemplate(templateFilePath, parametersFile);
+
+                        if (res == ExitCode.Success || res == ExitCode.Violation)
+                        {
+                            numOfFilesAnalyzed++;
+                            issueReported |= res == ExitCode.Violation;
+                        }
+                        else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
+                        {
+                            filesFailed.Add(templateFilePath);
+                        }
+                    }
+
+                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
+
+                    if (filesFailed.Count > 0)
+                    {
+                        logger.LogError($"Unable to analyze {filesFailed.Count} {(filesFailed.Count == 1 ? "file" : "files")}: {string.Join(", ", filesFailed)}");
+                        exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
+                    }
+                    else
+                    {
+                        exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
+                    }
+                }
+                else
+                {
+                    exitCode = AnalyzeTemplate(templateFilePath, null);
+                }
+            }
 
             FinishAnalysis();
-            return (int)analysisResult;
+            return (int)exitCode;
         }
 
         // Note: argument names must match command arguments/options (without "-" characters)
@@ -239,19 +282,38 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             var filesFailed = new List<FileInfo>();
             foreach (FileInfo file in filesToAnalyze)
             {
-                // Check if a {template}.parameters.json file is present, and if so use it as the parametersFile input
-                FileInfo parametersFile = FindParameterFileForTemplate(file);
-
-                ExitCode res = AnalyzeTemplate(file, parametersFile);
-
-                if (res == ExitCode.Success || res == ExitCode.Violation)
+                // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
+                var parametersFiles = FindParameterFileForTemplate(file);
+                if (parametersFiles.Count() > 0)
                 {
-                    numOfFilesAnalyzed++;
-                    issueReported |= res == ExitCode.Violation;
+                    foreach (FileInfo parametersFile in parametersFiles)
+                    {
+                        ExitCode res = AnalyzeTemplate(file, parametersFile);
+
+                        if (res == ExitCode.Success || res == ExitCode.Violation)
+                        {
+                            numOfFilesAnalyzed++;
+                            issueReported |= res == ExitCode.Violation;
+                        }
+                        else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
+                        {
+                            filesFailed.Add(file);
+                        }
+                    }
                 }
-                else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
+                else
                 {
-                    filesFailed.Add(file);
+                    ExitCode res = AnalyzeTemplate(file, null);
+
+                    if (res == ExitCode.Success || res == ExitCode.Violation)
+                    {
+                        numOfFilesAnalyzed++;
+                        issueReported |= res == ExitCode.Violation;
+                    }
+                    else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
+                    {
+                        filesFailed.Add(file);
+                    }
                 }
             }
 
@@ -359,16 +421,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return armTemplates.Concat(bicepTemplates);
         }
 
-        private FileInfo FindParameterFileForTemplate(FileInfo template)
+        private IEnumerable<FileInfo> FindParameterFileForTemplate(FileInfo template)
         {
-            FileInfo parametersFile = null;
-            string defaultParametersFileLocation = Path.Combine(template.Directory.FullName, Path.GetFileNameWithoutExtension(template.Name) + ".parameters.json");
-            if (File.Exists(defaultParametersFileLocation))
-            {
-                parametersFile = new FileInfo(defaultParametersFileLocation);
-            }
+            var parametersFiles = template.Directory.GetFiles(
+                Path.GetFileNameWithoutExtension(template.Name) + ".parameters*.json",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = false
+                });
 
-            return parametersFile;
+            return parametersFiles;
         }
 
         private bool IsValidTemplate(FileInfo file)
