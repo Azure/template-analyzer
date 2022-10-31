@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public string JsonPath { get; set; }
 
         /// <summary>
-        /// Gets the expression object associated with this result
+        /// Gets the expression object associated with this result.
         /// </summary>
         public object Expression { get; set; }
 
