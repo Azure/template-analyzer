@@ -32,15 +32,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         }
 
         /// <summary>
-        /// Gets the hashcode
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            return FilePath.GetHashCode() ^ LineNumber.GetHashCode();
-        }
-
-        /// <summary>
         /// Compare with object for equality
         /// </summary>
         /// <param name="obj"></param>
@@ -61,5 +52,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
             return this.FilePath.Equals(sourceLocation.FilePath)
                 && this.LineNumber.Equals(sourceLocation.LineNumber);
         }
+
+
+        /// <summary>
+        /// Gets the hashcode
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode() => HashCode.Combine(this.FilePath, this.LineNumber);
     }
 }

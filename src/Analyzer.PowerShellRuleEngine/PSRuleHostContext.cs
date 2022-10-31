@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Management.Automation;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;

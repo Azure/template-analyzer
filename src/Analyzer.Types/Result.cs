@@ -67,10 +67,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         }
 
         /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Passed.GetHashCode()
-                ^ SourceLocation?.GetHashCode() ?? 0;
-        }
+        public override int GetHashCode() => HashCode.Combine(this.Passed, this.SourceLocation);
     }
 }

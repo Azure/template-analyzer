@@ -2,18 +2,15 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Bicep.Core.Emit;
 using Bicep.Core.Extensions;
-using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.Utilities
+namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
     /// <summary>
     /// An <see cref="ISourceLocationResolver"/> used for resolving line numbers from a compiled JSON template to the original Bicep template.

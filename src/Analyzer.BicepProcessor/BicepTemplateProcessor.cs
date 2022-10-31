@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Bicep.Core.Analyzers.Linter;
 using Bicep.Core.Analyzers.Linter.ApiVersions;
 using Bicep.Core.Configuration;
@@ -22,8 +20,7 @@ using Bicep.Core.Semantics.Namespaces;
 using Bicep.Core.Text;
 using Bicep.Core.TypeSystem.Az;
 using Bicep.Core.Workspaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.WindowsAzure.ResourceStack.Common.BackgroundJobs.Notification;
+using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
@@ -47,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
     /// <summary>
     /// Helper class to contain information for all modules in each source file
     /// </summary>
-    public class SourceFileModuleInfo
+    public class SourceFileModuleInfo : IEquatable<SourceFileModuleInfo>
     {
         /// <summary>
         /// File path of source file
@@ -69,6 +66,23 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             FileName = fileName;
             Modules = modules;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            var result = obj as SourceFileModuleInfo;
+            return (result != null) && Equals(result);
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(SourceFileModuleInfo moduleInfo)
+        {
+            return this.FileName.Equals(moduleInfo.FileName)
+                && this.Modules.Equals(moduleInfo.Modules);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(this.FileName, this.Modules);
     }
 
     /// <summary>
@@ -76,7 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
     /// </summary>
     public class BicepTemplateProcessor
     {
-        private static readonly IConfigurationManager configurationManager = new Bicep.Core.Configuration.ConfigurationManager(new FileSystem());
+        private static readonly IConfigurationManager configurationManager = new ConfigurationManager(new FileSystem());
         private static readonly IFileResolver fileResolver = new FileResolver(new FileSystem());
         private static readonly INamespaceProvider namespaceProvider = new DefaultNamespaceProvider(new AzResourceTypeLoader());
 
