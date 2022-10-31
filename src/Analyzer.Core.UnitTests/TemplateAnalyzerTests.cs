@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [DataTestMethod]
         [DataRow("SimpleNestedFail.bicep", "{ \"SimpleNestedFailModule.bicep\": [5, 16, 20, 21, 27, 31, 32, 33] }", DisplayName = "Simple bicep nested template example")]
         [DataRow("DoubleNestedFail.bicep", "{ \"DoubleNestedFailModule1.bicep\": [5, 9], \"DoubleNestedFailModule2.bicep\": [4, 8, 9, 10] }", DisplayName = "Nested templates with two levels")]
-        [DataRow("ParameterPassingFail.bicep", "{ \"ParameterPassingFailModule.bicep\": [6, 10, 14, 18, 19] }", DisplayName = "Nested template with parameters passed from parent")]
+        [DataRow("ParameterPassingFail.bicep", "{ \"ParameterPassingFailModule.bicep\": [4, 8, 12, 16, 17] }", DisplayName = "Nested template with parameters passed from parent")]
         public void AnalyzeTemplate_ValidBicepModuleTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic expectedSourceLocationsJson)
         {
             string directory = Path.Combine(Directory.GetCurrentDirectory(), "templates");
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [DataRow("SimpleNestedFail.json", new int[] { 29, 41, 47, 48, 53, 59, 60, 61 }, DisplayName = "Simple nested template example, outer scope with no collisions")]
         [DataRow("DoubleNestedFail.json", new int[] { 30, 36, 52, 58, 59, 60 }, DisplayName = "Nested templates with two levels")]
         [DataRow("InnerOuterScopeFail.json", new int[] { 53, 59, 60, 105, 115, 116, 117 }, DisplayName = "Nested template with inner and outer scope, with colliding parameter names in parent and child templates")]
-        [DataRow("ParameterPassingFail.json", new int[] { 53, 59, 62, 68, 69 }, DisplayName = "Nested template with parameters passed from parent")]
+        [DataRow("ParameterPassingFail.json", new int[] { 50, 56, 59, 65, 66 }, DisplayName = "Nested template with parameters passed from parent")]
         public void AnalyzeTemplate_ValidNestedTemplate_ReturnsExpectedEvaluations(string templateFileName, dynamic lineNumbers)
         {
             string filePath = Path.Combine("templates", templateFileName);
