@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                         }
                     }
 
-                    Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
+                    Console.WriteLine(Environment.NewLine + $"Analyzed the template with {numOfFilesAnalyzed} parameter {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
 
                     if (filesFailed.Count > 0)
                     {
