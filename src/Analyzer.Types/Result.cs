@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// <param name="passed">Whether or not the rule for this result passed.</param>
         /// <param name="sourceLocation">The source location where the rule was evaluated.</param>
         /// <param name="jsonPath">The JSON path to the location in the JSON where the rule was evaluated</param>
-        /// <param name="expression">The expression associated with this result</param>
+        /// <param name="expression">The expression associated with this result.</param>
         public Result(bool passed = false, SourceLocation sourceLocation = null, string jsonPath = null, object expression = null)
         {
             Passed = passed;
