@@ -4,11 +4,11 @@
 using System;
 using System.Linq;
 using System.IO;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
-using System.Text.RegularExpressions;
 
 namespace Analyzer.Cli.FunctionalTests
 {
