@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 if (parametersFilePath != null)
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.Name} and parameters file {parametersFilePath.Name}");
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.Name} with parameters file {parametersFilePath.Name}");
                 }                
                 else
                 {
