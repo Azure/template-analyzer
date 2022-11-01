@@ -221,8 +221,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     exitCode = AnalyzeTemplate(templateFilePath, null);
                 }
-
-                int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
             }
 
             FinishAnalysis();
