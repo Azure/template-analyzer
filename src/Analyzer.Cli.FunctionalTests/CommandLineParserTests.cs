@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
-
+using System.Text.RegularExpressions;
 
 namespace Analyzer.Cli.FunctionalTests
 {
@@ -140,9 +140,12 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.Success, result.Result);
+
             StringAssert.Contains(outputWriter.ToString(), "Analyzed 4 files");
             StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters.json"));
             StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters-dev.json"));
+            Assert.AreEqual(2, Regex.Matches(outputWriter.ToString(), "TemplateWithSeparateParametersFile.bicep").Count);
+            Assert.AreEqual(2, Regex.Matches(outputWriter.ToString(), "TemplateWithSeparateParametersFile.json").Count);
         }
 
         [DataTestMethod]
