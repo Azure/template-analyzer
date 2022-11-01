@@ -28,9 +28,6 @@
     <None Update="Tests\Invalid.bicep">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Tests\ToTestSeparateParametersFile\TemplateWithSeparateParametersFile.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
  
 </Project>
