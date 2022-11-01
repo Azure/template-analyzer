@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             else
             {
                 var parametersFiles = FindParameterFileForTemplate(templateFilePath);
-                List<ExitCode> exitCodes = new List<ExitCode>();
+                var exitCodes = new List<ExitCode>();
 
                 if (parametersFiles.Count() > 0)
                 {
