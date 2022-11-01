@@ -205,7 +205,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             else
             {
-                // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
                 var parametersFiles = FindParameterFileForTemplate(templateFilePath);
                 List<ExitCode> exitCodes = new List<ExitCode>();
 
@@ -260,7 +259,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             List<ExitCode> exitCodes = new List<ExitCode>();
             foreach (FileInfo file in filesToAnalyze)
             {
-                // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
                 var parametersFiles = FindParameterFileForTemplate(file);
                 if (parametersFiles.Count() > 0)
                 {
@@ -378,6 +376,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return armTemplates.Concat(bicepTemplates);
         }
 
+        // Check if a parameters file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
         private IEnumerable<FileInfo> FindParameterFileForTemplate(FileInfo template)
         {
             var parametersFiles = template.Directory.GetFiles(
