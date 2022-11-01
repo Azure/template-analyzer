@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Log root directory info to be analyzed
             Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
-            List<ExitCode> exitCodes = new List<ExitCode>();
+            var exitCodes = new List<ExitCode>();
             foreach (FileInfo file in filesToAnalyze)
             {
                 var parametersFiles = FindParameterFileForTemplate(file);
