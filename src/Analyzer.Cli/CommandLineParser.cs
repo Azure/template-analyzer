@@ -224,7 +224,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
 
                 int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
-                Console.WriteLine(Environment.NewLine + $"Analyzed the template with {numOfFilesAnalyzed} parameter {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
             }
 
             FinishAnalysis();
