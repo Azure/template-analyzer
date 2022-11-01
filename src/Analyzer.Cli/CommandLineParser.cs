@@ -207,37 +207,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
                 var parametersFiles = FindParameterFileForTemplate(templateFilePath);
-                int numOfFilesAnalyzed = 0;
-                bool issueReported = false;
-                var filesFailed = new List<FileInfo>();
 
                 if (parametersFiles.Count() > 0)
                 {
+                    List<ExitCode> exitCodes = new List<ExitCode>();
+
                     foreach (FileInfo parametersFile in parametersFiles)
                     {
-                        ExitCode res = AnalyzeTemplate(templateFilePath, parametersFile);
-
-                        if (res == ExitCode.Success || res == ExitCode.Violation)
-                        {
-                            numOfFilesAnalyzed++;
-                            issueReported |= res == ExitCode.Violation;
-                        }
-                        else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
-                        {
-                            filesFailed.Add(templateFilePath);
-                        }
+                        exitCodes.Add(AnalyzeTemplate(templateFilePath, parametersFile));
                     }
 
-                    Console.WriteLine(Environment.NewLine + $"Analyzed the template with {numOfFilesAnalyzed} parameter {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
-
-                    if (filesFailed.Count > 0)
-                    {
-                        exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
-                    }
-                    else
-                    {
-                        exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
-                    }
+                    exitCode = AnalyzeExitCodesAndNumberOfFilesAnalyzed(exitCodes);
                 }
                 else
                 {
@@ -276,9 +256,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Log root directory info to be analyzed
             Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
-            int numOfFilesAnalyzed = 0;
-            bool issueReported = false;
-            var filesFailed = new List<FileInfo>();
+            List<ExitCode> exitCodes = new List<ExitCode>();
             foreach (FileInfo file in filesToAnalyze)
             {
                 // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
@@ -287,46 +265,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     foreach (FileInfo parametersFile in parametersFiles)
                     {
-                        ExitCode res = AnalyzeTemplate(file, parametersFile);
-
-                        if (res == ExitCode.Success || res == ExitCode.Violation)
-                        {
-                            numOfFilesAnalyzed++;
-                            issueReported |= res == ExitCode.Violation;
-                        }
-                        else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
-                        {
-                            filesFailed.Add(file);
-                        }
+                        exitCodes.Add(AnalyzeTemplate(file, parametersFile));
                     }
                 }
                 else
                 {
-                    ExitCode res = AnalyzeTemplate(file, null);
-
-                    if (res == ExitCode.Success || res == ExitCode.Violation)
-                    {
-                        numOfFilesAnalyzed++;
-                        issueReported |= res == ExitCode.Violation;
-                    }
-                    else if (res == ExitCode.ErrorAnalysis || res == ExitCode.ErrorInvalidBicepTemplate)
-                    {
-                        filesFailed.Add(file);
-                    }
+                    exitCodes.Add(AnalyzeTemplate(file, null));
                 }
             }
 
-            Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
-
-            ExitCode exitCode;
-            if (filesFailed.Count > 0)
-            {
-                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
-            }
-            else
-            {
-                exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
-            }
+            ExitCode exitCode = AnalyzeExitCodesAndNumberOfFilesAnalyzed(exitCodes);
 
             FinishAnalysis();
 
@@ -575,6 +523,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 this.logger.LogError(e, "Failed to parse configuration file.");
                 return false;
             }
+        }
+
+        private ExitCode AnalyzeExitCodesAndNumberOfFilesAnalyzed(List<ExitCode> exitCodes)
+        {
+            int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
+            Console.WriteLine(Environment.NewLine + $"Analyzed the template with {numOfFilesAnalyzed} parameter {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
+
+            ExitCode exitCode;
+            bool issueReported = exitCodes.Where(x => x == ExitCode.Violation).Count() > 0;
+            bool filesFailed = exitCodes.Where(x => x == ExitCode.ErrorAnalysis || x == ExitCode.ErrorInvalidBicepTemplate).Count() > 0;
+
+            if (filesFailed)
+            {
+                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
+            }
+            else
+            {
+                exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
+            }
+
+            return exitCode;
         }
     }
 }
