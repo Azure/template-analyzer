@@ -232,7 +232,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                     if (filesFailed.Count > 0)
                     {
-                        logger.LogError($"Unable to analyze {filesFailed.Count} {(filesFailed.Count == 1 ? "file" : "files")}: {string.Join(", ", filesFailed)}");
                         exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
                     }
                     else
@@ -322,7 +321,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             ExitCode exitCode;
             if (filesFailed.Count > 0)
             {
-                logger.LogError($"Unable to analyze {filesFailed.Count} {(filesFailed.Count == 1 ? "file" : "files")}: {string.Join(", ", filesFailed)}");
                 exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
             }
             else
@@ -350,7 +348,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "An exception occurred while analyzing a template");
+                if (parametersFilePath != null)
+                {
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.Name} and parameters file {parametersFilePath.Name}");
+                }                
+                else
+                {
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.Name}");
+                }
 
                 return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)
                     ? ExitCode.ErrorInvalidBicepTemplate
@@ -408,7 +413,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     MatchCasing = MatchCasing.CaseInsensitive,
                     RecurseSubdirectories = true
                 }
-            ).Where(IsValidTemplate);
+            ).Where(s => !s.Name.Contains(".parameters")).Where(IsValidTemplate);
 
             var bicepTemplates = directoryPath.GetFiles(
                 "*.bicep",
