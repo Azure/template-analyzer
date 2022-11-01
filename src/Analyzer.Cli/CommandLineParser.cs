@@ -207,22 +207,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 // Check if a parameters.json file is present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
                 var parametersFiles = FindParameterFileForTemplate(templateFilePath);
+                List<ExitCode> exitCodes = new List<ExitCode>();
 
                 if (parametersFiles.Count() > 0)
                 {
-                    List<ExitCode> exitCodes = new List<ExitCode>();
-
                     foreach (FileInfo parametersFile in parametersFiles)
                     {
                         exitCodes.Add(AnalyzeTemplate(templateFilePath, parametersFile));
                     }
 
-                    exitCode = AnalyzeExitCodesAndNumberOfFilesAnalyzed(exitCodes);
+                    exitCode = AnalyzeExitCodes(exitCodes);
                 }
                 else
                 {
                     exitCode = AnalyzeTemplate(templateFilePath, null);
                 }
+
+                int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
+                Console.WriteLine(Environment.NewLine + $"Analyzed the template with {numOfFilesAnalyzed} parameter {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
             }
 
             FinishAnalysis();
@@ -274,7 +276,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 }
             }
 
-            ExitCode exitCode = AnalyzeExitCodesAndNumberOfFilesAnalyzed(exitCodes);
+            int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
+            Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
+
+            ExitCode exitCode = AnalyzeExitCodes(exitCodes);
 
             FinishAnalysis();
 
@@ -525,11 +530,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
         }
 
-        private ExitCode AnalyzeExitCodesAndNumberOfFilesAnalyzed(List<ExitCode> exitCodes)
+        private ExitCode AnalyzeExitCodes(List<ExitCode> exitCodes)
         {
-            int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
-            Console.WriteLine(Environment.NewLine + $"Analyzed the template with {numOfFilesAnalyzed} parameter {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
-
             ExitCode exitCode;
             bool issueReported = exitCodes.Where(x => x == ExitCode.Violation).Count() > 0;
             bool filesFailed = exitCodes.Where(x => x == ExitCode.ErrorAnalysis || x == ExitCode.ErrorInvalidBicepTemplate).Count() > 0;
