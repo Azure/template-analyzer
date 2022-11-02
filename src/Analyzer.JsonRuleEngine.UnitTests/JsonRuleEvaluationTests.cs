@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 .RuleId);
         }
 
+        [TestMethod]
         public void GetRuleName_ReturnsNameFromRule()
         {
             Assert.AreEqual(
@@ -38,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void GetRuleDescription_ReturnsShortDescriptionFromRule()
+        public void GetRuleShortDescription_ReturnsShortDescriptionFromRule()
         {
             Assert.AreEqual(
                 "test rule",
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        public void GetRuleDescription_ReturnsFullDescriptionFromRule()
+        public void GetRuleFullDescription_ReturnsFullDescriptionFromRule()
         {
             Assert.AreEqual(
                 "test rule",
