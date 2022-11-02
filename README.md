@@ -52,12 +52,17 @@ For a template which deploys an API App that does not require HTTPS, running the
 
 File: C:\Templates\azuredeploy.json
 
-        AppServiceApiApp_HTTPS: API App should only be accessible over HTTPS
-                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#api-app-should-only-be-accessible-over-https
+        TA-000004: API app should only be accessible over HTTPS
+                Severity: Medium
+                Recommendation: Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks
+                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#ta-000004-api-app-should-only-be-accessible-over-https
                 Result: Failed
-                Line: 114
+                Line: 67
 
-        Rules passed: 25
+        Rules passed: 16
+
+Execution summary:
+        The execution completed successfully
 ```
 
 #### SARIF
