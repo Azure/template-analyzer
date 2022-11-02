@@ -298,11 +298,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 if (parametersFilePath != null)
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.Name} with parameters file {parametersFilePath.Name}");
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName} with parameters file {parametersFilePath.FullName}");
                 }                
                 else
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.Name}");
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName}");
                 }
 
                 return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)

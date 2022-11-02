@@ -178,8 +178,8 @@ namespace Analyzer.Cli.FunctionalTests
             var sarifOutput = JObject.Parse(File.ReadAllText(outputFilePath));
             var toolNotifications = sarifOutput["runs"][0]["invocations"][0]["toolExecutionNotifications"];
 
-            Assert.AreEqual("An exception occurred while analyzing template AnInvalidTemplate.json", toolNotifications[0]["message"]["text"]);
-            Assert.AreEqual("An exception occurred while analyzing template AnInvalidTemplate.bicep", toolNotifications[1]["message"]["text"]);
+            Assert.AreEqual(toolNotifications[0]["message"]["text"].ToString(), $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json")}");
+            Assert.AreEqual(toolNotifications[1]["message"]["text"].ToString(), $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep")}");
 
             Assert.AreEqual("error", toolNotifications[0]["level"]);
             Assert.AreEqual("error", toolNotifications[1]["level"]);
@@ -204,8 +204,8 @@ namespace Analyzer.Cli.FunctionalTests
             }
 
             var warningMessage = "An exception occurred when processing the template language expressions";
-            var errorMessage1 = "An exception occurred while analyzing template ReportsError.json";
-            var errorMessage2 = "An exception occurred while analyzing template ReportsError2.json";
+            var errorMessage1 = $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "ReportsError.json")}";
+            var errorMessage2 = $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "ReportsError2.json")}";
 
             if (!multipleErrors)
             {
