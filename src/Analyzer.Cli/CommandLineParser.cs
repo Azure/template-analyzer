@@ -274,7 +274,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
             Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
 
-            ExitCode exitCode = AnalyzeExitCodes(exitCodes);
+            var exitCode = AnalyzeExitCodes(exitCodes);
 
             FinishAnalysis();
 
