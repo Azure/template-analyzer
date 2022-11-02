@@ -27,6 +27,18 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
+        public void GetRuleName_ReturnsNameFromRule()
+        {
+            Assert.AreEqual(
+                "TestRule",
+                new JsonRuleEvaluation(null, true, Enumerable.Empty<JsonRuleEvaluation>())
+                {
+                    RuleDefinition = new RuleDefinition { Name = "TestRule" }
+                }
+                .RuleName);
+        }
+
+        [TestMethod]
         public void GetRuleDescription_ReturnsDescriptionFromRule()
         {
             Assert.AreEqual(
