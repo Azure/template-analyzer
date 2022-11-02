@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var ruleId = ruleRecord.Ref;
             var ruleName = ruleRecord.RuleName;
             var ruleShortDescription = ruleRecord.Info.DisplayName;
-            var ruleFullDescription = ruleRecord.Info.Description.ToString();
+            var ruleFullDescription = ruleRecord.Info.Description.Text;
             var recommendation = ruleRecord.Recommendation;
             var helpUri = ruleRecord?.Info?.GetOnlineHelpUrl();
             var severity = ruleRecord.Level switch
