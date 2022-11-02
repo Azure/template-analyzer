@@ -2,7 +2,6 @@
 [![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 
 # Template Best Practice Analyzer (BPA)
-***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the Template BPA?
 The Template BPA scans ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/)  Infrastructure-as-Code (IaC) templates to ensure security and best practice checks are being followed before deployment of your Azure solutions.
