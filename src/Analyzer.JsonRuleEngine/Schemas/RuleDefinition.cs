@@ -19,6 +19,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the rule.
+        /// </summary>
+        [JsonProperty]
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the short description of the rule.
         /// </summary>
         [JsonProperty]

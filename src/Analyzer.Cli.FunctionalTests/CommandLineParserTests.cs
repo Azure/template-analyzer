@@ -4,11 +4,11 @@
 using System;
 using System.Linq;
 using System.IO;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Newtonsoft.Json.Linq;
-
 
 namespace Analyzer.Cli.FunctionalTests
 {
@@ -100,6 +100,22 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [TestMethod]
+        public void AnalyzeTemplate_ValidInputValues_AnalyzesUsingAutoDetectedParameters()
+        {
+            var templatePath = GetFilePath(Path.Combine("ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.bicep"));
+
+            var args = new string[] { "analyze-template", templatePath };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+            StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters.json"));
+        }
+
+        [TestMethod]
         public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFiles()
         {
             var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests") };
@@ -110,7 +126,26 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 10 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 14 files");
+        }
+
+        [TestMethod]
+        public void AnalyzeDirectory_ValidInputValues_AnalyzesExpectedNumberOfFilesWithAutoDetectedParameters()
+        {
+            var args = new string[] { "analyze-directory", Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile") };
+
+            using StringWriter outputWriter = new();
+            Console.SetOut(outputWriter);
+
+            var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+
+            Assert.AreEqual((int)ExitCode.Success, result.Result);
+
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 4 files");
+            StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters.json"));
+            StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters-dev.json"));
+            Assert.AreEqual(2, Regex.Matches(outputWriter.ToString(), "TemplateWithSeparateParametersFile.bicep").Count);
+            Assert.AreEqual(2, Regex.Matches(outputWriter.ToString(), "TemplateWithSeparateParametersFile.json").Count);
         }
 
         [DataTestMethod]
@@ -143,24 +178,14 @@ namespace Analyzer.Cli.FunctionalTests
             var sarifOutput = JObject.Parse(File.ReadAllText(outputFilePath));
             var toolNotifications = sarifOutput["runs"][0]["invocations"][0]["toolExecutionNotifications"];
 
-            var templateErrorMessage = "An exception occurred while analyzing a template";
-            Assert.AreEqual(templateErrorMessage, toolNotifications[0]["message"]["text"]);
-            Assert.AreEqual(templateErrorMessage, toolNotifications[1]["message"]["text"]);
+            Assert.AreEqual(toolNotifications[0]["message"]["text"].ToString(), $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json")}");
+            Assert.AreEqual(toolNotifications[1]["message"]["text"].ToString(), $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep")}");
 
-            var nonJsonFilePath1 = Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json");
-            var nonJsonFilePath2 = Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep");
-            var thirdNotificationMessageText = toolNotifications[2]["message"]["text"].ToString();
-            // Both orders have to be considered for Windows and Linux:
-            Assert.IsTrue($"Unable to analyze 2 files: {nonJsonFilePath1}, {nonJsonFilePath2}" == thirdNotificationMessageText ||
-                $"Unable to analyze 2 files: {nonJsonFilePath2}, {nonJsonFilePath1}" == thirdNotificationMessageText);
-            
             Assert.AreEqual("error", toolNotifications[0]["level"]);
             Assert.AreEqual("error", toolNotifications[1]["level"]);
-            Assert.AreEqual("error", toolNotifications[2]["level"]);
 
             Assert.AreNotEqual(null, toolNotifications[0]["exception"]);
             Assert.AreNotEqual(null, toolNotifications[1]["exception"]);
-            Assert.AreEqual(null, toolNotifications[2]["exception"]);
         }
 
         [DataTestMethod]
@@ -179,12 +204,24 @@ namespace Analyzer.Cli.FunctionalTests
             }
 
             var warningMessage = "An exception occurred when processing the template language expressions";
-            var errorMessage = "An exception occurred while analyzing a template";
+            var errorMessage1 = $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "ReportsError.json")}";
+            var errorMessage2 = $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "ReportsError2.json")}";
 
-            expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\tSummary of the warnings:" +
-                $"{Environment.NewLine}\t\t1 instance of: {warningMessage}{Environment.NewLine}") +
-                $"{Environment.NewLine}\tSummary of the errors:" +
-                $"{Environment.NewLine}\t\t{(multipleErrors ? "2 instances" : "1 instance")} of: {errorMessage}";
+            if (!multipleErrors)
+            {
+                expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\tSummary of the warnings:" +
+                    $"{Environment.NewLine}\t\t1 instance of: {warningMessage}{Environment.NewLine}") +
+                    $"{Environment.NewLine}\tSummary of the errors:" +
+                    $"{Environment.NewLine}\t\t1 instance of: {errorMessage1}";
+            }
+            else
+            {
+                expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\tSummary of the warnings:" +
+                    $"{Environment.NewLine}\t\t1 instance of: {warningMessage}{Environment.NewLine}") +
+                    $"{Environment.NewLine}\tSummary of the errors:" +
+                    $"{Environment.NewLine}\t\t1 instance of: {errorMessage1}" +
+                    $"{Environment.NewLine}\t\t1 instance of: {errorMessage2}";
+            }
             
             expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\t1 Warning" +
                 $"{Environment.NewLine}\t{(multipleErrors ? "2 Errors" : "1 Error")}{Environment.NewLine}");
@@ -214,7 +251,7 @@ namespace Analyzer.Cli.FunctionalTests
                 var indexOfLogSummary = cliConsoleOutput.IndexOf("Execution summary:");
                 Assert.IsTrue(indexOfLogSummary >= 0, $"Expected log message not found in CLI output. Found:{Environment.NewLine}{cliConsoleOutput}");
 
-                var errorLog = $"Error: {errorMessage}";
+                var errorLog = $"Error: {errorMessage1}";
                 var warningLog = $"Warning: {warningMessage}";
                 if (usesVerboseMode)
                 {

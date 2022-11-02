@@ -1,6 +1,7 @@
 [
   {
     "id": "TA-000001",
+    "name": "AppService.EnableDiagnosticLogs",
     "shortDescription": "Diagnostic logs in App Services should be enabled",
     "fullDescription": "placeholder",
     "recommendation": "Enable diagnostic Logs in App Services",
@@ -59,6 +60,7 @@
   },
   {
     "id": "TA-000002",
+    "name": "AppServiceAPIApp.RemoteDebugging",
     "shortDescription": "Remote debugging should be turned off for API Apps",
     "fullDescription": "placeholder",
     "recommendation": "Remote debugging should be turned off",
@@ -93,6 +95,7 @@
   },
   {
     "id": "TA-000003",
+    "name": "AppServiceAPIApp.OnlyFTPS",
     "shortDescription": "FTPS only should be required in your API App",
     "fullDescription": "placeholder",
     "recommendation": "Enable FTPS enforcement for enhanced security",
@@ -119,6 +122,7 @@
   },
   {
     "id": "TA-000004",
+    "name": "AppServiceAPIApp.OnlyHTTPS",
     "shortDescription": "API App should only be accessible over HTTPS",
     "fullDescription": "placeholder",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
@@ -140,6 +144,7 @@
   },
   {
     "id": "TA-000005",
+    "name": "AppServiceAPIApp.UseLatestTLS",
     "shortDescription": "Latest TLS version should be used in your API App",
     "fullDescription": "placeholder",
     "recommendation": "Upgrade to the latest TLS version",
@@ -166,6 +171,7 @@
   },
   {
     "id": "TA-000006",
+    "name": "AppServiceAPIApp.RestrictCORSAccess",
     "shortDescription": "CORS should not allow every resource to access your API App",
     "fullDescription": "placeholder",
     "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.",
@@ -200,6 +206,7 @@
   },
   {
     "id": "TA-000007",
+    "name": "AppServiceAPIApp.UseManagedIdentity",
     "shortDescription": "Managed identity should be used in your API App",
     "fullDescription": "placeholder",
     "recommendation": "Use a managed identity for enhanced authentication security",
@@ -224,6 +231,7 @@
   },
   {
     "id": "TA-000008",
+    "name": "AppServiceFunctionApp.RemoteDebugging",
     "shortDescription": "Remote debugging should be turned off for Function Apps",
     "fullDescription": "placeholder",
     "recommendation": "Remote debugging should be turned off",
@@ -258,6 +266,7 @@
   },
   {
     "id": "TA-000009",
+    "name": "AppServiceFunctionApp.OnlyFTPS",
     "shortDescription": "FTPS only should be required in your Function App",
     "fullDescription": "placeholder",
     "recommendation": "Enable FTPS enforcement for enhanced security",
@@ -284,6 +293,7 @@
   },
   {
     "id": "TA-000010",
+    "name": "AppServiceFunctionApp.OnlyHTTPS",
     "shortDescription": "Function App should only be accessible over HTTPS",
     "fullDescription": "placeholder",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
@@ -305,6 +315,7 @@
   },
   {
     "id": "TA-000011",
+    "name": "AppServiceFunctionApp.UseLatestTLS",
     "shortDescription": "Latest TLS version should be used in your Function App",
     "fullDescription": "placeholder",
     "recommendation": "Upgrade to the latest TLS version",
@@ -331,6 +342,7 @@
   },
   {
     "id": "TA-000012",
+    "name": "AppServiceFunctionApp.RestrictCORSAccess",
     "shortDescription": "CORS should not allow every resource to access your Function Apps",
     "fullDescription": "placeholder",
     "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Function app. Allow only required domains to interact with your Function app.",
@@ -365,6 +377,7 @@
   },
   {
     "id": "TA-000013",
+    "name": "AppServiceFunctionApp.UseManagedIdentity",
     "shortDescription": "Managed identity should be used in your Function App",
     "fullDescription": "placeholder",
     "recommendation": "Use a managed identity for enhanced authentication security",
@@ -389,6 +402,7 @@
   },
   {
     "id": "TA-000014",
+    "name": "AppServiceWebApp.RemoteDebugging",
     "shortDescription": "Remote debugging should be turned off for Web Applications",
     "fullDescription": "placeholder",
     "recommendation": "Remote debugging should be turned off",
@@ -431,6 +445,7 @@
   },
   {
     "id": "TA-000015",
+    "name": "AppServiceWebApp.OnlyFTPS",
     "shortDescription": "FTPS only should be required in your Web App",
     "fullDescription": "placeholder",
     "recommendation": "Enable FTPS enforcement for enhanced security",
@@ -465,6 +480,7 @@
   },
   {
     "id": "TA-000016",
+    "name": "AppServiceWebApp.OnlyHTTPS",
     "shortDescription": "Web Application should only be accessible over HTTPS",
     "fullDescription": "placeholder",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
@@ -494,6 +510,7 @@
   },
   {
     "id": "TA-000017",
+    "name": "AppServiceWebApp.UseLatestTLS",
     "shortDescription": "Latest TLS version should be used in your Web App",
     "fullDescription": "placeholder",
     "recommendation": "Upgrade to the latest TLS version",
@@ -528,6 +545,7 @@
   },
   {
     "id": "TA-000018",
+    "name": "AppServiceWebApp.RestrictCORSAccess",
     "shortDescription": "CORS should not allow every resource to access your Web Applications",
     "fullDescription": "placeholder",
     "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Web application. Allow only required domains to interact with your Web app.",
@@ -570,6 +588,7 @@
   },
   {
     "id": "TA-000019",
+    "name": "AppServiceWebApp.UseManagedIdentity",
     "shortDescription": "Managed identity should be used in your Web App",
     "fullDescription": "placeholder",
     "recommendation": "Use a managed identity for enhanced authentication security",
@@ -602,6 +621,7 @@
   },
   {
     "id": "TA-000020",
+    "name": "Authorization.UseBuiltInRBAC",
     "shortDescription": "Audit usage of custom RBAC roles",
     "fullDescription": "placeholder",
     "recommendation": "Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling",
@@ -615,6 +635,7 @@
   },
   {
     "id": "TA-000021",
+    "name": "Automation.EncryptAccountsVariables",
     "shortDescription": "Automation account variables should be encrypted",
     "fullDescription": "placeholder",
     "recommendation": "Enable encryption of Automation account variable assets when storing sensitive data",
@@ -628,6 +649,7 @@
   },
   {
     "id": "TA-000022",
+    "name": "Redis.EnableSSL",
     "shortDescription": "Only secure connections to your Azure Cache for Redis should be enabled",
     "fullDescription": "placeholder",
     "recommendation": "Enable connections via SSL only to Redis Cache",
@@ -641,6 +663,7 @@
   },
   {
     "id": "TA-000023",
+    "name": "AKS.RestrictNetworkAccess",
     "shortDescription": "Authorized IP ranges should be defined on Kubernetes Services",
     "fullDescription": "placeholder",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
@@ -662,6 +685,7 @@
   },
   {
     "id": "TA-000024",
+    "name": "AKS.EnableRBAC",
     "shortDescription": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
     "fullDescription": "placeholder",
     "recommendation": "Enable RBAC in Kubernetes clusters",
@@ -683,6 +707,7 @@
   },
   {
     "id": "TA-000025",
+    "name": "AKS.UpgradeToNonVulnerableVersion",
     "shortDescription": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
     "fullDescription": "placeholder",
     "recommendation": "Upgrade to a non-vulnerable Kubernetes version (1.11.9+, 1.12.7+, 1.13.5+, and 1.14.0+)",
@@ -708,6 +733,7 @@
   },
   {
     "id": "TA-000026",
+    "name": "ServiceFabric.OnlyAADClientAuth",
     "shortDescription": "Service Fabric clusters should only use Azure Active Directory for client authentication",
     "fullDescription": "placeholder",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
@@ -721,6 +747,7 @@
   },
   {
     "id": "TA-000027",
+    "name": "SQL.EnableTDE",
     "shortDescription": "Transparent Data Encryption on SQL databases should be enabled",
     "fullDescription": "placeholder",
     "recommendation": "Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements",
@@ -743,6 +770,7 @@
   },
   {
     "id": "TA-000028",
+    "name": "SQL.MinRetentionDaysWithAudit",
     "shortDescription": "SQL servers with auditing to storage account destination should be configured with 90 days retention or higher",
     "fullDescription": "placeholder",
     "recommendation": "Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days",
@@ -789,6 +817,7 @@
   },
   {
     "id": "TA-000029",
+    "name": "APIM.OnlyHTTPS",
     "shortDescription": "Azure API Management APIs should use encrypted protocols only",
     "fullDescription": "placeholder",
     "recommendation": "To use encrypted protocols only, add (or update) the protocols property to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure",
@@ -818,6 +847,7 @@
   },
   {
     "id": "TA-000030",
+    "name": "ClassicCompute.MigrateToARM",
     "shortDescription": "Migrate your Classic Compute VM to ARM",
     "fullDescription": "placeholder",
     "recommendation": "Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
@@ -831,6 +861,7 @@
   },
   {
     "id": "TA-000031",
+    "name": "ClassicStorage.MigrateToARM",
     "shortDescription": "Migrate your Classic Storage Account to ARM",
     "fullDescription": "placeholder",
     "recommendation": "Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",

@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 rulesDictionary.Add(evaluation.RuleId, new ReportingDescriptor
                 {
                     Id = evaluation.RuleId,
-                    // Name = evaluation.RuleId, TBD issue #198
+                    Name = evaluation.RuleName,
                     ShortDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleShortDescription) },
                     FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleFullDescription) },
                     Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },

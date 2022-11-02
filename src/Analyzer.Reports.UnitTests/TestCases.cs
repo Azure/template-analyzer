@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -39,6 +40,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -50,6 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -68,6 +71,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -79,6 +83,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -90,6 +95,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -108,6 +114,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -146,6 +153,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -177,6 +185,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -221,6 +230,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -252,6 +262,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -289,6 +300,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -333,6 +345,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -364,6 +377,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -401,7 +415,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000003",
-                        RuleShortDescription = "T R 0000001",
+                        RuleName = "Rule000003",
+                        RuleShortDescription = "T R 0000003",
                         RuleFullDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
                         HelpUri = "https://domain.com/help#0000003",
@@ -445,6 +460,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -476,6 +492,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -513,6 +530,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -550,7 +568,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000003",
-                        RuleShortDescription = "T R 0000001",
+                        RuleName = "Rule000003",
+                        RuleShortDescription = "T R 0000003",
                         RuleFullDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
                         HelpUri = "https://domain.com/help#0000003",
@@ -594,6 +613,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -625,6 +645,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -663,6 +684,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -693,6 +715,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
+                        RuleName = "Rule000002",
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",

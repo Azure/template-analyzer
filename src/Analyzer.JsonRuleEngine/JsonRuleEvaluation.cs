@@ -31,6 +31,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         public string RuleId => RuleDefinition.Id;
 
         /// <inheritdoc/>
+        public string RuleName => RuleDefinition.Name;
+
+        /// <inheritdoc/>
         public string RuleShortDescription => RuleDefinition.ShortDescription;
 
         /// <inheritdoc/>
