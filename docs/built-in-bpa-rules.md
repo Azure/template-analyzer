@@ -128,9 +128,9 @@ Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC
 #### Severity: 3
 
 ### TA-000021: Automation account variables should be encrypted
-It is important to enable encryption of Automation account variable assets when storing sensitive data. This step can only be taken at creation time. If you have Automation Account Variables storing sensitive data that are not already encrypted, then you will need to delete them and recreate them as encrypted variables. To apply encryption of the Automation account variable assets, in Azure PowerShell - run [the following command](https://docs.microsoft.com/powershell/module/az.automation/set-azautomationvariable?view=azps-5.4.0&viewFallbackFrom=azps-1.4.0): `Set-AzAutomationVariable -AutomationAccountName '{AutomationAccountName}' -Encrypted $true -Name '{VariableName}' -ResourceGroupName '{ResourceGroupName}' -Value '{Value}'`
+It is important to enable encryption of Automation account variable assets when storing sensitive data.
 
-**Recommendation**: [Enable encryption of Automation account variable assets](https://docs.microsoft.com/azure/automation/shared-resources/variables?tabs=azure-powershell)
+**Recommendation**: Enabling encryption of Automation account variable assets can only be done at creation time. If you have Automation account variables storing sensitive data that are not already encrypted, then you will need to delete them and recreate them as encrypted variables. To apply encryption of the Automation account variable assets, in Azure PowerShell, run [the following command](https://docs.microsoft.com/powershell/module/az.automation/set-azautomationvariable?view=azps-5.4.0&viewFallbackFrom=azps-1.4.0): `Set-AzAutomationVariable -AutomationAccountName '{AutomationAccountName}' -Encrypted $true -Name '{VariableName}' -ResourceGroupName '{ResourceGroupName}' -Value '{Value}'`. More information can be found [here](https://docs.microsoft.com/azure/automation/shared-resources/variables?tabs=azure-powershell)
 #### Severity: 1
 
 ### TA-000022: Only secure connections to your Azure Cache for Redis should be enabled
