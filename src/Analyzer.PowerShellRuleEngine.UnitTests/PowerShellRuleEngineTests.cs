@@ -57,7 +57,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             foreach (PowerShellRuleEvaluation evaluation in evaluations)
             {
                 Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleId));
-                Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleDescription));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleShortDescription));
+                Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.RuleFullDescription));
                 Assert.IsFalse(string.IsNullOrWhiteSpace(evaluation.HelpUri));
                 Assert.IsNotNull(evaluation.Recommendation);
                 Assert.IsNotNull(evaluation.Severity);
