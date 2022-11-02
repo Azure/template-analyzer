@@ -1,5 +1,5 @@
 # Authoring Template BPA JSON Rules
-<a name="note"></a>***Note**: The Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
+<a name="note"></a>***Note**: All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
 Template BPA built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
@@ -15,7 +15,7 @@ Here are the fields that make up a rule definition.
     "recommendation": "Guidance describing what should be done to fix the issue if a template violates the rule",
     "helpUri": "URI to find more detailed information about the rule and how to fix a template",
     "severity" : "Integer value between 1 and 3, with 1 being high and 3 being low, designating the importance of the rule",
-    "evaluation": { … } // The evaluation logic of the rule.  More details below.
+    "evaluation": { … } // The evaluation logic of the rule. More details below.
 }
 ```
 
