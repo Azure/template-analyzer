@@ -6,116 +6,116 @@ Information about the PowerShell-based rules included by our integration with [P
 
 ## JSON-Based Rules:
 
-### TA-000001: Diagnostic logs in App Services should be enabled
+### TA-000001: Diagnostic logs in app services should be enabled
 Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.
 
 **Recommendation**: To [enable diagnostic logging](https://docs.microsoft.com/azure/app-service/troubleshoot-diagnostic-logs), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *detailedErrorLoggingEnabled*, *httpLoggingEnabled*, and *requestTracingEnabled* properties, setting their values to `true`.
 #### Severity: 2
 
-### TA-000002: Remote debugging should be turned off for API Apps
+### TA-000002: Remote debugging should be turned off for API apps
 Remote debugging requires inbound ports to be opened on an API app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
 
 **Recommendation**: To disable remote debugging, in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), remove the *remoteDebuggingEnabled* property or update its value to `false`.
 #### Severity: 3
 
-### TA-000003: FTPS only should be required in your API App
+### TA-000003: FTPS only should be required in your API app
 Enable FTPS enforcement for enhanced security.
 
 **Recommendation**: To [enforce FTPS](https://docs.microsoft.com/azure/app-service/deploy-ftp?tabs=portal#enforce-ftps), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *ftpsState* property, setting its value to `"FtpsOnly"` or `"Disabled"` if you don't need FTPS enabled.
 #### Severity: 1
 
-### TA-000004: API App Should Only Be Accessible Over HTTPS
+### TA-000004: API app should only be accessible over HTTPS
 API apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
 #### Severity: 2
 
-### TA-000005: Latest TLS version should be used in your API App
+### TA-000005: Latest TLS version should be used in your API app
 API apps should require the latest TLS version.
 
 **Recommendation**: To [enforce the latest TLS version](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-tls-versions), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *minTlsVersion* property, setting its value to `1.2`.
 #### Severity: 1
 
-### TA-000006: CORS should not allow every resource to access your API App
+### TA-000006: CORS should not allow every resource to access your API app
 Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.
 
 **Recommendation**: To allow only required domains to interact with your API app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
 #### Severity: 3
 
-### TA-000007: Managed identity should be used in your API App
+### TA-000007: Managed identity should be used in your API app
 For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.
 
 **Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
 #### Severity: 2
 
-### TA-000008: Remote debugging should be turned off for Function Apps
+### TA-000008: Remote debugging should be turned off for function apps
 Remote debugging requires inbound ports to be opened on a function app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
 
 **Recommendation**: To disable remote debugging, in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), remove the *remoteDebuggingEnabled* property or update its value to `false`.
 #### Severity: 3
 
-### TA-000009: FTPS only should be required in your Function App
+### TA-000009: FTPS only should be required in your function app
 Enable FTPS enforcement for enhanced security.
 
 **Recommendation**: To [enforce FTPS](https://docs.microsoft.com/azure/app-service/deploy-ftp?tabs=portal#enforce-ftps), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *ftpsState* property, setting its value to `"FtpsOnly"` or `"Disabled"` if you don't need FTPS enabled.
 #### Severity: 1
 
-### TA-000010: Function App Should Only Be Accessible Over HTTPS
+### TA-000010: Function app should only be accessible over HTTPS
 Function apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
 #### Severity: 2
 
-### TA-000011: Latest TLS version should be used in your Function App
+### TA-000011: Latest TLS version should be used in your function app
 Function apps should require the latest TLS version.
 
 **Recommendation**: To [enforce the latest TLS version](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-tls-versions), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *minTlsVersion* property, setting its value to `1.2`.
 #### Severity: 1
 
-### TA-000012: CORS should not allow every resource to access your Function Apps
+### TA-000012: CORS should not allow every resource to access your function apps
 Cross-Origin Resource Sharing (CORS) should not allow all domains to access your function app. Allow only required domains to interact with your function app.
 
 **Recommendation**: To allow only required domains to interact with your function app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
 #### Severity: 3
 
-### TA-000013: Managed identity should be used in your Function App
+### TA-000013: Managed identity should be used in your function app
 For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.
 
 **Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
 #### Severity: 2
 
-### TA-000014: Remote debugging should be turned off for Web Applications
+### TA-000014: Remote debugging should be turned off for web apps
 Remote debugging requires inbound ports to be opened on a web application. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.
 
 **Recommendation**: To disable remote debugging, in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), remove the *remoteDebuggingEnabled* property or update its value to `false`.
 #### Severity: 3
 
-### TA-000015: FTPS only should be required in your Web App
+### TA-000015: FTPS only should be required in your web app
 Enable FTPS enforcement for enhanced security.
 
 **Recommendation**: To [enforce FTPS](https://docs.microsoft.com/azure/app-service/deploy-ftp?tabs=portal#enforce-ftps), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *ftpsState* property, setting its value to `"FtpsOnly"` or `"Disabled"` if you don't need FTPS enabled.
 #### Severity: 1
 
-### TA-000016: Web Application Should Only Be Accessible Over HTTPS
+### TA-000016: Web apps should only be accessible over HTTPS
 Web apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.
 
 **Recommendation**: To [use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-https), in the [Microsoft.Web/Sites resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#siteproperties-object), add (or update) the *httpsOnly* property, setting its value to `true`.
 #### Severity: 2
 
-### TA-000017: Latest TLS version should be used in your Web App
+### TA-000017: Latest TLS version should be used in your web app
 Web apps should require the latest TLS version.
 
 **Recommendation**: 
 To [enforce the latest TLS version](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-tls-versions), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *minTlsVersion* property, setting its value to `1.2`.
 #### Severity: 1
 
-### TA-000018: CORS should not allow every resource to access your Web Applications
+### TA-000018: CORS should not allow every resource to access your web apps
 Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Web application. Allow only required domains to interact with your web app.
 
 **Recommendation**: To allow only required domains to interact with your web app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
 #### Severity: 3
 
-### TA-000019: Managed identity should be used in your Web App
+### TA-000019: Managed identity should be used in your web app
 For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.
 
 **Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
@@ -145,7 +145,7 @@ To ensure that only applications from allowed networks, machines, or subnets can
 **Recommendation**: [Restrict access by defining authorized IP ranges](https://docs.microsoft.com/azure/aks/api-server-authorized-ip-ranges) or [set up your API servers as private clusters](https://docs.microsoft.com/azure/aks/private-clusters)
 #### Severity: 1
 
-### TA-000024: Role-Based Access Control (RBAC) should be used on Kubernetes Services
+### TA-000024: RBAC should be used on Kubernetes Services
 To provide granular filtering on the actions that users can perform, use Role-Based Access Control (RBAC) to manage permissions in Kubernetes Service Clusters and configure relevant authorization policies. To Use Role-Based Access Control (RBAC) you must recreate your Kubernetes Service cluster and enable RBAC during the creation process.
 
 **Recommendation**: [Enable RBAC in Kubernetes clusters](https://docs.microsoft.com/azure/aks/operator-best-practices-identity#use-azure-rbac)
@@ -157,14 +157,14 @@ Upgrade your Kubernetes service cluster to a later Kubernetes version to protect
 **Recommendation**: To [upgrade Kubernetes service clusters](https://docs.microsoft.com/azure/aks/upgrade-cluster), in the [Microsoft.ContainerService/managedClusters resource properties](https://docs.microsoft.com/azure/templates/microsoft.containerservice/managedclusters?tabs=json#managedclusterproperties-object), update the *kubernetesVersion* property, setting its value to one of the following versions (making sure to specify the minor version number): 1.11.9+, 1.12.7+, 1.13.5+, or 1.14.0+.
 #### Severity: 1
 
-### TA-000026: Service Fabric clusters should only use Azure Active Directory for client authentication
-Service Fabric clusters should only use Azure Active Directory for client authentication. A Service Fabric cluster offers several entry points to its management functionality, including the web-based Service Fabric Explorer, Visual Studio and PowerShell. Access to the cluster must be controlled using AAD.
+### TA-000026: Service Fabric clusters should only use AAD for client authentication
+Service Fabric clusters should only use Azure Active Directory (AAD) for client authentication. A Service Fabric cluster offers several entry points to its management functionality, including the web-based Service Fabric Explorer, Visual Studio and PowerShell. Access to the cluster must be controlled using AAD.
 
 **Recommendation**: [Enable AAD client authentication on your Service Fabric clusters](https://docs.microsoft.com/azure/service-fabric/service-fabric-cluster-creation-setup-aad)
 #### Severity: 1
 
-### TA-000027: Transparent Data Encryption on SQL databases should be enabled
-Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements.
+### TA-000027: TDE on SQL databases should be enabled
+Transparent data encryption (TDE) should be enabled to protect data-at-rest and meet compliance requirements.
 
 **Recommendation**: To [enable transparent data encryption](https://docs.microsoft.com/azure/azure-sql/database/transparent-data-encryption-tde-overview?tabs=azure-portal), in the [Microsoft.Sql/servers/databases/transparentDataEncryption resource properties](https://docs.microsoft.com/azure/templates/microsoft.sql/servers/databases/transparentdataencryption?tabs=json), add (or update) the value of the *state* property to `enabled`.
 #### Severity: 3
