@@ -3,7 +3,7 @@
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
     /// <summary>
-    /// Class that enables source mapping feature in Bicep.Core
+    /// Helper class that enables source mapping feature in Bicep.Core
     /// </summary>
     public class SourceMapFeatureProvider : IFeatureProvider
     {
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public bool SymbolicNameCodegenEnabled => features.SymbolicNameCodegenEnabled;
 
         /// <inheritdoc/>
-        public bool ImportsEnabled => features.ImportsEnabled;
+        public bool ExtensibilityEnabled => features.ExtensibilityEnabled;
 
         /// <inheritdoc/>
         public bool ResourceTypedParamsAndOutputsEnabled => features.ResourceTypedParamsAndOutputsEnabled;
@@ -38,5 +38,8 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
         /// <inheritdoc/>
         public bool ParamsFilesEnabled => features.ParamsFilesEnabled;
+
+        /// <inheritdoc/>
+        public bool UserDefinedTypesEnabled => features.UserDefinedTypesEnabled;
     }
 }
