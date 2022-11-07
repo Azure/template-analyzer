@@ -25,7 +25,7 @@ module nestedTemplate3 './TemplateWithTwoArmRefs.bicep' = {
   }
 }
 
-module nestedTemplat43 './TemplateWithTwoBicepRefs.bicep' = {
+module nestedTemplate4 './TemplateWithTwoBicepRefs.bicep' = {
   name: 'nestedTemplate4'
   scope: resourceGroup('my-rg')
   params: {
@@ -33,9 +33,16 @@ module nestedTemplat43 './TemplateWithTwoBicepRefs.bicep' = {
   }
 }
 
-//module hw 'br/public:samples/hello-world:1.0.2' = {
-//  name: 'hello-world'
-//  params: {
-//    name: 'Template Analyzer'
-//  }
-//}
+module publicModule1 'br/public:samples/hello-world:1.0.2' = {
+  name: 'hello-world'
+  params: {
+    name: 'Template Analyzer'
+  }
+}
+
+module publicModule2 'br:mcr.microsoft.com/bicep/samples/hello-world:1.0.2' = {
+  name: 'hello-world2'
+  params: {
+    name: 'Template Analyzer'
+  }
+}

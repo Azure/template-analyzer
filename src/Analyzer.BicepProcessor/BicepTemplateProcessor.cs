@@ -6,17 +6,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Bicep.Core.Analyzers.Linter;
 using Bicep.Core.Analyzers.Linter.ApiVersions;
 using Bicep.Core.Configuration;
 using Bicep.Core.Diagnostics;
 using Bicep.Core.Emit;
+using Bicep.Core.Extensions;
 using Bicep.Core.Features;
 using Bicep.Core.FileSystem;
 using Bicep.Core.Registry;
 using Bicep.Core.Registry.Auth;
 using Bicep.Core.Semantics;
 using Bicep.Core.Semantics.Namespaces;
+using Bicep.Core.Syntax;
 using Bicep.Core.Text;
 using Bicep.Core.TypeSystem.Az;
 using Bicep.Core.Workspaces;
@@ -90,6 +93,8 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
     /// </summary>
     public class BicepTemplateProcessor
     {
+        private static readonly Regex IsModuleRegistryPathRegex = new("^br(:[\\w.]+\\/|\\/public:)", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
         private static readonly IConfigurationManager configurationManager = new ConfigurationManager(new FileSystem());
         private static readonly IFileResolver fileResolver = new FileResolver(new FileSystem());
         private static readonly INamespaceProvider namespaceProvider = new DefaultNamespaceProvider(new AzResourceTypeLoader());
@@ -142,6 +147,8 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 throw new Exception($"Bicep issues found:{Environment.NewLine}{string.Join(Environment.NewLine, bicepIssues)}");
             }
 
+            
+
             string GetPathRelativeToEntryPoint(string absolutePath) => Path.GetRelativePath(
                 Path.GetDirectoryName(sourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
 
@@ -153,7 +160,16 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var modules = kvp.Value.Values
                     .Select(result =>
                     {
-                        var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, result.Statement.Span.Position).line;
+                        // do not include modules imported from public/private registries, as it is more useful for user to see line number
+                        // of the module declaration itself instead of line number in the module as the user does not control template in registry directly
+                        if (result.Statement is not ModuleDeclarationSyntax moduleDeclaration
+                            || moduleDeclaration.Path is not StringSyntax moduleDeclarationPath
+                            || moduleDeclarationPath.SegmentValues.Any(v => IsModuleRegistryPathRegex.IsMatch(v)))
+                        {
+                            return null;
+                        }
+
+                        var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, moduleDeclaration.Span.Position).line;
                         var modulePath = result.FileUri.AbsolutePath;
 
                         // use relative paths for bicep to match file paths used in bicep modules and source map
@@ -164,6 +180,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
                         return new { moduleLine, modulePath };
                     })
+                    .WhereNotNull()
                     .ToDictionary(c => c.moduleLine, c => c.modulePath);
 
                 return new SourceFileModuleInfo(pathRelativeToEntryPoint, modules);
