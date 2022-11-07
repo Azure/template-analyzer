@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     string resultString = string.Concat(
                         GetFailedLines(evaluation)
                         .Select(l => $"{TwiceIndentedNewLine}Line: {l}"));
-                    var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
+                    var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleShortDescription}" +
                         $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
                         (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                         $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
