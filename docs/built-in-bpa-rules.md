@@ -110,7 +110,7 @@ To [enforce the latest TLS version](https://docs.microsoft.com/azure/app-service
 #### Severity: 1
 
 ### TA-000018: CORS should not allow every resource to access your web apps
-Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Web application. Allow only required domains to interact with your web app.
+Cross-Origin Resource Sharing (CORS) should not allow all domains to access your web application. Allow only required domains to interact with your web app.
 
 **Recommendation**: To allow only required domains to interact with your web app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
 #### Severity: 3
