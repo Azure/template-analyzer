@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
         [DataTestMethod]
         // PSRule detects errors in two analysis stages: when looking at the whole file (through the file path), and when looking at each resource (pipeline.Process(resource)):
-        [DataRow("template_and_resource_level_results.json", true, 12, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
+        [DataRow("template_and_resource_level_results.json", true, 13, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17, 1 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
         [DataRow("template_and_resource_level_results.json", false, 4, new int[] { 17, 17, 17, 17 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
         public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, dynamic expectedLineNumbers)
