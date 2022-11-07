@@ -2,9 +2,9 @@
   {
     "id": "TA-000001",
     "name": "AppService.EnableDiagnosticLogs",
-    "shortDescription": "Diagnostic logs in app services should be enabled",
+    "shortDescription": "Diagnostic logs in App Service should be enabled",
     "fullDescription": "Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.",
-    "recommendation": "Enable diagnostic logs in app services",
+    "recommendation": "Enable diagnostic logs in App Service",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000001-diagnostic-logs-in-app-services-should-be-enabled",
     "severity": 2,
     "evaluation": {

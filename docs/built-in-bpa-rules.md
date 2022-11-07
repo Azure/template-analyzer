@@ -6,7 +6,7 @@ Information about the PowerShell-based rules included by our integration with [P
 
 ## JSON-Based Rules:
 
-### TA-000001: Diagnostic logs in app services should be enabled
+### TA-000001: Diagnostic logs in App Services should be enabled
 Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.
 
 **Recommendation**: To [enable diagnostic logging](https://docs.microsoft.com/azure/app-service/troubleshoot-diagnostic-logs), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *detailedErrorLoggingEnabled*, *httpLoggingEnabled*, and *requestTracingEnabled* properties, setting their values to `true`.
