@@ -114,31 +114,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 PathPrefix = "",
                 ParentContext = null
             };
-            var evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, "");
 
-            // For each rule we don't want to report the same line more than once
-            // This is a temporary fix
-            var evalsToValidate = new List<IEvaluation>();
-            var evalsToNotValidate = new List<IEvaluation>();
-            foreach (var eval in evaluations)
-            {
-                if (!eval.Passed && eval.Result != null)
-                {
-                    evalsToValidate.Add(eval);
-                }
-                else
-                {
-                    evalsToNotValidate.Add(eval);
-                }
-            }
-            var uniqueResults = new Dictionary<(string ruleId, string fileName, int lineNumber), IEvaluation>();
-            foreach (var eval in evalsToValidate)
-            {
-                uniqueResults.TryAdd((eval.RuleId, eval.Result.SourceLocation.FilePath, eval.Result.SourceLocation.LineNumber), eval);
-            }
-            evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
-
-            return evaluations;
+            return AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, string.Empty);
         }
 
         /// <summary>
