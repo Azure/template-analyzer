@@ -12,7 +12,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public string RuleName { get; set; }
 
-        public string RuleDescription { get; set; }
+        public string RuleShortDescription { get; set; }
+
+        public string RuleFullDescription { get; set; }
 
         public string Recommendation { get; set; }
 

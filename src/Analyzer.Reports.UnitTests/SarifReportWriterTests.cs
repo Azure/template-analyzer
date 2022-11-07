@@ -133,7 +133,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         rule.Should().NotBeNull();
                         rule.Id.Should().BeEquivalentTo(evaluation.RuleId);
                         rule.Name.Should().BeEquivalentTo(evaluation.RuleName);
-                        rule.FullDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.RuleDescription));
+                        rule.ShortDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.RuleShortDescription));
+                        rule.FullDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.RuleFullDescription));
                         rule.Help.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.Recommendation));
                         rule.HelpUri.OriginalString.Should().BeEquivalentTo(evaluation.HelpUri);
                     }

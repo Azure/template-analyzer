@@ -1,5 +1,5 @@
 # Authoring Template BPA JSON Rules
-<a name="note"></a>***Note**: The Template BPA is currently in development. All features that have yet to be implemented have been flagged with an asterisk [\*].*
+<a name="note"></a>***Note**: All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
 Template BPA built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
@@ -10,11 +10,12 @@ Here are the fields that make up a rule definition.
 {
     "id": "Rule id",
     "name": "A human-readable identifier"
-    "description": "Brief description of what the rule is evaluating",
+    "shortDescription": "Brief description of what the rule is evaluating",
+    "fullDescription": "Detailed description of what the rule is evaluating",
     "recommendation": "Guidance describing what should be done to fix the issue if a template violates the rule",
     "helpUri": "URI to find more detailed information about the rule and how to fix a template",
     "severity" : "Integer value between 1 and 3, with 1 being high and 3 being low, designating the importance of the rule",
-    "evaluation": { … } // The evaluation logic of the rule.  More details below.
+    "evaluation": { … } // The evaluation logic of the rule. More details below.
 }
 ```
 
@@ -23,7 +24,8 @@ Here are the fields that make up a rule definition.
 |---|---|---|---|---|
 | id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md). | yes | yes | - |
 | name | A human-readable identifier, more details [here](https://github.com/microsoft/sarif-tutorials/blob/main/docs/Authoring-rule-metadata-and-result-messages.md#human-readable-identifier). | yes | yes | - |
-| description | Brief description of what the rule is evaluating | yes | yes | - |
+| shortDescription | Brief description of what the rule is evaluating, more details [here](https://docs.oasis-open.org/sarif/sarif/v2.0/csprd02/sarif-v2.0-csprd02.html#_Toc10127743). | yes | yes | - |
+| fullDescription | Detailed description of what the rule is evaluating, more details [here](https://docs.oasis-open.org/sarif/sarif/v2.0/csprd02/sarif-v2.0-csprd02.html#_Toc10127744). | yes | yes | - |
 | recommendation | The `recommendation` should provide clear but concise guidance on how to modify a template if the rule fails.<br/>If some details are somewhat complex, or the rule takes a bit more to understand, add those details to a guide accessible at the URI in `helpUri`. | yes | no | none |
 | helpUri | The `helpUri` is optional, but it is good practice to include.  For built-in rules, this will point to a guide in the GitHub repository. | yes | no | none |
 | severity | The `severity` is optional. If no severity is provided, it defaults to a severity of 2. | yes | no | 2 |

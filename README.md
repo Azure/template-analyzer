@@ -2,7 +2,6 @@
 [![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 
 # Template Best Practice Analyzer (BPA)
-***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the Template BPA?
 The Template BPA scans ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/)  Infrastructure-as-Code (IaC) templates to ensure security and best practice checks are being followed before deployment of your Azure solutions.
@@ -53,12 +52,17 @@ For a template which deploys an API App that does not require HTTPS, running the
 
 File: C:\Templates\azuredeploy.json
 
-        AppServiceApiApp_HTTPS: API App should only be accessible over HTTPS
-                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#api-app-should-only-be-accessible-over-https
+        TA-000004: API app should only be accessible over HTTPS
+                Severity: Medium
+                Recommendation: Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks
+                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#ta-000004-api-app-should-only-be-accessible-over-https
                 Result: Failed
-                Line: 114
+                Line: 67
 
-        Rules passed: 25
+        Rules passed: 16
+
+Execution summary:
+        The execution completed successfully
 ```
 
 #### SARIF
