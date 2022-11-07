@@ -7,7 +7,7 @@ Information about the PowerShell-based rules included by our integration with [P
 ## JSON-Based Rules:
 
 ### TA-000001: Diagnostic logs in App Services should be enabled
-Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.
+Enable auditing of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.
 
 **Recommendation**: To [enable diagnostic logging](https://docs.microsoft.com/azure/app-service/troubleshoot-diagnostic-logs), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *detailedErrorLoggingEnabled*, *httpLoggingEnabled*, and *requestTracingEnabled* properties, setting their values to `true`.
 #### Severity: 2
@@ -72,7 +72,7 @@ Function apps should require the latest TLS version.
 **Recommendation**: To [enforce the latest TLS version](https://docs.microsoft.com/azure/app-service/configure-ssl-bindings#enforce-tls-versions), in the [Microsoft.Web/sites/config resource properties](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#SiteConfig), add (or update) the *minTlsVersion* property, setting its value to `1.2`.
 #### Severity: 1
 
-### TA-000012: CORS should not allow every resource to access your function apps
+### TA-000012: CORS should not allow every resource to access your function app
 Cross-Origin Resource Sharing (CORS) should not allow all domains to access your function app. Allow only required domains to interact with your function app.
 
 **Recommendation**: To allow only required domains to interact with your function app, in the [Microsoft.Web/sites/config resource cors settings object](https://docs.microsoft.com/azure/templates/microsoft.web/sites/config-web?tabs=json#corssettings-object), add (or update) the *allowedOrigins* property, setting its value to an array of allowed origins. Ensure it is *not* set to "*" (asterisks allows all origins).
@@ -175,8 +175,8 @@ Set the data retention for your SQL Server's auditing to storage account destina
 **Recommendation**: For incident investigation purposes, we recommend setting the data retention for your SQL Server's auditing to storage account destination to at least 90 days, in the [Microsoft.Sql/servers/auditingSettings resource properties](https://docs.microsoft.com/azure/templates/microsoft.sql/2020-11-01-preview/servers/auditingsettings?tabs=json#serverblobauditingpolicyproperties-object), using the *retentionDays* property. Confirm that you are meeting the necessary retention rules for the regions in which you are operating. This is sometimes required for compliance with regulatory standards.
 #### Severity: 3
 
-### TA-000029: Azure API Management APIs should use encrypted protocols only
-Set the protocols property to only include HTTPs.
+### TA-000029: Azure API Management APIs should use HTTPS only
+Set the protocols property of your Azure API Management APIs to only include HTTPS.
 
 **Recommendation**: To use encrypted protocols only, add (or update) the *protocols* property in the [Microsoft.ApiManagement/service/apis resource properties](https://docs.microsoft.com/azure/templates/microsoft.apimanagement/service/apis?tabs=json), to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure.
 #### Severity: 1

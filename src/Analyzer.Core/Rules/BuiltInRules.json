@@ -3,7 +3,7 @@
     "id": "TA-000001",
     "name": "AppService.EnableDiagnosticLogs",
     "shortDescription": "Diagnostic logs in App Service should be enabled",
-    "fullDescription": "Audit enabling of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.",
+    "fullDescription": "Enable auditing of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.",
     "recommendation": "Enable diagnostic logs in App Service",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000001-diagnostic-logs-in-app-services-should-be-enabled",
     "severity": 2,
@@ -343,9 +343,9 @@
   {
     "id": "TA-000012",
     "name": "AppServiceFunctionApp.RestrictCORSAccess",
-    "shortDescription": "CORS should not allow every resource to access your function apps",
+    "shortDescription": "CORS should not allow every resource to access your function app",
     "fullDescription": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your function app. Allow only required domains to interact with your function app.",
-    "recommendation": "CORS should not allow all domains to access your function app. Allow only required domains to interact with your function app.",
+    "recommendation": "Allow only required domains to interact with your function app.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000012-cors-should-not-allow-every-resource-to-access-your-function-apps",
     "severity": 3,
     "evaluation": {
@@ -818,8 +818,8 @@
   {
     "id": "TA-000029",
     "name": "APIM.OnlyHTTPS",
-    "shortDescription": "Azure API Management APIs should use encrypted protocols only",
-    "fullDescription": "Set the protocols property to only include HTTPs.",
+    "shortDescription": "Azure API Management APIs should use HTTPS only",
+    "fullDescription": "Set the protocols property of your Azure APIs Management API to only include HTTPS.",
     "recommendation": "To use encrypted protocols only, add (or update) the protocols property to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000029-azure-api-management-apis-should-use-encrypted-protocols-only",
     "severity": 1,
