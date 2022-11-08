@@ -25,10 +25,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the description of the rule.
+        /// Gets or sets the short description of the rule.
         /// </summary>
         [JsonProperty]
-        public string Description { get; set; }
+        public string ShortDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full description of the rule.
+        /// </summary>
+        [JsonProperty]
+        public string FullDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the recommendation of the rule.

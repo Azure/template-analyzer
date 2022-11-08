@@ -29,7 +29,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -47,7 +48,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -58,7 +60,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -76,7 +79,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -87,7 +91,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -98,7 +103,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -116,7 +122,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -154,7 +161,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -185,7 +193,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = false,
@@ -229,7 +238,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -260,7 +270,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = false,
@@ -297,7 +308,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = false,
@@ -341,7 +353,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -372,7 +385,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = false,
@@ -409,7 +423,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000003",
                         RuleName = "Rule000003",
-                        RuleDescription = "Test rule 0000003",
+                        RuleShortDescription = "T R 0000003",
+                        RuleFullDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
                         HelpUri = "https://domain.com/help#0000003",
                         Passed = true,
@@ -453,7 +468,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -484,7 +500,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = false,
@@ -521,7 +538,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = false,
@@ -558,7 +576,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000003",
                         RuleName = "Rule000003",
-                        RuleDescription = "Test rule 0000003",
+                        RuleShortDescription = "T R 0000003",
+                        RuleFullDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
                         HelpUri = "https://domain.com/help#0000003",
                         Passed = true,
@@ -602,7 +621,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = true,
@@ -633,7 +653,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help#0000002",
                         Passed = true,
@@ -671,7 +692,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -701,7 +723,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
-                        RuleDescription = "Test rule 0000002",
+                        RuleShortDescription = "T R 0000002",
+                        RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -737,7 +760,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -747,7 +772,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
@@ -757,7 +784,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
-                        RuleDescription = "Test rule 0000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,

@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
                     string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.LineNumber}"));
-                    var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleDescription}" +
-                        $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" +
+                    var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleShortDescription}" +
+                        $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
                         (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                         $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
                         $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
