@@ -2,7 +2,6 @@
 [![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
 
 # Template Best Practice Analyzer (BPA)
-***Note**: The Template BPA is currently in development. It is not yet recommended for production usage.*
 
 ## What is the Template BPA?
 The Template BPA scans ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/)  Infrastructure-as-Code (IaC) templates to ensure security and best practice checks are being followed before deployment of your Azure solutions.
@@ -37,7 +36,7 @@ Argument | Description
 **(Optional)** `-v` or `--verbose` | Shows details about the analysis
 **(Optional)** `--include-non-security-rules` | Run all the rules against the templates, including non-security rules
 
- The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided template and its corresponding [template parameters](https://docs.microsoft.com/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/azure/azure-resource-manager/templates/template-functions) in the template.
+ The Template BPA runs the [configured rules](#understanding-and-customizing-rules) against the provided template and its corresponding [template parameters](https://docs.microsoft.com/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then the Template BPA will check if templates with the [general naming standards defined by Microsoft](https://learn.microsoft.com/azure/azure-resource-manager/templates/parameter-files#file-name) are present in the same folder, otherwise it generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/azure/azure-resource-manager/templates/template-functions) in the template.
 
 **Note**: Providing the Template BPA with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from your template from Azure Key Vault](https://docs.microsoft.com/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
@@ -53,12 +52,17 @@ For a template which deploys an API App that does not require HTTPS, running the
 
 File: C:\Templates\azuredeploy.json
 
-        AppServiceApiApp_HTTPS: API App should only be accessible over HTTPS
-                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#api-app-should-only-be-accessible-over-https
+        TA-000004: API app should only be accessible over HTTPS
+                Severity: Medium
+                Recommendation: Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks
+                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#ta-000004-api-app-should-only-be-accessible-over-https
                 Result: Failed
-                Line: 114
+                Line: 67
 
-        Rules passed: 25
+        Rules passed: 16
+
+Execution summary:
+        The execution completed successfully
 ```
 
 #### SARIF

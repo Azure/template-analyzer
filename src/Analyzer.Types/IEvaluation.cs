@@ -16,9 +16,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public string RuleId { get; }
 
         /// <summary>
-        /// Gets the description of the rule this evaluation is for.
+        /// Gets the name of the rule this evaluation is for.
         /// </summary>
-        public string RuleDescription { get; }
+        public string RuleName { get; }
+
+        /// <summary>
+        /// Gets the short description of the rule this evaluation is for.
+        /// </summary>
+        public string RuleShortDescription { get; }
+
+        /// <summary>
+        /// Gets the full description of the rule this evaluation is for.
+        /// </summary>
+        public string RuleFullDescription { get; }
 
         /// <summary>
         /// Gets the recommendation for addressing this evaluation.

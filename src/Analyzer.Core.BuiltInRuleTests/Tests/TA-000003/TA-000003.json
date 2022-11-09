@@ -9,6 +9,10 @@
       {
         "LineNumber": 40,
         "Description": "siteConfig.ftpsState set to an undesired value"
+      },
+      {
+        "LineNumber": 161,
+        "Description": "No properties are specified in a resource from a nested template"
       }
     ]
   },

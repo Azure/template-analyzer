@@ -1,9 +1,11 @@
 [
   {
     "id": "TA-000001",
-    "description": "Diagnostic logs in App Services should be enabled",
-    "recommendation": "Enable diagnostic Logs in App Services",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000001-diagnostic-logs-in-app-services-should-be-enabled",
+    "name": "AppService.EnableDiagnosticLogs",
+    "shortDescription": "Diagnostic logs in App Service should be enabled",
+    "fullDescription": "Enable auditing of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.",
+    "recommendation": "Enable diagnostic logs in App Service",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000001-diagnostic-logs-in-app-service-should-be-enabled",
     "severity": 2,
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
@@ -58,7 +60,9 @@
   },
   {
     "id": "TA-000002",
-    "description": "Remote debugging should be turned off for API Apps",
+    "name": "AppServiceAPIApp.RemoteDebugging",
+    "shortDescription": "Remote debugging should be turned off for API apps",
+    "fullDescription": "Remote debugging requires inbound ports to be opened on an API app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.",
     "recommendation": "Remote debugging should be turned off",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000002-remote-debugging-should-be-turned-off-for-api-apps",
     "severity": 3,
@@ -91,7 +95,9 @@
   },
   {
     "id": "TA-000003",
-    "description": "FTPS only should be required in your API App",
+    "name": "AppServiceAPIApp.OnlyFTPS",
+    "shortDescription": "FTPS only should be required in your API app",
+    "fullDescription": "Enable FTPS enforcement for enhanced security.",
     "recommendation": "Enable FTPS enforcement for enhanced security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000003-ftps-only-should-be-required-in-your-api-app",
     "severity": 1,
@@ -116,7 +122,9 @@
   },
   {
     "id": "TA-000004",
-    "description": "API App should only be accessible over HTTPS",
+    "name": "AppServiceAPIApp.OnlyHTTPS",
+    "shortDescription": "API app should only be accessible over HTTPS",
+    "fullDescription": "API apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#ta-000004-api-app-should-only-be-accessible-over-https",
     "severity": 2,
@@ -136,7 +144,9 @@
   },
   {
     "id": "TA-000005",
-    "description": "Latest TLS version should be used in your API App",
+    "name": "AppServiceAPIApp.UseLatestTLS",
+    "shortDescription": "Latest TLS version should be used in your API app",
+    "fullDescription": "API apps should require the latest TLS version.",
     "recommendation": "Upgrade to the latest TLS version",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000005-latest-tls-version-should-be-used-in-your-api-app",
     "severity": 1,
@@ -161,8 +171,10 @@
   },
   {
     "id": "TA-000006",
-    "description": "CORS should not allow every resource to access your API App",
-    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.",
+    "name": "AppServiceAPIApp.RestrictCORSAccess",
+    "shortDescription": "CORS should not allow every resource to access your API app",
+    "fullDescription": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your API app. Allow only required domains to interact with your API app.",
+    "recommendation": "Allow only required domains to interact with your API app.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000006-cors-should-not-allow-every-resource-to-access-your-api-app",
     "severity": 3,
     "evaluation": {
@@ -194,7 +206,9 @@
   },
   {
     "id": "TA-000007",
-    "description": "Managed identity should be used in your API App",
+    "name": "AppServiceAPIApp.UseManagedIdentity",
+    "shortDescription": "Managed identity should be used in your API app",
+    "fullDescription": "For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000007-managed-identity-should-be-used-in-your-api-app",
     "severity": 2,
@@ -217,7 +231,9 @@
   },
   {
     "id": "TA-000008",
-    "description": "Remote debugging should be turned off for Function Apps",
+    "name": "AppServiceFunctionApp.RemoteDebugging",
+    "shortDescription": "Remote debugging should be turned off for function apps",
+    "fullDescription": "Remote debugging requires inbound ports to be opened on a function app. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.",
     "recommendation": "Remote debugging should be turned off",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000008-remote-debugging-should-be-turned-off-for-function-apps",
     "severity": 3,
@@ -250,7 +266,9 @@
   },
   {
     "id": "TA-000009",
-    "description": "FTPS only should be required in your Function App",
+    "name": "AppServiceFunctionApp.OnlyFTPS",
+    "shortDescription": "FTPS only should be required in your function app",
+    "fullDescription": "Enable FTPS enforcement for enhanced security.",
     "recommendation": "Enable FTPS enforcement for enhanced security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000009-ftps-only-should-be-required-in-your-function-app",
     "severity": 1,
@@ -275,7 +293,9 @@
   },
   {
     "id": "TA-000010",
-    "description": "Function App should only be accessible over HTTPS",
+    "name": "AppServiceFunctionApp.OnlyHTTPS",
+    "shortDescription": "Function app should only be accessible over HTTPS",
+    "fullDescription": "Function apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000010-function-app-should-only-be-accessible-over-https",
     "severity": 2,
@@ -295,7 +315,9 @@
   },
   {
     "id": "TA-000011",
-    "description": "Latest TLS version should be used in your Function App",
+    "name": "AppServiceFunctionApp.UseLatestTLS",
+    "shortDescription": "Latest TLS version should be used in your function app",
+    "fullDescription": "Function apps should require the latest TLS version.",
     "recommendation": "Upgrade to the latest TLS version",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000011-latest-tls-version-should-be-used-in-your-function-app",
     "severity": 1,
@@ -320,9 +342,11 @@
   },
   {
     "id": "TA-000012",
-    "description": "CORS should not allow every resource to access your Function Apps",
-    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Function app. Allow only required domains to interact with your Function app.",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000012-cors-should-not-allow-every-resource-to-access-your-function-apps",
+    "name": "AppServiceFunctionApp.RestrictCORSAccess",
+    "shortDescription": "CORS should not allow every resource to access your function app",
+    "fullDescription": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your function app. Allow only required domains to interact with your function app.",
+    "recommendation": "Allow only required domains to interact with your function app.",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000012-cors-should-not-allow-every-resource-to-access-your-function-app",
     "severity": 3,
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
@@ -353,7 +377,9 @@
   },
   {
     "id": "TA-000013",
-    "description": "Managed identity should be used in your Function App",
+    "name": "AppServiceFunctionApp.UseManagedIdentity",
+    "shortDescription": "Managed identity should be used in your function app",
+    "fullDescription": "For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000013-managed-identity-should-be-used-in-your-function-app",
     "severity": 2,
@@ -376,9 +402,11 @@
   },
   {
     "id": "TA-000014",
-    "description": "Remote debugging should be turned off for Web Applications",
+    "name": "AppServiceWebApp.RemoteDebugging",
+    "shortDescription": "Remote debugging should be turned off for web apps",
+    "fullDescription": "Remote debugging requires inbound ports to be opened on a web application. These ports become easy targets for compromise from various internet based attacks. If you no longer need to use remote debugging, it should be turned off.",
     "recommendation": "Remote debugging should be turned off",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000014-remote-debugging-should-be-turned-off-for-web-applications",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000014-remote-debugging-should-be-turned-off-for-web-apps",
     "severity": 3,
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
@@ -417,7 +445,9 @@
   },
   {
     "id": "TA-000015",
-    "description": "FTPS only should be required in your Web App",
+    "name": "AppServiceWebApp.OnlyFTPS",
+    "shortDescription": "FTPS only should be required in your web app",
+    "fullDescription": "Enable FTPS enforcement for enhanced security.",
     "recommendation": "Enable FTPS enforcement for enhanced security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000015-ftps-only-should-be-required-in-your-web-app",
     "severity": 1,
@@ -450,9 +480,11 @@
   },
   {
     "id": "TA-000016",
-    "description": "Web Application should only be accessible over HTTPS",
+    "name": "AppServiceWebApp.OnlyHTTPS",
+    "shortDescription": "Web apps should only be accessible over HTTPS",
+    "fullDescription": "Web apps should require HTTPS to ensure connections are made to the expected server and data in transit is protected from network layer eavesdropping attacks.",
     "recommendation": "Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000016-web-application-should-only-be-accessible-over-https",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000016-web-apps-should-only-be-accessible-over-https",
     "severity": 2,
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
@@ -478,7 +510,9 @@
   },
   {
     "id": "TA-000017",
-    "description": "Latest TLS version should be used in your Web App",
+    "name": "AppServiceWebApp.UseLatestTLS",
+    "shortDescription": "Latest TLS version should be used in your web app",
+    "fullDescription": "Web apps should require the latest TLS version.",
     "recommendation": "Upgrade to the latest TLS version",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000017-latest-tls-version-should-be-used-in-your-web-app",
     "severity": 1,
@@ -511,9 +545,11 @@
   },
   {
     "id": "TA-000018",
-    "description": "CORS should not allow every resource to access your Web Applications",
-    "recommendation": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Web application. Allow only required domains to interact with your Web app.",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000018-cors-should-not-allow-every-resource-to-access-your-web-applications",
+    "name": "AppServiceWebApp.RestrictCORSAccess",
+    "shortDescription": "CORS should not allow every resource to access your web apps",
+    "fullDescription": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your web application. Allow only required domains to interact with your web app.",
+    "recommendation": "Allow only required domains to interact with your web app.",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000018-cors-should-not-allow-every-resource-to-access-your-web-apps",
     "severity": 3,
     "evaluation": {
       "resourceType": "Microsoft.Web/sites",
@@ -552,7 +588,9 @@
   },
   {
     "id": "TA-000019",
-    "description": "Managed identity should be used in your Web App",
+    "name": "AppServiceWebApp.UseManagedIdentity",
+    "shortDescription": "Managed identity should be used in your web app",
+    "fullDescription": "For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.",
     "recommendation": "Use a managed identity for enhanced authentication security",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000019-managed-identity-should-be-used-in-your-web-app",
     "severity": 2,
@@ -583,9 +621,11 @@
   },
   {
     "id": "TA-000020",
-    "description": "Audit usage of custom RBAC roles",
+    "name": "Authorization.UseBuiltInRBAC",
+    "shortDescription": "Audit usage of custom RBAC roles",
+    "fullDescription": "Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.",
     "recommendation": "Audit built-in roles such as 'Owner, Contributer, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000020-use-built-in-roles-instead-of-custom-rbac-roles",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000020-audit-usage-of-custom-rbac-roles",
     "severity": 3,
     "evaluation": {
       "resourceType": "Microsoft.Authorization/roleDefinitions",
@@ -595,7 +635,9 @@
   },
   {
     "id": "TA-000021",
-    "description": "Automation account variables should be encrypted",
+    "name": "Automation.EncryptAccountsVariables",
+    "shortDescription": "Automation account variables should be encrypted",
+    "fullDescription": "It is important to enable encryption of Automation account variable assets when storing sensitive data.",
     "recommendation": "Enable encryption of Automation account variable assets when storing sensitive data",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000021-automation-account-variables-should-be-encrypted",
     "severity": 1,
@@ -607,9 +649,11 @@
   },
   {
     "id": "TA-000022",
-    "description": "Only secure connections to your Azure Cache for Redis should be enabled",
+    "name": "Redis.EnableSSL",
+    "shortDescription": "Only secure connections to your Azure Cache for Redis should be enabled",
+    "fullDescription": "Enable only connections via SSL to Redis Cache. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "recommendation": "Enable connections via SSL only to Redis Cache",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000022-onlysecureconnectionstoyourazurecacheforredisshouldbeenabled",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000022-only-secure-connections-to-your-azure-cache-for-redis-should-be-enabled",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.Cache/redis",
@@ -619,7 +663,9 @@
   },
   {
     "id": "TA-000023",
-    "description": "Authorized IP ranges should be defined on Kubernetes Services",
+    "name": "AKS.RestrictNetworkAccess",
+    "shortDescription": "Authorized IP ranges should be defined on Kubernetes Services",
+    "fullDescription": "To ensure that only applications from allowed networks, machines, or subnets can access your cluster, restrict access to your Kubernetes Service Management API server. It is recommended to limit access to authorized IP ranges to ensure that only applications from allowed networks can access the cluster.",
     "recommendation": "Restrict access to the Kubernetes Service Management API by granting API access only to IP addresses in specific ranges",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000023-authorized-ip-ranges-should-be-defined-on-kubernetes-services",
     "severity": 1,
@@ -639,9 +685,11 @@
   },
   {
     "id": "TA-000024",
-    "description": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
+    "name": "AKS.EnableRBAC",
+    "shortDescription": "RBAC should be used on Kubernetes Services",
+    "fullDescription": "To provide granular filtering on the actions that users can perform, use Role-Based Access Control (RBAC) to manage permissions in Kubernetes Service Clusters and configure relevant authorization policies. To Use Role-Based Access Control (RBAC) you must recreate your Kubernetes Service cluster and enable RBAC during the creation process.",
     "recommendation": "Enable RBAC in Kubernetes clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000024-role-basedaccesscontrolrbacshouldbeusedonkubernetesservices",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000024-rbac-should-be-used-on-kubernetes-services",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ContainerService/managedClusters",
@@ -659,7 +707,9 @@
   },
   {
     "id": "TA-000025",
-    "description": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
+    "name": "AKS.UpgradeToNonVulnerableVersion",
+    "shortDescription": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
+    "fullDescription": "Upgrade your Kubernetes service cluster to a later Kubernetes version to protect against known vulnerabilities in your current Kubernetes version. Vulnerability CVE-2019-9946 has been patched in Kubernetes versions 1.11.9+, 1.12.7+, 1.13.5+, and 1.14.0+. Running on older versions could mean you are not using latest security classes. Usage of such old classes and types can make your application vulnerable.",
     "recommendation": "Upgrade to a non-vulnerable Kubernetes version (1.11.9+, 1.12.7+, 1.13.5+, and 1.14.0+)",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000025-kubernetes-services-should-be-upgraded-to-a-non-vulnerable-kubernetes-version",
     "severity": 1,
@@ -683,9 +733,11 @@
   },
   {
     "id": "TA-000026",
-    "description": "Service Fabric clusters should only use Azure Active Directory for client authentication",
+    "name": "ServiceFabric.OnlyAADClientAuth",
+    "shortDescription": "Service Fabric clusters should only use AAD for client authentication",
+    "fullDescription": "Service Fabric clusters should only use Azure Active Directory (AAD) for client authentication. A Service Fabric cluster offers several entry points to its management functionality, including the web-based Service Fabric Explorer, Visual Studio and PowerShell. Access to the cluster must be controlled using AAD.",
     "recommendation": "Enable AAD client authentication on your Service Fabric clusters",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000026-service-fabric-clusters-should-only-use-azure-active-directory-for-client-authentication",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000026-service-fabric-clusters-should-only-use-aad-for-client-authentication",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ServiceFabric/clusters",
@@ -695,9 +747,11 @@
   },
   {
     "id": "TA-000027",
-    "description": "Transparent Data Encryption on SQL databases should be enabled",
+    "name": "SQL.EnableTDE",
+    "shortDescription": "TDE on SQL databases should be enabled",
+    "fullDescription": "Transparent data encryption (TDE) should be enabled to protect data-at-rest and meet compliance requirements.",
     "recommendation": "Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000027-transparent-data-encryption-on-sql-databases-should-be-enabled",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000027-tde-on-sql-databases-should-be-enabled",
     "severity": 3,
     "evaluation": {
       "resourceType": "Microsoft.Sql/servers/databases",
@@ -716,7 +770,9 @@
   },
   {
     "id": "TA-000028",
-    "description": "SQL servers with auditing to storage account destination should be configured with 90 days retention or higher",
+    "name": "SQL.MinRetentionDaysWithAudit",
+    "shortDescription": "SQL servers with auditing to storage account destination should be configured with 90 days retention or higher",
+    "fullDescription": "Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days.",
     "recommendation": "Set the data retention for your SQL Server's auditing to storage account destination to at least 90 days",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000028-sql-servers-with-auditing-to-storage-account-destination-should-be-configured-with-90-days-retention-or-higher",
     "severity": 3,
@@ -761,9 +817,11 @@
   },
   {
     "id": "TA-000029",
-    "description": "Azure API Management APIs should use encrypted protocols only",
+    "name": "APIM.OnlyHTTPS",
+    "shortDescription": "Azure API Management APIs should use HTTPS only",
+    "fullDescription": "Set the protocols property of your Azure APIs Management API to only include HTTPS.",
     "recommendation": "To use encrypted protocols only, add (or update) the protocols property to only include HTTPS. Allowing any additional protocols (e.g. HTTP, WS) is insecure",
-    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000029-azure-api-management-apis-should-use-encrypted-protocols-only",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000029-azure-api-management-apis-should-use-https-only",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ApiManagement/service/apis",
@@ -785,6 +843,34 @@
           "exists": false
         }
       ]
+    }
+  },
+  {
+    "id": "TA-000030",
+    "name": "ClassicCompute.MigrateToARM",
+    "shortDescription": "Migrate your Classic Compute VM to ARM",
+    "fullDescription": "Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model.",
+    "recommendation": "Use ARM for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000030-migrate-your-classic-compute-vm-to-arm",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ClassicCompute/virtualMachines",
+      "path": "type",
+      "notEquals": "Microsoft.ClassicCompute/virtualMachines"
+    }
+  },
+  {
+    "id": "TA-000031",
+    "name": "ClassicStorage.MigrateToARM",
+    "shortDescription": "Migrate your Classic Storage Account to ARM",
+    "fullDescription": "Azure supports two deployment models: Classic and Azure Resource Manager (ARM). ARM provides several security enhancements to the Classic model.",
+    "recommendation": "Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management",
+    "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000031-migrate-your-classic-storage-account-to-arm",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ClassicStorage/storageAccounts",
+      "path": "type",
+      "notEquals": "Microsoft.ClassicStorage/storageAccounts"
     }
   }
 ]

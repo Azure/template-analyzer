@@ -9,16 +9,16 @@
     "spec": {
       "rule": {
         "exclude": [
-          "PSRule.Rules.Azure\\Azure.AppService.RemoteDebug", // TA-000002
-          "PSRule.Rules.Azure\\Azure.AppService.WebSecureFtp", // TA-000003
-          "PSRule.Rules.Azure\\Azure.AppService.UseHTTPS", // TA-000004
-          "PSRule.Rules.Azure\\Azure.AppService.MinTLS", // TA-000005 and TA-000017
-          "PSRule.Rules.Azure\\Azure.Automation.EncryptVariables", // TA-000021
-          "PSRule.Rules.Azure\\Azure.Redis.NonSslPort", // TA-000022
-          "PSRule.Rules.Azure\\Azure.AKS.UseRBAC", // TA-000024
-          "PSRule.Rules.Azure\\Azure.ServiceFabric.AAD", // TA-000026
-          "PSRule.Rules.Azure\\Azure.SQL.TDE", // TA-000027
-          "PSRule.Rules.Azure\\Azure.APIM.HTTPEndpoint" // TA-000029
+          "PSRule.Rules.Azure\\Azure.AppService.RemoteDebug",
+          "PSRule.Rules.Azure\\Azure.AppService.WebSecureFtp",
+          "PSRule.Rules.Azure\\Azure.AppService.UseHTTPS",
+          "PSRule.Rules.Azure\\Azure.AppService.MinTLS",
+          "PSRule.Rules.Azure\\Azure.Automation.EncryptVariables",
+          "PSRule.Rules.Azure\\Azure.Redis.NonSslPort",
+          "PSRule.Rules.Azure\\Azure.AKS.UseRBAC",
+          "PSRule.Rules.Azure\\Azure.ServiceFabric.AAD",
+          "PSRule.Rules.Azure\\Azure.SQL.TDE",
+          "PSRule.Rules.Azure\\Azure.APIM.HTTPEndpoint"
         ]
       }
     }

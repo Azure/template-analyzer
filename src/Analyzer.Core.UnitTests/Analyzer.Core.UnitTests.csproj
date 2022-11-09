@@ -19,4 +19,10 @@
     <ProjectReference Include="..\Analyzer.Core\Analyzer.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="templates\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

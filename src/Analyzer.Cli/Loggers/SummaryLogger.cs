@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <summary>
         /// Constructor of the SummaryLogger class
         /// </summary>
+        /// <param name="verbose">Whether the verbose option is enabled.</param>
         public SummaryLogger(bool verbose)
         {
             this.verbose = verbose;
