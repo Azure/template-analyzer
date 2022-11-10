@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
-            // find the most specific match in source map
+            // Find the most specific match in source map
             var bestMatch = metadata.SourceMap.Entries
                 .Select(sourceFile =>
                 {
