@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         public bool IsBicep { get; set; }
 
         /// <summary>
-        /// TODO Source map that maps ARM JSON back to source Bicep
+        /// Includes metadata from Bicep compilation (source map and module info)
         /// </summary>
         public object BicepMetadata { get; set; }
 
