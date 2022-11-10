@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 using Moq;
 using Newtonsoft.Json;
 
@@ -138,9 +139,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, DisplayName = "Templates in root directory")]
-        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "subPath", DisplayName = "Template in subdirectory")]
-        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
+        //[DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, DisplayName = "Templates in root directory")]
+        //[DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "subPath", DisplayName = "Template in subdirectory")]
+        //[DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
         [DataRow("RedisCache.bicep", "RedisAndSQL.bicep", "SQLServerAuditingSettings.bicep", DisplayName = "RedisCache template results have multiple references, file results should be deduped")]
         public void AnalyzeDirectoryTests(string firstTemplate, string secondTemplate, string nestedTemplate, params string[] secondTemplatePathPieces)
         {
@@ -276,20 +277,32 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     })
                 },
                 { "AZR-000299", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
                         new List<int> { 1 }
                     })
                 },
                 { "AZR-000300", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
                         new List<int> { 1 }
                     })
                 }
             };
+
+            // extra validation for extra results in parent bicep template
+            if (nestedTemplate != null)
+            {
+                var extraResults = run.Results.Where(result =>
+                    (result.RuleId == "AZR-000299" || result.RuleId == "AZR-000300") &&
+                    result.Locations.Count == 1 &&
+                    result.Locations[0].PhysicalLocation.Region.StartLine == 1 &&
+                    result.Locations[0].PhysicalLocation.ArtifactLocation.Uri.OriginalString == secondTemplate);
+                extraResults.Count().Should().Be(2);
+                extraResults.ForEach(r => run.Results.Remove(r));
+            }
 
             run.Results.Count.Should().Be(14);
             foreach (Result result in run.Results)
