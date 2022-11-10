@@ -65,7 +65,7 @@ namespace Analyzer.BicepProcessor.UnitTests
             var armEvaluations = templateAnalyzer.AnalyzeTemplate(armTemplate, armFilePath);
             var armAsModuleEvaluations = templateAnalyzer.AnalyzeTemplate(string.Empty, armAsModuleFilePath);
 
-            // verify only results in bicep fie are from ARM module
+            // Verify only results in bicep file are from ARM module
             var sourceFilesWithResults = armAsModuleEvaluations
                 .Select(eval => eval.GetFailedResults())
                 .SelectMany(results => results)
