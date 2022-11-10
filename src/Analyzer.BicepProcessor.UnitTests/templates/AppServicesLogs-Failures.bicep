@@ -7,11 +7,8 @@ resource diagLogsDisabledInSiteConfigProperty 'Microsoft.Web/sites@2019-08-01' =
   location: location
   properties: {
     siteConfig: {
-
       detailedErrorLoggingEnabled: false
-
       httpLoggingEnabled: false
-
       requestTracingEnabled: false
     }
   }

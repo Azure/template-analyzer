@@ -19,7 +19,7 @@
       "location": "[parameters('location')]",
       "properties": {
         "siteConfig": {
-
+          /* extra lines test preservation of formatting in result line numbers */
           "detailedErrorLoggingEnabled": false,
 
           "httpLoggingEnabled": false,
