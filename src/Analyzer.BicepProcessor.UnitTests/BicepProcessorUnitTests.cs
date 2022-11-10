@@ -20,7 +20,7 @@ namespace Analyzer.BicepProcessor.UnitTests
             (_, var bicepMetadata) = BicepTemplateProcessor.ConvertBicepToJson(bicepPath);
             var actualModuleInfo = bicepMetadata.ModuleInfo.ToList();
 
-            // line numbers from Bicep.Core are 0-indexed (and maintained in module info)
+            // Line numbers from Bicep.Core are 0-indexed (and maintained in module info)
             var jsonFullPath = Path.Combine(directory, "AppServicesLogs-Failures.json").Replace('\\', '/');
             var expectedModuleInfo = new List<SourceFileModuleInfo>()
             {
