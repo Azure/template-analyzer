@@ -139,9 +139,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         }
 
         [DataTestMethod]
-        //[DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, DisplayName = "Templates in root directory")]
-        //[DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "subPath", DisplayName = "Template in subdirectory")]
-        //[DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, DisplayName = "Templates in root directory")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "subPath", DisplayName = "Template in subdirectory")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
         [DataRow("RedisCache.bicep", "RedisAndSQL.bicep", "SQLServerAuditingSettings.bicep", DisplayName = "RedisCache template results have multiple references, file results should be deduped")]
         public void AnalyzeDirectoryTests(string firstTemplate, string secondTemplate, string nestedTemplate, params string[] secondTemplatePathPieces)
         {
