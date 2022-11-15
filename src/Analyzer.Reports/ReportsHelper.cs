@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// </summary>
         /// <param name="evaluations">Evaluations to get results for</param>
         /// <param name="filesToSkip">Files to not include results from</param>
-        /// <returns></returns>
+        /// <returns>Dictionary of results indexed by source file</returns>
         public static Dictionary<string, List<(IEvaluation, IList<Result>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
             IEnumerable<string> filesToSkip)
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <param name="evaluations">Evaluations to get results for</param>
         /// <param name="filesToSkip">Files to not include results from</param>
         /// <param name="passedEvaluations">Out parameter that gives number of passed evaluations</param>
-        /// <returns></returns>
+        /// <returns>Dictionary of results indexed by source file</returns>
         public static Dictionary<string, List<(IEvaluation, IList<Result>)>> GetResultsByFile(
             IEnumerable<Types.IEvaluation> evaluations,
             IEnumerable<string> filesToSkip,

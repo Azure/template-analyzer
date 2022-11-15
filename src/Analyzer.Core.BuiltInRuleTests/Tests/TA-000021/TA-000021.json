@@ -10,7 +10,6 @@
         "LineNumber": 43,
         "Description": "isEncrypted is not defined, and the resource depends on another"
       },
-      /* deduping performed in reporting */
       {
         "LineNumber": 43,
         "Description": "isEncrypted is not defined, and the resource depends on another"
@@ -32,7 +31,6 @@
         "LineNumber": 28,
         "Description": "isEncrypted is not defined, and the resource depends on another"
       },
-      /* deduping performed in reporting */
       {
         "LineNumber": 28,
         "Description": "isEncrypted is not defined, and the resource depends on another"
@@ -41,7 +39,6 @@
         "LineNumber": 44,
         "Description": "isEncrypted is false, in a resource of type variables declared as child of a automationAccounts resource"
       },
-      /* deduping performed in reporting */
       {
         "LineNumber": 44,
         "Description": "isEncrypted is false, in a resource of type variables declared as child of a automationAccounts resource"
