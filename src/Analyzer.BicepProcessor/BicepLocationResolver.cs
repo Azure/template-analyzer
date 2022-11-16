@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                     var token = template.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
                     var lineNumber = (token as IJsonLineInfo)?.LineNumber;
 
-                    // fall back to location of module refernce in parent file if failing to get line number
+                    // Fall back to location of module reference in parent file if failing to get line number
                     if (lineNumber != null)
                     {
                         return new SourceLocation(modulePath, lineNumber.Value);
