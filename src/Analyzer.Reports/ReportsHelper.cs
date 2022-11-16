@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <returns>A list of distinct failed results</returns>
         public static (string, IList<Result>) GetResultsByFileInternal(Types.IEvaluation evaluation)
         {
-            // get all distinct failed results in evaluation
+            // Get all distinct failed results in evaluation
             var failedResults = evaluation.GetFailedResults().Distinct().ToList();
             failedResults.Sort((x, y) => x.SourceLocation.LineNumber.CompareTo(y.SourceLocation.LineNumber));
 
