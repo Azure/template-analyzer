@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             {
                 if (!Templates.ContainsKey(templatePath))
                 {
-                    // assumption: template has already been previously parsed by Bicep library and was valid
+                    // Assumption: template has already been parsed by Bicep library and is valid
                     Templates[templatePath] = JObject.Parse(File.ReadAllText(templatePath));
                 }
 
