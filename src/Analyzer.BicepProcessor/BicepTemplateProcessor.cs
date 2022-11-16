@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var modules = kvp.Value.Values
                     .Select(result =>
                     {
-                        // do not include modules imported from public/private registries, as it is more useful for user to see line number
+                        // Do not include modules imported from public/private registries, as it is more useful for user to see line number
                         // of the module declaration itself instead of line number in the module as the user does not control template in registry directly
                         if (result.Statement is not ModuleDeclarationSyntax moduleDeclaration
                             || moduleDeclaration.Path is not StringSyntax moduleDeclarationPath
