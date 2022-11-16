@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             string GetPathRelativeToEntryPoint(string absolutePath) => Path.GetRelativePath(
                 Path.GetDirectoryName(sourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
 
-            // collect all needed module info from sourceFileGrouping metadata
+            // Collect all needed module info from sourceFileGrouping metadata
             var moduleInfo = sourceFileGrouping.UriResultByModule.Select(kvp =>
             {
                 var bicepSourceFile = kvp.Key as BicepSourceFile;
