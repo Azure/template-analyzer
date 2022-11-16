@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
                 result.Level.Should().Be(FailureLevel.Error);
 
-                // determine which template file was evaluated for this SARIF result (all locations will be in same file, so taking first)
+                // Determine which template file was evaluated for this SARIF result (all locations will be in same file, so taking first)
                 // depending on if eval file matches the original target file, verify if analysis target is present or not
                 var distinctEvalFiles = result.Locations.Select(loc => loc.PhysicalLocation.ArtifactLocation.Uri.OriginalString).Distinct().ToList();
 
