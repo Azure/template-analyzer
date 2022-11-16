@@ -85,8 +85,6 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 throw new Exception($"Bicep issues found:{Environment.NewLine}{string.Join(Environment.NewLine, bicepIssues)}");
             }
 
-            
-
             string GetPathRelativeToEntryPoint(string absolutePath) => Path.GetRelativePath(
                 Path.GetDirectoryName(sourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
 
