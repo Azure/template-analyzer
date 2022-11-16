@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 {
     [TestClass]
-    public class JsonLineNumberResolverTests
+    public class JsonSourceLocationResolverTests
     {
         #region Test Template Context
 
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         public static IReadOnlyList<object[]> TestScenarios { get; } = new List<object[]>
         {
-            // Test data for test ResolveLineNumber_ReturnsCorrectLineNumber.
+            // Test data for test ResolveSourceLocation_ReturnsCorrectLineNumber.
             // Index one is for parameter 'path'.
             // Index two (a sub-array) is for parameter 'pathInOrginalTemplate'.
             // Index three is the test display name.  This is just so GetDisplayName() can do a lookup and is not used in the test.
@@ -249,11 +249,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
         [DataTestMethod]
         [DynamicData(nameof(TestScenarios), DynamicDataDisplayName = nameof(GetDisplayName))]
-        public void ResolveLineNumber_ReturnsCorrectLineNumber(string path, object[] pathInOrginalTemplate, string _)
+        public void ResolveSourceLocation_ReturnsCorrectLineNumber(string path, object[] pathInOrginalTemplate, string _)
         {
             // Resolve line number
-            var resolvedLineNumber = new JsonLineNumberResolver(templateContext)
-                .ResolveLineNumber(path);
+            var resolvedLineNumber = new JsonSourceLocationResolver(templateContext)
+                .ResolveSourceLocation(path).LineNumber;
 
             // Get expected line number
             var tokenInOriginalTemplate = templateContext.OriginalTemplate;
@@ -270,85 +270,85 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         [DataRow("MissingFirstChild.any.other.path", DisplayName = "First child in path not found")]
         [DataRow("resources[7].type", DisplayName = "Extra resource")]
         [DataRow("resources[6].type", DisplayName = "Extra copied resource with missing source copy loop")]
-        public void ResolveLineNumber_UnableToFindEquivalentLocationInOriginal_Returns1(string path)
+        public void ResolveSourceLocation_UnableToFindEquivalentLocationInOriginal_Returns1(string path)
         {
             Assert.AreEqual(
                 1,
-                new JsonLineNumberResolver(templateContext)
-                .ResolveLineNumber(path));
+                new JsonSourceLocationResolver(templateContext)
+                .ResolveSourceLocation(path).LineNumber);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumber_PathIsNull_ThrowsException()
+        public void ResolveSourceLocation_PathIsNull_ThrowsException()
         {
-            new JsonLineNumberResolver(templateContext)
-                .ResolveLineNumber(null);
+            new JsonSourceLocationResolver(templateContext)
+                .ResolveSourceLocation(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumber_OriginalTemplateIsNull_ThrowsException()
+        public void ResolveSourceLocation_OriginalTemplateIsNull_ThrowsException()
         {
-            new JsonLineNumberResolver(
+            new JsonSourceLocationResolver(
                 new TemplateContext
                 {
                     OriginalTemplate = null,
                     ExpandedTemplate = templateContext.ExpandedTemplate
                 })
-                .ResolveLineNumber("path");
+                .ResolveSourceLocation("path");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathContainsResourcesArray_ThrowsException()
+        public void ResolveSourceLocation_ExpandedTemplateIsNullAndPathContainsResourcesArray_ThrowsException()
         {
-            new JsonLineNumberResolver(
+            new JsonSourceLocationResolver(
                 new TemplateContext
                 {
                     OriginalTemplate = templateContext.OriginalTemplate,
                     ExpandedTemplate = null
                 })
-                .ResolveLineNumber("resources[4]");
+                .ResolveSourceLocation("resources[4]");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathContainsChildResourcesArray_ThrowsException()
+        public void ResolveSourceLocation_ExpandedTemplateIsNullAndPathContainsChildResourcesArray_ThrowsException()
         {
-            new JsonLineNumberResolver(
+            new JsonSourceLocationResolver(
                 new TemplateContext
                 {
                     OriginalTemplate = templateContext.OriginalTemplate,
                     ExpandedTemplate = null
                 })
-                .ResolveLineNumber("resources[1].resources[0]");
+                .ResolveSourceLocation("resources[1].resources[0]");
         }
 
         [TestMethod]
-        public void ResolveLineNumber_ExpandedTemplateIsNullAndPathDoesNotContainResourcesArray_ReturnsLineNumber()
+        public void ResolveSourceLocation_ExpandedTemplateIsNullAndPathDoesNotContainResourcesArray_ReturnsLineNumber()
         {
-            new JsonLineNumberResolver(
+            new JsonSourceLocationResolver(
                 new TemplateContext
                 {
                     OriginalTemplate = templateContext.OriginalTemplate,
                     ExpandedTemplate = null
                 })
-                .ResolveLineNumber("parameters.missingParameter");
+                .ResolveSourceLocation("parameters.missingParameter");
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void Constructor_NullTemplateContext_ThrowsException()
         {
-            new JsonLineNumberResolver(null);
+            new JsonSourceLocationResolver(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ResolveLineNumber_NullRootTemplateContext_ThrowsException()
         {
-            new JsonLineNumberResolver(
+            new JsonSourceLocationResolver(
                 new TemplateContext
                 {
                     OriginalTemplate = templateContext.OriginalTemplate,
@@ -356,7 +356,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
                     IsMainTemplate = false,
                     ParentContext = null
                 })
-                .ResolveLineNumber("path");
+                .ResolveSourceLocation("path");
         }
 
         [DataTestMethod]
@@ -523,7 +523,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 
             // Resolve line number
             var currentTemplateContext = templateContexts[numberOfTemplate];
-            var resolvedLineNumber = new JsonLineNumberResolver(currentTemplateContext).ResolveLineNumber(pathInTheExpandedTemplate);
+            var resolvedLineNumber = new JsonSourceLocationResolver(currentTemplateContext).ResolveSourceLocation(pathInTheExpandedTemplate).LineNumber;
 
             // Get expected line number
             var tokenInOriginalTemplate = parentTemplateContext.OriginalTemplate;

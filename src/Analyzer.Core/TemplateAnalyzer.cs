@@ -68,8 +68,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 JsonRuleEngine.Create(
                     rules,
                     templateContext => templateContext.IsBicep
-                        ? new BicepLocationResolver(templateContext)
-                        : new JsonLineNumberResolver(templateContext),
+                        ? new BicepSourceLocationResolver(templateContext)
+                        : new JsonSourceLocationResolver(templateContext),
                     logger),
                 new PowerShellRuleEngine(includeNonSecurityRules, logger),
                 logger);
@@ -89,12 +89,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             // If the template is Bicep, convert to JSON and get source map:
             var isBicep = templateFilePath != null && templateFilePath.ToLower().EndsWith(".bicep", StringComparison.OrdinalIgnoreCase);
-            object sourceMap = null;
+            object bicepMetadata = null;
             if (isBicep)
             {
                 try
                 {
-                    (template, sourceMap) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
+                    (template, bicepMetadata) = BicepTemplateProcessor.ConvertBicepToJson(templateFilePath);
                 }
                 catch (Exception e)
                 {
@@ -110,35 +110,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 ResourceMappings = null,
                 TemplateIdentifier = templateFilePath,
                 IsBicep = isBicep,
-                SourceMap = sourceMap,
+                BicepMetadata = bicepMetadata,
                 PathPrefix = "",
                 ParentContext = null
             };
-            var  evaluations = AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, "");
 
-            // For each rule we don't want to report the same line more than once
-            // This is a temporal fix
-            var evalsToValidate = new List<IEvaluation>();
-            var evalsToNotValidate = new List<IEvaluation>();
-            foreach (var eval in evaluations)
-            {
-                if (!eval.Passed && eval.Result != null)
-                {
-                    evalsToValidate.Add(eval);
-                }
-                else
-                {
-                    evalsToNotValidate.Add(eval);
-                }
-            }
-            var uniqueResults = new Dictionary<(string, int), IEvaluation>();
-            foreach (var eval in evalsToValidate)
-            {
-                uniqueResults.TryAdd((eval.RuleId, eval.Result.LineNumber), eval);
-            }
-            evaluations = uniqueResults.Values.Concat(evalsToNotValidate);
-
-            return evaluations;
+            return AnalyzeAllIncludedTemplates(template, parameters, templateFilePath, templateContext, string.Empty);
         }
 
         /// <summary>
@@ -172,7 +149,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
                 IsBicep = parentContext.IsBicep,
-                SourceMap = parentContext.SourceMap,
+                BicepMetadata = parentContext.BicepMetadata,
                 PathPrefix = pathPrefix,
                 ParentContext = parentContext
             };
@@ -185,7 +162,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 // Recursively handle nested templates 
                 var jsonTemplate = JObject.Parse(populatedTemplate);
                 var processedTemplateResources = templatejObject.InsensitiveToken("resources");
-
 
                 for (int i = 0; i < processedTemplateResources.Count(); i++)
                 {
@@ -204,7 +180,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         // Check whether scope is set to inner or outer
                         var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions.scope")?.ToString();
-                                               
+
                         if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
                         {
                             // Variables, parameters and functions inherited from parent template

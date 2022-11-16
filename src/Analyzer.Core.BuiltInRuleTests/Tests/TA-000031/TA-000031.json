@@ -13,5 +13,20 @@
         "Explanation": "The resource is not of type Microsoft.ClassicStorage/storageAccounts"
       }
     ]
+  },
+  {
+    "Template": "StorageAccounts.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 1,
+        "Description": "The resource is of type Microsoft.ClassicStorage/storageAccounts"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "anotherTypeOfStorageAccount",
+        "Explanation": "The resource is not of type Microsoft.ClassicStorage/storageAccounts"
+      }
+    ]
   }
 ]

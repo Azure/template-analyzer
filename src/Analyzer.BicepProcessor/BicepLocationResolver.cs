@@ -2,28 +2,37 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Bicep.Core.Emit;
+using Bicep.Core.Extensions;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Templates.Analyzer.Utilities
+namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
     /// <summary>
-    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from a compiled JSON template to the original Bicep template.
+    /// An <see cref="ISourceLocationResolver"/> used for resolving line numbers from a compiled JSON template to the original Bicep template.
     /// </summary>
-    public class BicepLocationResolver : ILineNumberResolver
+    public class BicepSourceLocationResolver : ISourceLocationResolver
     {
-        private readonly JsonLineNumberResolver jsonLineNumberResolver;
-        private readonly SourceMap sourceMap;
+        private readonly string EntrypointFilePath;
+        private readonly JsonSourceLocationResolver jsonLineNumberResolver;
+        private readonly BicepMetadata metadata;
+        private readonly TemplateContext templateContext;
 
         /// <summary>
         /// Create a new instance with the given <see cref="TemplateContext"/>.
         /// </summary>
         /// <param name="templateContext">The template context to map JSON paths against.</param>
-        public BicepLocationResolver(TemplateContext templateContext)
+        public BicepSourceLocationResolver(TemplateContext templateContext)
         {
-            this.jsonLineNumberResolver = new(templateContext ?? throw new ArgumentNullException(nameof(templateContext)));
-            this.sourceMap = (templateContext.SourceMap as SourceMap) ?? throw new ArgumentNullException(nameof(templateContext.SourceMap));
+            this.EntrypointFilePath = (templateContext ?? throw new ArgumentNullException(nameof(templateContext))).TemplateIdentifier;
+            this.templateContext = templateContext;
+            this.jsonLineNumberResolver = new(templateContext);
+            this.metadata = (templateContext.BicepMetadata as BicepMetadata) ?? throw new ArgumentNullException(nameof(templateContext.BicepMetadata));
         }
 
         /// <summary>
@@ -34,20 +43,72 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// to find the line number of in the original template.</param>
         /// <returns>The line number of the equivalent location in the original template,
         /// or 1 if it can't be determined.</returns>
-        public int ResolveLineNumber(string pathInExpandedTemplate)
+        public SourceLocation ResolveSourceLocation(string pathInExpandedTemplate)
         {
-            var jsonLine = this.jsonLineNumberResolver.ResolveLineNumber(pathInExpandedTemplate);
+            var jsonLine = this.jsonLineNumberResolver.ResolveSourceLocation(pathInExpandedTemplate).LineNumber;
 
             // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
-            // TODO: look for mappings in other files/modules once nested templates are supported, for now just entrypoint file
-            var entrypointFile = this.sourceMap.Entries.First(entry => entry.FilePath == this.sourceMap.Entrypoint);
-            var match = entrypointFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+            // Find the most specific match in source map by getting the match with min matchSize
+            var bestMatch = metadata.SourceMap.Entries
+                .Select(sourceFile =>
+                {
+                    var match = sourceFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+                    // matchSize reflects how many other ARM lines have the same Bicep source line, for example
+                    // a Bicep source line that points to a module will have a larger matchSize as it maps
+                    // to all the other lines of the nested template, but a direct ARM mapping will be smaller
+                    var matchSize = match != default
+                        ? sourceFile.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine)
+                        : int.MaxValue;
+                    return (sourceFile.FilePath, match?.SourceLine, matchSize);
+                })
+                .MinBy(tuple => tuple.matchSize);
 
-            return (match != null)
-                ? match.SourceLine + 1 // convert to 1-indexing
-                : 1;
+            // Default to result from JSON if no matches
+            if (!bestMatch.SourceLine.HasValue)
+            {
+                return new SourceLocation(this.EntrypointFilePath, jsonLine + 1); // convert line number back to 1-indexing
+            }
+
+            // Check if match is an ARM module reference, if so return location in that template
+            var moduleMetadata = this.metadata.ModuleInfo.FirstOrDefault(info => info.FileName == bestMatch.FilePath);
+            if (moduleMetadata != default && moduleMetadata.Modules.ContainsKey(bestMatch.SourceLine.Value))
+            {
+                var modulePath = moduleMetadata.Modules[bestMatch.SourceLine.Value];
+                if (modulePath.EndsWith(".json") && File.Exists(modulePath))
+                {
+                    var template = ArmTemplateCache.GetArmTemplate(modulePath);
+                    var token = template.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
+                    var lineNumber = (token as IJsonLineInfo)?.LineNumber;
+
+                    // Fall back to location of module reference in parent file if failing to get line number
+                    if (lineNumber != null)
+                    {
+                        return new SourceLocation(modulePath, lineNumber.Value);
+                    }
+                }
+            }
+
+            var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
+            var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, bestMatch.FilePath));
+            return new SourceLocation(matchFullFilePath, bestMatch.SourceLine.Value + 1); // convert line number back to 1-indexing
+        }
+
+        private static class ArmTemplateCache
+        {
+            private static readonly Dictionary<string, JObject> Templates = new();
+
+            public static JObject GetArmTemplate(string templatePath)
+            {
+                if (!Templates.ContainsKey(templatePath))
+                {
+                    // Assumption: template has already been parsed by Bicep library and is valid
+                    Templates[templatePath] = JObject.Parse(File.ReadAllText(templatePath));
+                }
+
+                return Templates[templatePath];
+            }
         }
     }
 }

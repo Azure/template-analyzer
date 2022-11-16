@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
@@ -28,15 +30,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public IEnumerable<IEvaluation> Evaluations { get; set; }
 
-        public IResult Result { get; set; }
+        public Result Result { get; set; }
 
         public bool HasResults { get; set; }
     }
 
-    public class MockResult : IResult
+    public class MockResult : Result
     {
-        public bool Passed { get; set; }
-
-        public int LineNumber { get; set; }
+        public MockResult(bool passed, SourceLocation sourceLocation) : base(passed, sourceLocation)
+        {
+        }
     }
 }

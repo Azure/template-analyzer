@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             /// <summary>
             /// Calls <see cref="Expression.EvaluateInternal(IJsonPathResolver, Func{IJsonPathResolver, IEnumerable{JsonRuleEvaluation}})"/> with <see cref="EvaluationCallback"/>.
             /// </summary>
-            public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ILineNumberResolver lineNumberResolver)
+            public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ISourceLocationResolver lineNumberResolver)
                 => base.EvaluateInternal(jsonScope, EvaluationCallback);
         }
     }

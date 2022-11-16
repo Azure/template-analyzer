@@ -11,6 +11,10 @@
         "Description": "isEncrypted is not defined, and the resource depends on another"
       },
       {
+        "LineNumber": 43,
+        "Description": "isEncrypted is not defined, and the resource depends on another"
+      },
+      {
         "LineNumber": 59,
         "Description": "isEncrypted is false, in a resource of type variables declared as child of a automationAccounts resource"
       }
@@ -24,8 +28,20 @@
         "Description": "isEncrypted is false"
       },
       {
-        "LineNumber": 23,
-        "Description": "isEncrypted is not defined"
+        "LineNumber": 28,
+        "Description": "isEncrypted is not defined, and the resource depends on another"
+      },
+      {
+        "LineNumber": 28,
+        "Description": "isEncrypted is not defined, and the resource depends on another"
+      },
+      {
+        "LineNumber": 44,
+        "Description": "isEncrypted is false, in a resource of type variables declared as child of a automationAccounts resource"
+      },
+      {
+        "LineNumber": 44,
+        "Description": "isEncrypted is false, in a resource of type variables declared as child of a automationAccounts resource"
       }
     ]
   }

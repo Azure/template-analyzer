@@ -24,6 +24,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
+        [DataRow("TemplateWithModule.bicep", ExitCode.Violation, DisplayName = "Violations found in referenced template")]
         [DataRow("Path does not exist", ExitCode.ErrorInvalidPath, DisplayName = "Invalid template file path provided")]
         [DataRow("Configuration.json", ExitCode.ErrorInvalidARMTemplate, DisplayName = "Path exists, not an ARM template.")]
         [DataRow("Configuration.json", ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Path exists, Report-format flag set, --output-file-path flag not included.")]

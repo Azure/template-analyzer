@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         private IEnumerable<IEvaluation> evaluationsEvaluatedFalse;
 
         private IEnumerable<IEvaluation> evaluations;
-        private IResult directResult;
+        private Result directResult;
 
         private List<IEvaluation> cachedEvaluations;
 
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// </summary>
         internal Expression Expression { get; set; }
 
-        public IResult Result => directResult;
+        public Result Result => directResult;
 
         public IEnumerable<IEvaluation> Evaluations => cachedEvaluations ??= evaluations.ToList();
 
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
         /// <param name="expression">The expression associated with this evaluation</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="result">The result of a leaf evaluation.</param>
-        public JsonRuleEvaluation(Expression expression, bool passed, JsonRuleResult result)
+        public JsonRuleEvaluation(Expression expression, bool passed, Result result)
         {
             this.directResult = result ?? throw new ArgumentNullException(nameof(result));
             (this.Expression, this.Passed, this.evaluations) = (expression, passed, Enumerable.Empty<IEvaluation>());

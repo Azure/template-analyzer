@@ -12,6 +12,7 @@ using FluentAssertions;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.CodeAnalysis.Sarif;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
 using Moq;
 using Newtonsoft.Json;
 
@@ -21,14 +22,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
     public class SarifReportWriterE2ETests
     {
         [TestMethod]
-        public void AnalyzeTemplateTests()
+        [DataRow("SQLServerAuditingSettings.json")]
+        [DataRow("SQLServerAuditingSettings.bicep")]
+        [DataRow("TemplateWithReference.bicep", "SQLServerAuditingSettings.bicep")]
+        public void AnalyzeTemplateTests(string template, string referencedTemplate = null)
         {
+            var isBicep = template.EndsWith(".bicep");
+
             // arrange
-            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Azure");
-            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "SQLServerAuditingSettings.json"));
+            string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
+            var templateFilePath = new FileInfo(Path.Combine(targetDirectory, template));
 
             var results = TemplateAnalyzer.Create(false).AnalyzeTemplate(
-                template: ReadTemplate("SQLServerAuditingSettings.json"),
+                template: ReadTemplate(template),
                 parameters: null,
                 templateFilePath: templateFilePath.FullName);
 
@@ -43,8 +49,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var expectedLinesForRun = new Dictionary<string, List<List<int>>>
             {
                 { "TA-000028", new List<List<int>> {
-                        new List<int> { 23, 24, 25 },
-                        new List<int> { 43, 44, 45 }
+                        isBicep ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
+                        isBicep ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
                     }
                 },
                 { "AZR-000186", new List<List<int>> {
@@ -52,19 +58,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 },
                 { "AZR-000187", new List<List<int>> {
-                        new List<int> { 14 },
-                        new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 },
                 { "AZR-000188", new List<List<int>> {
-                        new List<int> { 14 },
-                        new List<int> { 34 }
-
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 },
                 { "AZR-000189", new List<List<int>> {
-                        new List<int> { 14 },
-                        new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 }
             };
@@ -84,6 +89,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
                 result.Level.Should().Be(FailureLevel.Error);
 
+                // Determine which template file was evaluated for this SARIF result (all locations will be in same file, so taking first)
+                // depending on if eval file matches the original target file, verify if analysis target is present or not
+                var distinctEvalFiles = result.Locations.Select(loc => loc.PhysicalLocation.ArtifactLocation.Uri.OriginalString).Distinct().ToList();
+
+                if (distinctEvalFiles.Count != 1) throw new Exception("Multiple eval files for single SARIF result");
+
+                string evalFile = null;
+                if (referencedTemplate != null && result.RuleId != "AZR-000186") // special case for rule, not in referenced template regardless
+                {
+                    evalFile = "SQLServerAuditingSettings.bicep";
+                    result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
+                }
+                else
+                {
+                    evalFile = artifactUriString;
+                    result.AnalysisTarget.Should().BeNull();
+                }
+
                 var linesForResult = expectedLinesForRun[result.RuleId];
                 var expectedLines = linesForResult.FirstOrDefault(l => l.Contains(result.Locations.First().PhysicalLocation.Region.StartLine));
                 expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
@@ -93,10 +116,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 result.Locations.Count.Should().Be(expectedLines.Count);
                 foreach (var location in result.Locations)
                 {
-                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
-                    var line = location.PhysicalLocation.Region.StartLine;
+                    location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(evalFile);
 
                     // Verify line is expected, and remove from the collection
+                    var line = location.PhysicalLocation.Region.StartLine;
                     expectedLines.Contains(line).Should().BeTrue();
                     expectedLines.Remove(line);
                 }
@@ -116,38 +139,67 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(true, DisplayName = "Templates in root directory")]
-        [DataRow(true, "subPath", DisplayName = "Template in subdirectory")]
-        [DataRow(false, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
-        public void AnalyzeDirectoryTests(bool secondTemplateUsesRelativePath, params string[] secondTemplatePathPieces)
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, DisplayName = "Templates in root directory")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "subPath", DisplayName = "Template in subdirectory")]
+        [DataRow("RedisCache.json", "SQLServerAuditingSettings.json", null, "..", "anotherRepo", "subfolder", DisplayName = "Templates under root directory and outside of root")]
+        [DataRow("RedisCache.bicep", "RedisAndSQL.bicep", "SQLServerAuditingSettings.bicep", DisplayName = "RedisCache template results have multiple references, file results should be deduped")]
+        public void AnalyzeDirectoryTests(string firstTemplate, string secondTemplate, string nestedTemplate, params string[] secondTemplatePathPieces)
         {
+            var secondTemplateUsesRelativePath = !secondTemplatePathPieces.Contains("..");
+
             // arrange
-            var targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "repo");
-            var secondTemplateName = "SQLServerAuditingSettings.json";
+            var targetDirectory = Path.Combine(Path.GetTempPath(), "repo");
+
+            var firstTemplatePath = Path.Combine(targetDirectory, firstTemplate);
+            var firstTemplateFileInfo = new FileInfo(firstTemplatePath);
+            var firstTemplateString = ReadTemplate(firstTemplate);
+
             var secondTemplateDirectory = Path.Combine(secondTemplatePathPieces.Prepend(targetDirectory).ToArray());
-            var secondTemplatePath = Path.Combine(secondTemplateDirectory, secondTemplateName);
+            var secondTemplatePath = Path.Combine(secondTemplateDirectory, secondTemplate);
+            var secondTemplateString = ReadTemplate(secondTemplate);
             var secondTemplateFileInfo = new FileInfo(secondTemplatePath);
             var expectedSecondTemplateFilePathInSarif = secondTemplateUsesRelativePath
-                ? UriHelper.MakeValidUri(Path.Combine(secondTemplatePathPieces.Append(secondTemplateName).ToArray()))
+                ? UriHelper.MakeValidUri(Path.Combine(secondTemplatePathPieces.Append(secondTemplate).ToArray()))
                 : new Uri(secondTemplatePath).AbsoluteUri;
 
             // act
             var memStream = new MemoryStream();
-            using (var writer = SetupWriter(memStream, targetDirectory))
+            try
             {
+                // secondTemplateDirectory is always equal to or under targetDirectory
+                if (Directory.Exists(targetDirectory))
+                {
+                    Directory.Delete(targetDirectory, true);
+                }
+                Directory.CreateDirectory(targetDirectory);
+                Directory.CreateDirectory(secondTemplateDirectory);
+                File.WriteAllText(firstTemplatePath, firstTemplateString);
+                File.WriteAllText(secondTemplatePath, secondTemplateString);
+                if (nestedTemplate != null)
+                {
+                    File.WriteAllText(
+                        Path.Combine(targetDirectory, nestedTemplate),
+                        ReadTemplate(nestedTemplate));
+                }
+
+                using var writer = SetupWriter(memStream, targetDirectory);
                 var analyzer = TemplateAnalyzer.Create(false);
-                var templateFilePath = new FileInfo(Path.Combine(targetDirectory, "RedisCache.json"));
+
                 var results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("RedisCache.json"),
+                    template: firstTemplateString,
                     parameters: null,
-                    templateFilePath: templateFilePath.FullName);
-                writer.WriteResults(results, (FileInfoBase)templateFilePath);
+                    templateFilePath: firstTemplateFileInfo.FullName);
+                writer.WriteResults(results, (FileInfoBase)firstTemplateFileInfo);
 
                 results = analyzer.AnalyzeTemplate(
-                    template: ReadTemplate("SQLServerAuditingSettings.json"),
+                    template: secondTemplateString,
                     parameters: null,
                     templateFilePath: secondTemplateFileInfo.FullName);
                 writer.WriteResults(results, (FileInfoBase)secondTemplateFileInfo);
+            }
+            finally
+            {
+                Directory.Delete(targetDirectory, true);
             }
 
             // assert
@@ -161,36 +213,36 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
 
+            var isBicep = (firstTemplateFileInfo.Extension == ".bicep");
             var expectedLinesForRun = new Dictionary<string, (string file, string uriBase, List<List<int>> lines)>
             {
                 { "TA-000022", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        new List<int> { 20 }
-
+                        isBicep ? new List<int> { 8 } : new List<int> { 20 }
                     })
                 },
                 { "TA-000028", (
-                    file: expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 23, 24, 25 },
-                        new List<int> { 43, 44, 45 }
+                        isBicep ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
+                        isBicep ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
                     })
                 },
                 { "AZR-000164", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        new List<int> { 19 }
+                        isBicep ? new List<int> { 7 } : new List<int> { 19 }
                     })
                 },
                 { "AZR-000165", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
-                        new List<int> { 19 }
+                        isBicep ? new List<int> { 7 } : new List<int> { 19 }
                     })
                 },
                 { "AZR-000186", (
@@ -201,44 +253,56 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     })
                 },
                 { "AZR-000187", (
-                    file: expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 14 },
-                        new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     })
                 },
                 { "AZR-000188", (
-                    file: expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 14 },
-                        new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     })
                 },
                 { "AZR-000189", (
-                    file: expectedSecondTemplateFilePathInSarif,
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
                     lines: new List<List<int>> {
-                        new List<int> { 14 },
-                        new List<int> { 34 }
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
                     })
                 },
                 { "AZR-000299", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
                         new List<int> { 1 }
                     })
                 },
                 { "AZR-000300", (
-                    file: "RedisCache.json",
+                    file: firstTemplate,
                     uriBase: SarifReportWriter.UriBaseIdString,
                     lines: new List<List<int>> {
                         new List<int> { 1 }
                     })
                 }
             };
+
+            // Extra validation for extra results in parent bicep template
+            if (nestedTemplate != null)
+            {
+                var extraResults = run.Results.Where(result =>
+                    (result.RuleId == "AZR-000299" || result.RuleId == "AZR-000300") &&
+                    result.Locations.Count == 1 &&
+                    result.Locations[0].PhysicalLocation.Region.StartLine == 1 &&
+                    result.Locations[0].PhysicalLocation.ArtifactLocation.Uri.OriginalString == secondTemplate);
+                extraResults.Count().Should().Be(2);
+                extraResults.ForEach(r => run.Results.Remove(r));
+            }
 
             run.Results.Count.Should().Be(14);
             foreach (Result result in run.Results)
@@ -253,15 +317,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expectedLines.Should().NotBeNull("There shouldn't be a line number reported outside of the expected lines.");
                 linesForResult.Remove(expectedLines);
 
+                // Validate analysis target if result is from nested template
+                if (fileName == nestedTemplate && result.RuleId != "AZR-000186") // special case for rule, not in referenced template regardless
+                {
+                    result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(secondTemplate);
+                }
+                else
+                {
+                    result.AnalysisTarget.Should().BeNull();
+                }
+
                 // Verify lines reported equal the expected lines
                 result.Locations.Count.Should().Be(expectedLines.Count);
                 foreach (var location in result.Locations)
                 {
                     location.PhysicalLocation.ArtifactLocation.Uri.OriginalString.Should().BeEquivalentTo(fileName);
                     location.PhysicalLocation.ArtifactLocation.UriBaseId.Should().BeEquivalentTo(uriBase);
-                    var line = location.PhysicalLocation.Region.StartLine;
 
                     // Verify line is expected, and remove from the collection
+                    var line = location.PhysicalLocation.Region.StartLine;
                     expectedLines.Contains(line).Should().BeTrue();
                     expectedLines.Remove(line);
                 }
