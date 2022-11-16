@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 return new SourceLocation(this.EntrypointFilePath, jsonLine + 1); // convert line number back to 1-indexing
             }
 
-            // check if match is an ARM module reference, if so return location in that template
+            // Check if match is an ARM module reference, if so return location in that template
             var moduleMetadata = this.metadata.ModuleInfo.FirstOrDefault(info => info.FileName == bestMatch.FilePath);
             if (moduleMetadata != default && moduleMetadata.Modules.ContainsKey(bestMatch.SourceLine.Value))
             {
