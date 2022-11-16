@@ -7,7 +7,7 @@ using Microsoft.Azure.Templates.Analyzer.Types;
 namespace Microsoft.Azure.Templates.Analyzer.Reports
 {
     /// <summary>
-    /// Helper class for ReportsWriters
+    /// Helper class for ReportsWriter
     /// </summary>
     public class ReportsHelper
     {
