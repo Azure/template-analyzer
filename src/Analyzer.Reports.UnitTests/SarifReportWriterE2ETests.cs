@@ -292,7 +292,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 }
             };
 
-            // extra validation for extra results in parent bicep template
+            // Extra validation for extra results in parent bicep template
             if (nestedTemplate != null)
             {
                 var extraResults = run.Results.Where(result =>
