@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var workspace = new Workspace();
             var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, workspace, PathHelper.FilePathToFileUrl(bicepPath));
 
-            // pull modules optimistically
+            // Pull modules optimistically
             if (moduleDispatcher.RestoreModules(moduleDispatcher.GetValidModuleReferences(sourceFileGrouping.GetModulesToRestore())).Result)
             {
                 // modules had to be restored - recompile
