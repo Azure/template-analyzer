@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     (var actualFile, var failedResults) = GetResultsByFileInternal(evaluation);
 
-                    // a file's results may have already been output if analyzing directory
+                    // A file's results may have already been output if analyzing directory
                     if (filesToSkip.Contains(actualFile))
                     {
                         continue;
