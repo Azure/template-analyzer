@@ -50,11 +50,14 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             // Source map line numbers from Bicep are 0-indexed
             jsonLine--;
 
-            // Find the most specific match in source map
+            // Find the most specific match in source map by getting the match with min matchSize
             var bestMatch = metadata.SourceMap.Entries
                 .Select(sourceFile =>
                 {
                     var match = sourceFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+                    // matchSize reflects how many other ARM lines have the same Bicep source line, for example
+                    // a Bicep source line that points to a module will have a larger matchSize as it maps
+                    // to all the other lines of the nested template, but a direct ARM mapping will be smaller
                     var matchSize = match != default
                         ? sourceFile.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine)
                         : int.MaxValue;
