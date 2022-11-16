@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 })
                 .MinBy(tuple => tuple.matchSize);
 
-            // default to result from JSON if no matches
+            // Default to result from JSON if no matches
             if (!bestMatch.SourceLine.HasValue)
             {
                 return new SourceLocation(this.EntrypointFilePath, jsonLine + 1); // convert line number back to 1-indexing
