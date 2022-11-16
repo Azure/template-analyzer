@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         resultsByFile[actualFile] = new List<(IEvaluation, IList<Result>)>();
                     }
 
-                    // skip any evaluations with duplicate results (i.e. two source locations from other templates refer to same result)
+                    // Skip any evaluations with duplicate results (i.e. two source locations from other templates refer to same result)
                     if (!resultsByFile[actualFile].Any(resultsTuple => evaluation.RuleId.Equals(resultsTuple.Item1.RuleId)
                         && Enumerable.SequenceEqual(resultsTuple.Item2, failedResults)))
                     {
