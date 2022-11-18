@@ -25,34 +25,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             // output files in sorted order, but always output root first and regardless if no results
             var filesWithResults = resultsByFile.Keys.ToList();
-            filesWithResults.Remove(templateFile.FullName);
+            var removed = filesWithResults.Remove(templateFile.FullName);
             filesWithResults.Sort();
-            filesWithResults.Insert(0, templateFile.FullName);
+            if (removed) filesWithResults.Insert(0, templateFile.FullName);
 
-            foreach(var fileWithResults in filesWithResults)
+            foreach (var fileWithResults in filesWithResults)
             {
-                string fileMetadata;
-                fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {fileWithResults}";
+                var fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {fileWithResults}";
 
                 if (fileWithResults == templateFile.FullName)
                 {
                     if (parametersFile != null)
                     {
-                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile}";
+                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile.FullName}";
                     }
                 }
                 else
                 {
-                    fileMetadata += Environment.NewLine + $"Root Template: {templateFile}";
+                    fileMetadata += Environment.NewLine + $"Root Template: {templateFile.FullName}";
                 }
 
                 Console.WriteLine(fileMetadata);
-
-                // needed for all passing results case
-                if (!resultsByFile.ContainsKey(fileWithResults))
-                {
-                    continue;
-                }
 
                 foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
@@ -64,6 +57,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                         $"{TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} {resultString}";
                     Console.WriteLine(output);
                 }
+            }
+
+            // ensure filename output if there were no failed results
+            if (filesWithResults.Count() == 0)
+            {
+                var fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile.FullName}";
+                Console.WriteLine(fileMetadata);
             }
 
             filesAlreadyOutput.AddRange(filesWithResults);
