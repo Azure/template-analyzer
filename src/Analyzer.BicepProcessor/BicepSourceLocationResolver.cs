@@ -79,7 +79,9 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var modulePath = moduleMetadata.Modules[bestMatch.SourceLine.Value];
                 if (modulePath.EndsWith(".json") && File.Exists(modulePath))
                 {
-                    var lineNumber = LookupArmModulePath(modulePath, pathInExpandedTemplate);
+                    var templateContext = ArmTemplateContextCache.GetArmTemplateContext(modulePath);
+                    var jsonSourceLocationResolver = new JsonSourceLocationResolver(templateContext);
+                    var lineNumber = jsonSourceLocationResolver.ResolveSourceLocation(pathInExpandedTemplate)?.LineNumber;
 
                     // Fall back to location of module reference in parent file if failing to get line number
                     if (lineNumber != null)
@@ -94,43 +96,37 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             return new SourceLocation(matchFullFilePath, bestMatch.SourceLine.Value + 1); // convert line number back to 1-indexing
         }
 
-        private int? LookupArmModulePath(string armModulePath, string pathInTemplate)
+        private static class ArmTemplateContextCache
         {
-            // create a new JsonSourceLocationResolver where the top-level template is the ARM module (not the parent Bicep)
-            var templateString = File.ReadAllText(armModulePath);
-            var armTemplateProcessor = new ArmTemplateProcessor(templateString);
-            var templatejObject = armTemplateProcessor.ProcessTemplate(null);
+            private static readonly Dictionary<string, TemplateContext> Cache = new();
 
-            var templateContext = new TemplateContext
+            public static TemplateContext GetArmTemplateContext(string templatePath)
             {
-                OriginalTemplate = JObject.Parse(templateString),
-                ExpandedTemplate = templatejObject,
-                IsMainTemplate = true,
-                ResourceMappings = armTemplateProcessor.ResourceMappings,
-                TemplateIdentifier = armModulePath,
-                IsBicep = false,
-                BicepMetadata = null,
-                PathPrefix = string.Empty,
-                ParentContext = null
-            };
-
-            var jsonSourceLocationResolver = new JsonSourceLocationResolver(templateContext);
-            return jsonSourceLocationResolver.ResolveSourceLocation(pathInTemplate)?.LineNumber;
-        }
-
-        private static class ArmTemplateCache
-        {
-            private static readonly Dictionary<string, JObject> Templates = new();
-
-            public static JObject GetArmTemplate(string templatePath)
-            {
-                if (!Templates.ContainsKey(templatePath))
+                if (!Cache.ContainsKey(templatePath))
                 {
+                    // create a new JsonSourceLocationResolver where the top-level template is the ARM module (not the parent Bicep)
+                    var templateString = File.ReadAllText(templatePath);
+                    var armTemplateProcessor = new ArmTemplateProcessor(templateString);
+                    var templatejObject = armTemplateProcessor.ProcessTemplate(null);
+
+                    var templateContext = new TemplateContext
+                    {
+                        OriginalTemplate = JObject.Parse(templateString),
+                        ExpandedTemplate = templatejObject,
+                        IsMainTemplate = true,
+                        ResourceMappings = armTemplateProcessor.ResourceMappings,
+                        TemplateIdentifier = templatePath,
+                        IsBicep = false,
+                        BicepMetadata = null,
+                        PathPrefix = string.Empty,
+                        ParentContext = null
+                    };
+
                     // Assumption: template has already been parsed by Bicep library and is valid
-                    Templates[templatePath] = JObject.Parse(File.ReadAllText(templatePath));
+                    Cache[templatePath] = templateContext;
                 }
 
-                return Templates[templatePath];
+                return Cache[templatePath];
             }
         }
     }
