@@ -21,20 +21,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [DynamicData("UnitTestCases", typeof(TestCases), DynamicDataSourceType.Property, DynamicDataDisplayName = "GetTestCaseName", DynamicDataDisplayNameDeclaringType = typeof(TestCases))]
         public void WriteResults_Evaluations_ReturnExpectedConsoleLog(string _, MockEvaluation[] evaluations)
         {
-            var templateFilePath = new FileInfo(TestCases.TestTemplateFilePath);
-
             var output = new StringWriter();
             Console.SetOut(output);
             using (var writer = new ConsoleReportWriter())
             {
-                writer.WriteResults(evaluations, (FileInfoBase)templateFilePath);
+                writer.WriteResults(evaluations, (FileInfoBase)new FileInfo(TestCases.TestTemplateFilePath));
             }
 
             // assert
-            AssertConsoleLog(output, evaluations, templateFilePath);
+            AssertConsoleLog(output, evaluations);
         }
 
-        private void AssertConsoleLog(StringWriter output, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
+        private void AssertConsoleLog(StringWriter output, IEnumerable<Types.IEvaluation> testcases)
         {
             var outputString = output.ToString();
             var expected = new StringBuilder();

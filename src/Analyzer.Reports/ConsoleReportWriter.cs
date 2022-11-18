@@ -63,6 +63,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             if (filesWithResults.Count() == 0)
             {
                 var fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile.FullName}";
+                if (parametersFile != null)
+                {
+                    fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile.FullName}";
+                }
                 Console.WriteLine(fileMetadata);
             }
 

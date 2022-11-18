@@ -24,7 +24,7 @@ namespace Analyzer.BicepProcessor.UnitTests
             var actualModuleInfo = bicepMetadata.ModuleInfo.ToList();
 
             // Line numbers from Bicep.Core are 0-indexed (and maintained in module info)
-            var jsonFullPath = Path.Combine(directory, "AppServicesLogs-Failures.json").Replace('\\', '/');
+            var jsonFullPath = Path.Combine(directory, "AppServicesLogs-Failures.json");
             var expectedModuleInfo = new List<SourceFileModuleInfo>()
             {
                 new SourceFileModuleInfo("TemplateWithMixedRefs.bicep",

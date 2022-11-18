@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                         }
 
                         var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, moduleDeclaration.Span.Position).line;
-                        var modulePath = result.FileUri.AbsolutePath;
+                        var modulePath = new FileInfo(result.FileUri.AbsolutePath).FullName; // converts path to current platform
 
                         // Use relative paths for bicep to match file paths used in bicep modules and source map
                         if (modulePath.EndsWith(".bicep"))
