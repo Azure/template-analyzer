@@ -36,11 +36,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         private void AssertConsoleLog(StringWriter output, IEnumerable<Types.IEvaluation> testcases, FileInfo templateFilePath)
         {
-            string outputString = output.ToString();
+            var outputString = output.ToString();
             var expected = new StringBuilder();
-            expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {templateFilePath}{Environment.NewLine}");
 
             var outputResults = new List<List<Result>>();
+            var curFile = string.Empty;
             foreach (var evaluation in testcases.Where(e => !e.Passed))
             {
                 var distinctFailedResults = evaluation.GetFailedResults().Distinct().ToList();
@@ -53,10 +53,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 outputResults.Add(distinctFailedResults);
 
                 var resultFilePath = distinctFailedResults.First().SourceLocation.FilePath;
-                if (resultFilePath != TestCases.TestTemplateFilePath)
+                if (curFile != resultFilePath)
                 {
-                    expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {resultFilePath}");
-                    expected.Append($"{Environment.NewLine}Root Template: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
+                    curFile = resultFilePath;
+
+                    expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {curFile}{Environment.NewLine}");
+
+                    if (resultFilePath != TestCases.TestTemplateFilePath)
+                    {
+                        expected.Append($"Root Template: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
+                    }
                 }
 
                 var lineNumbers = distinctFailedResults
@@ -71,6 +77,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expected.Append(lineNumbers);
                 expected.Append(Environment.NewLine);
             }
+
+            // no failing evals case
+            if (curFile == string.Empty)
+            {
+                expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
+            }
+
             expected.Append($"{ConsoleReportWriter.IndentedNewLine}Rules passed: {testcases.Count(e => e.Passed)}{Environment.NewLine}");
             outputString.Should().BeEquivalentTo(expected.ToString());
         }

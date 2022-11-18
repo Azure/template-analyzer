@@ -795,6 +795,37 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 }
             },
+            new object[]
+            {
+                "Evaluations in only in referenced files",
+                new []
+                {
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
+                    }
+                }
+            },
         }.AsReadOnly();
     }
 }
