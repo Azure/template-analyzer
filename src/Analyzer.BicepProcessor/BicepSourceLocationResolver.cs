@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bicep.Core.Extensions;
+using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Newtonsoft.Json;
@@ -78,9 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var modulePath = moduleMetadata.Modules[bestMatch.SourceLine.Value];
                 if (modulePath.EndsWith(".json") && File.Exists(modulePath))
                 {
-                    var template = ArmTemplateCache.GetArmTemplate(modulePath);
-                    var token = template.InsensitiveToken(pathInExpandedTemplate, InsensitivePathNotFoundBehavior.LastValid);
-                    var lineNumber = (token as IJsonLineInfo)?.LineNumber;
+                    var lineNumber = LookupArmModulePath(modulePath, pathInExpandedTemplate);
 
                     // Fall back to location of module reference in parent file if failing to get line number
                     if (lineNumber != null)
@@ -93,6 +92,30 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
             var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, bestMatch.FilePath));
             return new SourceLocation(matchFullFilePath, bestMatch.SourceLine.Value + 1); // convert line number back to 1-indexing
+        }
+
+        private int? LookupArmModulePath(string armModulePath, string pathInTemplate)
+        {
+            // create a new JsonSourceLocationResolver where the top-level template is the ARM module (not the parent Bicep)
+            var templateString = File.ReadAllText(armModulePath);
+            var armTemplateProcessor = new ArmTemplateProcessor(templateString);
+            var templatejObject = armTemplateProcessor.ProcessTemplate(null);
+
+            var templateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(templateString),
+                ExpandedTemplate = templatejObject,
+                IsMainTemplate = true,
+                ResourceMappings = armTemplateProcessor.ResourceMappings,
+                TemplateIdentifier = armModulePath,
+                IsBicep = false,
+                BicepMetadata = null,
+                PathPrefix = string.Empty,
+                ParentContext = null
+            };
+
+            var jsonSourceLocationResolver = new JsonSourceLocationResolver(templateContext);
+            return jsonSourceLocationResolver.ResolveSourceLocation(pathInTemplate)?.LineNumber;
         }
 
         private static class ArmTemplateCache

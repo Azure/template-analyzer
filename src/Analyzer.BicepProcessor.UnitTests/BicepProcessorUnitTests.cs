@@ -75,7 +75,7 @@ namespace Analyzer.BicepProcessor.UnitTests
                 .Select(result => result.SourceLocation.FilePath)
                 .Distinct();
             Assert.AreEqual(1, sourceFilesWithResults.Count());
-            Assert.AreEqual(armFilePath.Replace('\\', '/'), sourceFilesWithResults.First());
+            Assert.AreEqual(armFilePath, sourceFilesWithResults.First());
 
             var armFailingLines = GetFailingLineNumbers(armEvaluations);
             var armAsModuleFailingLines = GetFailingLineNumbers(armAsModuleEvaluations);
