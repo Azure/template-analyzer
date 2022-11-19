@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expected.Append(Environment.NewLine);
             }
 
-            // no failing evals case
+            // No failing evals case
             if (curFile == string.Empty)
             {
                 expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
