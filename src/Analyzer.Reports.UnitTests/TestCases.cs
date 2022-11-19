@@ -754,7 +754,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             },
             new object[]
             {
-                "Evaluations in multiple files",
+                "Evaluations with results in multiple files",
                 new []
                 {
                     new MockEvaluation
@@ -797,7 +797,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             },
             new object[]
             {
-                "Evaluations in only in referenced files",
+                "Evaluations with results in only in referenced files",
                 new []
                 {
                     new MockEvaluation
