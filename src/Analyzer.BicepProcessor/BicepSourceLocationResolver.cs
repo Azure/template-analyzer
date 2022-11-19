@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             {
                 if (!Cache.ContainsKey(templatePath))
                 {
-                    // create a new JsonSourceLocationResolver where the top-level template is the ARM module (not the parent Bicep)
+                    // Create a new JsonSourceLocationResolver where the top-level template is the ARM module (not the parent Bicep)
                     var templateString = File.ReadAllText(templatePath);
                     var armTemplateProcessor = new ArmTemplateProcessor(templateString);
                     var templatejObject = armTemplateProcessor.ProcessTemplate(null);
