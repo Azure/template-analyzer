@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
                     expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {curFile}{Environment.NewLine}");
 
-                    if (resultFilePath != TestCases.TestTemplateFilePath)
+                    if (curFile != TestCases.TestTemplateFilePath)
                     {
                         expected.Append($"Root Template: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
                     }
