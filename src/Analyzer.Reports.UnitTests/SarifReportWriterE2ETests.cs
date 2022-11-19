@@ -52,8 +52,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var expectedLinesForRun = new Dictionary<string, List<List<int>>>
             {
                 { "TA-000028", new List<List<int>> {
-                        isBicepResults ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
-                        isBicepResults ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
+                        isBicepResult ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
+                        isBicepResult ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
                     }
                 },
                 { "AZR-000186", new List<List<int>> {
@@ -61,18 +61,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 },
                 { "AZR-000187", new List<List<int>> {
-                        isBicepResults ? new List<int> { 5 } : new List<int> { 14 },
-                        isBicepResults ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 },
                 { "AZR-000188", new List<List<int>> {
-                        isBicepResults ? new List<int> { 5 } : new List<int> { 14 },
-                        isBicepResults ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 },
                 { "AZR-000189", new List<List<int>> {
-                        isBicepResults ? new List<int> { 5 } : new List<int> { 14 },
-                        isBicepResults ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 }
             };
