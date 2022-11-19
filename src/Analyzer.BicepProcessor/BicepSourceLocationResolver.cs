@@ -9,7 +9,6 @@ using Bicep.Core.Extensions;
 using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
