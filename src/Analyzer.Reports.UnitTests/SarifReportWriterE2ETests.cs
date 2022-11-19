@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [DataRow("TemplateWithBicepReference.bicep", "SQLServerAuditingSettings.bicep")]
         public void AnalyzeTemplateTests(string template, string referencedTemplate = null)
         {
-            var isBicepResults = referencedTemplate == null
+            var isBicepResult = referencedTemplate == null
                 ? template.EndsWith(".bicep")
                 : referencedTemplate.EndsWith(".bicep");
 

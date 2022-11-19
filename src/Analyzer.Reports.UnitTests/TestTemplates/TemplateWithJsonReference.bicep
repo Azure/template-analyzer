@@ -9,7 +9,7 @@ module nestedTemplate './SQLServerAuditingSettings.json' = {
   }
 }
 
-// test deduping of results, will yield duplicate evaluations
+// Test deduping of results, will yield duplicate evaluations
 module nestedTemplate2 './SQLServerAuditingSettings.json' = {
   name: 'nestedTemplate2'
   scope: resourceGroup('my-rg')
