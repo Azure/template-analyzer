@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
                     expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {curFile}{Environment.NewLine}");
 
-                    if (resultFilePath != TestCases.TestTemplateFilePath)
+                    if (curFile != TestCases.TestTemplateFilePath)
                     {
                         expected.Append($"Root Template: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
                     }
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expected.Append(Environment.NewLine);
             }
 
-            // no failing evals case
+            // No failing evals case
             if (curFile == string.Empty)
             {
                 expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
