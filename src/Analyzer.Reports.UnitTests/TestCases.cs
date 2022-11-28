@@ -797,7 +797,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             },
             new object[]
             {
-                "Evaluations with results in only in referenced files",
+                "Evaluations with only results in referenced files",
                 new []
                 {
                     new MockEvaluation
