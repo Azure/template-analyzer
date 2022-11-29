@@ -754,7 +754,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             },
             new object[]
             {
-                "Evaluations in multiple files",
+                "Evaluations with results in multiple files",
                 new []
                 {
                     new MockEvaluation
@@ -769,6 +769,37 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
                         Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 10))
                     },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = false,
+                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
+                    }
+                }
+            },
+            new object[]
+            {
+                "Evaluations with only results in referenced files",
+                new []
+                {
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",

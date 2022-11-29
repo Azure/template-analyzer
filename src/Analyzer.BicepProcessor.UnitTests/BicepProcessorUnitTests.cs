@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,7 +23,7 @@ namespace Analyzer.BicepProcessor.UnitTests
             var actualModuleInfo = bicepMetadata.ModuleInfo.ToList();
 
             // Line numbers from Bicep.Core are 0-indexed (and maintained in module info)
-            var jsonFullPath = Path.Combine(directory, "AppServicesLogs-Failures.json").Replace('\\', '/');
+            var jsonFullPath = Path.Combine(directory, "AppServicesLogs-Failures.json");
             var expectedModuleInfo = new List<SourceFileModuleInfo>()
             {
                 new SourceFileModuleInfo("TemplateWithMixedRefs.bicep",
@@ -75,7 +74,7 @@ namespace Analyzer.BicepProcessor.UnitTests
                 .Select(result => result.SourceLocation.FilePath)
                 .Distinct();
             Assert.AreEqual(1, sourceFilesWithResults.Count());
-            Assert.AreEqual(armFilePath.Replace('\\', '/'), sourceFilesWithResults.First());
+            Assert.AreEqual(armFilePath, sourceFilesWithResults.First());
 
             var armFailingLines = GetFailingLineNumbers(armEvaluations);
             var armAsModuleFailingLines = GetFailingLineNumbers(armAsModuleEvaluations);

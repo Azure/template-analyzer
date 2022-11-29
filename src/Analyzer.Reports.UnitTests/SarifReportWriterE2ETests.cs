@@ -24,10 +24,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
         [TestMethod]
         [DataRow("SQLServerAuditingSettings.json")]
         [DataRow("SQLServerAuditingSettings.bicep")]
-        [DataRow("TemplateWithReference.bicep", "SQLServerAuditingSettings.bicep")]
+        [DataRow("TemplateWithJsonReference.bicep", "SQLServerAuditingSettings.json")]
+        [DataRow("TemplateWithBicepReference.bicep", "SQLServerAuditingSettings.bicep")]
         public void AnalyzeTemplateTests(string template, string referencedTemplate = null)
         {
-            var isBicep = template.EndsWith(".bicep");
+            var isBicepResult = referencedTemplate == null
+                ? template.EndsWith(".bicep")
+                : referencedTemplate.EndsWith(".bicep");
 
             // arrange
             string targetDirectory = Path.Combine(Directory.GetCurrentDirectory(), "TestTemplates");
@@ -49,8 +52,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var expectedLinesForRun = new Dictionary<string, List<List<int>>>
             {
                 { "TA-000028", new List<List<int>> {
-                        isBicep ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
-                        isBicep ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
+                        isBicepResult ? new List<int> { 14, 15, 16 } : new List<int> { 23, 24, 25 },
+                        isBicepResult ? new List<int> { 31, 32, 33 } : new List<int> { 43, 44, 45 }
                     }
                 },
                 { "AZR-000186", new List<List<int>> {
@@ -58,18 +61,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     }
                 },
                 { "AZR-000187", new List<List<int>> {
-                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
-                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 },
                 { "AZR-000188", new List<List<int>> {
-                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
-                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 },
                 { "AZR-000189", new List<List<int>> {
-                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
-                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
                     }
                 }
             };
@@ -98,7 +101,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 string evalFile = null;
                 if (referencedTemplate != null && result.RuleId != "AZR-000186") // special case for rule, not in referenced template regardless
                 {
-                    evalFile = "SQLServerAuditingSettings.bicep";
+                    evalFile = referencedTemplate;
                     result.AnalysisTarget.Uri.OriginalString.Should().BeEquivalentTo(artifactUriString);
                 }
                 else

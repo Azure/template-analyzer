@@ -1,4 +1,4 @@
-﻿@description('Storage account name')
+﻿@description('Location for all resources.')
 param location string = 'testLocation'
 
 module nestedTemplate './TemplateWithTwoArmRefs.bicep' = {
@@ -16,4 +16,3 @@ module nestedTemplate2 './TemplateWithTwoArmRefs.bicep' = {
     location: location
   }
 }
-

@@ -1,4 +1,4 @@
-﻿@description('Storage account name')
+﻿@description('Location for all resources.')
 param location string = 'testLocation'
 
 module nestedTemplate './AppServicesLogs-Failures.json' = {
