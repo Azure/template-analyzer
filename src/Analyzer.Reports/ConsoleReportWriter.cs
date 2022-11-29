@@ -31,18 +31,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
             foreach (var fileWithResults in filesWithResults)
             {
-                var fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {fileWithResults}";
+                var fileMetadata = $"{Environment.NewLine}{Environment.NewLine}Template: {fileWithResults}";
 
                 if (fileWithResults == templateFile.FullName)
                 {
                     if (parametersFile != null)
                     {
-                        fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile.FullName}";
+                        fileMetadata += $"{IndentedNewLine}Parameters File: {parametersFile}";
                     }
                 }
                 else
                 {
-                    fileMetadata += Environment.NewLine + $"Root Template: {templateFile.FullName}";
+                    fileMetadata += $"{IndentedNewLine}Root Template: {templateFile}";
                 }
 
                 Console.WriteLine(fileMetadata);
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 foreach ((var evaluation, var failedResults) in resultsByFile[fileWithResults])
                 {
                     string resultString = string.Concat(failedResults.Select(result => $"{TwiceIndentedNewLine}Line: {result.SourceLocation.LineNumber}"));
-                    var output = $"{IndentedNewLine}{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleShortDescription}" +
+                    var output = $"\t{(evaluation.RuleId != "" ? $"{evaluation.RuleId}: " : "")}{evaluation.RuleShortDescription}" +
                         $"{TwiceIndentedNewLine}Severity: {evaluation.Severity}" + 
                         (!string.IsNullOrWhiteSpace(evaluation.Recommendation) ? $"{TwiceIndentedNewLine}Recommendation: {evaluation.Recommendation}" : "") +
                         $"{TwiceIndentedNewLine}More information: {evaluation.HelpUri}" +
@@ -62,17 +62,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             // ensure filename output if there were no failed results
             if (filesWithResults.Count() == 0)
             {
-                var fileMetadata = Environment.NewLine + Environment.NewLine + $"File: {templateFile.FullName}";
+                var fileMetadata = $"{Environment.NewLine}{Environment.NewLine}Template: {templateFile}";
                 if (parametersFile != null)
                 {
-                    fileMetadata += Environment.NewLine + $"Parameters File: {parametersFile.FullName}";
+                    fileMetadata += $"{Environment.NewLine}Parameters File: {parametersFile}";
                 }
                 Console.WriteLine(fileMetadata);
             }
 
             filesAlreadyOutput.AddRange(filesWithResults);
 
-            Console.WriteLine($"{IndentedNewLine}Rules passed: {passedEvaluations}");
+            Console.WriteLine($"{Environment.NewLine}Rules passed: {passedEvaluations}");
         }
 
         /// <inheritdoc/>

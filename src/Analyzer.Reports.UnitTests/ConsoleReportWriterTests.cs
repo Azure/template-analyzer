@@ -52,13 +52,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 var resultFilePath = distinctFailedResults.First().SourceLocation.FilePath;
                 if (curFile != resultFilePath)
                 {
+                    var extraNewLine = (curFile == string.Empty) ? string.Empty : Environment.NewLine;
                     curFile = resultFilePath;
-
-                    expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {curFile}{Environment.NewLine}");
+                    
+                    expected.Append($"{Environment.NewLine}{Environment.NewLine}{extraNewLine}Template: {curFile}");
 
                     if (curFile != TestCases.TestTemplateFilePath)
                     {
-                        expected.Append($"Root Template: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
+                        expected.Append($"{ConsoleReportWriter.IndentedNewLine}Root Template: {TestCases.TestTemplateFilePath}");
                     }
                 }
 
@@ -72,16 +73,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expected.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}More information: {evaluation.HelpUri}");
                 expected.Append($"{ConsoleReportWriter.TwiceIndentedNewLine}Result: {(evaluation.Passed ? "Passed" : "Failed")} ");
                 expected.Append(lineNumbers);
-                expected.Append(Environment.NewLine);
             }
 
             // No failing evals case
             if (curFile == string.Empty)
             {
-                expected.Append($"{Environment.NewLine}{Environment.NewLine}File: {TestCases.TestTemplateFilePath}{Environment.NewLine}");
+                expected.Append($"{Environment.NewLine}{Environment.NewLine}Template: {TestCases.TestTemplateFilePath}");
             }
 
-            expected.Append($"{ConsoleReportWriter.IndentedNewLine}Rules passed: {testcases.Count(e => e.Passed)}{Environment.NewLine}");
+            expected.Append($"{Environment.NewLine}{Environment.NewLine}Rules passed: {testcases.Count(e => e.Passed)}{Environment.NewLine}");
             outputString.Should().BeEquivalentTo(expected.ToString());
         }
     }

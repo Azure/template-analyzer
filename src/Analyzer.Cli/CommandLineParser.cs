@@ -251,7 +251,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             var filesToAnalyze = FindTemplateFilesInDirectory(directoryPath);
 
             // Log root directory info to be analyzed
-            Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
+            Console.WriteLine($"{Environment.NewLine}{Environment.NewLine}Directory: {directoryPath}");
 
             var exitCodes = new List<ExitCode>();
             foreach (FileInfo file in filesToAnalyze)
@@ -271,7 +271,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
-            Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
+            Console.WriteLine($"{Environment.NewLine}Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
 
             var exitCode = AnalyzeExitCodes(exitCodes);
 
