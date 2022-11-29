@@ -266,7 +266,20 @@ namespace Analyzer.Cli.FunctionalTests
                 Assert.IsTrue(outputBeforeSummary.IndexOf(warningLog) > 0);
 
                 var logSummary = cliConsoleOutput[indexOfLogSummary..];
-                Assert.AreEqual(expectedLogSummary, logSummary);
+                if (multipleErrors)
+                {
+                    // on some platforms the exception messages can be in different order
+                    var alternateExpectedLogSummary = expectedLogSummary
+                        .Replace("ReportsError.json", "PLACEHOLDER")
+                        .Replace("ReportsError2.json", "ReportsError.json")
+                        .Replace("PLACEHOLDER", "ReportsError2.json");
+                    Assert.IsTrue(expectedLogSummary.Equals(logSummary)
+                        || alternateExpectedLogSummary.Equals(logSummary));
+                }
+                else
+                {
+                    Assert.AreEqual(expectedLogSummary, logSummary);
+                }
             }
             finally
             {
