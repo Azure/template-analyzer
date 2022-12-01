@@ -37,12 +37,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                 {
                     if (parametersFile != null)
                     {
-                        fileMetadata += $"{IndentedNewLine}Parameters File: {parametersFile}";
+                        fileMetadata += $"{IndentedNewLine}Parameters File: {parametersFile.FullName}";
                     }
                 }
                 else
                 {
-                    fileMetadata += $"{IndentedNewLine}Root Template: {templateFile}";
+                    fileMetadata += $"{IndentedNewLine}Root Template: {templateFile.FullName}";
                 }
 
                 Console.WriteLine(fileMetadata);
@@ -62,17 +62,17 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             // ensure filename output if there were no failed results
             if (filesWithResults.Count() == 0)
             {
-                var fileMetadata = $"{Environment.NewLine}{Environment.NewLine}Template: {templateFile}";
+                var fileMetadata = $"{Environment.NewLine}{Environment.NewLine}Template: {templateFile.FullName}";
                 if (parametersFile != null)
                 {
-                    fileMetadata += $"{Environment.NewLine}Parameters File: {parametersFile}";
+                    fileMetadata += $"{Environment.NewLine}Parameters File: {parametersFile.FullName}";
                 }
                 Console.WriteLine(fileMetadata);
             }
 
             filesAlreadyOutput.AddRange(filesWithResults);
 
-            Console.WriteLine($"{Environment.NewLine}Rules passed: {passedEvaluations}");
+            Console.WriteLine($"\tRules passed: {passedEvaluations}");
         }
 
         /// <inheritdoc/>
