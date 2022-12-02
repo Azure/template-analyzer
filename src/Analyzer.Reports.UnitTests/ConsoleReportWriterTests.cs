@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 expected.Append($"{Environment.NewLine}{Environment.NewLine}Template: {TestCases.TestTemplateFilePath}");
             }
 
-            expected.Append($"{Environment.NewLine}{Environment.NewLine}Rules passed: {testcases.Count(e => e.Passed)}{Environment.NewLine}");
+            expected.Append($"{ConsoleReportWriter.IndentedNewLine}Rules passed: {testcases.Count(e => e.Passed)}{Environment.NewLine}");
             outputString.Should().BeEquivalentTo(expected.ToString());
         }
     }
