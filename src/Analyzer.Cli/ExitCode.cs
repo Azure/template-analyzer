@@ -40,6 +40,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         ErrorInvalidARMTemplate = 10,
 
         /// <summary>
+        /// Error: Invalid Bicep template
+        /// </summary>
+        ErrorInvalidBicepTemplate = 11,
+
+        /// <summary>
         /// Violation: Scan found rule violations
         /// </summary>
         Violation = 20,

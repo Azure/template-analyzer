@@ -128,6 +128,43 @@
       "properties": {
         "ftpsState": "FtpsOnly"
       }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "nestedTemplate",
+      "resourceGroup": "my-rg",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "variables": {},
+          "resources": [
+            {
+              "apiVersion": "2019-08-01",
+              "type": "Microsoft.Web/sites",
+              "kind": "linux",
+              "name": "linuxKind",
+              "location": "[parameters('location')]",
+              "properties": {
+              }
+            },
+            {
+              "apiVersion": "2019-08-01",
+              "type": "Microsoft.Web/sites",
+              "kind": "api",
+              "name": "withoutSpecifyingProperties",
+              "location": "[parameters('location')]",
+
+              "properties": {
+              }
+            }
+          ]
+        },
+        "parameters": {}
+      }
     }
   ]
 }

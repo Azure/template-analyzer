@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
@@ -341,6 +342,199 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         public void Constructor_NullTemplateContext_ThrowsException()
         {
             new JsonLineNumberResolver(null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void ResolveLineNumber_NullRootTemplateContext_ThrowsException()
+        {
+            new JsonLineNumberResolver(
+                new TemplateContext
+                {
+                    OriginalTemplate = templateContext.OriginalTemplate,
+                    ExpandedTemplate = templateContext.ExpandedTemplate,
+                    IsMainTemplate = false,
+                    ParentContext = null
+                })
+                .ResolveLineNumber("path");
+        }
+
+        [DataTestMethod]
+        [DataRow("resources", 0, new object[] { "resources" }, DisplayName = "Parent template resources property found")]
+        [DataRow("resources[0].properties.template", 0, new object[] { "resources", 0, "properties", "template"}, DisplayName = "Parent template resource property found")]
+        [DataRow("resources[0].properties.siteConfig.ftpsState", 1, new object[] { "resources", 0, "properties", "template", "resources", 0, "properties", "siteConfig", "ftpsState" }, DisplayName = "One level nested template resource property found")]
+        [DataRow("parameters.ftpsState.defaultValue", 1, new object[] { "resources", 0, "properties", "template", "parameters", "ftpsState", "defaultValue" }, DisplayName = "One level nested template parameter found")]
+        [DataRow("resources[0].resources[0].properties.template", 1, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template" }, DisplayName = "Original resource found, from a resource dependant")]
+        [DataRow("resources[0].resourceGroup", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "resourceGroup" }, DisplayName = "Two levels nested template resource property found")]
+        [DataRow("resources[0].properties.expressionEvaluationOptions", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "expressionEvaluationOptions" }, DisplayName = "Two levels nested template resource property found")]
+        [DataRow("resources[1].properties", 2, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties" }, DisplayName = "Original resource found, from a nested template resource copy")]
+        [DataRow("contentVersion", 3, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "template", "contentVersion" }, DisplayName = "Three levels nested template property found")]
+        [DataRow("resources[0].location", 3, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "template", "resources", 0, "location" }, DisplayName = "Three levels nested template resource property found")]
+        [DataRow("resources[2].properties", 3, new object[] { "resources", 0, "properties", "template", "resources", 1, "properties", "template", "resources", 0, "properties", "template", "resources", 0, "properties" }, DisplayName = "Original resource found, from a resource copy")]
+        public void ResolveLineNumber_TemplatesWithNestedTemplates_ReturnsCorrectLineNumber(string pathInTheExpandedTemplate, int numberOfTemplate, object[] pathInTheOriginalTemplate)
+        {
+            string originalThirdChildTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2019-08-01"",
+                        ""type"": ""Microsoft.Web/sites"",
+                        ""kind"": ""api"",
+                        ""name"": ""[concat(copyIndex(),'_aResourceToFlag')]"",
+                        ""location"": ""US"",
+                        ""copy"": {
+                            ""count"": 3,
+                            ""name"": ""aCopyLoop""
+                        },
+                        ""properties"": {}
+                    }
+                ]
+            }";
+            var templateProcessorThirdChild = new ArmTemplateProcessor(originalThirdChildTemplate);
+            var expandedThirdChildTemplate = templateProcessorThirdChild.ProcessTemplate();
+
+            string templateEnding = @"
+                        }
+                    }
+                ]
+            }";
+
+            string originalSecondChildTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2016-09-01"",
+                        ""copy"": {
+                            ""count"": 2,
+                            ""name"": ""anotherCopyLoop""
+                        },
+                        ""name"": ""[concat(copyIndex(),'_nestedTemplate3')]"",
+                        ""resourceGroup"": ""aResourceGroup"",
+                        ""properties"": {
+                            ""mode"": ""Incremental"",
+                            ""expressionEvaluationOptions"": {
+                                ""scope"": ""inner""
+                            },
+                            ""template"": " + originalThirdChildTemplate + templateEnding;
+            var templateProcessorSecondChild = new ArmTemplateProcessor(originalSecondChildTemplate);
+            var expandedSecondChildTemplate = templateProcessorSecondChild.ProcessTemplate();
+
+            string originalFirstChildTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {
+                    ""ftpsState"": {
+                        ""type"": ""string"",
+                        ""defaultValue"": ""undesiredValue""
+                    }
+                },
+                ""resources"": [
+                    {
+                        ""apiVersion"": ""2019-08-01"",
+                        ""type"": ""Microsoft.Web/sites"",
+                        ""kind"": ""api"",
+                        ""name"": ""anotherResourceToFlag"",
+                        ""location"": ""US"",
+                        ""properties"": {
+                            ""siteConfig"": {
+                                ""ftpsState"": ""[parameters('ftpsState')]""
+                            }
+                        }
+                    }, 
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2016-09-01"",
+                        ""name"": ""nestedTemplate2"",
+                        ""resourceGroup"": ""aResourceGroup"",
+                        ""dependsOn"": [
+                            ""anotherResourceToFlag""
+                        ],
+                        ""properties"": {
+                            ""mode"": ""Incremental"",
+                            ""expressionEvaluationOptions"": {
+                                ""scope"": ""inner""
+                            },
+                            ""template"": " + originalSecondChildTemplate + templateEnding;
+            var templateProcessorFirstChild = new ArmTemplateProcessor(originalFirstChildTemplate);
+            var expandedFirstChildTemplate = templateProcessorFirstChild.ProcessTemplate();
+
+            string originalParentTemplate =
+            @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Resources/deployments"",
+                        ""apiVersion"": ""2019-10-01"",
+                        ""name"": ""nestedTemplate"",
+                        ""properties"": {
+                            ""mode"": ""Incremental"",
+                            ""expressionEvaluationOptions"": {
+                                ""scope"": ""inner""
+                            },
+                            ""template"": " + originalFirstChildTemplate + templateEnding;
+            var templateProcessorOriginalParent = new ArmTemplateProcessor(originalParentTemplate);
+            var expandedParentTemplate = templateProcessorOriginalParent.ProcessTemplate();
+
+            var parentTemplateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(originalParentTemplate),
+                ExpandedTemplate = expandedParentTemplate,
+                ResourceMappings = templateProcessorOriginalParent.ResourceMappings
+            };
+
+            var firstChildTemplateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(originalFirstChildTemplate),
+                ExpandedTemplate = expandedFirstChildTemplate,
+                ResourceMappings = templateProcessorFirstChild.ResourceMappings,
+                IsMainTemplate = false,
+                PathPrefix = "resources[0].properties.template",
+                ParentContext = parentTemplateContext
+            };
+
+            var secondChildTemplateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(originalSecondChildTemplate),
+                ExpandedTemplate = expandedSecondChildTemplate,
+                ResourceMappings = templateProcessorSecondChild.ResourceMappings,
+                IsMainTemplate = false,
+                PathPrefix = "resources[1].properties.template",
+                ParentContext = firstChildTemplateContext
+            };
+
+            var thirdChildTemplateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(originalThirdChildTemplate),
+                ExpandedTemplate = expandedThirdChildTemplate,
+                ResourceMappings = templateProcessorThirdChild.ResourceMappings,
+                IsMainTemplate = false,
+                PathPrefix = "resources[0].properties.template",
+                ParentContext = secondChildTemplateContext
+            };
+
+            TemplateContext[] templateContexts = { parentTemplateContext, firstChildTemplateContext, secondChildTemplateContext, thirdChildTemplateContext };
+
+            // Resolve line number
+            var currentTemplateContext = templateContexts[numberOfTemplate];
+            var resolvedLineNumber = new JsonLineNumberResolver(currentTemplateContext).ResolveLineNumber(pathInTheExpandedTemplate);
+
+            // Get expected line number
+            var tokenInOriginalTemplate = parentTemplateContext.OriginalTemplate;
+            foreach (var pathSegment in pathInTheOriginalTemplate)
+            {
+                tokenInOriginalTemplate = tokenInOriginalTemplate[pathSegment];
+            }
+
+            var expectedLineNumber = (tokenInOriginalTemplate as IJsonLineInfo).LineNumber;
+
+            Assert.AreEqual(expectedLineNumber, resolvedLineNumber);
         }
     }
 }

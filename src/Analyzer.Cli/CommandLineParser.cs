@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private IReportWriter reportWriter;
         private ILogger logger;
         private SummaryLogger summaryLogger;
- 
+
         /// <summary>
         /// Constructor for the command line parser. Sets up the command line API. 
         /// </summary>
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Command line API is setup using https://github.com/dotnet/command-line-api
 
             rootCommand = new();
-            rootCommand.Description = "Analyze Azure Resource Manager (ARM) Templates for security and best practice issues.";
+            rootCommand.Description = "Analyze Azure Resource Manager (ARM) and Bicep Templates for security and best practice issues.";
 
             // Setup analyze-template and analyze-directory commands
             List<Command> allCommands = new()
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 SetupAnalyzeTemplateCommand(),
                 SetupAnalyzeDirectoryCommand()
             };
-            
+
             // Add all commands to root command
             allCommands.ForEach(rootCommand.AddCommand);
 
@@ -99,12 +99,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeTemplateCommand.AddArgument(
                 new Argument<FileInfo>(
                     "template-file-path",
-                    "The ARM template to analyze"));
+                    "The path of the template to analyze"));
 
             analyzeTemplateCommand.AddOption(
                 new Option<FileInfo>(
                     new[] { "-p", "--parameters-file-path" },
-                    "The parameter file to use when parsing the specified ARM template")
+                    "The parameter file to use when parsing the specified template")
             );
 
             // Assign handler method
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             analyzeDirectoryCommand.AddArgument(
                 new Argument<DirectoryInfo>(
                     "directory-path",
-                    "The directory to find ARM templates"));
+                    "The directory to find templates"));
 
             // Assign handler method
             analyzeDirectoryCommand.Handler = CommandHandler.Create(
@@ -141,10 +141,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         private void SetupCommonOptionsForCommands(List<Command> commands)
         {
             List<Option> options = new()
-            {            
+            {
                 new Option<FileInfo>(
                     new[] { "-c", "--config-file-path" },
-                    "The configuration file to use when parsing the specified ARM template"),
+                    "The configuration file to use when parsing the specified template"),
 
                 new Option<ReportFormat>(
                     "--report-format",
@@ -159,10 +159,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     "Shows details about the analysis"),
 
                 new Option(
-                    "--run-ttk",
-                    "Run TTK against templates")
+                    "--include-non-security-rules",
+                    "Run all the rules against the templates, including non-security rules")
             };
-                
+
             commands.ForEach(c => options.ForEach(c.AddOption));
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runTtk,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Check that template file paths exist
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -197,10 +197,33 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidARMTemplate;
             }
 
-            var analysisResult = AnalyzeTemplate(templateFilePath, parametersFilePath);
+            ExitCode exitCode;
+            if (parametersFilePath != null)
+            {
+                exitCode = AnalyzeTemplate(templateFilePath, parametersFilePath);
+            }
+            else
+            {
+                var parametersFiles = FindParameterFileForTemplate(templateFilePath);
+                var exitCodes = new List<ExitCode>();
+
+                if (parametersFiles.Count() > 0)
+                {
+                    foreach (FileInfo parametersFile in parametersFiles)
+                    {
+                        exitCodes.Add(AnalyzeTemplate(templateFilePath, parametersFile));
+                    }
+
+                    exitCode = AnalyzeExitCodes(exitCodes);
+                }
+                else
+                {
+                    exitCode = AnalyzeTemplate(templateFilePath, null);
+                }
+            }
 
             FinishAnalysis();
-            return (int)analysisResult;
+            return (int)exitCode;
         }
 
         // Note: argument names must match command arguments/options (without "-" characters)
@@ -209,7 +232,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo configFilePath,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runTtk,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             if (!directoryPath.Exists)
@@ -218,7 +241,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, runTtk, verbose);
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, includeNonSecurityRules, verbose);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -230,39 +253,30 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // Log root directory info to be analyzed
             Console.WriteLine(Environment.NewLine + Environment.NewLine + $"Directory: {directoryPath}");
 
-            int numOfFilesAnalyzed = 0;
-            bool issueReported = false;
-            var filesFailed = new List<FileInfo>();
+            var exitCodes = new List<ExitCode>();
             foreach (FileInfo file in filesToAnalyze)
             {
-                ExitCode res = AnalyzeTemplate(file, null);
-
-                if (res == ExitCode.Success || res == ExitCode.Violation)
+                var parametersFiles = FindParameterFileForTemplate(file);
+                if (parametersFiles.Count() > 0)
                 {
-                    numOfFilesAnalyzed++;
-                    issueReported |= res == ExitCode.Violation;
+                    foreach (FileInfo parametersFile in parametersFiles)
+                    {
+                        exitCodes.Add(AnalyzeTemplate(file, parametersFile));
+                    }
                 }
-                else if (res == ExitCode.ErrorAnalysis)
+                else
                 {
-                    filesFailed.Add(file);
+                    exitCodes.Add(AnalyzeTemplate(file, null));
                 }
             }
 
+            int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
             Console.WriteLine(Environment.NewLine + $"Analyzed {numOfFilesAnalyzed} {(numOfFilesAnalyzed == 1 ? "file" : "files")}.");
 
-            ExitCode exitCode;
-            if (filesFailed.Count > 0)
-            {
-                logger.LogError($"Unable to analyze {filesFailed.Count} {(filesFailed.Count == 1 ? "file" : "files")}: {string.Join(", ", filesFailed)}");
-                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
-            }
-            else
-            {
-                exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
-            }
-            
+            var exitCode = AnalyzeExitCodes(exitCodes);
+
             FinishAnalysis();
-            
+
             return (int)exitCode;
         }
 
@@ -273,7 +287,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 string templateFileContents = File.ReadAllText(templateFilePath.FullName);
                 string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, parameterFileContents, templateFilePath.FullName);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, templateFilePath.FullName, parameterFileContents);
 
                 this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
 
@@ -281,8 +295,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "An exception occurred while analyzing a template");
-                return ExitCode.ErrorAnalysis;
+                if (parametersFilePath != null)
+                {
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName} with parameters file {parametersFilePath.FullName}");
+                }                
+                else
+                {
+                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName}");
+                }
+
+                return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)
+                    ? ExitCode.ErrorInvalidBicepTemplate
+                    : ExitCode.ErrorAnalysis;
             }
         }
 
@@ -291,7 +315,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             DirectoryInfo directoryToAnalyze,
             ReportFormat reportFormat,
             FileInfo outputFilePath,
-            bool runPowershell,
+            bool includeNonSecurityRules,
             bool verbose)
         {
             // Output file path must be specified if SARIF was chosen as the report format
@@ -304,7 +328,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
             CreateLoggers(verbose);
 
-            this.templateAnalyzer = TemplateAnalyzer.Create(runPowershell, this.logger);
+            this.templateAnalyzer = TemplateAnalyzer.Create(includeNonSecurityRules, this.logger);
 
             if (!TryReadConfigurationFile(configurationFile, out var config))
             {
@@ -336,7 +360,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     MatchCasing = MatchCasing.CaseInsensitive,
                     RecurseSubdirectories = true
                 }
-            ).Where(IsValidTemplate);
+            ).Where(s => !s.Name.Contains(".parameters")).Where(IsValidTemplate);
 
             var bicepTemplates = directoryPath.GetFiles(
                 "*.bicep",
@@ -349,10 +373,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return armTemplates.Concat(bicepTemplates);
         }
 
+        // Check if parameters*.json files are present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
+        private IEnumerable<FileInfo> FindParameterFileForTemplate(FileInfo template)
+        {
+            var parametersFiles = template.Directory.GetFiles(
+                Path.GetFileNameWithoutExtension(template.Name) + ".parameters*.json",
+                new EnumerationOptions
+                {
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = false
+                });
+
+            return parametersFiles;
+        }
+
         private bool IsValidTemplate(FileInfo file)
         {
             // assume bicep files are valid, they are compiled/verified later
-            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase) )
+            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -391,7 +429,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null) =>
-            reportFormat switch {
+            reportFormat switch
+            {
                 ReportFormat.Sarif => new SarifReportWriter((FileInfoBase)outputFile, rootFolder),
                 _ => new ConsoleReportWriter()
             };
@@ -404,11 +443,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 builder
                     .SetMinimumLevel(verbose ? LogLevel.Debug : LogLevel.Information)
-                    .AddSimpleConsole(options =>
+                    .AddConsole(options =>
                     {
-                        options.SingleLine = true;
+                        options.FormatterName = "ConsoleLoggerFormatter";
                     })
-                    .AddProvider(new SummaryLoggerProvider(summaryLogger));
+                    .AddProvider(new SummaryLoggerProvider(summaryLogger))
+                    .AddConsoleFormatter<ConsoleLoggerFormatter, ConsoleLoggerFormatterOptions>(options => options.Verbose = verbose);
             });
 
             if (this.reportWriter is SarifReportWriter sarifWriter)
@@ -483,6 +523,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 this.logger.LogError(e, "Failed to parse configuration file.");
                 return false;
             }
+        }
+
+        private ExitCode AnalyzeExitCodes(List<ExitCode> exitCodes)
+        {
+            ExitCode exitCode;
+            bool issueReported = exitCodes.Where(x => x == ExitCode.Violation).Count() > 0;
+            bool filesFailed = exitCodes.Where(x => x == ExitCode.ErrorAnalysis || x == ExitCode.ErrorInvalidBicepTemplate).Count() > 0;
+
+            if (filesFailed)
+            {
+                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
+            }
+            else
+            {
+                exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
+            }
+
+            return exitCode;
         }
     }
 }

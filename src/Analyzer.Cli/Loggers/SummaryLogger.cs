@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <summary>
         /// Constructor of the SummaryLogger class
         /// </summary>
+        /// <param name="verbose">Whether the verbose option is enabled.</param>
         public SummaryLogger(bool verbose)
         {
             this.verbose = verbose;
@@ -71,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             // (singular or plural - just adding 's') of its description
             string Pluralize(int count, string description) => $"{count} {description}{(count == 1 ? "" : "s")}";
 
-            Console.WriteLine($"{Environment.NewLine}Analysis output:");
+            Console.WriteLine($"{Environment.NewLine}Execution summary:");
             if (loggedErrors.Count > 0 || loggedWarnings.Count > 0)
             {                
                 if (!this.verbose)
@@ -111,7 +112,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             else
             {
-                Console.WriteLine($"\tAnalysis completed successfully");
+                Console.Write($"\tThe execution completed successfully");
             }
         }
     }

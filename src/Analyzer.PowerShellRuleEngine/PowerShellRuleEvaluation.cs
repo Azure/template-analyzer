@@ -2,12 +2,14 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
     /// <inheritdoc/>
+    [DebuggerDisplay("{RuleId}, {RuleName}")]
     public class PowerShellRuleEvaluation : IEvaluation
     {
         private IEnumerable<IEvaluation> evaluations;
@@ -17,7 +19,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public string RuleId { get; }
 
         /// <inheritdoc/>
-        public string RuleDescription { get; }
+        public string RuleName { get; }
+
+        /// <inheritdoc/>
+        public string RuleShortDescription { get; }
+
+        /// <inheritdoc/>
+        public string RuleFullDescription { get; }
 
         /// <inheritdoc/>
         public string Recommendation { get; }
@@ -26,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public string HelpUri { get; }
 
         /// <inheritdoc/>
-        public Severity Severity { get; } = Severity.Medium;
+        public Severity Severity { get; }
 
         /// <inheritdoc/>
         public string FileIdentifier { get; }
@@ -47,18 +55,28 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// Creates an <see cref="PowerShellRuleEvaluation"/> that describes the evaluation of a PowerShell rule against an ARM template.
         /// </summary>
         /// <param name="ruleId">The id of the rule associated with this evaluation.</param>
-        /// <param name="ruleDescription">The description of the rule associated with this evaluation.</param>
+        /// <param name="ruleName">The name of the rule associated with this evaluation.</param>
+        /// <param name="helpUri">A link to the online help and guidance for the rule.</param>
+        /// <param name="ruleShortDescription">The short description of the rule associated with this evaluation.</param>
+        /// <param name="ruleFullDescription">The full description of the rule associated with this evaluation.</param>
+        /// <param name="recommendation">The recommendation for addressing failures of the result.</param>
+        /// <param name="file">The file this evaluation is for.</param>
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
-        /// <param name="result">The result of the evaluation.</param>
-        public PowerShellRuleEvaluation(string ruleId, string ruleDescription, bool passed, PowerShellRuleResult result)
+        /// <param name="severity">Determines how severe the finding is.</param>
+        /// <param name="result">The result of this evaluation.</param>
+        public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleShortDescription, string ruleFullDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
         {
             RuleId = ruleId;
-            RuleDescription = ruleDescription;
-            Recommendation = string.Empty;
+            RuleName = ruleName;
+            RuleShortDescription = ruleShortDescription;
+            RuleFullDescription = ruleFullDescription;
+            Recommendation = recommendation;
+            FileIdentifier = file;
             Passed = passed;
-            this.directResult = result;
-            this.evaluations = new List<IEvaluation>();
-            HelpUri = "https://github.com/Azure/arm-ttk";
+            Severity = severity;
+            HelpUri = helpUri;
+            directResult = result;
+            evaluations = Enumerable.Empty<IEvaluation>();
         }
     }
 }

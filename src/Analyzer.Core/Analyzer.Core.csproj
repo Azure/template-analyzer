@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer</RootNamespace>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Core</AssemblyName>
-    <Description>An ARM template scanner for security misconfigurations and best practices</Description>
+    <Description>An ARM and Bicep template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +24,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Import Project="..\TTK.targets" />
 
 </Project>
