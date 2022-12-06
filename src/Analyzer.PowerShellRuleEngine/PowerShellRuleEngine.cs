@@ -141,8 +141,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                         Path = new string[]
                         {
                             ".ps-rule",
-                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "SecurityBaseline.Rule.json"),
-                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json")
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines"),
+                            Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "policies")
                         }
                     },
                     Execution = new ExecutionOption
