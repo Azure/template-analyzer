@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             var ruleRecord = (RuleRecord)record;
 
-            var ruleId = ruleRecord.Ref;
+            var ruleId = (ruleRecord.Ref != null) ? ruleRecord.Ref : ruleRecord.RuleId;
             var ruleName = ruleRecord.RuleName;
             var ruleShortDescription = ruleRecord.Info.DisplayName;
             var ruleFullDescription = ruleRecord.Info.Description.Text;
