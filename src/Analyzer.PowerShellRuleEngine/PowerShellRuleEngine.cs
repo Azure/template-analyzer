@@ -145,6 +145,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                             Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "policies")
                         }
                     },
+                    Rule = new RuleOption
+                    {
+                        IncludeLocal = true
+                    },
                     Binding = new BindingOption
                     {
                         TargetType = new string[] { "resourceType", "type" }
