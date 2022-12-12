@@ -79,6 +79,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var ruleFullDescription = ruleRecord.Info.Description.Text;
             var recommendation = ruleRecord.Recommendation;
             var helpUri = ruleRecord?.Info?.GetOnlineHelpUrl();
+            /*if (ruleName.Contains("Azure.Policy") && helpUri == null)
+            {
+                helpUri = "https://portal.azure.com/#view/Microsoft_Azure_Policy/PolicyDetailBlade/definitionId/%2Fproviders%2FMicrosoft.Authorization%2FpolicyDefinitions%2F"
+                    + ruleRecord.Info.Annotations?["Azure.Policy/id"]?.ToString().Remove(54);
+            }*/
             var severity = ruleRecord.Level switch
             {
                 PSRule.Definitions.Rules.SeverityLevel.Error => Severity.High,
