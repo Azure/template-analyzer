@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
@@ -78,7 +79,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             var isAnAzurePolicyRule = ruleName.Contains("Azure.Policy");
             var ruleId = isAnAzurePolicyRule ? ruleRecord.Info.Annotations["Azure.Policy/id"].ToString().Remove(0, 53) : ruleRecord.Ref;
             var ruleShortDescription = ruleRecord.Info.DisplayName;
-            var ruleFullDescription = ruleRecord.Info.Description.Text;
+            var ruleFullDescription = ruleRecord.Info.Description.Text ?? ruleRecord.Recommendation;
             var recommendation = ruleRecord.Recommendation;
             var helpUri = isAnAzurePolicyRule ?
                 "https://portal.azure.com/#view/Microsoft_Azure_Policy/PolicyDetailBlade/definitionId/%2Fproviders%2FMicrosoft.Authorization%2FpolicyDefinitions%2F" + ruleId
