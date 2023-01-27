@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "sampleAPIMServiceName",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/tenant",
+      "apiVersion": "2020-06-01-preview",
+      "name": "[concat('sampleAPIMServiceName', '/vulnerable-v1')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', 'sampleAPIMServiceName')]"
+      ],
+      "properties": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/tenant",
+      "apiVersion": "2020-06-01-preview",
+      "name": "[concat('sampleAPIMServiceName', '/safe-v1')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', 'sampleAPIMServiceName')]"
+      ],
+      "properties": {
+        "enabled": false
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service/tenant",
+      "apiVersion": "2020-06-01-preview",
+      "name": "[concat('sampleAPIMServiceName', '/safe-v2')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service', 'sampleAPIMServiceName')]"
+      ],
+      "properties": {
+      }
+    }
+  ]
+}

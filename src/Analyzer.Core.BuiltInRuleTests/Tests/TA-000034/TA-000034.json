@@ -1,0 +1,98 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 11,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 18,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 18,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 18,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 18,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 28,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 35,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 35,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 35,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 35,
+        "Description": "Minimum API Version Date is lower than 12-01-2019"
+      },
+      {
+        "LineNumber": 113,
+        "Description": "Minimum API Version Date is lower than 12-01-2019 (not set)"
+      },
+      {
+        "LineNumber": 116,
+        "Description": "Minimum API Version Date is lower than 12-01-2019 (not set)"
+      },
+      {
+        "LineNumber": 116,
+        "Description": "Minimum API Version Date is lower than 12-01-2019 (not set)"
+      },
+      {
+        "LineNumber": 116,
+        "Description": "Minimum API Version Date is lower than 12-01-2019 (not set)"
+      },
+      {
+        "LineNumber": 116,
+        "Description": "Minimum API Version Date is lower than 12-01-2019 (not set)"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "safe-v1-preview",
+        "Explanation": "Minimum API Version set to 2019-12-01-preview, which is secure"
+      },
+      {
+        "ResourceName": "safe-v2",
+        "Explanation": "Minimum API Version set to date beyond minimum"
+      },
+      {
+        "ResourceName": "safe-v3",
+        "Explanation": "Minimum API Version set to date beyond minimum"
+      },
+      {
+        "ResourceName": "safe-v4",
+        "Explanation": "Minimum API Version set to date beyond minimum"
+      },
+      {
+        "ResourceName": "safe-v5-consumptionsku",
+        "Explanation": "SKU set to consumption, which is not applicable"
+      },
+      {
+        "ResourceName": "safe-v6-consumptionsku",
+        "Explanation": "SKU set to consumption, which is not applicable"
+      },
+      {
+        "ResourceName": "safe-v7-lowercaseConsumptionSkuTest",
+        "Explanation": "SKU set to consumption, which is not applicable"
+      }
+
+    ]
+  }
+]

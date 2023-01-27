@@ -1,0 +1,46 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 50,
+        "Description": "Validate Certificate Chain is False"
+      },
+      {
+        "LineNumber": 51,
+        "Description": "Validate Certificate Name is False"
+      },
+      {
+        "LineNumber": 75,
+        "Description": "Validate Certificate Name is False"
+      },
+      {
+        "LineNumber": 98,
+        "Description": "Validate Certificate Chain is False"
+      },
+      {
+        "LineNumber": 121,
+        "Description": "Validate Certificate Name field not defined, false by default"
+      },
+      {
+        "LineNumber": 144,
+        "Description": "Validate Certificate Chain field not defined, false by default"
+      },
+      {
+        "LineNumber": 156,
+        "Description": "Validate Certificate Name field not defined, false by default"
+      },
+      {
+        "LineNumber": 156,
+        "Description": "Validate Certificate Chain field not defined, false by default"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "safe-v1",
+        "Explanation": "Both TLS Certificate Chain field & Certificate Name field defined as true"
+      }
+
+    ]
+  }
+]
