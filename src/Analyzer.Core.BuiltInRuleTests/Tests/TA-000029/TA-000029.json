@@ -147,5 +147,152 @@
       }
 
     ]
+  },
+  {
+    "Template": "APIMService.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 81,
+        "Description": "protocols contains only http"
+      },
+      {
+        "LineNumber": 81,
+        "Description": "protocols contains only http"
+      },
+      {
+        "LineNumber": 81,
+        "Description": "protocols contains only http"
+      },
+      {
+        "LineNumber": 81,
+        "Description": "protocols contains only http"
+      },
+      {
+        "LineNumber": 82,
+        "Description": "protocols contains only http"
+      },
+      {
+        "LineNumber": 82,
+        "Description": "protocols contains only http"
+      },
+      {
+        "LineNumber": 97,
+        "Description": "protocols contains only ws"
+      },
+      {
+        "LineNumber": 97,
+        "Description": "protocols contains only ws"
+      },
+      {
+        "LineNumber": 97,
+        "Description": "protocols contains only ws"
+      },
+      {
+        "LineNumber": 97,
+        "Description": "protocols contains only ws"
+      },
+      {
+        "LineNumber": 98,
+        "Description": "protocols contains only ws"
+      },
+      {
+        "LineNumber": 98,
+        "Description": "protocols contains only ws"
+      },
+      {
+        "LineNumber": 113,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 113,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 113,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 113,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 114,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 114,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 115,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 115,
+        "Description": "protocols contains http and ws"
+      },
+      {
+        "LineNumber": 130,
+        "Description": "protocols contains http and https"
+      },
+      {
+        "LineNumber": 130,
+        "Description": "protocols contains http and https"
+      },
+      {
+        "LineNumber": 130,
+        "Description": "protocols contains http and https"
+      },
+      {
+        "LineNumber": 130,
+        "Description": "protocols contains http and https"
+      },
+      {
+        "LineNumber": 131,
+        "Description": "protocols contains http and https"
+      },
+      {
+        "LineNumber": 131,
+        "Description": "protocols contains http and https"
+      },
+      {
+        "LineNumber": 147,
+        "Description": "protocols contains ws and https"
+      },
+      {
+        "LineNumber": 147,
+        "Description": "protocols contains ws and https"
+      },
+      {
+        "LineNumber": 147,
+        "Description": "protocols contains ws and https"
+      },
+      {
+        "LineNumber": 147,
+        "Description": "protocols contains ws and https"
+      },
+      {
+        "LineNumber": 148,
+        "Description": "protocols contains ws and https"
+      },
+      {
+        "LineNumber": 148,
+        "Description": "protocols contains ws and https"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "/httpsonly",
+        "Explanation": "Protocol only accepts encrypted traffic transferred via HTTPs."
+      },
+      {
+        "ResourceName": "/missingprotocols",
+        "Explanation": "Missing protocols array defaults to HTTPS only"
+      },
+      {
+        "ResourceName": "/emptyprotocols",
+        "Explanation": "Empty protocols array defaults to HTTPS only"
+      }
+    ]
   }
 ]

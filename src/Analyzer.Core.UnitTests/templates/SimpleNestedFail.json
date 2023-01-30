@@ -4,7 +4,7 @@
   "parameters": {
     "location": {
       "type": "string",
-      "defaultValue": "[resourceGroup().location]",
+      "defaultValue": "[resourceGroup().location]"
     },
     "ftpsState": {
       "type": "string",

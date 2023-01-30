@@ -24,17 +24,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         {
             // Arrange
             var mockJsonPathResolver = new Mock<IJsonPathResolver>();
-            var mockLineResolver = new Mock<ILineNumberResolver>().Object;
+            var mockLineResolver = new Mock<ISourceLocationResolver>().Object;
 
             var mockOperator = new Mock<LeafExpressionOperator>().Object;
             mockOperator.IsNegative = true;
 
             var mockLeafExpression = new Mock<LeafExpression>(mockOperator, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
-
-            var jsonRuleResult = new JsonRuleResult
-            {
-                Passed = expectedEvaluationResult
-            };
+            var result = new Result(expectedEvaluationResult);
 
             mockJsonPathResolver
                 .Setup(s => s.Resolve(It.Is<string>(p => p == path)))
@@ -49,7 +45,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
 
             mockLeafExpression
                 .Setup(s => s.Evaluate(mockJsonPathResolver.Object, mockLineResolver))
-                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression.Object, expectedEvaluationResult, jsonRuleResult) });
+                .Returns(new[] { new JsonRuleEvaluation(mockLeafExpression.Object, expectedEvaluationResult, result) });
 
             var notExpression = new NotExpression(mockLeafExpression.Object, new ExpressionCommonProperties { ResourceType = resourceType, Path = path });
 

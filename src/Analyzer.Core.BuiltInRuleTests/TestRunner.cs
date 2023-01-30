@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
             // Get all lines reported as failed
             var failingLines = thisRuleEvaluations
                 .Where(e => !e.Passed)
-                .SelectMany(e => GetAllFailedLines(e))
+                .SelectMany(e => e.GetFailedResults().Select(r => r.SourceLocation.LineNumber))
                 .ToList();
 
             failingLines.Sort();
@@ -63,26 +63,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
                 "Expected failing lines do not match actual failed lines." + Environment.NewLine +
                 $"Expected: [{string.Join(",", expectedLines)}]  Actual: [{string.Join(",", failingLines)}]" +
                 (failingLines.Count > 0 ? "" : Environment.NewLine + "(Do the test directory and test config have the same name as the RuleId being tested?)"));
-        }
-
-        /// <summary>
-        /// Recursively get all <see cref="IResult"/> objects inside an <see cref="IEvaluation"/>.
-        /// </summary>
-        /// <param name="evaluation">The <see cref="IEvaluation"/> to get the <see cref="IResult"/> from.</param>
-        /// <returns>All <see cref="IResult"/>s in the <see cref="IEvaluation"/>.</returns>
-        private IEnumerable<int> GetAllFailedLines(IEvaluation evaluation)
-        {
-            if (!evaluation.Result?.Passed ?? false)
-            {
-                yield return evaluation.Result.LineNumber;
-            }
-            foreach (var subEvaluation in evaluation.Evaluations.Where(e => !e.Passed))
-            {
-                foreach (var line in GetAllFailedLines(subEvaluation))
-                {
-                    yield return line;
-                }
-            }
         }
 
         /// <summary>

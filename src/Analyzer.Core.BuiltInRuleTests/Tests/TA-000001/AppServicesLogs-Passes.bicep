@@ -93,3 +93,20 @@ resource sitesConfigDependingOnLinuxKind_diagLogsDisabled 'Microsoft.Web/sites/c
     linuxKind
   ]
 }
+
+resource withConfigAsChildResource 'Microsoft.Web/sites@2019-08-01' = {
+  name: 'withConfigAsChildResource'
+  kind: 'app'
+  properties: {
+  }
+}
+
+resource withConfigAsChildResource_web 'Microsoft.Web/sites/config@2019-08-01' = {
+  parent: withConfigAsChildResource
+  name: 'web'
+  properties: {
+    detailedErrorLoggingEnabled: true
+    httpLoggingEnabled: true
+    requestTracingEnabled: true
+  }
+}

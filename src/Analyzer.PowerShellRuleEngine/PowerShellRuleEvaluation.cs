@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     public class PowerShellRuleEvaluation : IEvaluation
     {
         private IEnumerable<IEvaluation> evaluations;
-        private IResult directResult;
+        private Result directResult;
 
         /// <inheritdoc/>
         public string RuleId { get; }
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         public IEnumerable<IEvaluation> Evaluations => evaluations;
 
         /// <inheritdoc/>
-        public IResult Result => directResult;
+        public Result Result => directResult;
 
         /// <inheritdoc/>
         public bool HasResults => Result != null || Evaluations.Any(e => e.HasResults);
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <param name="passed">Determines whether or not the rule for this evaluation passed.</param>
         /// <param name="severity">Determines how severe the finding is.</param>
         /// <param name="result">The result of this evaluation.</param>
-        public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleShortDescription, string ruleFullDescription, string recommendation, string file, bool passed, Severity severity, PowerShellRuleResult result)
+        public PowerShellRuleEvaluation(string ruleId, string ruleName, string helpUri, string ruleShortDescription, string ruleFullDescription, string recommendation, string file, bool passed, Severity severity, Result result)
         {
             RuleId = ruleId;
             RuleName = ruleName;

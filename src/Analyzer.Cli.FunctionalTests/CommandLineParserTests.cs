@@ -24,6 +24,7 @@ namespace Analyzer.Cli.FunctionalTests
         }
 
         [DataTestMethod]
+        [DataRow("TemplateWithModule.bicep", ExitCode.Violation, DisplayName = "Violations found in referenced template")]
         [DataRow("Path does not exist", ExitCode.ErrorInvalidPath, DisplayName = "Invalid template file path provided")]
         [DataRow("Configuration.json", ExitCode.ErrorInvalidARMTemplate, DisplayName = "Path exists, not an ARM template.")]
         [DataRow("Configuration.json", ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Path exists, Report-format flag set, --output-file-path flag not included.")]
@@ -265,7 +266,20 @@ namespace Analyzer.Cli.FunctionalTests
                 Assert.IsTrue(outputBeforeSummary.IndexOf(warningLog) > 0);
 
                 var logSummary = cliConsoleOutput[indexOfLogSummary..];
-                Assert.AreEqual(expectedLogSummary, logSummary);
+                if (multipleErrors)
+                {
+                    // on some platforms the exception messages can be in different order
+                    var alternateExpectedLogSummary = expectedLogSummary
+                        .Replace("ReportsError.json", "PLACEHOLDER")
+                        .Replace("ReportsError2.json", "ReportsError.json")
+                        .Replace("PLACEHOLDER", "ReportsError2.json");
+                    Assert.IsTrue(expectedLogSummary.Equals(logSummary)
+                        || alternateExpectedLogSummary.Equals(logSummary));
+                }
+                else
+                {
+                    Assert.AreEqual(expectedLogSummary, logSummary);
+                }
             }
             finally
             {

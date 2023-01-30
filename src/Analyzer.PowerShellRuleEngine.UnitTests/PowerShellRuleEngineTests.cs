@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             // PSRule evaluations can change order depending on the OS:
             foreach(var expectedLineNumber in expectedLineNumbers)
             {
-                var matchingEvaluation = failedEvaluations.Find(evaluation => evaluation.Result.LineNumber == expectedLineNumber);
+                var matchingEvaluation = failedEvaluations.Find(evaluation => evaluation.Result.SourceLocation.LineNumber == expectedLineNumber);
                 failedEvaluations.Remove(matchingEvaluation);
             }
             Assert.IsTrue(failedEvaluations.IsEmptyEnumerable());
