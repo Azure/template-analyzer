@@ -130,7 +130,6 @@
         "LineNumber": 208,
         "Description": "protocols contains ws and https"
       }
-
     ],
     "PassingSections": [
       {
@@ -145,7 +144,6 @@
         "ResourceName": "/emptyprotocols",
         "Explanation": "Empty protocols array defaults to HTTPS only"
       }
-
     ]
   },
   {

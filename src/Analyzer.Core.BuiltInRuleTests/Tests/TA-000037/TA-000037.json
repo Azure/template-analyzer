@@ -5,6 +5,10 @@
       {
         "LineNumber": 31,
         "Description": "Scope set to /apis and state set to active"
+      },
+      {
+        "LineNumber": 31,
+        "Description": "Scope set to /apis and state set to active"
       }
     ],
     "PassingSections": [
