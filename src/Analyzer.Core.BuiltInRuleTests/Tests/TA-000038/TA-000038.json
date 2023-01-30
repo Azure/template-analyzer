@@ -1,0 +1,97 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 43,
+        "Description": "Missing Required Auth Scheme field for Authorization Configuration"
+      },
+      {
+        "LineNumber": 43,
+        "Description": "Missing Required Auth Scheme field for Authorization Configuration"
+      },
+      {
+        "LineNumber": 44,
+        "Description": "Missing Required Auth Scheme field for Authorization Configuration"
+      },
+      {
+        "LineNumber": 67,
+        "Description": "Missing Required Auth Parameter field for Authorization Configuration"
+      },
+      {
+        "LineNumber": 67,
+        "Description": "Missing Required Auth Parameter field for Authorization Configuration"
+      },
+      {
+        "LineNumber": 68,
+        "Description": "Missing Required Auth Parameter field for Authorization Configuration"
+      },
+      {
+        "LineNumber": 86,
+        "Description": "Missing Secure Configuration for both Certificate and Authorization"
+      },
+      {
+        "LineNumber": 86,
+        "Description": "Missing Secure Configuration for both Certificate and Authorization"
+      },
+      {
+        "LineNumber": 86,
+        "Description": "Missing Secure Configuration for both Certificate and Authorization"
+      },
+      {
+        "LineNumber": 86,
+        "Description": "Missing Secure Configuration for both Certificate and Authorization"
+      },
+      {
+        "LineNumber": 110,
+        "Description": "Empty Certificate"
+      },
+      {
+        "LineNumber": 110,
+        "Description": "Empty Certificate"
+      },
+      {
+        "LineNumber": 111,
+        "Description": "Empty Certificate"
+      },
+      {
+        "LineNumber": 133,
+        "Description": "Empty Cerficate and Missing Auth Scheme"
+      },
+      {
+        "LineNumber": 134,
+        "Description": "Empty Cerficate and Missing Auth Scheme"
+      },
+      {
+        "LineNumber": 158,
+        "Description": "Empty Cerficate and Missing Auth Parameter"
+      },
+      {
+        "LineNumber": 159,
+        "Description": "Empty Cerficate and Missing Auth Parameter"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "safe-v1-DefinedAuth",
+        "Explanation": "Authorization is properly defined. Both Scheme and Parameter fields are populated"
+      },
+      {
+        "ResourceName": "safe-v2-DefinedCert",
+        "Explanation": "Certifcate is properly defined"
+      },
+      {
+        "ResourceName": "safe-v3-DefinedAuthAndCert",
+        "Explanation": "Both Certificate and Authorization are properly defined"
+      },
+      {
+        "ResourceName": "safe-v4-NAProtocol",
+        "Explanation": "Not Applicable, since protocol is not http"
+      },
+      {
+        "ResourceName": "safe-v5-MissingURL",
+        "Explanation": "Not Applicable, since URL field is not populated"
+      }
+    ]
+  }
+]

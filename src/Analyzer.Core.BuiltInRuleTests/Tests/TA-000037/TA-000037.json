@@ -1,0 +1,31 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 31,
+        "Description": "Scope set to /apis and state set to active"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "/safe-v1-nonActiveState",
+        "Explanation": "State not set to active"
+      },
+      {
+        "ResourceName": "/safe-v1-nonActiveState",
+        "Explanation": "State not set to active"
+      },
+      {
+        "ResourceName": "/safe-v2-SafeScope",
+        "Explanation": "Scope set to secure value"
+      },
+      {
+        "ResourceName": "/safe-v2-SafeScope",
+        "Explanation": "Scope set to secure value"
+      }
+
+
+    ]
+  }
+]

@@ -443,6 +443,7 @@
       ]
     }
   },
+
   {
     "id": "TA-000015",
     "name": "AppServiceWebApp.OnlyFTPS",
@@ -804,7 +805,7 @@
             },
             {
               "path": "properties.retentionDays",
-              "equals": 0 // 0 == unlimited retention
+              "equals": 0
             },
             {
               "path": "properties.retentionDays",
@@ -896,12 +897,12 @@
     }
   },
   {
-    "id": "TA-000033", //need to verify with APIM team is if this is correct field... need to verify with Vera that reported failures x4
+    "id": "TA-000033",
     "name": "APIM.DirectAPIManagementEndpointShouldNotBeEnabled",
     "shortDescription": "API Management direct management endpoint should not be enabled",
     "fullDescription": "The direct management REST API in Azure API Management bypasses Azure Resource Manager role-based access control, authorization, and throttling mechanisms, thus increasing the vulnerability of your service.",
     "recommendation": "Set the properties.enabled field to false, to ensure direct access to the management REST API is disabled",
-    "helpUri": "", //NEED TO UPDATE
+    "helpUri": "sample",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ApiManagement/service/tenant",
@@ -917,13 +918,14 @@
       ]
     }
   },
+
   {
     "id": "TA-000034",
     "name": "APIM.DisabletServiceSecretsSharingWithReadOnlyUsers",
     "shortDescription": "API Management minimum API version should be set to 2019-12-01 or higher",
     "fullDescription": "To prevent service secrets from being shared with read-only users, the minimum API version should be set to 2019-12-01 or higher.",
-    "recommendation": "NEED TO UPDATE", //NEED TO UPDATE
-    "helpUri": "", //NEED TO UPDATE
+    "recommendation": "NEED TO UPDATE",
+    "helpUri": "sample",
     "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ApiManagement/service",
@@ -953,12 +955,12 @@
   },
   {
     "id": "TA-000035",
-    "name": "APIM.NamedValueSecretsShouldBeStoredInKeyVault", 
+    "name": "APIM.NamedValueSecretsShouldBeStoredInKeyVault",
     "shortDescription": "API Management secret named values should be stored in Azure Key Vault",
     "fullDescription": "Named values are a collection of name and value pairs in each API Management service. Secret values can be stored either as encrypted text in API Management (custom secrets) or by referencing secrets in Azure Key Vault. To improve security of API Management and secrets, reference secret named values from Azure Key Vault. Azure Key Vault supports granular access management and secret rotation policies.",
-    "recommendation": "sample", //NEED to update
-    "helpUri": "sample", //NEED TO UPDATE
-    "severity": 1, //need to update
+    "recommendation": "sample",
+    "helpUri": "sample",
+    "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ApiManagement/service/namedValues",
       "where": {
@@ -986,13 +988,107 @@
     "name": "APIM.ShouldUseVirtualNetwork",
     "shortDescription": "API Management services should use a virtual network",
     "fullDescription": "Azure Virtual Network deployment provides enhanced security, isolation and allows you to place your API Management service in a non-internet routable network that you control access to. These networks can then be connected to your on-premises networks using various VPN technologies, which enables access to your backend services within the network and/or on-premises. The developer portal and API gateway, can be configured to be accessible either from the Internet or only within the virtual network.",
-    "recommendation": "sample", //NEED to update
-    "helpUri": "sample", //NEED TO UPDATE
-    "severity": 1, //need to update
+    "recommendation": "sample",
+    "helpUri": "sample",
+    "severity": 1,
     "evaluation": {
       "resourceType": "Microsoft.ApiManagement/service",
-      "path": "properties.keyVault.secretIdentifier",
-      "exists": true
+      "where": {
+        "allOf": [
+          {
+            "path": "sku.name",
+            "in": [
+              "Developer",
+              "Premium"
+            ]
+          }
+        ]
+      },
+      "allOf": [
+        {
+          "path": "properties.virtualNetworkType",
+          "exists": true
+        },
+        {
+          "path": "properties.virtualNetworkType",
+          "notEquals": "None"
+        }
+      ]
+    }
+  },
+  {
+    "id": "TA-000037",
+    "name": "APIM.SubscriptionsShouldNotBeScopedToAllAPIScope",
+    "shortDescription": "NEED TO UPDATE",
+    "fullDescription": "NEED TO UPDATE",
+    "recommendation": "NEED TO UPDATE",
+    "helpUri": "sample",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ApiManagement/service/subscriptions",
+      "where": {
+        "allOf": [
+          {
+            "path": "properties.state",
+            "equals": "active"
+          }
+        ]
+      },
+      "not": {
+        "path": "properties.scope",
+        "regex": "/apis$"
+      }
+    }
+  },
+  {
+    "id": "TA-000038",
+    "name": "APIM.APIBackendsShouldBeAuthenticated",
+    "shortDescription": "NEED TO UPDATE",
+    "fullDescription": "NEED TO UPDATE",
+    "recommendation": "NEED TO UPDATE",
+    "helpUri": "sample",
+    "severity": 1,
+    "evaluation": {
+      "resourceType": "Microsoft.ApiManagement/service/backends",
+      "where": {
+        "allOf": [
+          {
+            "path": "properties.url",
+            "exists": true
+          },
+          {
+            "path": "properties.protocol",
+            "equals": "http"
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "allOf": [
+            {
+              "path": "properties.credentials.certificate",
+              "exists": true
+            },
+            {
+              "path": "properties.credentials.certificate",
+              "hasValue": true
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "path": "properties.credentials.authorization.scheme",
+              "exists": true
+            },
+            {
+              "path": "properties.credentials.authorization.parameter",
+              "exists": true
+            }
+          ]
+        }
+
+      ]
     }
   }
 ]

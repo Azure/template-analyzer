@@ -1,0 +1,281 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceName": {
+      "type": "string",
+      "metadata": {
+        "description": "API Management Service Name"
+      }
+    },
+    "functionAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "Functions App Name"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service/properties",
+      "name": "[concat(parameters('serviceName'), '/', 'samplePropertyName')]",
+      "apiVersion": "2018-06-01-preview",
+      "scale": null,
+      "properties": {
+        "displayName": "samplePropertyName",
+        "value": "sampleFunctionHostKey",
+        "tags": [ "key", "function" ],
+        "secret": true
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'vulnerable-v1-missingAuthScheme')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "authorization": {
+            "parameter": "sampleParameter"
+          }
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'vulnerable-v2-missingAuthParameter')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "authorization": {
+            "scheme": "sampleScheme"
+          }
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'vulnerable-v3-missingbothAuthandCert')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'vulnerable-v4-EmptyCert')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "certificate": ""
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'vulnerable-v5-EmptyCertAndMissingAuthParameter')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "certificate": "",
+          "authorization": {
+            "scheme": "sampleScheme"
+          }
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'vulnerable-v6-EmptyCertAndMissingAuthScheme')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "certificate": "",
+          "authorization": {
+            "parameter": "sampleParameter"
+          }
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'safe-v1-DefinedAuth')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "authorization": {
+            "parameter": "sampleParameter",
+            "scheme": "sampleScheme"
+          }
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'safe-v2-DefinedCert')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "certificate": "sampleCertificate"
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'safe-v3-DefinedAuthAndCert')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "http",
+        "credentials": {
+          "certificate": "sampleCertificate",
+          "authorization": {
+            "parameter": "sampleParameter",
+            "scheme": "sampleScheme"
+          }
+        },
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'safe-v4-NAProtocol')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "[concat('https://', parameters('functionAppName'),'.azurewebsites.net/api')]",
+        "protocol": "soap",
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'safe-v5-MissingURL')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "protocol": "http",
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "tls": {
+          "validateCertificateChain": false,
+          "validateCertificateName": false
+        }
+      }
+    }
+  ]
+}
