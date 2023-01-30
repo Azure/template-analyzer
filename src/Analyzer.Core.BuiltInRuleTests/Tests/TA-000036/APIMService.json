@@ -97,7 +97,7 @@
     {
       "type": "Microsoft.ApiManagement/service",
       "apiVersion": "2021-08-01",
-      "name": "sampleAPIMServiceName-safe-v3-NotApplicableSKUNoneType",
+      "name": "sampleAPIMServiceName-safe-v4-NotApplicableSKUNoneType",
       "location": "West US 2",
       "sku": {
         "name": "Consumption"

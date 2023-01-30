@@ -21,7 +21,7 @@
         "Explanation": "Type is set to non-None option"
       },
       {
-        "ResourceName": "sampleAPIMServiceName-safe-v1-InternalType",
+        "ResourceName": "sampleAPIMServiceName-safe-v2-InternalType",
         "Explanation": "Type is set to non-None option"
       },
       {
@@ -29,7 +29,7 @@
         "Explanation": "SKU is not applicable"
       },
       {
-        "ResourceName": "sampleAPIMServiceName-safe-v3-NotApplicableSKUNoneType",
+        "ResourceName": "sampleAPIMServiceName-safe-v4-NotApplicableSKUNoneType",
         "Explanation": "SKU is not applicable"
       }
 
