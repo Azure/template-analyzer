@@ -879,7 +879,7 @@
     "name": "APIM.BypassCertificateThumbprintOrNameValidation",
     "shortDescription": "API Management calls to API backends should not bypass certificate thumbprint or name validation",
     "fullDescription": "API Management calls to API backends should not bypass certificate thumbprint or name validation",
-    "recommendation": "To improve security, API Management should validate the backend server certificate for all API calls. Enable SSL certificate thumbprint and name validation by setting the tls.validateCertificateName and tls.validateCertificateChain fields to true",
+    "recommendation": "To improve security, API Management should validate the backend server certificate for all API calls. Enable SSL certificate thumbprint and name validation by setting the tls.validateCertificateName and tls.validateCertificateChain properties to true",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000032-api-management-calls-to-api-backends-should-not-bypass-certificate-thumbprint-or-name-validation",
     "severity": 2,
     "evaluation": {
