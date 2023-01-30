@@ -443,7 +443,6 @@
       ]
     }
   },
-
   {
     "id": "TA-000015",
     "name": "AppServiceWebApp.OnlyFTPS",
@@ -805,7 +804,7 @@
             },
             {
               "path": "properties.retentionDays",
-              "equals": 0
+              "equals": 0 // 0 == unlimited retention
             },
             {
               "path": "properties.retentionDays",
@@ -988,7 +987,7 @@
     "name": "APIM.ShouldUseVirtualNetwork",
     "shortDescription": "API Management services should use a virtual network",
     "fullDescription": "Azure Virtual Network deployment provides enhanced security, isolation and allows you to place your API Management service in a non-internet routable network that you control access to. These networks can then be connected to your on-premises networks using various VPN technologies, which enables access to your backend services within the network and/or on-premises. The developer portal and API gateway, can be configured to be accessible either from the Internet or only within the virtual network.",
-    "recommendation": "To learn more about Virtual Networks for Azure API Management, please visit here: https://aka.ms/apim-vnet. To see an example on how to configure a VNet via Azure Policy, please visit here: https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/api-management-create-with-internal-vnet-application-gateway/  ",
+    "recommendation": "To learn more about Virtual Networks for Azure API Management, please visit here: https://aka.ms/apim-vnet. To see an example on how to configure a VNet via Azure Policy, please visit here: https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/api-management-create-with-internal-vnet-application-gateway/",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000036-api-management-services-should-use-a-virtual-network",
     "severity": 2,
     "evaluation": {
@@ -1045,7 +1044,7 @@
     "name": "APIM.APIBackendsShouldBeAuthenticated",
     "shortDescription": "API Management calls to API backends should be authenticated",
     "fullDescription": "Calls from API Management to backends should use some form of authentication, whether via certificates or credentials. Does not apply to Service Fabric backends.",
-    "recommendation": "To enable API backend authentication, configure authentication credentials in the query parameters, client certificate, or Authorization header. To learn more about configuring Authentication in Azure API Management, please visit here: https://learn.microsoft.com/en-us/azure/api-management/authentication-authorization-overview ",
+    "recommendation": "To enable API backend authentication, configure authentication credentials in the query parameters, client certificate, or Authorization header. To learn more about configuring Authentication in Azure API Management, please visit here: https://learn.microsoft.com/en-us/azure/api-management/authentication-authorization-overview",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000038-api-management-calls-to-api-backends-should-be-authenticated",
     "severity": 2,
     "evaluation": {
