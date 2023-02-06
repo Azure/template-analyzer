@@ -6,15 +6,15 @@
 ## What is Template Analyzer?
 Template Analyzer scans ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/) Infrastructure-as-Code (IaC) templates to ensure security and best practice checks are being followed before deployment of your Azure solutions.
 
-Template Analyzer provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your templates follow best practices. The Template BPA is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
+Template Analyzer provides a simple and extensible solution to improve the security of your Azure resources before deployment and ensures your templates follow best practices. Template Analyzer is designed to be customizable - users can write their own checks and/or enforce only the checks that are relevant for them.
 
 ## Getting started with Template Analyzer
 Download the latest Template Analyzer release in [the releases section](https://github.com/Azure/template-analyzer/releases).
 
 To preview the rules that come bundled with the Template Analyzer, explore [the built-in rules](docs/built-in-bpa-rules.md).
 
-## Using the Template BPA
-The Template BPA is executed via a command line.  There are two formats to invoke it:
+## Using the Template Analyzer
+Template Analyzer is executed via a command line.  There are two formats to invoke it:
 
 `TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>] [-c <config-path>] [--report-format <format>] [-o <output-path>] [-v]`
 
@@ -38,7 +38,7 @@ Argument | Description
 
  Template Analyzer runs the [configured rules](#understanding-and-customizing-rules) against the provided template and its corresponding [template parameters](https://docs.microsoft.com/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then Template Analyzer will check if templates with the [general naming standards defined by Microsoft](https://learn.microsoft.com/azure/azure-resource-manager/templates/parameter-files#file-name) are present in the same folder, otherwise it generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/azure/azure-resource-manager/templates/template-functions) in the template.
 
-**Note**: Providing Template Analyzer with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of the Template BPA rule, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from your template from Azure Key Vault](https://docs.microsoft.com/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
+**Note**: Providing Template Analyzer with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of Template Analyzer rules, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from your template from Azure Key Vault](https://docs.microsoft.com/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
 ### Output
 Results can be output in plain text to the console, or output to a file in SARIF format. Template Analyzer will exit with an error code if any errors or violations are found during a scan.
