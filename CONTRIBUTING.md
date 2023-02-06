@@ -1,5 +1,5 @@
-# Contributing to the Template BPA
-We welcome community contributions to the Template BPA. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
+# Contributing to the Template Analyzer
+We welcome community contributions to the Template Analyzer. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
 * If you haven't already, you will need the [.NET 6 SDK](https://dotnet.microsoft.com/download) installed locally to build and run this project.
@@ -12,18 +12,18 @@ We welcome community contributions to the Template BPA. Please note that by part
 ### Environment
 * [Visual Studio Code](https://code.visualstudio.com/) with the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) is a great way to get started.
   * Start VS Code and open the root directory where the code is cloned locally (File->Open Folder...).
-* Run the `build` task (Terminal->Run Task...->build) in VS Code to build the Template BPA.
+* Run the `build` task (Terminal->Run Task...->build) in VS Code to build the Template Analyzer.
 * Try analyzing a template: open a template file in VS Code and then run the `Launch CLI on Template` launch configuration (Run->Start Debugging).
   * Alternatively, modify the configuration in [launch.json](./.vs/launch.json) and specify a path to a template file, and optionally specify a path to a parameters file to use.
   * Additionally, the `Launch CLI on Directory` launch configuration analyzes the directory of the open file in VS Code. 
 
 ### Components
 The Template Analyzer solution is comprised of the following main components:
-* CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute the Template BPA. This executable will pass template files to Analyzer.Core.
+* CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute the Template Analyzer. This executable will pass template files to Analyzer.Core.
 * Core (*[src\Analyzer.Core](./src/Analyzer.Core)*): The main Analyzer library which executes all rule engines against provided templates.
-  * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template BPA rules.
+  * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template Analyzer rules.
 * Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
-* JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template BPA JSON rules.
+* JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template Analyzer JSON rules.
 
 ### NuGet Packages
 * There are two .nuspec files that define NuGet packages that can be created
@@ -44,7 +44,7 @@ The Template Analyzer solution is comprised of the following main components:
 4. JSON Rule Engine evaluates the expressions specified in the `evaluation` section of the rule and generates results to identify the rule violation in the template.
  
 ### Running the Tests
-* Use the `dotnet test` command to run the full Template BPA test suite.
+* Use the `dotnet test` command to run the full Template Analyzer test suite.
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
 
 ### Contributing Analyzer Rules
