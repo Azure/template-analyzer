@@ -1,5 +1,5 @@
-# Contributing to the Template Analyzer
-We welcome community contributions to the Template Analyzer. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
+# Contributing to the Template Analyzer project
+We welcome community contributions to Template Analyzer. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
 * If you haven't already, you will need the [.NET 6 SDK](https://dotnet.microsoft.com/download) installed locally to build and run this project.
@@ -12,7 +12,7 @@ We welcome community contributions to the Template Analyzer. Please note that by
 ### Environment
 * [Visual Studio Code](https://code.visualstudio.com/) with the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) is a great way to get started.
   * Start VS Code and open the root directory where the code is cloned locally (File->Open Folder...).
-* Run the `build` task (Terminal->Run Task...->build) in VS Code to build the Template Analyzer.
+* Run the `build` task (Terminal->Run Task...->build) in VS Code to build Template Analyzer.
 * Try analyzing a template: open a template file in VS Code and then run the `Launch CLI on Template` launch configuration (Run->Start Debugging).
   * Alternatively, modify the configuration in [launch.json](./.vs/launch.json) and specify a path to a template file, and optionally specify a path to a parameters file to use.
   * Additionally, the `Launch CLI on Directory` launch configuration analyzes the directory of the open file in VS Code. 
