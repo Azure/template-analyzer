@@ -1,8 +1,8 @@
-# Authoring Template BPA JSON Rules
+# Authoring Template Analyzer JSON Rules
 <a name="note"></a>***Note**: All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-Template BPA built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template Analyzer built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
 
 ## Rule Object
 Here are the fields that make up a rule definition.
