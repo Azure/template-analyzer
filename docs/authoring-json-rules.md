@@ -49,7 +49,7 @@ Since most rules apply only to specific types of Azure resources, the `resourceT
 
 When `resourceType` is specified, it must be the fully-qualified type name (for example, *Microsoft.Sql/servers/auditingSettings*, instead of simply *auditingSettings* as might be specified in a child resource of *Microsoft.Sql/servers*).
 
-When looking for the specified resource type, the Template BPA will look for the "resources" array property at the current [scopes](#scopes), and if found, compare the "type" property of each resource against the string specified for *resourceType*.  The search will also include looking at child resources - i.e. a "resources" array property defined within a resource.  This will occur if a type-parent of the specified *resourceType* is found in the resources (e.g. if searching for type *Microsoft.Sql/servers/auditingSettings*, resources defined within a resource of type *Microsoft.Sql/servers* will also be searched).
+When looking for the specified resource type, Template Analyzer will look for the "resources" array property at the current [scopes](#scopes), and if found, compare the "type" property of each resource against the string specified for *resourceType*.  The search will also include looking at child resources - i.e. a "resources" array property defined within a resource.  This will occur if a type-parent of the specified *resourceType* is found in the resources (e.g. if searching for type *Microsoft.Sql/servers/auditingSettings*, resources defined within a resource of type *Microsoft.Sql/servers* will also be searched).
 
 Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 
