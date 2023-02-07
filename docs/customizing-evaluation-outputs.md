@@ -8,7 +8,7 @@ Here are the fields that make up a custom configuration file:
 ```javascript
 {
     "exclusions": { ... }, // Parameters that are excluded from the Analyzer execution. More details below.
-    "inclusions": { ... }, // Only parameters that will be included in the Analyzer execution. More details below.
+    "inclusions": { ... }, // Only parameters that will be included in the analyzer execution. More details below.
     "severityOverrides": { ... } // Key-value pairs of Id and new severity value. Can change a rule's severity.
 }
 ```
