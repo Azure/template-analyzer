@@ -1,7 +1,7 @@
 # Customizing Evaluation Outputs
 
 ## Overview
-Using an additional JSON configuration file, Template Analyzer can be customized in how it runs **JSON-based rules**. For example, specific rules can be included in/excluded from execution, or the severity of a rule can be changed. See the main README for details on [how to run Template Analyzer with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-bpa).
+Using an additional JSON configuration file, Template Analyzer can be customized in how it runs **JSON-based rules**. For example, specific rules can be included in/excluded from execution, or the severity of a rule can be changed. See the main README for details on [how to run Template Analyzer with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-analyzer).
 
 ## Template Analyzer Rule Object
 Here are the fields that make up a custom configuration file:

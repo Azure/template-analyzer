@@ -22,7 +22,7 @@ Here are the fields that make up a rule definition.
 ### Guidelines for rule metadata
 | Property Name | Description | Is required for contributing<br/>a built-in rule | Is required<br/>in schema | Default Value |
 |---|---|---|---|---|
-| id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md). | yes | yes | - |
+| id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-rules.md). | yes | yes | - |
 | name | A human-readable identifier, more details [here](https://github.com/microsoft/sarif-tutorials/blob/main/docs/Authoring-rule-metadata-and-result-messages.md#human-readable-identifier). | yes | yes | - |
 | shortDescription | Brief description of what the rule is evaluating, more details [here](https://docs.oasis-open.org/sarif/sarif/v2.0/csprd02/sarif-v2.0-csprd02.html#_Toc10127743). | yes | yes | - |
 | fullDescription | Detailed description of what the rule is evaluating, more details [here](https://docs.oasis-open.org/sarif/sarif/v2.0/csprd02/sarif-v2.0-csprd02.html#_Toc10127744). | yes | yes | - |

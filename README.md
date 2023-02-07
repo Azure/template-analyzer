@@ -11,7 +11,7 @@ Template Analyzer provides a simple and extensible solution to improve the secur
 ## Getting started with Template Analyzer
 Download the latest Template Analyzer release in [the releases section](https://github.com/Azure/template-analyzer/releases).
 
-To preview the rules that come bundled with the Template Analyzer, explore [the built-in rules](docs/built-in-bpa-rules.md).
+To preview the rules that come bundled with the Template Analyzer, explore [the built-in rules](docs/built-in-rules.md).
 
 ## Using the Template Analyzer
 Template Analyzer is executed via a command line.  There are two formats to invoke it:
@@ -55,7 +55,7 @@ File: C:\Templates\azuredeploy.json
         TA-000004: API app should only be accessible over HTTPS
                 Severity: Medium
                 Recommendation: Use HTTPS to ensure server/service authentication and protect data in transit from network layer eavesdropping attacks
-                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md#ta-000004-api-app-should-only-be-accessible-over-https
+                More information: https://github.com/Azure/template-analyzer/blob/main/docs/built-in-rules.md#ta-000004-api-app-should-only-be-accessible-over-https
                 Result: Failed
                 Line: 67
 

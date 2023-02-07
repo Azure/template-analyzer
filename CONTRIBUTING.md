@@ -48,7 +48,7 @@ The Template Analyzer solution is comprised of the following main components:
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
 
 ### Contributing Analyzer Rules
-Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template BPA rules. Information on the new rules would also have to be added in [Built-in BPA Rules](./docs/built-in-bpa-rules.md), in alphabetical order. Thorough tests are required as well, documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
+Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template Analyzer rules. Information on the new rules would also have to be added in [Built-in Rules](./docs/built-in-rules.md), in alphabetical order. Thorough tests are required as well, documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
 
 ### Coding Conventions
 
