@@ -1,14 +1,14 @@
 # Customizing Evaluation Outputs
 
 ## Overview
-Using an additional JSON configuration file, the Template BPA can be customized in how it runs **JSON-based rules**. For example, specific rules can be included in/excluded from execution, or the severity of a rule can be changed. See the main README for details on [how to run Template BPA with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-bpa).
+Using an additional JSON configuration file, Template Analyzer can be customized in how it runs **JSON-based rules**. For example, specific rules can be included in/excluded from execution, or the severity of a rule can be changed. See the main README for details on [how to run Template Analyzer with a configuration file](https://github.com/Azure/template-analyzer#using-the-template-analyzer).
 
-## Template BPA Rule Object
+## Template Analyzer Rule Object
 Here are the fields that make up a custom configuration file:
 ```javascript
 {
-    "exclusions": { ... }, // Parameters that are excluded from the BPA execution. More details below.
-    "inclusions": { ... }, // Only parameters that will be included in the BPA execution. More details below.
+    "exclusions": { ... }, // Parameters that are excluded from the analyzer execution. More details below.
+    "inclusions": { ... }, // Only parameters that will be included in the analyzer execution. More details below.
     "severityOverrides": { ... } // Key-value pairs of Id and new severity value. Can change a rule's severity.
 }
 ```

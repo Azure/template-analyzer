@@ -1,8 +1,8 @@
-# Authoring Template BPA JSON Rules
+# Authoring Template Analyzer JSON Rules
 <a name="note"></a>***Note**: All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-Template BPA built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template Analyzer built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
 
 ## Rule Object
 Here are the fields that make up a rule definition.
@@ -22,7 +22,7 @@ Here are the fields that make up a rule definition.
 ### Guidelines for rule metadata
 | Property Name | Description | Is required for contributing<br/>a built-in rule | Is required<br/>in schema | Default Value |
 |---|---|---|---|---|
-| id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md). | yes | yes | - |
+| id | The `id` should look like `TA-NNNNNN`, with `NNNNNN` being the next unused number according to the [rule ids already defined](https://github.com/Azure/template-analyzer/blob/main/docs/built-in-rules.md). | yes | yes | - |
 | name | A human-readable identifier, more details [here](https://github.com/microsoft/sarif-tutorials/blob/main/docs/Authoring-rule-metadata-and-result-messages.md#human-readable-identifier). | yes | yes | - |
 | shortDescription | Brief description of what the rule is evaluating, more details [here](https://docs.oasis-open.org/sarif/sarif/v2.0/csprd02/sarif-v2.0-csprd02.html#_Toc10127743). | yes | yes | - |
 | fullDescription | Detailed description of what the rule is evaluating, more details [here](https://docs.oasis-open.org/sarif/sarif/v2.0/csprd02/sarif-v2.0-csprd02.html#_Toc10127744). | yes | yes | - |
@@ -49,7 +49,7 @@ Since most rules apply only to specific types of Azure resources, the `resourceT
 
 When `resourceType` is specified, it must be the fully-qualified type name (for example, *Microsoft.Sql/servers/auditingSettings*, instead of simply *auditingSettings* as might be specified in a child resource of *Microsoft.Sql/servers*).
 
-When looking for the specified resource type, the Template BPA will look for the "resources" array property at the current [scopes](#scopes), and if found, compare the "type" property of each resource against the string specified for *resourceType*.  The search will also include looking at child resources - i.e. a "resources" array property defined within a resource.  This will occur if a type-parent of the specified *resourceType* is found in the resources (e.g. if searching for type *Microsoft.Sql/servers/auditingSettings*, resources defined within a resource of type *Microsoft.Sql/servers* will also be searched).
+When looking for the specified resource type, Template Analyzer will look for the "resources" array property at the current [scopes](#scopes), and if found, compare the "type" property of each resource against the string specified for *resourceType*.  The search will also include looking at child resources - i.e. a "resources" array property defined within a resource.  This will occur if a type-parent of the specified *resourceType* is found in the resources (e.g. if searching for type *Microsoft.Sql/servers/auditingSettings*, resources defined within a resource of type *Microsoft.Sql/servers* will also be searched).
 
 Documentation on `where` is provided below in [Where Conditions](#where-conditions).
 
