@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Templates.Analyzer.Cli
 {
     /// <summary>
-    /// Creates the command line for running the Template Analyzer. 
+    /// Creates the command line for running Template Analyzer. 
     /// Instantiates arguments that can be passed and different commands that can be invoked.
     /// </summary>
     internal class CommandLineParser

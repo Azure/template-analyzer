@@ -11,9 +11,9 @@ Template Analyzer provides a simple and extensible solution to improve the secur
 ## Getting started with Template Analyzer
 Download the latest Template Analyzer release in [the releases section](https://github.com/Azure/template-analyzer/releases).
 
-To preview the rules that come bundled with the Template Analyzer, explore [the built-in rules](docs/built-in-rules.md).
+To preview the rules that come bundled with Template Analyzer, explore [the built-in rules](docs/built-in-rules.md).
 
-## Using the Template Analyzer
+## Using Template Analyzer
 Template Analyzer is executed via a command line.  There are two formats to invoke it:
 
 `TemplateAnalyzer.exe analyze-template <template-path> [-p <parameters-path>] [-c <config-path>] [--report-format <format>] [-o <output-path>] [-v]`

@@ -18,11 +18,11 @@ We welcome community contributions to Template Analyzer. Please note that by par
   * Additionally, the `Launch CLI on Directory` launch configuration analyzes the directory of the open file in VS Code. 
 
 ### Components
-The Template Analyzer solution is comprised of the following main components:
-* CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute the Template Analyzer. This executable will pass template files to Analyzer.Core.
+The Template Analyzer dotnet solution (TemplateAnalyzer.sln) is comprised of the following main components:
+* CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute Template Analyzer. This executable will pass template files to Analyzer.Core.
 * Core (*[src\Analyzer.Core](./src/Analyzer.Core)*): The main Analyzer library which executes all rule engines against provided templates.
   * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template Analyzer rules.
-* Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*): This library parses ARM templates and evaluates expressions found in the template.
+* Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*) and Bicep Processor (*[src\Analyzer.BicepProcessor](./src/Analyzer.BicepProcessor)*): These libraries parse ARM JSON and Bicep templates and evaluate expressions found in the templates.
 * JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template Analyzer JSON rules.
 
 ### NuGet Packages
