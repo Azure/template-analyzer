@@ -2,7 +2,7 @@
 We welcome community contributions to Template Analyzer. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
-* If you haven't already, you will need the [.NET 6 SDK](https://dotnet.microsoft.com/download) installed locally to build and run this project.
+* If you haven't already, you will need to install the [.NET 6 SDK](https://dotnet.microsoft.com/download) to build and run this project.
 * Fork this repo (see [this forking guide](https://guides.github.com/activities/forking/) for more information).
 * Checkout the repo locally with `git clone git@github.com:{your_username}/template-analyzer.git`.
 * The .NET solution can be built with the `dotnet build` command.
@@ -18,18 +18,19 @@ We welcome community contributions to Template Analyzer. Please note that by par
   * Additionally, the `Launch CLI on Directory` launch configuration analyzes the directory of the open file in VS Code. 
 
 ### Components
-The Template Analyzer dotnet solution (TemplateAnalyzer.sln) is comprised of the following main components:
+The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/TemplateAnalyzer.sln)*) is comprised of the following main components:
 * CLI (*[src\Analyzer.Cli](./src/Analyzer.Cli)*): The command-line tool to execute Template Analyzer. This executable will pass template files to Analyzer.Core.
 * Core (*[src\Analyzer.Core](./src/Analyzer.Core)*): The main Analyzer library which executes all rule engines against provided templates.
   * BuiltInRules.json (*[src\Analyzer.Core\Rules\BuiltInRules.json](./src/Analyzer.Core/Rules/BuiltInRules.json)*): The file with the built-in Template Analyzer rules.
 * Template Processor (*[src\Analyzer.TemplateProcessor](./src/Analyzer.TemplateProcessor)*) and Bicep Processor (*[src\Analyzer.BicepProcessor](./src/Analyzer.BicepProcessor)*): These libraries parse ARM JSON and Bicep templates and evaluate expressions found in the templates.
 * JSON Rule Engine (*[src\Analyzer.JsonRuleEngine](./src/Analyzer.JsonRuleEngine)*): The library dedicated to parse and evaluate the Template Analyzer JSON rules.
+* PowerShell Rule Engine (*[src\Analyzer.PowerShellRuleEngine](./src/Analyzer.PowerShellRuleEngine)*): Runs PowerShell-based rules using [PSRule for Azure](https://aka.ms/ps-rule-azure).
 
 ### NuGet Packages
 * There are two .nuspec files that define NuGet packages that can be created
-  * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer.Core into package *Azure.Templates.Analyzer.Core*.
+  * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer Core into package *Azure.Templates.Analyzer.Core*.
     * Requires building *[src\Analyzer.Core](./src/Analyzer.Core)* first.
-  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer.Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
+  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
     * Requires publishing the CLI first - the `Publish` task in VS Code can be used for this (Terminal->Run Task...->Publish).  The platform is chosen when running the task.
 * These can be packed (after building/publishing) using the [nuget.exe CLI](https://www.nuget.org/downloads)
   * Example: `nuget pack <nuspec-file> -Version <version> -Properties Configuration=<Debug|Release>`
@@ -38,17 +39,15 @@ The Template Analyzer dotnet solution (TemplateAnalyzer.sln) is comprised of the
   * This is a great way to test NuGet consumption of local changes
  
 ### Code Structure
-1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer.Core.
+1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer Core.
 2. Analyzer Core calls the Template Processing Library to process the template and (if supplied) the provided parameters. The Template Processing Library processes all the template functions.
-3. Analyzer Core then calls the JSON Rule Engine and evaluates each rule against the template/parameter pairs.
+3. Analyzer Core then calls the JSON and PowerShell Rule Engines, which evaluate each of their rules against the template/parameter pairs.
 4. JSON Rule Engine evaluates the expressions specified in the `evaluation` section of the rule and generates results to identify the rule violation in the template.
+5. PowerShell Rule Engine invokes PSRule to run Azure rules against the template.
  
 ### Running the Tests
 * Use the `dotnet test` command to run the full Template Analyzer test suite.
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
-
-### Contributing Analyzer Rules
-Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template Analyzer rules. Information on the new rules would also have to be added in [Built-in Rules](./docs/built-in-rules.md), in alphabetical order. Thorough tests are required as well, documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
 
 ### Coding Conventions
 
@@ -80,6 +79,7 @@ Please follow the below conventions when contributing to this project.
         …
     }
     ```
+
 #### Tests
 High test code coverage is required to contribute to this project. This ensures the highest code quality. At least **80% test code coverage is required.** This project uses Microsoft.VisualStudio.TestTools.UnitTesting for its tests. 
 Please follow the below conventions when contributing to this project.
@@ -93,10 +93,12 @@ Please follow the below conventions when contributing to this project.
     * (Data)TestMethod: `{method name}_{what is being tested}_{expected outcome}`
     * DataRow (display name): Short description that clearly differentiate between the DataRows
 
+## Contributing Analyzer Rules
+Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template Analyzer rules. Information on the new rules would also have to be added in [Built-in Rules](./docs/built-in-rules.md), in alphabetical order. Thorough tests are required as well - documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
+
 ## Code Review Process
 
 ### Before Creating a Pull Request
-* Code changes should be made in a new branch off the `development` branch.  Pull requests must target `development`.
 * The changes cannot break any existing functional/unit tests that are part of the central repository.
   * This includes all tests, even those not associated with the given feature area.
 * Code submitted must have [basic unit test coverage](#tests), and have all the unit tests pass. Functional tests are encouraged.
@@ -106,7 +108,7 @@ Please follow the below conventions when contributing to this project.
 * All build warnings and code analysis warnings should be fixed prior to submission.
 
 ### Creating a Pull Request
-* Target the `development` branch for your Pull Request. A Pull Request Template will be applied. Fill out the details inside.
+* Target the `main` branch for your Pull Request. A Pull Request Template will be applied. Fill out the details inside.
 * Add a short description of what the change is adding/fixing/improving.
 * Add yourself as the 'assignee'.
 * Add 'linked issues' if relevant.
