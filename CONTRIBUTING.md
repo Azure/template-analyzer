@@ -28,9 +28,9 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
 
 ### NuGet Packages
 * There are two .nuspec files that define NuGet packages that can be created
-  * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer.Core into package *Azure.Templates.Analyzer.Core*.
+  * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer Core into package *Azure.Templates.Analyzer.Core*.
     * Requires building *[src\Analyzer.Core](./src/Analyzer.Core)* first.
-  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer.Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
+  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
     * Requires publishing the CLI first - the `Publish` task in VS Code can be used for this (Terminal->Run Task...->Publish).  The platform is chosen when running the task.
 * These can be packed (after building/publishing) using the [nuget.exe CLI](https://www.nuget.org/downloads)
   * Example: `nuget pack <nuspec-file> -Version <version> -Properties Configuration=<Debug|Release>`
@@ -39,7 +39,7 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
   * This is a great way to test NuGet consumption of local changes
  
 ### Code Structure
-1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer.Core.
+1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer Core.
 2. Analyzer Core calls the Template Processing Library to process the template and (if supplied) the provided parameters. The Template Processing Library processes all the template functions.
 3. Analyzer Core then calls the JSON and PowerShell Rule Engines, which evaluate each of their rules against the template/parameter pairs.
 4. JSON Rule Engine evaluates the expressions specified in the `evaluation` section of the rule and generates results to identify the rule violation in the template.
@@ -48,9 +48,6 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
 ### Running the Tests
 * Use the `dotnet test` command to run the full Template Analyzer test suite.
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
-
-### Contributing Analyzer Rules
-Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template Analyzer rules. Information on the new rules would also have to be added in [Built-in Rules](./docs/built-in-rules.md), in alphabetical order. Thorough tests are required as well - documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
 
 ### Coding Conventions
 
@@ -95,6 +92,9 @@ Please follow the below conventions when contributing to this project.
   * Test methods:
     * (Data)TestMethod: `{method name}_{what is being tested}_{expected outcome}`
     * DataRow (display name): Short description that clearly differentiate between the DataRows
+
+## Contributing Analyzer Rules
+Review the [Authoring JSON Rules](./docs/authoring-json-rules.md) section to write new built-in Template Analyzer rules. Information on the new rules would also have to be added in [Built-in Rules](./docs/built-in-rules.md), in alphabetical order. Thorough tests are required as well - documentation on how to use the framework for testing rules can be found [here](./src/Analyzer.Core.BuiltInRuleTests/README.md).
 
 ## Code Review Process
 
