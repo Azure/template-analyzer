@@ -133,5 +133,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             return false;
         }
+
+        /// <summary>
+        /// Returns the contents of the given template and parameters files.
+        /// </summary>
+        /// <param name="templateAndParams"><see cref="TemplateAndParams"/> containing the template and parameters to get the contents of.</param>
+        /// <returns>The contents of the template and parameters.</returns>
+        public static (string, string) GetTemplateAndParameterContents(TemplateAndParams templateAndParams)
+        {
+            // Logic is simple now, may expand in the future.
+            return (
+                File.ReadAllText(templateAndParams.Template.FullName),
+                templateAndParams.Parameters != null
+                    ? File.ReadAllText(templateAndParams.Parameters.FullName)
+                    : null
+            );
+        }
     }
 }

@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
             foreach (var templateAndParameters in pairsToAnalyze)
             {
-                exitCodes.Add(AnalyzeTemplate(templateAndParameters.Template, templateAndParameters.Parameters));
+                exitCodes.Add(AnalyzeTemplate(templateAndParameters));
             }
 
             FinishAnalysis();
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             var exitCodes = new List<ExitCode>();
             foreach (var templateAndParameters in filesToAnalyze)
             {
-                exitCodes.Add(AnalyzeTemplate(templateAndParameters.Template, templateAndParameters.Parameters));
+                exitCodes.Add(AnalyzeTemplate(templateAndParameters));
             }
 
             int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
@@ -238,28 +238,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return (int)exitCode;
         }
 
-        private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
+        private ExitCode AnalyzeTemplate(TemplateAndParams templateAndParameters)
         {
             try
             {
-                string templateFileContents = File.ReadAllText(templateFilePath.FullName);
-                string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, templateFilePath.FullName, parameterFileContents);
+                (string template, string parameters) = TemplateDiscovery.GetTemplateAndParameterContents(templateAndParameters);
 
-                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(template, templateAndParameters.Template.FullName, parameters);
+
+                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateAndParameters.Template, (FileInfoBase)templateAndParameters.Parameters);
 
                 return evaluations.Any(e => !e.Passed) ? ExitCode.Violation : ExitCode.Success;
             }
             catch (Exception exception)
             {
-                if (parametersFilePath != null)
+                // Keeping separate LoggError calls so formatting can use the recommended templating.
+                // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2254
+                if (templateAndParameters.Parameters != null)
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName} with parameters file {parametersFilePath.FullName}");
+                    logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath} with parameters file {ParametersPath}",
+                        templateAndParameters.Template.FullName, templateAndParameters.Parameters.FullName);
                 }                
                 else
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName}");
+                    logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath}", templateAndParameters.Template.FullName);
                 }
 
                 return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)
