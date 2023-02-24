@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -15,13 +16,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
     internal static class TemplateDiscovery
     {
-        private static readonly IReadOnlyList<string> validSchemas = new List<string> {
-            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-        }.AsReadOnly();
+        private static readonly Regex validSchemaRegex =
+            new Regex(@"https?://schema\.management\.azure\.com/schemas/\d{4}-\d{2}-\d{2}/(subscription|tenant|managementGroup)?deploymentTemplate\.json\#?",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly IReadOnlyList<string> validTemplateProperties = new List<string> {
             "contentVersion",
@@ -122,7 +119,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                             return false;
                         }
 
-                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
+                        return validSchemaRegex.IsMatch((string)reader.Value);
                     }
                     else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
                     {
