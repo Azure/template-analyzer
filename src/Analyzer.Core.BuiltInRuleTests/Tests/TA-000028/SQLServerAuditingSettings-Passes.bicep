@@ -180,11 +180,29 @@ resource SecondSegmentIsNotOnlyDefault 'Microsoft.Sql/servers@2020-02-02-preview
   }
 }
 
-resource WithAlmostDefaultAuditing_defaulta 'Microsoft.Sql/servers/auditingSettings@2020-02-02-preview' = {
-  name: 'WithAlmostDefaultAuditing/defaulta'
+resource SecondSegmentIsNotOnlyDefault_defaultPlusMore 'Microsoft.Sql/servers/auditingSettings@2020-02-02-preview' = {
+  parent: SecondSegmentIsNotOnlyDefault
+  name: 'defaultPlusMore'
   properties: {
     isAzureMonitorTargetEnabled: false
     storageEndpoint: reference(resourceId('Microsoft.Storage/storageAccounts', storageAccountName), '2019-06-01').PrimaryEndpoints.Blob
     retentionDays: 45
+  }
+}
+
+resource ASqlServerWithoutChildResources 'Microsoft.Sql/servers@2020-02-02-preview' = {
+  name: 'ASqlServerWithoutChildResources'
+  properties: {
+    kind: 'v12.0'
+  }
+}
+
+resource ASqlServerWithoutChildResources_default 'Microsoft.Sql/servers/auditingSettings@2020-02-02-preview' = {
+  parent: ASqlServerWithoutChildResources
+  name: 'default'
+  properties: {
+    isAzureMonitorTargetEnabled: false
+    storageEndpoint: reference(resourceId('Microsoft.Storage/storageAccounts', storageAccountName), '2019-06-01').PrimaryEndpoints.Blob
+    retentionDays: 95
   }
 }

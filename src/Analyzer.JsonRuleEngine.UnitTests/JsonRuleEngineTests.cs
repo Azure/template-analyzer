@@ -69,11 +69,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Setup mock line number resolver
-            var mockLineResolver = new Mock<ILineNumberResolver>();
+            var mockLineResolver = new Mock<ISourceLocationResolver>();
             mockLineResolver.Setup(r =>
-                r.ResolveLineNumber(
+                r.ResolveSourceLocation(
                     It.IsAny<string>()))
-                .Returns(expectedLineNumber);
+                .Returns(new SourceLocation(default, expectedLineNumber));
 
             var ruleEngine = JsonRuleEngine.Create(rules, t => {
                     // Verify the test context was passed
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                 Assert.AreEqual($"RuleId {i}", evaluation.RuleId);
                 Assert.AreEqual(expectedFileId, evaluation.FileIdentifier);
 
-                Assert.AreEqual(expectedLineNumber, evaluation.Result.LineNumber);
+                Assert.AreEqual(expectedLineNumber, evaluation.Result.SourceLocation.LineNumber);
             }
         }
 
@@ -198,11 +198,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             };
 
             // Setup mock line number resolver
-            var mockLineResolver = new Mock<ILineNumberResolver>();
+            var mockLineResolver = new Mock<ISourceLocationResolver>();
             mockLineResolver.Setup(r =>
-                r.ResolveLineNumber(
+                r.ResolveSourceLocation(
                     It.IsAny<string>()))
-                .Returns(expectedLineNumber);
+                .Returns(new SourceLocation(default, expectedLineNumber));
 
             var ruleEngine = JsonRuleEngine.Create(rules, t =>
             {
@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             {
                 if ((evaluationResult as JsonRuleEvaluation).Expression is LeafExpression)
                 {
-                    Assert.AreEqual(expectedLineNumber, evaluationResult.Result.LineNumber);
+                    Assert.AreEqual(expectedLineNumber, evaluationResult.Result.SourceLocation.LineNumber);
                 }
                 else
                 {

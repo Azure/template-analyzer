@@ -6,7 +6,7 @@
       "type": "string",
       "defaultValue": "default"
     },
-    "ftpsState": {  // parameter defined in parent and in child templates
+    "ftpsState": { // parameter defined in parent and in child templates
       "type": "string",
       "defaultValue": "FtpsOnly"
     }

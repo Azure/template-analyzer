@@ -28,15 +28,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
         public IEnumerable<IEvaluation> Evaluations { get; set; }
 
-        public IResult Result { get; set; }
+        public Result Result { get; set; }
 
         public bool HasResults { get; set; }
     }
 
-    public class MockResult : IResult
+    public class MockResult : Result
     {
-        public bool Passed { get; set; }
-
-        public int LineNumber { get; set; }
+        public MockResult(bool passed, SourceLocation sourceLocation) : base(passed, sourceLocation)
+        {
+        }
     }
 }

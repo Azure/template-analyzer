@@ -10,9 +10,9 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
-    /// An <see cref="ILineNumberResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
+    /// An <see cref="ISourceLocationResolver"/> used for resolving line numbers from an expanded JSON template to the original JSON template.
     /// </summary>
-    public class JsonLineNumberResolver : ILineNumberResolver
+    public class JsonSourceLocationResolver : ISourceLocationResolver
     {
         private static readonly Regex resourceIndexInPath = new Regex(@"resources\[(?<index>\d+)\]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// Create a new instance with the given <see cref="TemplateContext"/>.
         /// </summary>
         /// <param name="templateContext">The template context to map JSON paths against.</param>
-        public JsonLineNumberResolver(TemplateContext templateContext)
+        public JsonSourceLocationResolver(TemplateContext templateContext)
         {
             this.templateContext = templateContext ?? throw new ArgumentNullException(nameof(templateContext));
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// to find the line number of in the original template.</param>
         /// <returns>The line number of the equivalent location in the original template,
         /// or 1 if it can't be determined.</returns>
-        public int ResolveLineNumber(string pathInExpandedTemplate)
+        public SourceLocation ResolveSourceLocation(string pathInExpandedTemplate)
         {
             if (pathInExpandedTemplate == null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             // Handle path and prefixes backwards one level at a time to construct an accurate resources' path
             var currentContext = this.templateContext;
             var currentPathToEvaluate = pathInExpandedTemplate;
-            string fullPathFromExpandedParentTemplate = "";
+            string fullPathFromExpandedParentTemplate = string.Empty;
 
             while (currentContext != null && currentPathToEvaluate.Length > 0)
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
                     if (!currentContext.ResourceMappings.TryGetValue(resourceWithIndex, out string originalResourcePath))
                     {
-                        return 1;
+                        return new SourceLocation(currentContext.TemplateIdentifier, 1);
                     }
 
                     fullPathFromExpandedParentTemplate = $"{originalResourcePath}.{remainingPathAtResourceScope}.{fullPathFromExpandedParentTemplate}";
@@ -101,7 +101,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
             JToken tokenFromOriginalTemplate = originalTemplateRoot.InsensitiveToken(fullPathFromExpandedParentTemplate, InsensitivePathNotFoundBehavior.LastValid);
 
-            return (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1;
+            return new SourceLocation(
+                this.templateContext.TemplateIdentifier,
+                (tokenFromOriginalTemplate as IJsonLineInfo)?.LineNumber ?? 1);
         }
     }
 }

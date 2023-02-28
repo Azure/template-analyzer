@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Management.Automation;
+using Microsoft.Azure.Templates.Analyzer.BicepProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     {
         private readonly TemplateContext templateContext;
         private readonly ILogger logger;
-        private readonly JsonLineNumberResolver jsonLineNumberResolver;
+        private readonly ISourceLocationResolver sourceLocationResolver;
 
         /// <summary>
         /// Evaluations outputted by the PSRule analysis.
@@ -35,7 +36,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         {
             this.templateContext = templateContext;
             this.logger = logger;
-            this.jsonLineNumberResolver = new JsonLineNumberResolver(templateContext);
+            this.sourceLocationResolver = templateContext.IsBicep
+                ? new BicepSourceLocationResolver(templateContext)
+                : new JsonSourceLocationResolver(templateContext);
         }
 
         /// <inheritdoc/>
@@ -85,18 +88,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 
             foreach (var reason in ruleRecord.Detail.Reason)
             {
-                var lineNumber = 1;
+                SourceLocation sourceLocation;
+
                 // Temporary try/catch because not all rule evaluations return a proper path yet:
                 try
                 {
-                    lineNumber = this.jsonLineNumberResolver.ResolveLineNumber(reason.FullPath);
+                    sourceLocation = this.sourceLocationResolver.ResolveSourceLocation(reason.FullPath);
                 }
                 catch
                 {
+                    sourceLocation = new SourceLocation(templateContext.TemplateIdentifier, 1);
                 }
                
                 this.Evaluations.Add(new PowerShellRuleEvaluation(ruleId, ruleName, helpUri, ruleShortDescription, ruleFullDescription, recommendation,
-                    templateContext.TemplateIdentifier, false, severity, new PowerShellRuleResult(false, lineNumber))); 
+                    templateContext.TemplateIdentifier, false, severity, new Result(false, sourceLocation))); 
             }
         }
     }

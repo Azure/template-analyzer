@@ -46,9 +46,6 @@
               "type": "string"
             }
           },
-          "variables": {
-            "sqlServerName": "random"
-          },
           "resources": [
             {
               "apiVersion": "2019-08-01",
