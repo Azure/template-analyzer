@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Templates.Analyzer.Cli
@@ -34,8 +35,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// Finds all templates within a directory, paired with any matching parameters file.
         /// </summary>
         /// <param name="directory">The directory to search for templates in.</param>
+        /// <param name="logger">A logger for outputting useful information.</param>
         /// <returns>An enumerable of templates matched with any relevant parameters files.</returns>
-        public static IEnumerable<TemplateAndParams> DiscoverTemplatesAndParametersInDirectory(DirectoryInfo directory)
+        public static IEnumerable<TemplateAndParams> DiscoverTemplatesAndParametersInDirectory(DirectoryInfo directory, ILogger logger = null)
         {
             var armTemplates = directory.GetFiles(
                 "*.json",
@@ -45,7 +47,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     RecurseSubdirectories = true
                 })
                 .Where(s => !s.Name.Contains(".parameters"))
-                .Where(IsValidTemplate);
+                .Where(IsValidTemplate)
+                .ToList();
 
             var bicepTemplates = directory.GetFiles(
                 "*.bicep",
@@ -53,11 +56,18 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 {
                     MatchCasing = MatchCasing.CaseInsensitive,
                     RecurseSubdirectories = true
-                });
+                })
+                .ToList();
 
-            return armTemplates
+            var pairsToAnalyze =
+                armTemplates
                 .Concat(bicepTemplates)
-                .SelectMany(FindParameterFilesForTemplate);
+                .SelectMany(FindParameterFilesForTemplate)
+                .ToList();
+
+            logger?.LogInformation("Discovered {count} template-parameter pairs to analyze", pairsToAnalyze.Count);
+
+            return pairsToAnalyze;
         }
 
         /// <summary>
