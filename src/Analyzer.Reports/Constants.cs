@@ -13,12 +13,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
         /// <summary>
         /// Tool name to be displayed in the report.
         /// </summary>
-        public const string ToolName = "Template BPA";
+        public const string ToolName = "Template Analyzer";
 
         /// <summary>
         /// Full name of tool to be displayed in the report.
         /// </summary>
-        public const string ToolFullName = "Template Best Practice Analyzer";
+        public const string ToolFullName = "Template Analyzer";
 
         /// <summary>
         /// Tool version to be displayed in the report.
