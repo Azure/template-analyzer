@@ -2,9 +2,11 @@
 
 ## PowerShell-Based Rules:
 
-Information about the PowerShell-based rules included by our integration with [PSRule for Azure](https://aka.ms/ps-rule-azure/rules). The tool will only evaluate the rules under the [Security pillar](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#security) unless the option `--include-non-security-rules` is used.
+Information about the PowerShell-based rules included by our integration with [PSRule for Azure](https://aka.ms/ps-rule-azure) can be found [here](https://aka.ms/ps-rule-azure/rules). The tool will only evaluate the rules under the [Security pillar](https://azure.github.io/PSRule.Rules.Azure/en/rules/module/#security) unless the option `--include-non-security-rules` is used.
 
 ## JSON-Based Rules:
+
+***Note**: Severity levels are scaled from 1 to 3. Where 1 = High, 2 = Medium, 3 = Low.*
 
 ### TA-000001: Diagnostic logs in App Service should be enabled
 Enable auditing of diagnostic logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.
