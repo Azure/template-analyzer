@@ -4,19 +4,19 @@
     "ReportedFailures": [
       {
         "LineNumber": 50,
-        "Description": "Validate Certificate Chain is False"
+        "Description": "Validate Certificate Chain is false"
       },
       {
         "LineNumber": 51,
-        "Description": "Validate Certificate Name is False"
+        "Description": "Validate Certificate Name is false"
       },
       {
         "LineNumber": 75,
-        "Description": "Validate Certificate Name is False"
+        "Description": "Validate Certificate Name is false"
       },
       {
         "LineNumber": 98,
-        "Description": "Validate Certificate Chain is False"
+        "Description": "Validate Certificate Chain is false"
       },
       {
         "LineNumber": 121,

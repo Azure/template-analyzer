@@ -878,7 +878,7 @@
     "name": "APIM.BypassCertificateThumbprintOrNameValidation",
     "shortDescription": "API Management calls to API backends should not bypass certificate thumbprint or name validation",
     "fullDescription": "API Management calls to API backends should not bypass certificate thumbprint or name validation",
-    "recommendation": "To improve security, API Management should validate the backend server certificate for all API calls. Enable SSL certificate thumbprint and name validation by setting the tls.validateCertificateName and tls.validateCertificateChain properties to true",
+    "recommendation": "To improve security, API Management should validate the backend server certificate for all API calls. Enable SSL certificate thumbprint and name validation by setting the tls.validateCertificateName and tls.validateCertificateChain properties to `true`.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000032-api-management-calls-to-api-backends-should-not-bypass-certificate-thumbprint-or-name-validation",
     "severity": 2,
     "evaluation": {
@@ -900,7 +900,7 @@
     "name": "APIM.DirectAPIManagementEndpointShouldNotBeEnabled",
     "shortDescription": "API Management direct management endpoint should not be enabled",
     "fullDescription": "The direct management REST API in Azure API Management bypasses Azure Resource Manager role-based access control, authorization, and throttling mechanisms, thus increasing the vulnerability of your service.",
-    "recommendation": "Set the properties.enabled field to false, to ensure direct access to the management REST API is disabled",
+    "recommendation": "Set the properties.enabled field to `false` to ensure that direct access to the management REST API is disabled.",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000033-api-management-direct-management-endpoint-should-not-be-enabled",
     "severity": 3,
     "evaluation": {
@@ -954,10 +954,10 @@
   },
   {
     "id": "TA-000035",
-    "name": "APIM.NamedValueSecretsShouldBeStoredInKeyVault",
-    "shortDescription": "API Management Named Value secrets should be stored in Azure Key Vault",
-    "fullDescription": "Named values are a collection of name and value pairs in each API Management service. Secret values can be stored either as encrypted text in API Management (custom secrets) or by referencing secrets in Azure Key Vault. To improve security of API Management and secrets, reference secret named values from Azure Key Vault. Azure Key Vault supports granular access management and secret rotation policies.",
-    "recommendation": "To utilize secrets stored in Key Vault for Azure API Management, learn more here: https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-properties?tabs=azure-portal#key-vault-secrets",
+    "name": "APIM.NamedValuesSecretsShouldBeStoredInKeyVault",
+    "shortDescription": "API Management Named Values secrets should be stored in Azure Key Vault",
+    "fullDescription": "Named Values are a collection of name and value pairs in each API Management service. Secret values can be stored either as encrypted text in API Management (custom secrets) or by referencing secrets in Azure Key Vault. To improve security of API Management and secrets, reference secret Named Values from Azure Key Vault. Azure Key Vault supports granular access management and secret rotation policies.",
+    "recommendation": "To utilize secrets stored in Key Vault for Azure API Management, learn more here: https://learn.microsoft.com/azure/api-management/api-management-howto-properties?tabs=azure-portal#key-vault-secrets",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000035-api-management-named-value-secrets-should-be-stored-in-azure-key-vault",
     "severity": 2,
     "evaluation": {
@@ -987,7 +987,7 @@
     "name": "APIM.ShouldUseVirtualNetwork",
     "shortDescription": "API Management services should use a virtual network",
     "fullDescription": "Azure Virtual Network deployment provides enhanced security, isolation and allows you to place your API Management service in a non-internet routable network that you control access to. These networks can then be connected to your on-premises networks using various VPN technologies, which enables access to your backend services within the network and/or on-premises. The developer portal and API gateway, can be configured to be accessible either from the Internet or only within the virtual network.",
-    "recommendation": "To learn more about Virtual Networks for Azure API Management, please visit here: https://aka.ms/apim-vnet. To see an example on how to configure a VNet via Azure Policy, please visit here: https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/api-management-create-with-internal-vnet-application-gateway/",
+    "recommendation": "To learn more about virtual networks for Azure API Management, please visit here: https://aka.ms/apim-vnet. To see an example of how to configure a VNet via Azure Policy, please visit here: https://learn.microsoft.com/samples/azure/azure-quickstart-templates/api-management-create-with-internal-vnet-application-gateway/",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000036-api-management-services-should-use-a-virtual-network",
     "severity": 2,
     "evaluation": {
@@ -998,6 +998,7 @@
             "path": "sku.name",
             "in": [
               "Developer",
+              "Standard",
               "Premium"
             ]
           }
@@ -1044,7 +1045,7 @@
     "name": "APIM.APIBackendsShouldBeAuthenticated",
     "shortDescription": "API Management calls to API backends should be authenticated",
     "fullDescription": "Calls from API Management to backends should use some form of authentication, whether via certificates or credentials. Does not apply to Service Fabric backends.",
-    "recommendation": "To enable API backend authentication, configure authentication credentials in the query parameters, client certificate, or Authorization header. To learn more about configuring Authentication in Azure API Management, please visit here: https://learn.microsoft.com/en-us/azure/api-management/authentication-authorization-overview",
+    "recommendation": "To enable API backend authentication, configure authentication credentials in the query parameters, client certificate, or authorization header. To learn more about configuring Authentication in Azure API Management, please visit here: https://learn.microsoft.com/azure/api-management/authentication-authorization-overview",
     "helpUri": "https://github.com/Azure/template-analyzer/blob/main/docs/built-in-bpa-rules.md/#ta-000038-api-management-calls-to-api-backends-should-be-authenticated",
     "severity": 2,
     "evaluation": {

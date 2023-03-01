@@ -107,6 +107,20 @@
         "publisherName": "sampleName",
         "virtualNetworkType": "None"
       }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "sampleAPIMServiceName-safe-v5-StandardSKU",
+      "location": "West US 2",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "virtualNetworkType": "Internal"
+      }
     }
   ]
 }

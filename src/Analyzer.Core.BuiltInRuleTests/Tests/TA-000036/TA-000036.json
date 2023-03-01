@@ -31,6 +31,10 @@
       {
         "ResourceName": "sampleAPIMServiceName-safe-v4-NotApplicableSKUNoneType",
         "Explanation": "SKU is not applicable"
+      },
+      {
+        "ResourceName": "sampleAPIMServiceName-safe-v5-StandardSKU",
+        "Explanation": "SKU is allowed"
       }
 
     ]
