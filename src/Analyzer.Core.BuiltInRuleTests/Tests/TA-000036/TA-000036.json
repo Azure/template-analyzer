@@ -1,0 +1,42 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 18,
+        "Description": "Selected None Option of Virtual Machine"
+      },
+      {
+        "LineNumber": 31,
+        "Description": "Missing Virtual Machine Type"
+      },
+      {
+        "LineNumber": 48,
+        "Description": "Missing Virtual Machine Type, testing other applicable SKU"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "sampleAPIMServiceName-safe-v1-ExternalType",
+        "Explanation": "Type is set to non-None option"
+      },
+      {
+        "ResourceName": "sampleAPIMServiceName-safe-v2-InternalType",
+        "Explanation": "Type is set to non-None option"
+      },
+      {
+        "ResourceName": "sampleAPIMServiceName-safe-v3-NotApplicableSKUMissingType",
+        "Explanation": "SKU is not applicable"
+      },
+      {
+        "ResourceName": "sampleAPIMServiceName-safe-v4-NotApplicableSKUNoneType",
+        "Explanation": "SKU is not applicable"
+      },
+      {
+        "ResourceName": "sampleAPIMServiceName-safe-v5-StandardSKU",
+        "Explanation": "SKU is allowed"
+      }
+
+    ]
+  }
+]
