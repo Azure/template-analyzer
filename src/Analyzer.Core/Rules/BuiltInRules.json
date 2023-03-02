@@ -1059,6 +1059,10 @@
           {
             "path": "properties.protocol",
             "equals": "http"
+          },
+          {
+            "path": "properties.properties.serviceFabricCluster.managementEndpoints",
+            "exists": false
           }
         ]
       },

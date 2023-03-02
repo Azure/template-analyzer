@@ -276,6 +276,37 @@
           "validateCertificateName": false
         }
       }
-    }
+    },
+    {
+      "name": "[concat(parameters('serviceName'), '/', 'safe-v6-ServiceFabric')]",
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2018-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/properties', parameters('serviceName'), 'samplePropertyName')]"
+      ],
+      "properties": {
+        "title": null,
+        "description": "Backend of API management",
+        "url": "fabric:/fake/service",
+        "protocol": "http",
+        "resourceId": "[concat('https://management.azure.com/subscriptions/', subscription().id, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'))]",
+        "properties": {
+          "serviceFabricCluster": {
+            "managementEndpoints": [
+              "fabric:/fake/serviceendpoint"
+            ],
+            "clientCertificateThumbprint": "exampleThumbprint",
+            "serverCertificateThumbprints": [
+              "exampleThumbprint"
+            ],
+            "maxPartitionResolutionRetries": 5
+          }
+        },
+          "tls": {
+            "validateCertificateChain": false,
+            "validateCertificateName": false
+          }
+        }
+      }
   ]
 }
