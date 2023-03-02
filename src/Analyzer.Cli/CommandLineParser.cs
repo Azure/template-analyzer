@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             // Find files to analyze
-            var filesToAnalyze = TemplateDiscovery.DiscoverTemplatesAndParametersInDirectory(directoryPath);
+            var filesToAnalyze = TemplateDiscovery.DiscoverTemplatesAndParametersInDirectory(directoryPath, logger);
 
             // Log root directory info to be analyzed
             Console.WriteLine($"{Environment.NewLine}{Environment.NewLine}Directory: {directoryPath}");
