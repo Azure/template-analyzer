@@ -202,7 +202,7 @@ API Management calls to API backends should not bypass certificate thumbprint or
 #### Severity: 2
 
 ### TA-000033: API Management direct management endpoint should not be enabled
-The direct management REST API in Azure API Management bypasses Azure Resource Manager role-based access control, authorization, and throttling mechanisms, thus increasing the vulnerability of your service.
+The direct management REST API in Azure API Management bypasses Azure Resource Manager (ARM) Role-Based Access Control (RBAC), authorization, and throttling mechanisms, thus increasing the vulnerability of your service.
 
 **Recommendation**: Set the *properties.enabled* property to `false` to ensure that direct access to the management REST API is disabled.
 #### Severity: 3
