@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     public sealed class ConsoleLoggerFormatter : ConsoleFormatter
     {
-        private const string defaultForegroundColor = "\x1B[39m\x1B[22m";
+        private const string DefaultForegroundColor = "\x1B[39m\x1B[22m";
         private ConsoleLoggerFormatterOptions formatterOptions;
         private readonly IDisposable optionsReloadToken;
 
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             ConsoleColor.Red => "\x1B[1m\x1B[31m",
             ConsoleColor.Yellow => "\x1B[1m\x1B[33m",
             ConsoleColor.Cyan => "\x1B[1m\x1B[36m",
-            _ => defaultForegroundColor
+            _ => DefaultForegroundColor
         };
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 textWriter.WriteLine(logEntry.Exception.ToString());
             }
 
-            textWriter.Write(defaultForegroundColor);
+            textWriter.Write(DefaultForegroundColor);
         }
     }
 }

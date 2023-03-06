@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
+using Microsoft.Azure.Templates.Analyzer.TemplateProcessor;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -24,25 +25,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     internal class CommandLineParser
     {
-        private readonly IReadOnlyList<string> validSchemas = new List<string> {
-            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-        }.AsReadOnly();
-
-        private readonly IReadOnlyList<string> validTemplateProperties = new List<string> {
-            "contentVersion",
-            "apiProfile",
-            "parameters",
-            "variables",
-            "functions",
-            "resources",
-            "outputs",
-        }.AsReadOnly();
-
-        private const string defaultConfigFileName = "configuration.json";
+        private const string DefaultConfigFileName = "configuration.json";
 
         private RootCommand rootCommand;
         private TemplateAnalyzer templateAnalyzer;
@@ -190,7 +173,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             // Verify the file is a valid template
-            if (!IsValidTemplate(templateFilePath))
+            if (!ArmTemplateProcessor.IsValidTemplate(templateFilePath))
             {
                 logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath.FullName);
                 FinishAnalysis();
@@ -298,7 +281,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 if (parametersFilePath != null)
                 {
                     logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName} with parameters file {parametersFilePath.FullName}");
-                }                
+                }
                 else
                 {
                     logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName}");
@@ -360,7 +343,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     MatchCasing = MatchCasing.CaseInsensitive,
                     RecurseSubdirectories = true
                 }
-            ).Where(s => !s.Name.Contains(".parameters")).Where(IsValidTemplate);
+            ).Where(s => !s.Name.Contains(".parameters")).Where(ArmTemplateProcessor.IsValidTemplate);
 
             var bicepTemplates = directoryPath.GetFiles(
                 "*.bicep",
@@ -385,47 +368,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 });
 
             return parametersFiles;
-        }
-
-        private bool IsValidTemplate(FileInfo file)
-        {
-            // assume bicep files are valid, they are compiled/verified later
-            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            using var fileStream = new StreamReader(file.OpenRead());
-            var reader = new JsonTextReader(fileStream);
-
-            reader.Read();
-            if (reader.TokenType != JsonToken.StartObject)
-            {
-                return false;
-            }
-
-            while (reader.Read())
-            {
-                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
-                {
-                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
-                    {
-                        reader.Read();
-                        if (reader.TokenType != JsonToken.String)
-                        {
-                            return false;
-                        }
-
-                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
-                    }
-                    else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null) =>
@@ -486,7 +428,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 // Look for a config at the default location.
                 // It's not required to exist, so if it doesn't, just return early.
-                configFilePath = Path.Combine(AppContext.BaseDirectory, defaultConfigFileName);
+                configFilePath = Path.Combine(AppContext.BaseDirectory, DefaultConfigFileName);
                 if (!File.Exists(configFilePath))
                     return true;
             }
