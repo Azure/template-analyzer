@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
             catch (Exception exception)
             {
-                // Keeping separate LoggError calls so formatting can use the recommended templating.
+                // Keeping separate LogError calls so formatting can use the recommended templating.
                 // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2254
                 if (templateAndParameters.Parameters != null)
                 {
