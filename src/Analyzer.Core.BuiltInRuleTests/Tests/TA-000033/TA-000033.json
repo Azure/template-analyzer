@@ -1,0 +1,34 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 27,
+        "Description": "Direct Access should be disabled"
+      },
+      {
+        "LineNumber": 27,
+        "Description": "Direct Access should be disabled"
+      },
+      {
+        "LineNumber": 27,
+        "Description": "Direct Access should be disabled"
+      },
+      {
+        "LineNumber": 27,
+        "Description": "Direct Access should be disabled"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "safe-v1",
+        "Explanation": "Direct Access is disabled"
+      },
+      {
+        "ResourceName": "safe-v2",
+        "Explanation": "Direct Access is disabled (by default)"
+      }
+
+    ]
+  }
+]

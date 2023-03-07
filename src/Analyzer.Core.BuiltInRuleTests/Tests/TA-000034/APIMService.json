@@ -1,0 +1,171 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "vulnerable-v1",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2018-01-01"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "vulnerable-v2",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2019-01-01"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v1-preview",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2019-12-01-preview"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v2",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2019-12-01"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v3",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2020-12-01"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v4",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2021-01-01-preview"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "vulnerable-v3-missingproperty",
+      "location": "West US 2",
+      "sku": {
+        "name": "Developer",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v5-consumptionsku",
+      "location": "West US 2",
+      "sku": {
+        "name": "Consumption",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName"
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v6-consumptionsku",
+      "location": "West US 2",
+      "sku": {
+        "name": "Consumption",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2018-01-01"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-08-01",
+      "name": "safe-v7-lowercaseConsumptionSkuTest",
+      "location": "West US 2",
+      "sku": {
+        "name": "consumption",
+        "capacity": "1"
+      },
+      "properties": {
+        "publisherEmail": "sampleEmail",
+        "publisherName": "sampleName",
+        "apiVersionConstraint": {
+          "minApiVersion": "2018-01-01"
+        }
+      }
+    }
+
+  ]
+}

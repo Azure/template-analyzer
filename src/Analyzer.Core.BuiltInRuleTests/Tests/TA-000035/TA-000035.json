@@ -1,0 +1,41 @@
+[
+  {
+    "Template": "APIMService.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 29,
+        "Description": "Missing Secret Identifier property"
+      },
+      {
+        "LineNumber": 29,
+        "Description": "Missing Secret Identifier property"
+      },
+      {
+        "LineNumber": 46,
+        "Description": "Missing Secret Identifier property"
+      },
+      {
+        "LineNumber": 46,
+        "Description": "Missing Secret Identifier property"
+      },
+      {
+        "LineNumber": 60,
+        "Description": "Missing Secret Identifier property"
+      },
+      {
+        "LineNumber": 60,
+        "Description": "Missing Secret Identifier property"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "safe-v1",
+        "Explanation": "Key Vault Properties are defined. Both identifyClientId and secretIdentifier are populated"
+      },
+      {
+        "ResourceName": "safe-v2-missing-display-name",
+        "Explanation": "Display name is missing. Assessment is not applicable"
+      }
+    ]
+  }
+]
