@@ -74,9 +74,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         }
 
         /// <summary>
-        /// Checks if parameters*.json files are present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name
+        /// Checks if parameters*.json files are present according to naming standards here https://learn.microsoft.com/azure/azure-resource-manager/templates/parameter-files#file-name.
         /// </summary>
-        /// <param name="template">Template file to match parameters for</param>
+        /// <param name="template">Template file to match parameters for.</param>
         /// <returns>
         /// An enumerable of <see cref="TemplateAndParams"/> for each parameters file found that matches against the template.
         /// If none are found, the <see cref="TemplateAndParams.Parameters"/> file will be null in a single record returned.
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <returns>true if the file is a valid ARM template; false otherwise.</returns>
         public static bool IsValidTemplate(FileInfo file)
         {
-            // assume bicep files are valid, they are compiled/verified later
+            // Assume bicep files are valid, they are compiled/verified later
             if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
@@ -151,7 +151,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// <returns>The contents of the template and parameters.</returns>
         public static (string, string) GetTemplateAndParameterContents(TemplateAndParams templateAndParams)
         {
-            // Logic is simple now, may expand in the future.
             return (
                 File.ReadAllText(templateAndParams.Template.FullName),
                 templateAndParams.Parameters != null

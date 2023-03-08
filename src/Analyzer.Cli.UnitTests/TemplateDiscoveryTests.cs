@@ -61,8 +61,12 @@ namespace Analyzer.Cli.UnitTests
             DisplayName = "Bicep template with 2 matching parameters files")]
         public void FindParameterFilesForTemplate_ValidTemplateFile_ReturnsExpectedParametersFiles(string templateName, params string[] parameterFiles)
         {
+            // Directory to test (if a sub-directory of `testTemplateDirectory`) is specified in the template name.
+            // Grab that directory to target the rest of the test to it.
             var templateNameSplit = templateName.Split('\\');
             var directoryForTest = Path.Combine(templateNameSplit[..^1].Prepend(testTemplateDirectory).ToArray());
+
+            // Get the full template path from the directory above.
             var template = Path.Combine(directoryForTest, templateNameSplit[^1]);
             var pairs = TemplateDiscovery.FindParameterFilesForTemplate(new FileInfo(template)).ToList();
 

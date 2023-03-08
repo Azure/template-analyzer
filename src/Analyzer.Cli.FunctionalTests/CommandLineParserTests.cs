@@ -179,7 +179,10 @@ namespace Analyzer.Cli.FunctionalTests
             var sarifOutput = JObject.Parse(File.ReadAllText(outputFilePath));
             var toolNotifications = sarifOutput["runs"][0]["invocations"][0]["toolExecutionNotifications"];
 
-            // Index 0 is the number of template-parameters pairs discovered
+            // The exact number of templates isn't really important here - not what's being tested
+            Assert.IsTrue(Regex.IsMatch(toolNotifications[0]["message"]["text"].ToString(), @"Discovered \d+ template-parameter pairs to analyze"));
+
+            // Verify the expected error logs
             Assert.AreEqual($"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json")}", toolNotifications[1]["message"]["text"].ToString());
             Assert.AreEqual($"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep")}", toolNotifications[2]["message"]["text"].ToString());
 
