@@ -24,24 +24,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     internal class CommandLineParser
     {
-        private readonly IReadOnlyList<string> validSchemas = new List<string> {
-            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-        }.AsReadOnly();
-
-        private readonly IReadOnlyList<string> validTemplateProperties = new List<string> {
-            "contentVersion",
-            "apiProfile",
-            "parameters",
-            "variables",
-            "functions",
-            "resources",
-            "outputs",
-        }.AsReadOnly();
-
         private const string defaultConfigFileName = "configuration.json";
 
         private RootCommand rootCommand;
@@ -190,40 +172,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             // Verify the file is a valid template
-            if (!IsValidTemplate(templateFilePath))
+            if (!TemplateDiscovery.IsValidTemplate(templateFilePath))
             {
                 logger.LogError("File is not a valid ARM Template. File path: {templateFilePath}", templateFilePath.FullName);
                 FinishAnalysis();
                 return (int)ExitCode.ErrorInvalidARMTemplate;
             }
 
-            ExitCode exitCode;
-            if (parametersFilePath != null)
-            {
-                exitCode = AnalyzeTemplate(templateFilePath, parametersFilePath);
-            }
-            else
-            {
-                var parametersFiles = FindParameterFileForTemplate(templateFilePath);
-                var exitCodes = new List<ExitCode>();
+            IEnumerable<TemplateAndParams> pairsToAnalyze =
+                parametersFilePath != null
+                ? new[] { new TemplateAndParams(templateFilePath, parametersFilePath) }
+                : TemplateDiscovery.FindParameterFilesForTemplate(templateFilePath);
 
-                if (parametersFiles.Count() > 0)
-                {
-                    foreach (FileInfo parametersFile in parametersFiles)
-                    {
-                        exitCodes.Add(AnalyzeTemplate(templateFilePath, parametersFile));
-                    }
+            var exitCodes = new List<ExitCode>();
 
-                    exitCode = AnalyzeExitCodes(exitCodes);
-                }
-                else
-                {
-                    exitCode = AnalyzeTemplate(templateFilePath, null);
-                }
+            foreach (var templateAndParameters in pairsToAnalyze)
+            {
+                exitCodes.Add(AnalyzeTemplate(templateAndParameters));
             }
 
             FinishAnalysis();
-            return (int)exitCode;
+            return (int)AnalyzeExitCodes(exitCodes);
         }
 
         // Note: argument names must match command arguments/options (without "-" characters)
@@ -248,26 +217,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             }
 
             // Find files to analyze
-            var filesToAnalyze = FindTemplateFilesInDirectory(directoryPath);
+            var filesToAnalyze = TemplateDiscovery.DiscoverTemplatesAndParametersInDirectory(directoryPath, logger);
 
             // Log root directory info to be analyzed
             Console.WriteLine($"{Environment.NewLine}{Environment.NewLine}Directory: {directoryPath}");
 
             var exitCodes = new List<ExitCode>();
-            foreach (FileInfo file in filesToAnalyze)
+            foreach (var templateAndParameters in filesToAnalyze)
             {
-                var parametersFiles = FindParameterFileForTemplate(file);
-                if (parametersFiles.Count() > 0)
-                {
-                    foreach (FileInfo parametersFile in parametersFiles)
-                    {
-                        exitCodes.Add(AnalyzeTemplate(file, parametersFile));
-                    }
-                }
-                else
-                {
-                    exitCodes.Add(AnalyzeTemplate(file, null));
-                }
+                exitCodes.Add(AnalyzeTemplate(templateAndParameters));
             }
 
             int numOfFilesAnalyzed = exitCodes.Where(x => x == ExitCode.Success || x == ExitCode.Violation).Count();
@@ -280,28 +238,31 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return (int)exitCode;
         }
 
-        private ExitCode AnalyzeTemplate(FileInfo templateFilePath, FileInfo parametersFilePath)
+        private ExitCode AnalyzeTemplate(TemplateAndParams templateAndParameters)
         {
             try
             {
-                string templateFileContents = File.ReadAllText(templateFilePath.FullName);
-                string parameterFileContents = parametersFilePath == null ? null : File.ReadAllText(parametersFilePath.FullName);
 
-                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(templateFileContents, templateFilePath.FullName, parameterFileContents);
+                (string template, string parameters) = TemplateDiscovery.GetTemplateAndParameterContents(templateAndParameters);
 
-                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateFilePath, (FileInfoBase)parametersFilePath);
+                IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(template, templateAndParameters.Template.FullName, parameters);
+
+                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateAndParameters.Template, (FileInfoBase)templateAndParameters.Parameters);
 
                 return evaluations.Any(e => !e.Passed) ? ExitCode.Violation : ExitCode.Success;
             }
             catch (Exception exception)
             {
-                if (parametersFilePath != null)
+                // Keeping separate LogError calls so formatting can use the recommended templating.
+                // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2254
+                if (templateAndParameters.Parameters != null)
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName} with parameters file {parametersFilePath.FullName}");
+                    logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath} with parameters file {ParametersPath}",
+                        templateAndParameters.Template.FullName, templateAndParameters.Parameters.FullName);
                 }                
                 else
                 {
-                    logger.LogError(exception, $"An exception occurred while analyzing template {templateFilePath.FullName}");
+                    logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath}", templateAndParameters.Template.FullName);
                 }
 
                 return (exception.Message == TemplateAnalyzer.BicepCompileErrorMessage)
@@ -349,83 +310,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         {
             this.summaryLogger.SummarizeLogs();
             this.reportWriter?.Dispose();
-        }
-
-        private IEnumerable<FileInfo> FindTemplateFilesInDirectory(DirectoryInfo directoryPath)
-        {
-            var armTemplates = directoryPath.GetFiles(
-                "*.json",
-                new EnumerationOptions
-                {
-                    MatchCasing = MatchCasing.CaseInsensitive,
-                    RecurseSubdirectories = true
-                }
-            ).Where(s => !s.Name.Contains(".parameters")).Where(IsValidTemplate);
-
-            var bicepTemplates = directoryPath.GetFiles(
-                "*.bicep",
-                new EnumerationOptions
-                {
-                    MatchCasing = MatchCasing.CaseInsensitive,
-                    RecurseSubdirectories = true
-                });
-
-            return armTemplates.Concat(bicepTemplates);
-        }
-
-        // Check if parameters*.json files are present according to naming standards here https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/parameter-files#file-name, and if so use it as the parametersFile input
-        private IEnumerable<FileInfo> FindParameterFileForTemplate(FileInfo template)
-        {
-            var parametersFiles = template.Directory.GetFiles(
-                Path.GetFileNameWithoutExtension(template.Name) + ".parameters*.json",
-                new EnumerationOptions
-                {
-                    MatchCasing = MatchCasing.CaseInsensitive,
-                    RecurseSubdirectories = false
-                });
-
-            return parametersFiles;
-        }
-
-        private bool IsValidTemplate(FileInfo file)
-        {
-            // assume bicep files are valid, they are compiled/verified later
-            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            using var fileStream = new StreamReader(file.OpenRead());
-            var reader = new JsonTextReader(fileStream);
-
-            reader.Read();
-            if (reader.TokenType != JsonToken.StartObject)
-            {
-                return false;
-            }
-
-            while (reader.Read())
-            {
-                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
-                {
-                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
-                    {
-                        reader.Read();
-                        if (reader.TokenType != JsonToken.String)
-                        {
-                            return false;
-                        }
-
-                        return validSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
-                    }
-                    else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return false;
         }
 
         private static IReportWriter GetReportWriter(ReportFormat reportFormat, FileInfo outputFile, string rootFolder = null) =>
@@ -527,20 +411,15 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
         private ExitCode AnalyzeExitCodes(List<ExitCode> exitCodes)
         {
-            ExitCode exitCode;
-            bool issueReported = exitCodes.Where(x => x == ExitCode.Violation).Count() > 0;
-            bool filesFailed = exitCodes.Where(x => x == ExitCode.ErrorAnalysis || x == ExitCode.ErrorInvalidBicepTemplate).Count() > 0;
+            if (exitCodes.Count == 1)
+                return exitCodes[0];
 
-            if (filesFailed)
-            {
-                exitCode = issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis;
-            }
-            else
-            {
-                exitCode = issueReported ? ExitCode.Violation : ExitCode.Success;
-            }
+            bool issueReported = exitCodes.Any(x => x == ExitCode.Violation);
+            bool filesFailed = exitCodes.Any(x => x == ExitCode.ErrorAnalysis || x == ExitCode.ErrorInvalidBicepTemplate);
 
-            return exitCode;
+            return filesFailed
+                ? issueReported ? ExitCode.ErrorAndViolation : ExitCode.ErrorAnalysis
+                : issueReported ? ExitCode.Violation : ExitCode.Success;
         }
     }
 }
