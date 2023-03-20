@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-
   <metadata>
-    <id>Azure.Templates.TemplateProcessing</id>
+    <id>Azure.Templates.TemplateProcessor</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
-    <description>ARM and Bicep Template template processing and helper classes</description>
+    <description>ARM and Bicep Template template processor classes</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Azure/template-analyzer</projectUrl>
