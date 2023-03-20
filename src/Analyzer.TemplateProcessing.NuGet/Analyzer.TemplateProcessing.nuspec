@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+
   <metadata>
     <id>Azure.Templates.TemplateProcessing</id>
     <version>$version$</version>
@@ -14,8 +15,6 @@
       <group targetFramework="net6.0">
         <dependency id="Azure.Bicep.Core" version="0.12.40" />
         <dependency id="Newtonsoft.Json" version="13.0.1" />
-      </group>
-      <group targetFramework="netstandard2.1">
         <dependency id="Azure.Deployments.Core" version="1.0.635" />
         <dependency id="Azure.Deployments.Expression" version="1.0.635" />
         <dependency id="Azure.Deployments.Templates" version="1.0.635" />
@@ -26,10 +25,10 @@
   </metadata>
 
   <files>
-    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\**" target="lib\" exclude="**\*.pdb;**\ref\**" />
-    <file src="..\Analyzer.TemplateProcessor\bin\$configuration$\**" target="lib\" exclude="**\*.pdb;**\ref\**" />
-    <file src="..\Analyzer.Utilities\bin\$configuration$\**" target="lib\" exclude="**\*.pdb;**\ref\**" />
-    <file src="..\Analyzer.Types\bin\$configuration$\**" target="lib\" exclude="**\*.pdb;**\ref\**" />
+    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net6.0\Analyzer.BicepProcessor.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.TemplateProcessor\bin\$configuration$\netstandard2.1\Microsoft.Azure.Templates.Analyzer.TemplateProcessor.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.Utilities\bin\$configuration$\netstandard2.1\Microsoft.Azure.Templates.Analyzer.Utilities.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.Types\bin\$configuration$\netstandard2.1\Microsoft.Azure.Templates.Analyzer.Types.dll" target="lib\net6.0\" />
   </files>
-
+  
 </package>
