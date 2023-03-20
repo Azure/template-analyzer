@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Azure.Deployments.Core.Configuration;
 using Azure.Deployments.Core.Definitions.Schema;
@@ -27,30 +26,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
     /// </summary>
     public class ArmTemplateProcessor
     {
-        /// <summary>
-        /// Well-known valid JSON schemas for ARM templates
-        /// </summary>
-        public static readonly IReadOnlyList<string> ValidSchemas = new List<string> {
-            "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-            "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#"
-        }.AsReadOnly();
-
-        /// <summary>
-        /// Well-known valid ARM template properties
-        /// </summary>
-        public static readonly IReadOnlyList<string> ValidTemplateProperties = new List<string> {
-            "contentVersion",
-            "apiProfile",
-            "parameters",
-            "variables",
-            "functions",
-            "resources",
-            "outputs",
-        }.AsReadOnly();
-
         private readonly string armTemplate;
         private readonly string apiVersion;
         private readonly ILogger logger;
@@ -65,52 +40,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// in the original template.
         /// </summary>
         public Dictionary<string, string> ResourceMappings = new Dictionary<string, string>();
-
-        /// <summary>
-        /// Basic check for a file as to whether it is a valid ARM tempalte
-        /// </summary>
-        /// <param name="file">The file to check</param>
-        /// <returns></returns>
-        public static bool IsValidTemplate(FileInfo file)
-        {
-            // assume bicep files are valid, they are compiled/verified later
-            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            using var fileStream = new StreamReader(file.OpenRead());
-            var reader = new JsonTextReader(fileStream);
-
-            reader.Read();
-            if (reader.TokenType != JsonToken.StartObject)
-            {
-                return false;
-            }
-
-            while (reader.Read())
-            {
-                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
-                {
-                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
-                    {
-                        reader.Read();
-                        if (reader.TokenType != JsonToken.String)
-                        {
-                            return false;
-                        }
-
-                        return ValidSchemas.Any(schema => string.Equals((string)reader.Value, schema, StringComparison.OrdinalIgnoreCase));
-                    }
-                    else if (!ValidTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return false;
-        }
 
         /// <summary>
         ///  Constructor for the ARM Template Processing library
