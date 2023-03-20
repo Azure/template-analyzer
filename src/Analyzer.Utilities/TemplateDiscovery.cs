@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Templates.Analyzer.Cli
+namespace Microsoft.Azure.Templates.Analyzer.Utilities
 {
     /// <summary>
     /// Holds a template file with a parameters file to use with analysis, if applicable.
