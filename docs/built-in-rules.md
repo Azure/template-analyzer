@@ -194,3 +194,45 @@ Azure supports two deployment models: Classic and Azure Resource Manager (ARM). 
 
 **Recommendation**: Use ARM for your storage accounts to provide security enhancements such as: stronger access control (RBAC), better auditing, ARM-based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.
 #### Severity: 1
+
+### TA-000032: API Management calls to API backends should not bypass certificate thumbprint or name validation
+API Management calls to API backends should not bypass certificate thumbprint or name validation.
+
+**Recommendation**: To improve security, API Management should validate the backend server certificate for all API calls. Enable SSL certificate thumbprint and name validation by setting the *tls.validateCertificateName* and *tls.validateCertificateChain* properties to `true`.
+#### Severity: 2
+
+### TA-000033: API Management direct management endpoint should not be enabled
+The direct management REST API in Azure API Management bypasses Azure Resource Manager (ARM) Role-Based Access Control (RBAC), authorization, and throttling mechanisms, thus increasing the vulnerability of your service.
+
+**Recommendation**: Set the *properties.enabled* property to `false` to ensure that direct access to the management REST API is disabled.
+#### Severity: 3
+
+### TA-000034: API Management minimum API version should be set to 2019-12-01 or higher
+To prevent service secrets from being shared with read-only users, the minimum API version should be set to 2019-12-01 or higher.
+
+**Recommendation**: Set the *apiVersionContstraint.minAPIversion* property to 2019-12-01 or higher to prevent service secrets from being shared with read-only users.
+#### Severity: 2
+
+### TA-000035: API Management Named Values secrets should be stored in Azure Key Vault
+Named Values are a collection of name and value pairs in each API Management service. Secret values can be stored either as encrypted text in API Management (custom secrets) or by referencing secrets in Azure Key Vault. To improve security of API Management and secrets, reference secret Named Values from Azure Key Vault. Azure Key Vault supports granular access management and secret rotation policies.
+
+**Recommendation**: To utilize secrets stored in Key Vault for Azure API Management, learn more [here](https://learn.microsoft.com/azure/api-management/api-management-howto-properties?tabs=azure-portal#key-vault-secrets).
+#### Severity: 2
+
+### TA-000036: API Management services should use a virtual network
+Azure Virtual Network deployment provides enhanced security, isolation and allows you to place your API Management service in a non-internet routable network that you control access to. These networks can then be connected to your on-premises networks using various VPN technologies, which enables access to your backend services within the network and/or on-premises. The developer portal and API gateway, can be configured to be accessible either from the Internet or only within the virtual network.
+
+**Recommendation**: To learn more about virtual networks for Azure API Management, please visit [here](https://aka.ms/apim-vnet). To see an example of how to configure a VNet via Azure Policy, please visit [here](https://learn.microsoft.com/samples/azure/azure-quickstart-templates/api-management-create-with-internal-vnet-application-gateway/).
+#### Severity: 2
+
+### TA-000037: API Management subscriptions should not be scoped at the all API scope
+API Management subscriptions should be scoped to a product or an individual API instead of all APIs, which could result in an excessive data exposure.
+
+**Recommendation**: To ensure the API Management service is not configured at the all API scope, please set the *properties.scope* property to a value other than */apis*. For example, */product/{productId}*, or */apis/{apiId}*.
+#### Severity: 2
+
+### TA-000038: API Management calls to API backends should be authenticated
+Calls from API Management to backends should use some form of authentication, whether via certificates or credentials. Does not apply to Service Fabric backends.
+
+**Recommendation**: To enable API backend authentication, configure authentication credentials in the query parameters, client certificate, or Authorization header. To learn more about configuring authentication in Azure API Management, please visit [here](https://learn.microsoft.com/azure/api-management/authentication-authorization-overview).
+#### Severity: 2

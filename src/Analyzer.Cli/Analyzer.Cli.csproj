@@ -16,7 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Core\Analyzer.Core.csproj" />
     <ProjectReference Include="..\Analyzer.Reports\Analyzer.Reports.csproj" />
-    <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
   </ItemGroup>
 
 </Project>

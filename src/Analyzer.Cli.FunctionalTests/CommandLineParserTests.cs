@@ -179,14 +179,18 @@ namespace Analyzer.Cli.FunctionalTests
             var sarifOutput = JObject.Parse(File.ReadAllText(outputFilePath));
             var toolNotifications = sarifOutput["runs"][0]["invocations"][0]["toolExecutionNotifications"];
 
-            Assert.AreEqual(toolNotifications[0]["message"]["text"].ToString(), $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json")}");
-            Assert.AreEqual(toolNotifications[1]["message"]["text"].ToString(), $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep")}");
+            // The exact number of templates isn't really important here - not what's being tested
+            Assert.IsTrue(Regex.IsMatch(toolNotifications[0]["message"]["text"].ToString(), @"Discovered \d+ template-parameter pairs to analyze"));
 
-            Assert.AreEqual("error", toolNotifications[0]["level"]);
+            // Verify the expected error logs
+            Assert.AreEqual($"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.json")}", toolNotifications[1]["message"]["text"].ToString());
+            Assert.AreEqual($"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "AnInvalidTemplate.bicep")}", toolNotifications[2]["message"]["text"].ToString());
+
             Assert.AreEqual("error", toolNotifications[1]["level"]);
+            Assert.AreEqual("error", toolNotifications[2]["level"]);
 
-            Assert.AreNotEqual(null, toolNotifications[0]["exception"]);
             Assert.AreNotEqual(null, toolNotifications[1]["exception"]);
+            Assert.AreNotEqual(null, toolNotifications[2]["exception"]);
         }
 
         [DataTestMethod]
@@ -414,6 +418,10 @@ namespace Analyzer.Cli.FunctionalTests
             try
             {
                 File.WriteAllText(templatePath, templateToAnalyze);
+
+                // Test template validity function
+                Assert.AreEqual(expectedErrorCode == ExitCode.Success, TemplateDiscovery.IsValidTemplate(new FileInfo(templatePath)));
+
                 var args = new string[] { "analyze-template", templatePath };
                 var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
