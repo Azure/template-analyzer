@@ -55,8 +55,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Reports.UnitTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Cli.FunctionalTests", "Analyzer.Cli.FunctionalTests\Analyzer.Cli.FunctionalTests.csproj", "{33EFDD35-B9EE-4988-847C-7475AF86797E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Analyzer.Cli.UnitTests", "Analyzer.Cli.UnitTests\Analyzer.Cli.UnitTests.csproj", "{23A7B1AD-5FCD-4634-B00C-E602D3C9FB1F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cli", "Cli", "{5138342A-33CC-42B8-BD9A-2B5CDCE71745}"
 EndProject
 Global
@@ -141,10 +139,6 @@ Global
 		{33EFDD35-B9EE-4988-847C-7475AF86797E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33EFDD35-B9EE-4988-847C-7475AF86797E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33EFDD35-B9EE-4988-847C-7475AF86797E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{23A7B1AD-5FCD-4634-B00C-E602D3C9FB1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{23A7B1AD-5FCD-4634-B00C-E602D3C9FB1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{23A7B1AD-5FCD-4634-B00C-E602D3C9FB1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{23A7B1AD-5FCD-4634-B00C-E602D3C9FB1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -168,7 +162,6 @@ Global
 		{A4314EC1-8A28-40C6-B5BB-9F8906A020FA} = {9BE28F9E-17E2-42E9-9A0A-9AFF60F6176B}
 		{58F5C921-D639-4962-858F-BCD5C85C16D5} = {9BE28F9E-17E2-42E9-9A0A-9AFF60F6176B}
 		{33EFDD35-B9EE-4988-847C-7475AF86797E} = {5138342A-33CC-42B8-BD9A-2B5CDCE71745}
-		{23A7B1AD-5FCD-4634-B00C-E602D3C9FB1F} = {5138342A-33CC-42B8-BD9A-2B5CDCE71745}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C716DF78-13EF-44A1-8E2E-CFF3746128CE}
