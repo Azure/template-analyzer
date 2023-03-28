@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     public record TemplateAndParams(FileInfo Template, FileInfo Parameters);
 
     /// <summary>
-    /// Helper methods for template discovery
+    /// Helper methods for template discovery.
     /// </summary>
     public static class TemplateDiscovery
     {
