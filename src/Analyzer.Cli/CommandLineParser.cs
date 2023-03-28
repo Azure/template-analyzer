@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(template, templateAndParameters.Template.FullName, parameters);
 
-                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateAndParameters.Template, (FileInfoBase)templateAndParameters.Parameters);
+                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateAndParameters.Template, (FileInfoBase)templateAndParameters.ParametersFile);
 
                 return evaluations.Any(e => !e.Passed) ? ExitCode.Violation : ExitCode.Success;
             }
@@ -256,10 +256,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 // Keeping separate LogError calls so formatting can use the recommended templating.
                 // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2254
-                if (templateAndParameters.Parameters != null)
+                if (templateAndParameters.ParametersFile != null)
                 {
                     logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath} with parameters file {ParametersPath}",
-                        templateAndParameters.Template.FullName, templateAndParameters.Parameters.FullName);
+                        templateAndParameters.Template.FullName, templateAndParameters.ParametersFile.FullName);
                 }
                 else
                 {

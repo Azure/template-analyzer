@@ -5,18 +5,19 @@
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.PowerShellRuleEngine</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine</RootNamespace>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <!-- TODO: needs test fixes -->
     <!-- <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.3.3" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.3.3" />
     <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.25.0-B0138" />
-    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.8.0-B0034" />
-    <PackageReference Include="System.Management.Automation" Version="7.2.10" /> -->
+    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.8.0-B0034" /> -->
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.4" />
     <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.22.0-B0011" />
     <PackageReference Include="Microsoft.PSRule.SDK" Version="2.6.0-B0013" />
+    <PackageReference Include="System.Management.Automation" Version="7.2.10" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj" />
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
@@ -28,5 +29,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
 </Project>

@@ -4,17 +4,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// simplified namespace for simpler test directory logic
-namespace Analyzer.Utilities.UnitTests
+namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
 {
     [TestClass]
     public class TemplateDiscoveryTests
     {
         private static readonly string executingDirectory = Directory.GetCurrentDirectory();
-        private static readonly string testTemplateDirectory = Path.Combine(executingDirectory[..executingDirectory.IndexOf(typeof(TemplateDiscoveryTests).Namespace)], "Analyzer.Cli.FunctionalTests", "Tests");
+        private static readonly string testTemplateDirectory = Path.Combine(executingDirectory, "TestTemplates");
 
         [TestMethod]
         public void DiscoverTemplatesAndParametersInDirectory_DirectoryWithTemplatesAndParameters_ReturnsExpectedNumberOfFiles()
@@ -44,8 +42,8 @@ namespace Analyzer.Utilities.UnitTests
             // Verify parameter files discovered with templates
             foreach (var pair in pairsToAssertWereFound)
             {
-                Assert.IsNotNull(discoveredTemplates.Single(t => t.Template.FullName == pair.Template.FullName && t.Parameters.FullName == pair.Parameters.FullName),
-                    $"Expected template {pair.Template.FullName} and parameters file {pair.Parameters.FullName} not discovered.");
+                Assert.IsNotNull(discoveredTemplates.Single(t => t.Template.FullName == pair.Template.FullName && t.ParametersFile.FullName == pair.ParametersFile.FullName),
+                    $"Expected template {pair.Template.FullName} and parameters file {pair.ParametersFile.FullName} not discovered.");
             }
         }
 
@@ -75,17 +73,17 @@ namespace Analyzer.Utilities.UnitTests
             {
                 // No expected parameters files
                 Assert.AreEqual(1, pairs.Count);
-                Assert.IsNull(pairs[0].Parameters, $"Unexpected parameters file found: template '{pairs[0].Template.FullName}'; parameters '{pairs[0].Parameters?.FullName}'");
+                Assert.IsNull(pairs[0].ParametersFile, $"Unexpected parameters file found: template '{pairs[0].Template.FullName}'; parameters '{pairs[0].ParametersFile?.FullName}'");
             }
             else
             {
                 // Expect to find a pair for each expected parameters file
                 Assert.AreEqual(parameterFiles.Length, pairs.Count);
-                Assert.IsFalse(pairs.Any(p => p.Parameters == null), "A template was returned without a matching parameters file");
+                Assert.IsFalse(pairs.Any(p => p.ParametersFile == null), "A template was returned without a matching parameters file");
 
                 foreach (var expectedParams in parameterFiles)
                 {
-                    Assert.IsNotNull(pairs.Single(p => p.Parameters.FullName == Path.Combine(directoryForTest, expectedParams)), $"Expected parameters file not found: {expectedParams}");
+                    Assert.IsNotNull(pairs.Single(p => p.ParametersFile.FullName == Path.Combine(directoryForTest, expectedParams)), $"Expected parameters file not found: {expectedParams}");
                 }
             }
         }

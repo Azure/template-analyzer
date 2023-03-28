@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// Holds a template file with a parameters file to use with analysis, if applicable.
     /// </summary>
     /// <param name="Template">Template to be analyzed.</param>
-    /// <param name="Parameters">Parameters to use when analyzing the template.</param>
-    public record TemplateAndParams(FileInfo Template, FileInfo Parameters);
+    /// <param name="ParametersFile">Parameters file to use when analyzing the template.</param>
+    public record TemplateAndParams(FileInfo Template, FileInfo ParametersFile);
 
     /// <summary>
     /// Helper methods for template discovery
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <param name="template">Template file to match parameters for.</param>
         /// <returns>
         /// An enumerable of <see cref="TemplateAndParams"/> for each parameters file found that matches against the template.
-        /// If none are found, the <see cref="TemplateAndParams.Parameters"/> file will be null in a single record returned.
+        /// If none are found, the <see cref="TemplateAndParams.ParametersFile"/> file will be null in a single record returned.
         /// </returns>
         public static IEnumerable<TemplateAndParams> FindParameterFilesForTemplate(FileInfo template)
         {
@@ -156,8 +156,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         {
             return (
                 File.ReadAllText(templateAndParams.Template.FullName),
-                templateAndParams.Parameters != null
-                    ? File.ReadAllText(templateAndParams.Parameters.FullName)
+                templateAndParams.ParametersFile != null
+                    ? File.ReadAllText(templateAndParams.ParametersFile.FullName)
                     : null
             );
         }
