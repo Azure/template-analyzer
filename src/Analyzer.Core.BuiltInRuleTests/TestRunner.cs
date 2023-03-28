@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.BuiltInRuleTests
     [TestClass]
     public class TestRunner
     {
-        Dictionary<string, IEnumerable<IEvaluation>> templateEvaluations = new();
-        static TemplateAnalyzer templateAnalyzer;
+        private static readonly Dictionary<string, IEnumerable<IEvaluation>> templateEvaluations = new();
+        private static TemplateAnalyzer templateAnalyzer;
 
         [ClassInitialize]
         public static void Initialize(TestContext testContext)

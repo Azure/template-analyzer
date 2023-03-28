@@ -4,15 +4,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
+// simplified namespace for simpler test directory logic
+namespace Analyzer.Utilities.UnitTests
 {
     [TestClass]
     public class TemplateDiscoveryTests
     {
-        private static string executingDirectory = Directory.GetCurrentDirectory();
-        private static string testTemplateDirectory = Path.Combine(executingDirectory[..executingDirectory.IndexOf(typeof(TemplateDiscoveryTests).Namespace)], "Analyzer.Cli.FunctionalTests", "Tests");
+        private static readonly string executingDirectory = Directory.GetCurrentDirectory();
+        private static readonly string testTemplateDirectory = Path.Combine(executingDirectory[..executingDirectory.IndexOf(typeof(TemplateDiscoveryTests).Namespace)], "Analyzer.Cli.FunctionalTests", "Tests");
 
         [TestMethod]
         public void DiscoverTemplatesAndParametersInDirectory_DirectoryWithTemplatesAndParameters_ReturnsExpectedNumberOfFiles()

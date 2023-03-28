@@ -14,28 +14,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
     /// <summary>
     /// Holds a template file with a parameters file to use with analysis, if applicable.
     /// </summary>
-    public class TemplateAndParams {
-        /// <summary>
-        /// Template to be analyzed.
-        /// </summary>
-        public FileInfo Template;
-
-        /// <summary>
-        /// Parameters to use when analyzing the template.
-        /// </summary>
-        public FileInfo Parameters;
-
-        /// <summary>
-        /// Create instance of class to hold a template file with a parameters file to use with analysis, if applicable.
-        /// </summary>
-        /// <param name="Template">Template to be analyzed.</param>
-        /// <param name="Parameters">Parameters to use when analyzing the template.</param>
-        public TemplateAndParams(FileInfo Template, FileInfo Parameters)
-        {
-            this.Template = Template;
-            this.Parameters = Parameters;
-        }
-    }
+    /// <param name="Template">Template to be analyzed.</param>
+    /// <param name="Parameters">Parameters to use when analyzing the template.</param>
+    public record TemplateAndParams(FileInfo Template, FileInfo Parameters);
 
     /// <summary>
     /// Helper methods for template discovery

@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
 
             Dictionary<string, HashSet<int>> failedEvaluationSourceLocations = new();
             foreach (var evaluation in evaluations)
-            {
+            {   
                 var failedResults = evaluation.GetFailedResults();
                 foreach (var failedResult in failedResults)
                 {
