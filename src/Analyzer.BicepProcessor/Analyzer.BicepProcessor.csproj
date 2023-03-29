@@ -1,7 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Microsoft.Azure.Templates.Analyzer.BicepProcessor</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Templates.Analyzer.BicepProcessor</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
