@@ -60,6 +60,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         new List<int> { 1 }
                     }
                 },
+                { "AZR-000187", new List<List<int>> {
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
+                    }
+                },
+                { "AZR-000188", new List<List<int>> {
+                        isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
+                    }
+                },
                 { "AZR-000189", new List<List<int>> {
                         isBicepResult ? new List<int> { 5 } : new List<int> { 14 },
                         isBicepResult ? new List<int> { 22 } : new List<int> { 34 }
@@ -72,10 +82,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(3);
+            run.Tool.Driver.Rules.Count.Should().Be(5);
             run.OriginalUriBaseIds.Count.Should().Be(1);
             run.OriginalUriBaseIds["ROOTPATH"].Uri.Should().Be(new Uri(targetDirectory, UriKind.Absolute));
-            run.Results.Count.Should().Be(5);
+            run.Results.Count.Should().Be(9);
 
             foreach (Result result in run.Results)
             {
@@ -200,7 +210,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             sarifLog.Should().NotBeNull();
 
             Run run = sarifLog.Runs.First();
-            run.Tool.Driver.Rules.Count.Should().Be(8);
+            run.Tool.Driver.Rules.Count.Should().Be(10);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000022")).Should().Be(true);
             run.Tool.Driver.Rules.Any(r => r.Id.Equals("TA-000028")).Should().Be(true);
             run.OriginalUriBaseIds.Count.Should().Be(1);
@@ -245,6 +255,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         new List<int> { 1 }
                     })
                 },
+                { "AZR-000187", (
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
+                    })
+                },
+                { "AZR-000188", (
+                    file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
+                    uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
+                    lines: new List<List<int>> {
+                        isBicep ? new List<int> { 5 } : new List<int> { 14 },
+                        isBicep ? new List<int> { 22 } : new List<int> { 34 }
+                    })
+                },
                 { "AZR-000189", (
                     file: isBicep ? nestedTemplate : expectedSecondTemplateFilePathInSarif,
                     uriBase: secondTemplateUsesRelativePath ? SarifReportWriter.UriBaseIdString : null,
@@ -281,7 +307,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 extraResults.ForEach(r => run.Results.Remove(r));
             }
 
-            run.Results.Count.Should().Be(10);
+            run.Results.Count.Should().Be(14);
             foreach (Result result in run.Results)
             {
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
