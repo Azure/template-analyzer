@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
@@ -13,7 +11,6 @@ using Newtonsoft.Json.Linq;
 using PSRule.Configuration;
 using PSRule.Pipeline;
 using PSRule.Rules;
-using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -22,6 +19,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
     /// </summary>
     public class PowerShellRuleEngine : IRuleEngine
     {
+        /// <summary>
+        /// The name of the module containing the PowerShell rules.
+        /// </summary>
+        private const string PSRuleModuleName = "PSRule.Rules.Azure";
+
         /// <summary>
         /// Whether or not to run also non-security rules against the template.
         /// </summary>
@@ -42,53 +44,19 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             this.includeNonSecurityRules = includeNonSecurityRules;
             this.logger = logger;
 
-            // We need to unblock the PowerShell scripts on Windows to allow them to run
-            // If a script is not unblocked, even if it's signed, PowerShell prompts for confirmation before executing
-            // This prompting would throw an exception, because there's no interaction with a user that would allow for confirmation
-            if (Platform.IsWindows)
+            // We need to unblock the PowerShell scripts on Windows to allow them to run.
+            // If a script is not unblocked, even if it's signed, PowerShell prompts for confirmation before executing.
+            // This prompting would throw an exception, because there's no interaction with a user that would allow for confirmation.
+            if (OperatingSystem.IsWindows())
             {
                 try
                 {
-                    // There are 2 different 'Default' functions available:
-                    // https://docs.microsoft.com/en-us/powershell/scripting/developer/hosting/creating-an-initialsessionstate?view=powershell-7.2
-                    //
-                    // CreateDefault has a dependency on Microsoft.Management.Infrastructure.dll, which is missing when publishing for 'win-x64',
-                    // and PowerShell throws an exception creating the InitialSessionState.
-                    //
-                    // CreateDefault2 does NOT have this dependency.
-                    // Notably, Microsoft.Management.Infrastructure.dll is available when publishing for specific Windows versions (such as win7-x64),
-                    // but since this libary is not needed in our usage of PowerShell, we can eliminate the dependency.
-                    var initialState = InitialSessionState.CreateDefault2();
-
-                    // Ensure we can execute the signed bundled scripts
-                    // This sets the policy at the Process scope
-                    initialState.ExecutionPolicy = PowerShell.ExecutionPolicy.RemoteSigned;
-
-                    var powershell = Powershell.Create(initialState);
-
-                    powershell
-                        .AddCommand("Get-ChildItem")
-                        .AddParameter("Path", Path.Combine(AppContext.BaseDirectory, "Modules", "PSRule.Rules.Azure"))
-                        .AddParameter("Recurse")
-                        .AddParameter("Filter", "*.ps1")
-                        .AddCommand("Unblock-File")
-                        .Invoke();
-
-                    if (powershell.HadErrors)
-                    {
-                        this.logger?.LogError("There was an error unblocking the PowerShell scripts");
-
-                        foreach (var error in powershell.Streams.Error)
-                        {
-                            this.logger?.LogError(error.ToString());
-                        }
-                    }
+                    UnblockRules();
                 }
                 catch(Exception exception)
                 {
                     this.logger?.LogError(exception, "There was an exception while unblocking the PowerShell scripts");
                 }
-
             }
         }
 
@@ -124,7 +92,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             try
             {
                 hostContext = new PSRuleHostContext(templateContext, logger);
-                var modules = new string[] { "PSRule.Rules.Azure" };
+                var modules = new string[] { PSRuleModuleName };
                 var optionsForFileAnalysis = new PSRuleOption
                 {
                     Input = new InputOption
@@ -181,6 +149,38 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
 
             return hostContext.Evaluations;
+        }
+
+        /// <summary>
+        /// Unblocks the PSRule PowerShell scripts by deleting the Zone.Identifier Alternate Data Stream.
+        /// See https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/unblock-file#example-3-find-and-unblock-scripts for more information.
+        /// Creates a new Alternate Data Stream on the .psd1 module file to indicate that the rules have been unblocked.
+        /// </summary>
+        private void UnblockRules()
+        {
+            var rulesDirectory = Path.Combine(AppContext.BaseDirectory, "Modules", PSRuleModuleName);
+
+            // Check if rules have already been unblocked
+            var moduleFileAlternateDataStream = Path.Combine(rulesDirectory, $"{PSRuleModuleName}.psd1:Unblocked");
+            if (File.Exists(moduleFileAlternateDataStream))
+            {
+                return;
+            }
+
+            string[] ruleFiles = Directory.GetFiles(rulesDirectory, "*.ps1", new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                MatchCasing = MatchCasing.CaseInsensitive
+            });
+
+            // Delete the Zone.Identifier Alternate Data Stream on each rule file
+            foreach (string ruleFile in ruleFiles)
+            {
+                File.Delete($"{ruleFile}:Zone.Identifier");
+            }
+
+            // Create a new Alternate Data Stream on the .psd1 module file to indicate that the rules have been unblocked
+            File.WriteAllBytes(moduleFileAlternateDataStream, new byte[0]);
         }
     }
 }
