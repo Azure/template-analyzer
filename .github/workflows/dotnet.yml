@@ -2,9 +2,9 @@ name: .NET
 
 on:
   push:
-    branches: [ development, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ development, main ]
+    branches: [ main ]
 
 defaults:
   run:
@@ -64,8 +64,11 @@ jobs:
     - name: Pack Analyzer.Core
       run: nuget pack Analyzer.Core.NuGet/Analyzer.Core.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }}
       
+    - name: Pack Analyzer.TemplateProcessing
+      run: nuget pack Analyzer.TemplateProcessing.NuGet/Analyzer.TemplateProcessing.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }}
+      
     - name: (dotnet) Publish CLI
       run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --runtime ${{ matrix.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
       
-    - name: Pack CLI
+    - name: Pack Analyzer.CLI
       run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties "configuration=${{ env.Configuration }};runtimeId=${{ matrix.runtimeId }}"
