@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
@@ -13,7 +11,6 @@ using Newtonsoft.Json.Linq;
 using PSRule.Configuration;
 using PSRule.Pipeline;
 using PSRule.Rules;
-using Powershell = System.Management.Automation.PowerShell; // There's a conflict between this class name and a namespace
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
 {
@@ -50,7 +47,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             // We need to unblock the PowerShell scripts on Windows to allow them to run.
             // If a script is not unblocked, even if it's signed, PowerShell prompts for confirmation before executing.
             // This prompting would throw an exception, because there's no interaction with a user that would allow for confirmation.
-            if (Platform.IsWindows)
+            if (OperatingSystem.IsWindows())
             {
                 try
                 {
