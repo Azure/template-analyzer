@@ -1,7 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Microsoft.Azure.Templates.Analyzer.BicepProcessor</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Templates.Analyzer.BicepProcessor</RootNamespace>
   </PropertyGroup>
   
   <ItemGroup>
@@ -9,8 +11,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Bicep.Core" Version="0.12.40" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Azure.Bicep.Core" Version="0.14.85" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
     
 </Project>

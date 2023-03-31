@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         private static readonly IConfigurationManager configurationManager = new ConfigurationManager(new FileSystem());
         private static readonly IFileResolver fileResolver = new FileResolver(new FileSystem());
         private static readonly INamespaceProvider namespaceProvider = new DefaultNamespaceProvider(new AzResourceTypeLoader());
+        private static readonly ITokenCredentialFactory tokenCredentialFactory = new TokenCredentialFactory();
 
         /// <summary>
         /// Converts Bicep template into JSON template and returns it as a string and its source map
@@ -58,8 +59,8 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var moduleDispatcher = new ModuleDispatcher(
                 new DefaultModuleRegistryProvider(
                     fileResolver,
-                    new ContainerRegistryClientFactory(new TokenCredentialFactory()),
-                    new TemplateSpecRepositoryFactory(new TokenCredentialFactory()),
+                    new ContainerRegistryClientFactory(tokenCredentialFactory),
+                    new TemplateSpecRepositoryFactory(tokenCredentialFactory),
                     featureProviderFactory,
                     configurationManager),
                 configurationManager);

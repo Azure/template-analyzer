@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             var mockFileSystem = new Mock<IFileInfo>();
             mockFileSystem
                 .Setup(x => x.Create())
-                .Returns(() => stream);
+                .Returns(() => new MockFileStream(stream));
             return new SarifReportWriter(mockFileSystem.Object);
         }
 

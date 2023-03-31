@@ -2,12 +2,13 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Templates.Analyzer.Cli;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
 namespace Analyzer.Cli.FunctionalTests

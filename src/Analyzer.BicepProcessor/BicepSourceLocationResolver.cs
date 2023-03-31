@@ -54,28 +54,27 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             var bestMatch = metadata.SourceMap.Entries
                 .Select(sourceFile =>
                 {
-                    var match = sourceFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine);
+                    var match = sourceFile.SourceMap.FirstOrDefault(mapping => mapping.TargetLine == jsonLine, new(-1,-1));
                     // matchSize reflects how many other ARM lines have the same Bicep source line, for example
                     // a Bicep source line that points to a module will have a larger matchSize as it maps
                     // to all the other lines of the nested template, but a direct ARM mapping will be smaller
-                    var matchSize = match != default
-                        ? sourceFile.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine)
-                        : int.MaxValue;
-                    return (sourceFile.FilePath, match?.SourceLine, matchSize);
+                    var matchSize = match.TargetLine < 0
+                        ? int.MaxValue
+                        : sourceFile.SourceMap.Count(mapping => mapping.SourceLine == match.SourceLine);
+                    return (sourceFile.FilePath, match.SourceLine, matchSize);
                 })
                 .MinBy(tuple => tuple.matchSize);
 
-            // Default to result from JSON if no matches
-            if (!bestMatch.SourceLine.HasValue)
+            if (bestMatch.SourceLine < 0 )
             {
-                return new SourceLocation(this.EntrypointFilePath, jsonLine + 1); // convert line number back to 1-indexing
+                return new SourceLocation(this.EntrypointFilePath, 0);
             }
 
             // Check if match is an ARM module reference, if so return location in that template
             var moduleMetadata = this.metadata.ModuleInfo.FirstOrDefault(info => info.FileName == bestMatch.FilePath);
-            if (moduleMetadata != default && moduleMetadata.Modules.ContainsKey(bestMatch.SourceLine.Value))
+            if (moduleMetadata != default && moduleMetadata.Modules.ContainsKey(bestMatch.SourceLine))
             {
-                var modulePath = moduleMetadata.Modules[bestMatch.SourceLine.Value];
+                var modulePath = moduleMetadata.Modules[bestMatch.SourceLine];
                 if (modulePath.EndsWith(".json") && File.Exists(modulePath))
                 {
                     var templateContext = ArmTemplateContextCache.GetArmTemplateContext(modulePath);
@@ -92,7 +91,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             var entrypointFullPath = Path.GetDirectoryName(this.EntrypointFilePath);
             var matchFullFilePath = Path.GetFullPath(Path.Combine(entrypointFullPath, bestMatch.FilePath));
-            return new SourceLocation(matchFullFilePath, bestMatch.SourceLine.Value + 1); // convert line number back to 1-indexing
+            return new SourceLocation(matchFullFilePath, bestMatch.SourceLine + 1); // convert line number back to 1-indexing
         }
 
         private static class ArmTemplateContextCache

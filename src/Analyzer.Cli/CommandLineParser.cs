@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
 using Microsoft.Azure.Templates.Analyzer.Types;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     /// </summary>
     internal class CommandLineParser
     {
-        private const string defaultConfigFileName = "configuration.json";
+        private const string DefaultConfigFileName = "configuration.json";
 
         private RootCommand rootCommand;
         private TemplateAnalyzer templateAnalyzer;
@@ -247,7 +248,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
 
                 IEnumerable<IEvaluation> evaluations = this.templateAnalyzer.AnalyzeTemplate(template, templateAndParameters.Template.FullName, parameters);
 
-                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateAndParameters.Template, (FileInfoBase)templateAndParameters.Parameters);
+                this.reportWriter.WriteResults(evaluations, (FileInfoBase)templateAndParameters.Template, (FileInfoBase)templateAndParameters.ParametersFile);
 
                 return evaluations.Any(e => !e.Passed) ? ExitCode.Violation : ExitCode.Success;
             }
@@ -255,11 +256,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 // Keeping separate LogError calls so formatting can use the recommended templating.
                 // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2254
-                if (templateAndParameters.Parameters != null)
+                if (templateAndParameters.ParametersFile != null)
                 {
                     logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath} with parameters file {ParametersPath}",
-                        templateAndParameters.Template.FullName, templateAndParameters.Parameters.FullName);
-                }                
+                        templateAndParameters.Template.FullName, templateAndParameters.ParametersFile.FullName);
+                }
                 else
                 {
                     logger.LogError(exception, "An exception occurred while analyzing template {TemplatePath}", templateAndParameters.Template.FullName);
@@ -370,7 +371,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             {
                 // Look for a config at the default location.
                 // It's not required to exist, so if it doesn't, just return early.
-                configFilePath = Path.Combine(AppContext.BaseDirectory, defaultConfigFileName);
+                configFilePath = Path.Combine(AppContext.BaseDirectory, DefaultConfigFileName);
                 if (!File.Exists(configFilePath))
                     return true;
             }

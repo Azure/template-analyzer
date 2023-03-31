@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -20,6 +20,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
     <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SolutionDir)Analyzer.Cli.FunctionalTests\Tests\**" CopyToOutputDirectory="PreserveNewest" LinkBase="TestTemplates\" />
   </ItemGroup>
 
 </Project>

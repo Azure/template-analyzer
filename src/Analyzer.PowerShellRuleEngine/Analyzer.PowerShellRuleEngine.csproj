@@ -5,13 +5,13 @@
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.PowerShellRuleEngine</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine</RootNamespace>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.2.4" />
-    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.22.0-B0011" />
-    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.6.0-B0013" />
+    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.26.0-B0011" />
+    <PackageReference Include="Microsoft.PSRule.SDK" Version="2.8.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj" />
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
@@ -23,5 +23,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
 </Project>
