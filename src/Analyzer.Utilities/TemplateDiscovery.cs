@@ -108,43 +108,50 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <returns>true if the file is a valid ARM template; false otherwise.</returns>
         public static bool IsValidTemplate(FileInfo file)
         {
-            // Assume bicep files are valid, they are compiled/verified later
-            if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                return true;
-            }
-
-            using var fileStream = new StreamReader(file.OpenRead());
-            var reader = new JsonTextReader(fileStream);
-
-            reader.Read();
-            if (reader.TokenType != JsonToken.StartObject)
-            {
-                return false;
-            }
-
-            while (reader.Read())
-            {
-                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
+                // Assume bicep files are valid, they are compiled/verified later
+                if (file.Extension.Equals(".bicep", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
+                    return true;
+                }
+
+                using var fileStream = new StreamReader(file.OpenRead());
+                var reader = new JsonTextReader(fileStream);
+
+                reader.Read();
+                if (reader.TokenType != JsonToken.StartObject)
+                {
+                    return false;
+                }
+
+                while (reader.Read())
+                {
+                    if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
                     {
-                        reader.Read();
-                        if (reader.TokenType != JsonToken.String)
+                        if (string.Equals((string)reader.Value, "$schema", StringComparison.OrdinalIgnoreCase))
+                        {
+                            reader.Read();
+                            if (reader.TokenType != JsonToken.String)
+                            {
+                                return false;
+                            }
+
+                            return validSchemaRegex.IsMatch((string)reader.Value);
+                        }
+                        else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
                         {
                             return false;
                         }
-
-                        return validSchemaRegex.IsMatch((string)reader.Value);
-                    }
-                    else if (!validTemplateProperties.Any(property => string.Equals((string)reader.Value, property, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        return false;
                     }
                 }
-            }
 
-            return false;
+                return false;
+            }
+            catch {
+                // If template fails to parse in any way then also consider invalid template
+                return false;
+            }
         }
 
         /// <summary>
