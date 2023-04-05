@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
                 return false;
             }
             catch {
-                // if template fails to parse in any way then also consider invalid template
+                // If template fails to parse in any way then also consider invalid template
                 return false;
             }
         }

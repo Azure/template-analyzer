@@ -3,7 +3,7 @@
     /// <summary>
     /// Constants being passed in as test cases for the CommandLineParserTests.
     /// </summary>
-    public class TestcaseTemplateConstants
+    public class TestCaseTemplateConstants
     {
         // Pass
         public const string PassingTest = @"{
@@ -49,5 +49,8 @@
 
         // Fail
         public const string NoSchemaInvalidProperties = @" {""properties"": }";
+
+        // Fail
+        public const string UnexpectedCharacters = @"{ ""$schema"": �";
     }
 }

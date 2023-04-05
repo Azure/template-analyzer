@@ -412,6 +412,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow(TestcaseTemplateConstants.MissingSchema, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Missing schema, capitalized property names")]
         [DataRow(TestcaseTemplateConstants.SchemaValueNotString, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Schema value isn't string")]
         [DataRow(TestcaseTemplateConstants.NoSchemaInvalidProperties, ExitCode.ErrorInvalidARMTemplate, DisplayName = "No schema, invalid properties")]
+        [DataRow(TestCaseTemplateConstants.UnexpectedCharacters, ExitCode.ErrorInvalidARMTemplate, DisplayName = "Unexpected character, parsing fails")]
         public void IsValidTemplate_ValidAndInvalidInputTemplates_ReturnExpectedErrorCode(string templateToAnalyze, ExitCode expectedErrorCode)
         {
             var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "output.json");
