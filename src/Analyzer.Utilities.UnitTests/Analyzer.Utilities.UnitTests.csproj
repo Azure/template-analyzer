@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)Analyzer.Cli.FunctionalTests\Tests\**" CopyToOutputDirectory="PreserveNewest" LinkBase="TestTemplates\" />
+    <None Include="..\Analyzer.Cli.FunctionalTests\Tests\**" CopyToOutputDirectory="PreserveNewest" LinkBase="TestTemplates\" />
   </ItemGroup>
 
 </Project>

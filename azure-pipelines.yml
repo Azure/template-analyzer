@@ -21,6 +21,10 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    version: '6.x'
+
 - task: DotNetCoreCLI@2
   displayName: 'Build'
   inputs:
