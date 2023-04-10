@@ -25,9 +25,9 @@
 
   <files>
     <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.BicepProcessor.dll" target="lib\net6.0\" />
-    <file src="..\Analyzer.TemplateProcessor\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.TemplateProcessor.dll" target="lib\net6.0\" />
-    <file src="..\Analyzer.Utilities\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.Utilities.dll" target="lib\net6.0\" />
-    <file src="..\Analyzer.Types\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.Types.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.TemplateProcessor.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.Utilities.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net6.0\Microsoft.Azure.Templates.Analyzer.Types.dll" target="lib\net6.0\" />
   </files>
   
 </package>
