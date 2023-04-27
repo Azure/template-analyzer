@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.CodeAnalysis.Sarif;
@@ -6,7 +9,7 @@ using Microsoft.CodeAnalysis.Sarif;
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
     /// <summary>
-    /// Simple wrapper class to enable mocking for System.IO.Abstractions.FileSystemStream for unit testing
+    /// Simple wrapper class to enable mocking for System.IO.Abstractions.FileSystemStream for unit testing.
     /// </summary>
     internal class MockFileStream : FileSystemStream
     {
