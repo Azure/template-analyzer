@@ -120,11 +120,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
                     // Log result
                     SarifLogger.Log(this.rulesDictionary[evaluation.RuleId], new SarifResult
                     {
-                        RuleId = evaluation.RuleId,
-                        Level = GetLevelFromEvaluation(evaluation),
-                        Message = new Message { Id = "default" }, // should be customized message for each result 
-                        Locations = locations,
-                        AnalysisTarget = analysisTarget,
+                            RuleId = evaluation.RuleId,
+                            Kind = evaluation.Passed ? ResultKind.Pass : ResultKind.Fail, // Check Passed property in case we support outputting passed results in future
+                            Level = evaluation.Passed ? FailureLevel.None : GetLevelFromSeverity(evaluation.Severity),
+                            Message = new Message { Id = "default" }, // should be customized message for each result 
+                            Locations = locations,
+                            AnalysisTarget = analysisTarget,
                     });
 
                     totalResults++;
@@ -175,24 +176,24 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
 
         private void ExtractRule(IEvaluation evaluation)
         {
-            if (!rulesDictionary.ContainsKey(evaluation.RuleId))
+            if (rulesDictionary.ContainsKey(evaluation.RuleId))
+                return;
+
+            var hasUri = Uri.TryCreate(evaluation.HelpUri, UriKind.RelativeOrAbsolute, out Uri uri);
+            rulesDictionary.Add(evaluation.RuleId, new ReportingDescriptor
             {
-                var hasUri = Uri.TryCreate(evaluation.HelpUri, UriKind.RelativeOrAbsolute, out Uri uri);
-                rulesDictionary.Add(evaluation.RuleId, new ReportingDescriptor
+                Id = evaluation.RuleId,
+                Name = evaluation.RuleName,
+                ShortDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleShortDescription) },
+                FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleFullDescription) },
+                Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },
+                HelpUri = hasUri ? uri : null,
+                MessageStrings = new Dictionary<string, MultiformatMessageString>()
                 {
-                    Id = evaluation.RuleId,
-                    Name = evaluation.RuleName,
-                    ShortDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleShortDescription) },
-                    FullDescription = new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleFullDescription) },
-                    Help = new MultiformatMessageString { Text = AppendPeriod(evaluation.Recommendation) },
-                    HelpUri = hasUri ? uri : null,
-                    MessageStrings = new Dictionary<string, MultiformatMessageString>()
-                    {
-                        { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleFullDescription) } }
-                    },
-                    DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromEvaluation(evaluation) }
-                });
-            }
+                    { "default", new MultiformatMessageString { Text = AppendPeriod(evaluation.RuleFullDescription) } }
+                },
+                DefaultConfiguration = new ReportingConfiguration { Level = GetLevelFromSeverity(evaluation.Severity) }
+            });
         }
 
         private (bool, string) GetFilePathInfo(string fileFullName)
@@ -205,11 +206,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports
             return (isFileInRootPath, filePath);
         }
 
-        private FailureLevel GetLevelFromEvaluation(IEvaluation evaluation)
-        {
-            // The rule severity definition work item: https://github.com/Azure/template-analyzer/issues/177
-            return evaluation.Passed ? FailureLevel.Note : FailureLevel.Error;
-        }
+        private static FailureLevel GetLevelFromSeverity(Severity severity) =>
+            severity switch
+            {
+                Severity.High   => FailureLevel.Error,
+                Severity.Medium => FailureLevel.Warning,
+                _               => FailureLevel.Note,
+            };
 
         internal static bool IsSubPath(string rootPath, string childFilePath)
         {

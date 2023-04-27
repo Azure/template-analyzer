@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 foreach (var evaluation in evaluations)
                 {
                     var rule = rules.SingleOrDefault(r => r.Id.Equals(evaluation.RuleId));
-                    if (evaluation.Passed)
+                    if (evaluation.Passed && !failedEvaluations.Any(e => e.RuleId == evaluation.RuleId))
                     {
                         rule.Should().BeNull();
                     }
@@ -127,6 +127,11 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                         rule.FullDescription.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.RuleFullDescription));
                         rule.Help.Text.Should().BeEquivalentTo(SarifReportWriter.AppendPeriod(evaluation.Recommendation));
                         rule.HelpUri.OriginalString.Should().BeEquivalentTo(evaluation.HelpUri);
+
+                        // rule.DefaultConfiguration is not tested here. It appears to be primarily used internally in the SARIF SDK to determine levels for individual results.
+                        // For example, if DefaultConfiguration.Level is explicitly set to FailureLevel.Warning (and nothing else is set in DefaultConfiguration) for a rule,
+                        // then the DefaultConfiguration for that rule will be null in the resulting SARIF output file.
+                        // It's therefore not worth testing here, as the tests would have to account for the internal logic of the SARIF library itself (which may change at any time).
                     }
                 }
 
@@ -145,7 +150,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     var result = run.Results[outputResults.Count];
                     result.RuleId.Should().BeEquivalentTo(evaluation.RuleId);
                     result.Message.Id.Should().BeEquivalentTo("default");
-                    result.Level.Should().Be(FailureLevel.Error);
+                    result.Kind.Should().Be(ResultKind.Fail);
+                    result.Level.Should().Be(Utilities.GetLevelFromSeverity(evaluation.Severity));
 
                     if (evalDistinctResults.First().SourceLocation.FilePath != templateFilePath.FullName)
                     {
