@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
             foreach (Result result in run.Results)
             {
                 expectedLinesForRun.ContainsKey(result.RuleId).Should().BeTrue("Unexpected result found in SARIF");
-                result.Level.Should().Be(FailureLevel.Error);
+                result.Level.Should().Be(GetLevelFromSeverity(results.First(r => result.RuleId == r.RuleId).Severity));
 
                 // Determine which template file was evaluated for this SARIF result (all locations will be in same file, so taking first)
                 // depending on if eval file matches the original target file, verify if analysis target is present or not
@@ -167,6 +167,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 
             // act
             var memStream = new MemoryStream();
+            List<Types.IEvaluation> analyzerResults = null;
             try
             {
                 // secondTemplateDirectory is always equal to or under targetDirectory
@@ -193,12 +194,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     parameters: null,
                     templateFilePath: firstTemplateFileInfo.FullName);
                 writer.WriteResults(results, (FileInfoBase)firstTemplateFileInfo);
+                analyzerResults = results.ToList();
 
                 results = analyzer.AnalyzeTemplate(
                     template: secondTemplateString,
                     parameters: null,
                     templateFilePath: secondTemplateFileInfo.FullName);
                 writer.WriteResults(results, (FileInfoBase)secondTemplateFileInfo);
+                analyzerResults.AddRange(results.ToList());
             }
             finally
             {
@@ -352,7 +355,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     expectedLinesForRun.Remove(result.RuleId);
                 }
 
-                result.Level.Should().Be(FailureLevel.Error);
+                result.Level.Should().Be(GetLevelFromSeverity(analyzerResults.First(r => result.RuleId == r.RuleId).Severity));
             }
 
             // Verify all lines and results were reported
@@ -372,5 +375,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 .Returns(() => new MockFileStream(stream));
             return new SarifReportWriter(mockFileSystem.Object, targetPath: targetDirectory);
         }
+
+        private static FailureLevel GetLevelFromSeverity(Types.Severity severity) =>
+            severity switch
+            {
+                Types.Severity.Low => FailureLevel.Note,
+                Types.Severity.Medium => FailureLevel.Warning,
+                Types.Severity.High => FailureLevel.Error,
+                _ => FailureLevel.Error,
+            };
     }
 }

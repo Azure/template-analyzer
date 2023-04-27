@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Templates.Analyzer.Types;
 
 namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
 {
@@ -29,13 +30,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 10))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 10))
                     }
                 }
             },
@@ -48,25 +50,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 65))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 65))
                     },
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 120))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 120))
                     }
                 }
             },
@@ -79,37 +83,40 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 65))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 65))
                     },
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 65))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 65))
                     },
                     new MockEvaluation
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 120))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 120))
                     }
                 }
             },
@@ -122,6 +129,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -138,7 +146,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                                     }
                                 }
                             },
@@ -146,7 +154,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 117))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 117))
                             },
                         },
                     }
@@ -161,6 +169,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -177,7 +186,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                                     }
                                 }
                             },
@@ -185,7 +194,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 23))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 23))
                             },
                         },
                     },
@@ -193,6 +202,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -204,7 +214,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -215,13 +225,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 245))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 245))
                                     }
                                 }
                             },
@@ -238,6 +248,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -254,7 +265,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                                     }
                                 }
                             },
@@ -262,7 +273,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 23))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 23))
                             },
                         },
                     },
@@ -270,6 +281,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -281,7 +293,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -292,13 +304,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 245))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 245))
                                     }
                                 }
                             },
@@ -308,6 +320,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -319,7 +332,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -330,13 +343,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 245))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 245))
                                     }
                                 }
                             },
@@ -353,6 +366,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -369,7 +383,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                                     }
                                 }
                             },
@@ -377,7 +391,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 117))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 117))
                             },
                         },
                     },
@@ -385,6 +399,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -396,7 +411,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -407,13 +422,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 618))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 618))
                                     }
                                 }
                             },
@@ -423,6 +438,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000003",
                         RuleName = "Rule000003",
+                        Severity = Severity.Low,
                         RuleShortDescription = "T R 0000003",
                         RuleFullDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
@@ -434,7 +450,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -445,13 +461,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 618))
+                                        Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 618))
                                     }
                                 }
                             },
@@ -468,6 +484,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -484,7 +501,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                                     }
                                 }
                             },
@@ -492,7 +509,40 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 117))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 117))
+                            },
+                        },
+                    },
+                    new MockEvaluation
+                    {
+                        RuleId = "TEST-000001",
+                        RuleName = "Rule000001",
+                        Severity = Severity.High,
+                        RuleShortDescription = "T R 0000001",
+                        RuleFullDescription = "Test rule 0000001",
+                        Recommendation = "Recommendation 0000001",
+                        HelpUri = "https://domain.com/help",
+                        Passed = true,
+                        Evaluations = new []
+                        {
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = new []
+                                {
+                                    new MockEvaluation
+                                    {
+                                        Passed = true,
+                                        Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                        Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 10))
+                                    }
+                                }
+                            },
+                            new MockEvaluation
+                            {
+                                Passed = true,
+                                Evaluations = Enumerable.Empty<MockEvaluation>(),
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 118))
                             },
                         },
                     },
@@ -500,6 +550,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -511,7 +562,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -522,13 +573,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 618))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 618))
                                     }
                                 }
                             },
@@ -538,6 +589,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -549,7 +601,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -560,13 +612,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 618))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 618))
                                     }
                                 }
                             },
@@ -576,6 +628,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000003",
                         RuleName = "Rule000003",
+                        Severity = Severity.Low,
                         RuleShortDescription = "T R 0000003",
                         RuleFullDescription = "Test rule 0000003",
                         Recommendation = "Recommendation 0000003",
@@ -587,7 +640,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -598,13 +651,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 130))
                                     },
                                     new MockEvaluation
                                     {
                                         Passed = false,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 618))
+                                        Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 618))
                                     }
                                 }
                             },
@@ -621,6 +674,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -637,7 +691,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                        Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 9))
                                     }
                                 }
                             },
@@ -645,7 +699,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 117))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 117))
                             },
                         },
                     },
@@ -653,6 +707,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -664,7 +719,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = true,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 25))
+                                Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 25))
                             },
                             new MockEvaluation
                             {
@@ -675,7 +730,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                                     {
                                         Passed = true,
                                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                        Result = new MockResult(true, new Types.SourceLocation(TestTemplateFilePath, 130))
+                                        Result = new MockResult(true, new SourceLocation(TestTemplateFilePath, 130))
                                     }
                                 }
                             },
@@ -692,6 +747,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
@@ -703,19 +759,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 9))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 9))
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 15))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 15))
                             }
                         },
                     },
@@ -723,6 +779,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000002",
                         RuleName = "Rule000002",
+                        Severity = Severity.Medium,
                         RuleShortDescription = "T R 0000002",
                         RuleFullDescription = "Test rule 0000002",
                         Recommendation = "Recommendation 0000002",
@@ -734,19 +791,19 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 45))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 45))
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 45))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 45))
                             },
                             new MockEvaluation
                             {
                                 Passed = false,
                                 Evaluations = Enumerable.Empty<MockEvaluation>(),
-                                Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 50))
+                                Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 50))
                             }
                         }
                     }
@@ -761,37 +818,40 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(TestTemplateFilePath, 10))
+                        Result = new MockResult(false, new SourceLocation(TestTemplateFilePath, 10))
                     },
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
+                        Result = new MockResult(false, new SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
                     },
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
+                        Result = new MockResult(false, new SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
                     }
                 }
             },
@@ -804,25 +864,27 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
+                        Result = new MockResult(false, new SourceLocation(Path.Combine(TestTemplateDirectory, "RedisCache.json"), 15))
                     },
                     new MockEvaluation
                     {
                         RuleId = "TEST-000001",
                         RuleName = "Rule000001",
+                        Severity = Severity.High,
                         RuleShortDescription = "T R 0000001",
                         RuleFullDescription = "Test rule 0000001",
                         Recommendation = "Recommendation 0000001",
                         HelpUri = "https://domain.com/help",
                         Passed = false,
                         Evaluations = Enumerable.Empty<MockEvaluation>(),
-                        Result = new MockResult(false, new Types.SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
+                        Result = new MockResult(false, new SourceLocation(Path.Combine(TestTemplateDirectory, "SqlServer.json"), 15))
                     }
                 }
             },
