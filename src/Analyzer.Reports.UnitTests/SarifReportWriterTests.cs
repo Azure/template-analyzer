@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                     result.RuleId.Should().BeEquivalentTo(evaluation.RuleId);
                     result.Message.Id.Should().BeEquivalentTo("default");
                     result.Kind.Should().Be(ResultKind.Fail);
-                    result.Level.Should().Be(GetLevelFromSeverity(evaluation.Severity));
+                    result.Level.Should().Be(Utilities.GetLevelFromSeverity(evaluation.Severity));
 
                     if (evalDistinctResults.First().SourceLocation.FilePath != templateFilePath.FullName)
                     {
@@ -175,15 +175,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Reports.UnitTests
                 run.Results.Count.Should().Be(outputResults.Count);
             }
         }
-
-        private static FailureLevel GetLevelFromSeverity(Severity severity) =>
-            severity switch
-            {
-                Severity.Low    => FailureLevel.Note,
-                Severity.Medium => FailureLevel.Warning,
-                Severity.High   => FailureLevel.Error,
-                _               => FailureLevel.Error,
-            };
 
         private static bool IsFileSystemCaseSensitive()
         {
