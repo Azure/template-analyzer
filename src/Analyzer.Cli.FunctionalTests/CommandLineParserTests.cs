@@ -334,6 +334,7 @@ namespace Analyzer.Cli.FunctionalTests
 
                 var cliConsoleOutput = outputWriter.ToString();
 
+                // All JSON rules are filtered out; PSRule rules are currently not filtered by the config file and should appear in the output
                 Assert.IsTrue(!cliConsoleOutput.Contains("TA-"));
                 Assert.AreEqual((int)ExitCode.Success, result.Result);
             }
