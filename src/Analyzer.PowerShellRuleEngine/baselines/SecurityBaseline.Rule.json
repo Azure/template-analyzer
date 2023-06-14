@@ -107,7 +107,6 @@
           "PSRule.Rules.Azure\\Azure.AppGwWAF.PreventionMode",
           "PSRule.Rules.Azure\\Azure.AppGwWAF.Exclusions",
           "PSRule.Rules.Azure\\Azure.AppGwWAF.RuleGroups",
-          "PSRule.Rules.Azure\\Azure.AppService.ManagedIdentity",
           "PSRule.Rules.Azure\\Azure.Automation.ManagedIdentity",
           "PSRule.Rules.Azure\\Azure.CDN.HTTP",
           "PSRule.Rules.Azure\\Azure.Cognitive.PublicAccess",
