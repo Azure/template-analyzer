@@ -439,6 +439,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 functionsLookup: functionsLookup,
                 parametersLookup: parametersLookup,
                 variablesLookup: variablesLookup,
+                validationContext: null,
                 diagnostics: null);
 
             // Set reference lookup
