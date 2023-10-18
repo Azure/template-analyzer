@@ -28,7 +28,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             if (definedParameters != null)
             {
                 JObject definedParameterJson = JObject.Parse(definedParameters);
-                jsonParameters = definedParameterJson.InsensitiveToken("parameters") as JObject;
+                if (definedParameterJson.InsensitiveToken("parameters") is JObject paramsObject)
+                {
+                    jsonParameters = paramsObject;
+                }
             }
 
             JToken parameters = jsonTemplate.InsensitiveToken("parameters");
