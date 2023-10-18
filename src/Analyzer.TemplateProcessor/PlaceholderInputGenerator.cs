@@ -18,12 +18,18 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// Generates placeholder parameters when no default value is specified in the ARM Template.
         /// </summary>
         /// <param name="armTemplate">The ARM Template to generate parameters for <c>JSON</c>.</param>
+        /// <param name="definedParameters">Parameters with defined values to use</param>
         /// <returns>The Json string of the placeholder parameter values.</returns>
-        internal static string GeneratePlaceholderParameters(string armTemplate)
+        internal static string GeneratePlaceholderParameters(string armTemplate, string definedParameters = null)
         {
             JObject jsonTemplate = JObject.Parse(armTemplate);
-
             JObject jsonParameters = new JObject();
+
+            if (definedParameters != null)
+            {
+                JObject definedParameterJson = JObject.Parse(definedParameters);
+                jsonParameters = definedParameterJson.InsensitiveToken("parameters") as JObject;
+            }
 
             JToken parameters = jsonTemplate.InsensitiveToken("parameters");
             if (parameters != null)
@@ -33,7 +39,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 foreach (JProperty parameter in parameters.Children<JProperty>())
                 {
                     JToken parameterValue = parameter.Value;
-                    if (parameterValue.InsensitiveToken("defaultValue") == null)
+                    if (!jsonParameters.ContainsKey(parameter.Name) && parameterValue.InsensitiveToken("defaultValue") == null)
                     {
                         JToken allowedValues = parameterValue.InsensitiveToken("allowedValues");
                         if (allowedValues != null)

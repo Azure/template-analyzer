@@ -1117,6 +1117,50 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             Assert.AreEqual("/providers/Microsoft.Management/managementGroups/placeholderManagementGroup", template["resources"][0]["properties"]["details"]["parent"]["id"]);
         }
 
+        [TestMethod]
+        public void ProcessTemplate_ValidTemplateWithPartialParameterList_ProcessTemplateFunction()
+        {
+            string parametersJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {
+                    ""trafficRoutingMethod"": {
+                        ""value"": ""Priority""
+                    }
+                }
+            }";
+
+            string templateJson = @"{
+                ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"",
+                ""contentVersion"": ""1.0.0.0"",
+                ""parameters"": {
+                    ""trafficRoutingMethod"": {
+                        ""type"": ""string""
+                    },
+                    ""location"": {
+                        ""type"": ""string""
+                    }
+                },
+                ""resources"": [
+                    {
+                        ""type"": ""Microsoft.Network/trafficmanagerprofiles"",
+                        ""apiVersion"": ""2018-08-01"",
+                        ""name"": ""testTrafMan"",
+                        ""location"": ""[parameters('location')]"",
+                        ""properties"": {
+                            ""trafficRoutingMethod"": ""[parameters('trafficRoutingMethod')]""
+                        }
+                    }
+                ]
+            }";
+
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+
+            JToken template = armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters: true);
+
+            Assert.AreEqual(2, template["parameters"].Count());
+        }
+
         private string GenerateTemplateWithOutputs(string outputValue)
         {
             return string.Format(@"{{
