@@ -1164,6 +1164,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 JToken template = armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters);
                 Assert.AreEqual(2, template["parameters"].Count());
                 Assert.IsNotNull(template["parameters"]["trafficRoutingMethod"]);
+                Assert.AreEqual("Priority", template["parameters"]["trafficRoutingMethod"]["value"]);
                 Assert.IsNotNull(template["parameters"]["location"]);
             }
             else
