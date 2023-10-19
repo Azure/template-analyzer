@@ -32,6 +32,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 {
                     jsonParameters = paramsObject;
                 }
+                else
+                {
+                    throw new Exception("Parameters property is not specified in the ARM Template parameters provided. Please ensure ARM Template parameters follows the following JSON schema https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#");
+                }
             }
 
             JToken parameters = jsonTemplate.InsensitiveToken("parameters");

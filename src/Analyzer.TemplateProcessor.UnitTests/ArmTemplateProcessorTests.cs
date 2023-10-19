@@ -8,6 +8,7 @@ using System.Reflection;
 using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Json;
 using Azure.Deployments.Templates.Engines;
+using Azure.Deployments.Templates.Exceptions;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
@@ -1118,7 +1119,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         }
 
         [TestMethod]
-        public void ProcessTemplate_ValidTemplateWithPartialParameterList_ProcessTemplateFunction()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void ProcessTemplate_ValidTemplateWithPartialParameterList_ProcessTemplateFunction(bool generateMissingParameters)
         {
             string parametersJson = @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"",
@@ -1156,9 +1159,18 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
 
             var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
 
-            JToken template = armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters: true);
-
-            Assert.AreEqual(2, template["parameters"].Count());
+            if (generateMissingParameters)
+            {
+                JToken template = armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters);
+                Assert.AreEqual(2, template["parameters"].Count());
+                Assert.IsNotNull(template["parameters"]["trafficRoutingMethod"]);
+                Assert.IsNotNull(template["parameters"]["location"]);
+            }
+            else
+            {
+                Assert.ThrowsException<TemplateValidationException>(
+                    () => armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters));
+            }
         }
 
         private string GenerateTemplateWithOutputs(string outputValue)

@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             }
 
             using var stringWriter = new StringWriter();
-            var compilation = BicepCompiler.CreateCompilation(new Uri(bicepPath)).Result; // TODO: sync call OK?
+            var compilation = BicepCompiler.CreateCompilation(new Uri(bicepPath)).Result;
             var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel());
             var emitResult = emitter.Emit(stringWriter);
 
@@ -97,27 +97,24 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var bicepSourceFile = sourceFileAndMetadata.Key as BicepSourceFile;
                 var pathRelativeToEntryPoint = GetPathRelativeToEntryPoint(bicepSourceFile.FileUri.AbsolutePath);
                 var modules = sourceFileAndMetadata.Value
-                    .Select(artifactRefAndResult =>
+                    .Select(artifactRefAndUriResult =>
                     {
-                        var artifact = artifactRefAndResult.Key;
-                        var uriResult = artifactRefAndResult.Value;
-
                         // Do not include modules imported from public/private registries, as it is more useful for user to see line number
                         // of the module declaration itself instead of line number in the module as the user does not control template in registry directly
-                        if (artifactRefAndResult.Key is not ModuleDeclarationSyntax moduleDeclaration
+                        if (artifactRefAndUriResult.Key is not ModuleDeclarationSyntax moduleDeclaration
                             || moduleDeclaration.Path is not StringSyntax moduleDeclarationPath
                             || moduleDeclarationPath.SegmentValues.Any(v => IsModuleRegistryPathRegex.IsMatch(v)))
                         {
                             return null;
                         }
 
-                        if (!artifactRefAndResult.Value.IsSuccess())
+                        if (!artifactRefAndUriResult.Value.IsSuccess())
                         {
                             return null;
                         }
 
                         var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, moduleDeclaration.Span.Position).line;
-                        var modulePath = new FileInfo(artifactRefAndResult.Value.Unwrap().AbsolutePath).FullName; // converts path to current platform
+                        var modulePath = new FileInfo(artifactRefAndUriResult.Value.Unwrap().AbsolutePath).FullName; // converts path to current platform
 
                         // Use relative paths for bicep to match file paths used in bicep modules and source map
                         if (modulePath.EndsWith(".bicep"))
