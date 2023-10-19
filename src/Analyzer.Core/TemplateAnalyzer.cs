@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             try
             {
-                templatejObject = armTemplateProcessor.ProcessTemplate(parameters, parentContext.IsMainTemplate);
+                templatejObject = armTemplateProcessor.ProcessTemplate(parameters, generateMissingParameters: parentContext.IsMainTemplate);
             }
             catch (Exception e)
             {
