@@ -12,7 +12,7 @@
   </metadata>
 
   <files>
-    <file src="..\Analyzer.Cli\bin\$configuration$\net6.0\$runtimeId$\publish\**" target="tools/" exclude="**\*.pdb" />
+    <file src="..\Analyzer.Cli\bin\$configuration$\net7.0\$runtimeId$\publish\**" target="tools/" exclude="**\*.pdb" />
   </files>
 
 </package>
