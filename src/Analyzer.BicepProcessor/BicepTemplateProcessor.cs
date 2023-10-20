@@ -6,8 +6,9 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Bicep.Core;
+using Bicep.Core.Analyzers.Interfaces;
 using Bicep.Core.Analyzers.Linter;
-using Bicep.Core.Analyzers.Linter.ApiVersions;
 using Bicep.Core.Configuration;
 using Bicep.Core.Diagnostics;
 using Bicep.Core.Emit;
@@ -16,27 +17,47 @@ using Bicep.Core.Features;
 using Bicep.Core.FileSystem;
 using Bicep.Core.Registry;
 using Bicep.Core.Registry.Auth;
-using Bicep.Core.Semantics;
 using Bicep.Core.Semantics.Namespaces;
 using Bicep.Core.Syntax;
 using Bicep.Core.Text;
 using Bicep.Core.TypeSystem.Az;
 using Bicep.Core.Workspaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
+using IOFileSystem = System.IO.Abstractions.FileSystem;
 
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
     /// <summary>
     /// Contains functionality to process Bicep templates.
     /// </summary>
-    public class BicepTemplateProcessor
+    public static class BicepTemplateProcessor
     {
-        private static readonly Regex IsModuleRegistryPathRegex = new("^br(:[\\w.]+\\/|\\/public:)", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        /// <summary>
+        /// DI Helper from Bicep.Cli.Helpers.ServiceCollectionExtensions
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddBicepCore(this IServiceCollection services) => services
+            .AddSingleton<INamespaceProvider, DefaultNamespaceProvider>()
+            .AddSingleton<IAzResourceTypeLoader, AzResourceTypeLoader>()
+            .AddSingleton<IAzResourceTypeLoaderFactory, AzResourceTypeLoaderFactory>()
+            .AddSingleton<IContainerRegistryClientFactory, ContainerRegistryClientFactory>()
+            .AddSingleton<ITemplateSpecRepositoryFactory, TemplateSpecRepositoryFactory>()
+            .AddSingleton<IModuleDispatcher, ModuleDispatcher>()
+            .AddSingleton<IArtifactRegistryProvider, DefaultArtifactRegistryProvider>()
+            .AddSingleton<ITokenCredentialFactory, TokenCredentialFactory>()
+            .AddSingleton<IFileResolver, FileResolver>()
+            .AddSingleton<IFileSystem, IOFileSystem>()
+            .AddSingleton<IConfigurationManager, ConfigurationManager>()
+            .AddSingleton<IBicepAnalyzer, LinterAnalyzer>()
+            .AddSingleton<FeatureProviderFactory>() // needed for below
+            .AddSingleton<IFeatureProviderFactory, SourceMapFeatureProviderFactory>() // enable source mapping
+            .AddSingleton<ILinterRulesProvider, LinterRulesProvider>()
+            .AddSingleton<BicepCompiler>();
 
-        private static readonly IConfigurationManager configurationManager = new ConfigurationManager(new FileSystem());
-        private static readonly IFileResolver fileResolver = new FileResolver(new FileSystem());
-        private static readonly INamespaceProvider namespaceProvider = new DefaultNamespaceProvider(new AzResourceTypeLoader());
-        private static readonly ITokenCredentialFactory tokenCredentialFactory = new TokenCredentialFactory();
+        private static readonly Regex IsModuleRegistryPathRegex = new("^br(:[\\w.]+\\/|\\/public:)", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        private static BicepCompiler BicepCompiler = null;
 
         /// <summary>
         /// Converts Bicep template into JSON template and returns it as a string and its source map
@@ -45,36 +66,17 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// <returns>The compiled template as a <c>JSON</c> string and its source map.</returns>
         public static (string, BicepMetadata) ConvertBicepToJson(string bicepPath)
         {
-            var bicepPathUri = new Uri(bicepPath);
-            using var stringWriter = new StringWriter();
-
-            var configuration = configurationManager.GetConfiguration(bicepPathUri);
-
-            var featureProviderFactory = IFeatureProviderFactory.WithStaticFeatureProvider(
-                new SourceMapFeatureProvider(new FeatureProvider(configuration)));
-            var apiVersionProvider = new ApiVersionProvider(
-                featureProviderFactory.GetFeatureProvider(bicepPathUri), namespaceProvider);
-            var apiVersionProviderFactory = IApiVersionProviderFactory.WithStaticApiVersionProvider(apiVersionProvider);
-
-            var moduleDispatcher = new ModuleDispatcher(
-                new DefaultModuleRegistryProvider(
-                    fileResolver,
-                    new ContainerRegistryClientFactory(tokenCredentialFactory),
-                    new TemplateSpecRepositoryFactory(tokenCredentialFactory),
-                    featureProviderFactory,
-                    configurationManager),
-                configurationManager);
-            var workspace = new Workspace();
-            var sourceFileGrouping = SourceFileGroupingBuilder.Build(fileResolver, moduleDispatcher, workspace, PathHelper.FilePathToFileUrl(bicepPath));
-
-            // Pull modules optimistically
-            if (moduleDispatcher.RestoreModules(moduleDispatcher.GetValidModuleReferences(sourceFileGrouping.GetModulesToRestore())).Result)
+            if (BicepCompiler == null)
             {
-                // Modules had to be restored - recompile
-                sourceFileGrouping = SourceFileGroupingBuilder.Rebuild(moduleDispatcher, workspace, sourceFileGrouping);
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddBicepCore();
+
+                var services = serviceCollection.BuildServiceProvider();
+                BicepCompiler = services.GetRequiredService<BicepCompiler>();
             }
 
-            var compilation = new Compilation(featureProviderFactory, namespaceProvider, sourceFileGrouping, configurationManager, apiVersionProviderFactory, new LinterAnalyzer());
+            using var stringWriter = new StringWriter();
+            var compilation = BicepCompiler.CreateCompilation(new Uri(bicepPath)).Result;
             var emitter = new TemplateEmitter(compilation.GetEntrypointSemanticModel());
             var emitResult = emitter.Emit(stringWriter);
 
@@ -87,27 +89,32 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             }
 
             string GetPathRelativeToEntryPoint(string absolutePath) => Path.GetRelativePath(
-                Path.GetDirectoryName(sourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
+                Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
 
-            // Collect all needed module info from sourceFileGrouping metadata
-            var moduleInfo = sourceFileGrouping.UriResultByModule.Select(kvp =>
+            // Collect all needed module info from SourceFileGrouping metadata
+            var moduleInfo = compilation.SourceFileGrouping.UriResultByArtifactReference.Select(sourceFileAndMetadata =>
             {
-                var bicepSourceFile = kvp.Key as BicepSourceFile;
+                var bicepSourceFile = sourceFileAndMetadata.Key as BicepSourceFile;
                 var pathRelativeToEntryPoint = GetPathRelativeToEntryPoint(bicepSourceFile.FileUri.AbsolutePath);
-                var modules = kvp.Value.Values
-                    .Select(result =>
+                var modules = sourceFileAndMetadata.Value
+                    .Select(artifactRefAndUriResult =>
                     {
                         // Do not include modules imported from public/private registries, as it is more useful for user to see line number
                         // of the module declaration itself instead of line number in the module as the user does not control template in registry directly
-                        if (result.Statement is not ModuleDeclarationSyntax moduleDeclaration
+                        if (artifactRefAndUriResult.Key is not ModuleDeclarationSyntax moduleDeclaration
                             || moduleDeclaration.Path is not StringSyntax moduleDeclarationPath
                             || moduleDeclarationPath.SegmentValues.Any(v => IsModuleRegistryPathRegex.IsMatch(v)))
                         {
                             return null;
                         }
 
+                        if (!artifactRefAndUriResult.Value.IsSuccess())
+                        {
+                            return null;
+                        }
+
                         var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, moduleDeclaration.Span.Position).line;
-                        var modulePath = new FileInfo(result.FileUri.AbsolutePath).FullName; // converts path to current platform
+                        var modulePath = new FileInfo(artifactRefAndUriResult.Value.Unwrap().AbsolutePath).FullName; // converts path to current platform
 
                         // Use relative paths for bicep to match file paths used in bicep modules and source map
                         if (modulePath.EndsWith(".bicep"))

@@ -67,10 +67,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// Processes the ARM template with provided parameters and placeholder deployment metadata.
         /// </summary>
         /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
+        /// <param name="generateMissingParameters">Use given parameters and generate placeholders for missing parameters</param>
         /// <returns>The processed template as a <c>JSON</c> object.</returns>
-        public JToken ProcessTemplate(string parameters)
+        public JToken ProcessTemplate(string parameters, bool generateMissingParameters = false)
         {
-            return ProcessTemplate(parameters, null);
+            return ProcessTemplate(parameters, null, generateMissingParameters);
         }
 
         /// <summary>
@@ -78,10 +79,15 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
         /// <param name="metadata">The deployment metadata <c>JSON</c>.</param>
+        /// <param name="generateMissingParameters">Use given parameters and generate placeholders for missing parameters</param>
         /// <returns>The processed template as a <c>JSON</c> object.</returns>
-        public JToken ProcessTemplate(string parameters, string metadata)
+        public JToken ProcessTemplate(string parameters, string metadata, bool generateMissingParameters = false)
         {
-            InsensitiveDictionary<JToken> parametersDictionary = PopulateParameters(string.IsNullOrEmpty(parameters) ? PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate) : parameters);
+            string actualParams = string.IsNullOrEmpty(parameters) || generateMissingParameters
+             ? PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate, parameters)
+             : parameters;
+
+            InsensitiveDictionary<JToken> parametersDictionary = PopulateParameters(actualParams);
             InsensitiveDictionary<JToken> metadataDictionary = string.IsNullOrEmpty(metadata) ? PlaceholderInputGenerator.GeneratePlaceholderDeploymentMetadata() : PopulateDeploymentMetadata(metadata);
 
             var template = ParseAndValidateTemplate(parametersDictionary, metadataDictionary);
@@ -543,7 +549,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             if (parametersObject["parameters"] == null)
             {
-                throw new Exception("Parameteres property is not specified in the ARM Template parameters provided. Please ensure ARM Template parameters follows the following JSON schema https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#");
+                throw new Exception("Parameters property is not specified in the ARM Template parameters provided. Please ensure ARM Template parameters follows the following JSON schema https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#");
             }
 
             foreach (var parameter in parametersObject.InsensitiveToken("parameters").Value<JObject>()?.Properties() ?? Enumerable.Empty<JProperty>())

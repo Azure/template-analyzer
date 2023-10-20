@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.BicepProcessor</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.BicepProcessor</RootNamespace>
   </PropertyGroup>
@@ -11,7 +11,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Bicep.Core" Version="0.14.85" />
+    <PackageReference Include="Azure.Bicep.Core" Version="0.22.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
     
