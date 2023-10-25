@@ -6,6 +6,8 @@ using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Azure.Deployments.Core.Entities;
 using Newtonsoft.Json.Linq;
 using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 {
@@ -22,7 +24,6 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <returns>The Json string of the placeholder parameter values.</returns>
         internal static string GeneratePlaceholderParameters(string armTemplate, string definedParameters = null)
         {
-            JObject jsonTemplate = JObject.Parse(armTemplate);
             JObject jsonParameters = new JObject();
 
             if (definedParameters != null)
@@ -38,7 +39,23 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 }
             }
 
-            JToken parameters = jsonTemplate.InsensitiveToken("parameters");
+            // parse only parameter data from the template to avoid additional overhead
+            JToken parameters = null;
+
+            var reader = new JsonTextReader(new StringReader(armTemplate));
+            while (reader.Read())
+            {
+                if (reader.Depth == 1 && reader.TokenType == JsonToken.PropertyName)
+                {
+                    if (string.Equals((string)reader.Value, "parameters", StringComparison.OrdinalIgnoreCase))
+                    {
+                        reader.Read(); // read StartObjectToken
+                        parameters = JToken.ReadFrom(reader);
+                        break;
+                    }
+                }
+            }
+
             if (parameters != null)
             {
                 int count = 0;
