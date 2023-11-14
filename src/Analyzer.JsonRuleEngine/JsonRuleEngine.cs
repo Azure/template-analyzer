@@ -64,7 +64,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            if (configuration.InclusionsConfigurationDefinition != null)
+            if (configuration.InclusionsConfigurationDefinition?.Severity != null
+                || configuration.InclusionsConfigurationDefinition?.Ids != null)
             {
                 var includeSeverities = configuration.InclusionsConfigurationDefinition.Severity;
                 var includeIds = configuration.InclusionsConfigurationDefinition.Ids;

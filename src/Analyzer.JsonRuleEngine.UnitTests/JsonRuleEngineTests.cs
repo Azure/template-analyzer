@@ -373,6 +373,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     }
             }", "RuleId0", DisplayName = "Only Id RuleId0")]
         [DataRow(@"{
+                ""inclusions"": {},
+                ""exclusions"": {
+                        ""ids"": [""RuleId3""]
+                    }
+            }", "RuleId0", "RuleId1", "RuleId2", "RuleId4", DisplayName = "Empty inclusions object, exclude RuleId3")]
+        [DataRow(@"{
                 ""exclusions"": {
                         ""ids"": [""RuleId3""]
                     }
