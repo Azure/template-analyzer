@@ -11,7 +11,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Bicep.Core" Version="0.22.6" />
+    <PackageReference Include="Azure.Bicep.Core" Version="0.24.24" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
     

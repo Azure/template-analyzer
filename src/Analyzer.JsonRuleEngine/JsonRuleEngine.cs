@@ -64,7 +64,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            if (configuration.InclusionsConfigurationDefinition != null)
+            if (configuration.InclusionsConfigurationDefinition?.Severity != null
+                || configuration.InclusionsConfigurationDefinition?.Ids != null)
             {
                 var includeSeverities = configuration.InclusionsConfigurationDefinition.Severity;
                 var includeIds = configuration.InclusionsConfigurationDefinition.Ids;
@@ -72,7 +73,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
                 RuleDefinitions = RuleDefinitions.Where(r => (includeSeverities != null && includeSeverities.Contains(r.Severity)) ||
                     (includeIds != null && includeIds.Contains(r.Id))).ToList().AsReadOnly();
             }
-            else if (configuration.ExclusionsConfigurationDefinition != null)
+            else if (configuration.ExclusionsConfigurationDefinition?.Severity != null
+                || configuration.ExclusionsConfigurationDefinition?.Ids != null)
             {
                 var excludeSeverities = configuration.ExclusionsConfigurationDefinition.Severity;
                 var excludeIds = configuration.ExclusionsConfigurationDefinition.Ids;

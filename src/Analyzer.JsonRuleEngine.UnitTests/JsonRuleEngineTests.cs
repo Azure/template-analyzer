@@ -373,6 +373,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     }
             }", "RuleId0", DisplayName = "Only Id RuleId0")]
         [DataRow(@"{
+                ""inclusions"": {},
+                ""exclusions"": {
+                        ""ids"": [""RuleId3""]
+                    }
+            }", "RuleId0", "RuleId1", "RuleId2", "RuleId4", DisplayName = "Empty inclusions object, exclude RuleId3")]
+        [DataRow(@"{
                 ""exclusions"": {
                         ""ids"": [""RuleId3""]
                     }
@@ -412,6 +418,20 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                         ""ids"": [""RuleId2""]
                     }
             }", "RuleId2", "RuleId3", "RuleId4", DisplayName = "Include Severity 3; Exclusions object is ignored")]
+        [DataRow(@"{
+                ""exclusions"": {},
+                ""inclusions"": {
+                        ""ids"": [""RuleId3""]
+                    }
+            }", "RuleId3", DisplayName = "Empty exclusions object listed first, include RuleId3; Exclusions object is ignored")]
+        [DataRow(@"{
+                ""exclusions"": {
+                        ""ids"": [""RuleId3""]
+                    },
+                ""inclusions"": {
+                        ""ids"": [""RuleId3""]
+                    }
+            }", "RuleId3", DisplayName = "Exclusions object listed first, include RuleId3; Exclusions object is ignored")]
         [DataRow(@"{
                 ""inclusions"": {
                         ""severity"": [1]

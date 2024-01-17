@@ -76,5 +76,11 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
         /// <inheritdoc/>
         public bool PublishSourceEnabled => features.PublishSourceEnabled;
+
+        /// <inheritdoc/>
+        public bool ProviderRegistryEnabled => features.ProviderRegistryEnabled;
+
+        /// <inheritdoc/>
+        public bool OptionalModuleNamesEnabled => features.OptionalModuleNamesEnabled;
     }
 }

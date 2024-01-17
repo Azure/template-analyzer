@@ -20,11 +20,13 @@ using Bicep.Core.Registry.Auth;
 using Bicep.Core.Semantics.Namespaces;
 using Bicep.Core.Syntax;
 using Bicep.Core.Text;
-using Bicep.Core.TypeSystem.Az;
+using Bicep.Core.TypeSystem.Providers;
+using Bicep.Core.Utils;
 using Bicep.Core.Workspaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.WindowsAzure.ResourceStack.Common.Extensions;
+using BicepEnvironment = Bicep.Core.Utils.Environment;
 using IOFileSystem = System.IO.Abstractions.FileSystem;
+using SysEnvironment = System.Environment;
 
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
@@ -40,17 +42,18 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// <returns></returns>
         public static IServiceCollection AddBicepCore(this IServiceCollection services) => services
             .AddSingleton<INamespaceProvider, DefaultNamespaceProvider>()
-            .AddSingleton<IAzResourceTypeLoader, AzResourceTypeLoader>()
-            .AddSingleton<IAzResourceTypeLoaderFactory, AzResourceTypeLoaderFactory>()
+            .AddSingleton<IResourceTypeProviderFactory, ResourceTypeProviderFactory>()
             .AddSingleton<IContainerRegistryClientFactory, ContainerRegistryClientFactory>()
             .AddSingleton<ITemplateSpecRepositoryFactory, TemplateSpecRepositoryFactory>()
             .AddSingleton<IModuleDispatcher, ModuleDispatcher>()
             .AddSingleton<IArtifactRegistryProvider, DefaultArtifactRegistryProvider>()
             .AddSingleton<ITokenCredentialFactory, TokenCredentialFactory>()
             .AddSingleton<IFileResolver, FileResolver>()
+            .AddSingleton<IEnvironment, BicepEnvironment>()
             .AddSingleton<IFileSystem, IOFileSystem>()
             .AddSingleton<IConfigurationManager, ConfigurationManager>()
             .AddSingleton<IBicepAnalyzer, LinterAnalyzer>()
+            .AddSingleton<IFeatureProviderFactory, FeatureProviderFactory>()
             .AddSingleton<FeatureProviderFactory>() // needed for below
             .AddSingleton<IFeatureProviderFactory, SourceMapFeatureProviderFactory>() // enable source mapping
             .AddSingleton<ILinterRulesProvider, LinterRulesProvider>()
@@ -85,14 +88,14 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 var bicepIssues = emitResult.Diagnostics
                     .Where(diag => diag.Level == DiagnosticLevel.Error)
                     .Select(diag => diag.Message);
-                throw new Exception($"Bicep issues found:{Environment.NewLine}{string.Join(Environment.NewLine, bicepIssues)}");
+                throw new Exception($"Bicep issues found:{SysEnvironment.NewLine}{string.Join(SysEnvironment.NewLine, bicepIssues)}");
             }
 
             string GetPathRelativeToEntryPoint(string absolutePath) => Path.GetRelativePath(
                 Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
 
             // Collect all needed module info from SourceFileGrouping metadata
-            var moduleInfo = compilation.SourceFileGrouping.UriResultByArtifactReference.Select(sourceFileAndMetadata =>
+            var moduleInfo = compilation.SourceFileGrouping.FileUriResultByArtifactReference.Select(sourceFileAndMetadata =>
             {
                 var bicepSourceFile = sourceFileAndMetadata.Key as BicepSourceFile;
                 var pathRelativeToEntryPoint = GetPathRelativeToEntryPoint(bicepSourceFile.FileUri.AbsolutePath);
