@@ -1,6 +1,6 @@
 ﻿[
   {
-    // Synopsis: Excludes the rules that are already in TemplateAnalyzer
+    "_comment": "Synopsis: Excludes the rules that are already in TemplateAnalyzer",
     "kind": "Baseline",
     "metadata": {
       "name": "RepeatedRulesBaseline"

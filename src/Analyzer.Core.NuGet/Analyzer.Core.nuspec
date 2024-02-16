@@ -12,17 +12,17 @@
 
     <dependencies>
       <group targetFramework="net7.0">
-        <dependency id="Azure.Bicep.Core" version="0.22.6" />
-        <dependency id="Azure.Deployments.Core" version="1.0.1040" />
-        <dependency id="Azure.Deployments.Expression" version="1.0.1040" />
-        <dependency id="Azure.Deployments.Templates" version="1.0.1040" />
+        <dependency id="Azure.Bicep.Core" version="0.24.24" />
+        <dependency id="Azure.Deployments.Core" version="1.0.1103" />
+        <dependency id="Azure.Deployments.Expression" version="1.0.1103" />
+        <dependency id="Azure.Deployments.Templates" version="1.0.1103" />
         <dependency id="Newtonsoft.Json" version="13.0.3" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="6.0.1" />
         <dependency id="Microsoft.PowerShell.SDK" version="7.2.12" />
         <dependency id="Microsoft.PSRule.Rules.Azure" version="1.26.0-B0011" />
         <dependency id="Microsoft.PSRule.SDK" version="2.8" />
         <dependency id="Sarif.Sdk" version="2.4.12" />
-        <dependency id="System.IO.Abstractions" version="19.1.5" />
+        <dependency id="System.IO.Abstractions" version="19.2.69" />
       </group>
     </dependencies>
 

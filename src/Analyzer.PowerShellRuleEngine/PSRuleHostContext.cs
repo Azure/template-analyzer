@@ -41,6 +41,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 : new JsonSourceLocationResolver(templateContext);
         }
 
+        public override ActionPreference GetPreferenceVariable(string variableName)
+        {
+            return variableName == "VerbosePreference" ? ActionPreference.Continue : base.GetPreferenceVariable(variableName);
+        }
+
         /// <inheritdoc/>
         public override bool ShouldProcess(string target, string action)
         {
@@ -66,6 +71,11 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             {
                 logger?.LogDebug(info.Message);
             }
+        }
+
+        public override void Verbose(string text)
+        {
+            logger?.LogDebug(text);
         }
 
         /// <inheritdoc/>

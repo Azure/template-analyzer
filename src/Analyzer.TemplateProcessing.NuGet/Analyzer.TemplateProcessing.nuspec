@@ -13,10 +13,10 @@
 
    <dependencies>
       <group targetFramework="net7.0">
-        <dependency id="Azure.Bicep.Core" version="0.22.6" />
-        <dependency id="Azure.Deployments.Core" version="1.0.1040" />
-        <dependency id="Azure.Deployments.Expression" version="1.0.1040" />
-        <dependency id="Azure.Deployments.Templates" version="1.0.1040" />
+        <dependency id="Azure.Bicep.Core" version="0.24.24" />
+        <dependency id="Azure.Deployments.Core" version="1.0.1103" />
+        <dependency id="Azure.Deployments.Expression" version="1.0.1103" />
+        <dependency id="Azure.Deployments.Templates" version="1.0.1103" />
         <dependency id="Newtonsoft.Json" version="13.0.3" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="6.0.1" />
       </group>
