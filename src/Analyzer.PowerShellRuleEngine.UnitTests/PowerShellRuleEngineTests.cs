@@ -16,6 +16,23 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
     [TestClass]
     public class PowerShellRuleEngineTests
     {
+        private const string EmptyBaseline = @"
+        [
+          {
+            ""kind"": ""Baseline"",
+            ""metadata"": {
+              ""name"": ""RepeatedRulesBaseline""
+            },
+            ""apiVersion"": ""github.com/microsoft/PSRule/v1"",
+            ""spec"": {
+              ""rule"": {
+                ""exclude"": [
+                ]
+              }
+            }
+          }
+        ]";
+
         private readonly string templatesFolder = @"templates";
         private static PowerShellRuleEngine powerShellRuleEngineAllRules;
         private static PowerShellRuleEngine powerShellRuleEngineSecurityRules;
@@ -29,8 +46,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
         [DataTestMethod]
         // PSRule detects errors in two analysis stages: when looking at the whole file (through the file path), and when looking at each resource (pipeline.Process(resource)):
-        [DataRow("template_and_resource_level_results.json", true, 13, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17, 1 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
-        [DataRow("template_and_resource_level_results.json", false, 4, new int[] { 17, 17, 17, 17 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
+        [DataRow("template_and_resource_level_results.json", true, 14, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17, 1, 11 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
+        [DataRow("template_and_resource_level_results.json", false, 5, new int[] { 17, 17, 17, 17, 11 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
         public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, dynamic expectedLineNumbers)
         {
@@ -80,7 +97,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.AreEqual(expectedErrorCount, failedEvaluations.Count);
 
             // PSRule evaluations can change order depending on the OS:
-            foreach(var expectedLineNumber in expectedLineNumbers)
+            foreach (var expectedLineNumber in expectedLineNumbers)
             {
                 var matchingEvaluation = failedEvaluations.Find(evaluation => evaluation.Result.SourceLocation.LineNumber == expectedLineNumber);
                 failedEvaluations.Remove(matchingEvaluation);
@@ -90,7 +107,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
         [DataTestMethod]
         [DataRow(true, DisplayName = "Repeated rules are excluded when running all the rules")]
-        [DataRow(true, DisplayName = "Repeated rules are excluded when running only the security rules")]
+        [DataRow(false, DisplayName = "Repeated rules are excluded when running only the security rules")]
         public void AnalyzeTemplate_ValidTemplate_ExcludesRepeatedRules(bool runsAllRules)
         {
             var templateFilePath = Path.Combine(templatesFolder, "triggers_excluded_rules.json");
@@ -115,7 +132,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             // The RepeatedRulesBaseline will only be used when all rules are run
             // Otherwise SecurityBaseline is used, those rules are not in the "include" array of the baseline so they won't be executed either
-            // Next we validate that when RepeatedRulesBaseline is an empty file then the test file does indeed trigger the excluded rule:
+            // Next we validate that when RepeatedRulesBaseline has no exclusions then the test file does indeed trigger the excluded rule:
             if (runsAllRules)
             {
                 var baselineLocation = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory), "baselines", "RepeatedRulesBaseline.Rule.json");
@@ -123,17 +140,49 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
                 try
                 {
                     File.Move(baselineLocation, newBaselineLocation);
-                    var emptyBaseline = File.Create(baselineLocation);
-                    emptyBaseline.Close();
-                    
+                    File.WriteAllText(baselineLocation, EmptyBaseline);
+
                     evaluations = powerShellRuleEngineAllRules.AnalyzeTemplate(templateContext);
-                    
+
                     Assert.IsTrue(evaluations.Any(evaluation => evaluation.RuleId == "AZR-000081"));
                 }
                 finally
                 {
                     File.Delete(baselineLocation);
                     File.Move(newBaselineLocation, baselineLocation);
+                }
+            }
+        }
+
+        // Sanity checks for using hardcoded AZURE_RESOURCE_ALLOWED_LOCATIONS in the rules
+        [TestMethod]
+        [DataRow("templateWithDefaultLocation.json", DisplayName = "Template with default location")]
+        [DataRow("templateWithHardcodedLocation.json", DisplayName = "Template with hardcoded location")]
+        public void AnalyzeTemplate_ValidTemplate_SpecifiedLocations(string templateFileName)
+        {
+            var templateFilePath = Path.Combine(templatesFolder, templateFileName);
+
+            var template = File.ReadAllText(templateFilePath);
+            var armTemplateProcessor = new ArmTemplateProcessor(template);
+            var templatejObject = armTemplateProcessor.ProcessTemplate();
+
+            var templateContext = new TemplateContext
+            {
+                OriginalTemplate = JObject.Parse(template),
+                ExpandedTemplate = templatejObject,
+                ResourceMappings = armTemplateProcessor.ResourceMappings,
+                TemplateIdentifier = templateFilePath
+            };
+
+            var evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
+
+            var failedEvaluations = new List<PowerShellRuleEvaluation>();
+
+            foreach (PowerShellRuleEvaluation evaluation in evaluations)
+            {
+                if (!evaluation.Passed)
+                {
+                    failedEvaluations.Add(evaluation);
                 }
             }
         }

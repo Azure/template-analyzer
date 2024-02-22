@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         [DataTestMethod]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 1, 1, DisplayName = "1 matching resource with 1 passing evaluation")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.ServiceFabric/clusters", 1, 0, DisplayName = "1 matching resource with 1 failing evaluation")]
-        [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.MachineLearningServices/workspaces", 0, 0, DisplayName = "0 matching resources with no results")]
+        [DataRow(@"{ ""property1"": { ""someProperty"": ""propertyValue"" } }", "Microsoft.MachineLearningServices/workspaces", 2, 0, DisplayName = "0 matching resources with no results")]
         [DataRow(@"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantId"" } }", "Microsoft.ServiceFabric/clusters", 2, 1, @"{ ""azureActiveDirectory"": { ""someProperty"": ""propertyValue"" } }", DisplayName = "2 matching resources with 1 passing evaluation")]
         public void AnalyzeTemplate_ValidInputValues_ReturnCorrectEvaluations(string resource1Properties, string resourceType, int expectedEvaluationCount, int expectedEvaluationPassCount, string resource2Properties = null)
         {

@@ -68,8 +68,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <returns>The <see cref="IEvaluation"/>s of the PowerShell rules against the template.</returns>
         public IEnumerable<IEvaluation> AnalyzeTemplate(TemplateContext templateContext)
         {
-            string templString = templateContext.ExpandedTemplate.ToString();
-
             if (templateContext?.TemplateIdentifier == null)
             {
                 throw new ArgumentException($"{nameof(TemplateContext.TemplateIdentifier)} must not be null.", nameof(templateContext));
@@ -95,11 +93,6 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             try
             {
                 var fileOptions = PSRuleOption.FromFileOrEmpty();
-
-                if (fileOptions.Configuration.ContainsKey("AZURE_RESOURCE_ALLOWED_LOCATIONS"))
-                {
-                    // TODO: support external config for PSRule
-                }
 
                 hostContext = new PSRuleHostContext(templateContext, logger);
                 var modules = new string[] { PSRuleModuleName };

@@ -10,7 +10,16 @@
       "name": "aWorkspace",
       "apiVersion": "2016-12-01",
       "location": "",
-      "properties": {}
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'example'))]": {}
+        }
+      },
+      "properties": {
+        "primaryUserAssignedIdentity": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'example')]",
+        "publicNetworkAccess": "Disabled"
+      }
     }
   ],
   "outputs": {}

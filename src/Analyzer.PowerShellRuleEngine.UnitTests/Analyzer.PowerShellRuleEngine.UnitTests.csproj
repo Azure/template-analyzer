@@ -24,4 +24,9 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="templates\templateWithDefaultLocation.json" />
+    <None Remove="templates\templateWithHardcodedLocation.json" />
+  </ItemGroup>
+
 </Project>

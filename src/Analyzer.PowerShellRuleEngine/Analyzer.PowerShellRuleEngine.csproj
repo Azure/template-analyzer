@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.3.11" />
-    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.32.1" />
+    <PackageReference Include="Microsoft.PSRule.Rules.Azure" Version="1.33.2" />
     <PackageReference Include="Microsoft.PSRule.SDK" Version="2.9.0" />
   </ItemGroup>
 
