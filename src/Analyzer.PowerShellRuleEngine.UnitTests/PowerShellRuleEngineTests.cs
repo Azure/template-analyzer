@@ -46,8 +46,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
         [DataTestMethod]
         // PSRule detects errors in two analysis stages: when looking at the whole file (through the file path), and when looking at each resource (pipeline.Process(resource)):
-        [DataRow("template_and_resource_level_results.json", true, 14, new int[] { 1, 1, 1, 1, 8, 14, 17, 1, 17, 17, 1, 17, 1, 11 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
-        [DataRow("template_and_resource_level_results.json", false, 5, new int[] { 17, 17, 17, 17, 11 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
+        [DataRow("template_and_resource_level_results.json", true, 14, new int[] { 1, 1, 1, 1, 8, 11, 14, 17, 1, 17, 17, 1, 17, 1 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
+        [DataRow("template_and_resource_level_results.json", false, 5, new int[] { 11, 17, 17, 17, 17 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
         public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, dynamic expectedLineNumbers)
         {
@@ -154,7 +154,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             }
         }
 
-        // Sanity checks for using hardcoded AZURE_RESOURCE_ALLOWED_LOCATIONS in the rules
+        // Sanity checks for using hardcoded AZURE_RESOURCE_ALLOWED_LOCATIONS to match the placeholder region in the template processor
+        // locations used are different from the placeholder region westus2
         [TestMethod]
         [DataRow("templateWithDefaultLocation.json", DisplayName = "Template with default location")]
         [DataRow("templateWithHardcodedLocation.json", DisplayName = "Template with hardcoded location")]
@@ -176,15 +177,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
 
             var evaluations = powerShellRuleEngineSecurityRules.AnalyzeTemplate(templateContext);
 
-            var failedEvaluations = new List<PowerShellRuleEvaluation>();
-
-            foreach (PowerShellRuleEvaluation evaluation in evaluations)
-            {
-                if (!evaluation.Passed)
-                {
-                    failedEvaluations.Add(evaluation);
-                }
-            }
+            Assert.IsTrue(evaluations.All(evaluation => evaluation.Passed));
         }
 
         [TestMethod]

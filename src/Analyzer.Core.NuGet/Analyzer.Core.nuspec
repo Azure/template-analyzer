@@ -13,6 +13,9 @@
     <dependencies>
       <group targetFramework="net7.0">
         <dependency id="Azure.Bicep.Core" version="0.24.24" />
+        <!--Az.Id version forced here due to CG alert. After net8 upgrade, will be able
+        to update Bicep.Core to version with safe Az.Id dependency and can remove below -->
+        <dependency id="Azure.Identity" Version="1.10.4" />
         <dependency id="Azure.Deployments.Core" version="1.0.1103" />
         <dependency id="Azure.Deployments.Expression" version="1.0.1103" />
         <dependency id="Azure.Deployments.Templates" version="1.0.1103" />
@@ -22,7 +25,7 @@
         <dependency id="Microsoft.PSRule.Rules.Azure" version="1.26.0-B0011" />
         <dependency id="Microsoft.PSRule.SDK" version="2.8" />
         <dependency id="Sarif.Sdk" version="2.4.12" />
-        <dependency id="System.IO.Abstractions" version="19.2.69" />
+        <dependency id="System.IO.Abstractions" version="19.1.5" />
       </group>
     </dependencies>
 
