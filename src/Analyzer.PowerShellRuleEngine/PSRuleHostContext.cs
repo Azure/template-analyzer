@@ -41,9 +41,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 : new JsonSourceLocationResolver(templateContext);
         }
 
+        /// <inheritdoc/>
         public override ActionPreference GetPreferenceVariable(string variableName)
         {
-            return variableName == "VerbosePreference" ? ActionPreference.Continue : base.GetPreferenceVariable(variableName);
+            return variableName.Equals("VerbosePreference", System.StringComparison.OrdinalIgnoreCase) ? ActionPreference.Continue : base.GetPreferenceVariable(variableName);
         }
 
         /// <inheritdoc/>
@@ -73,6 +74,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             }
         }
 
+        /// <inheritdoc/>
         public override void Verbose(string text)
         {
             logger?.LogDebug(text);
