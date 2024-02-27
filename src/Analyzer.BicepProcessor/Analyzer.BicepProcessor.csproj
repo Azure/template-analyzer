@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.BicepProcessor</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.BicepProcessor</RootNamespace>
   </PropertyGroup>
@@ -11,10 +11,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Bicep.Core" Version="0.24.24" />
-    <!--Az.Id version forced here due to CG alert. After net8 upgrade, will be able
-    to update Bicep.Core to version with safe Az.Id dependency and can remove below -->
-    <PackageReference Include="Azure.Identity" Version="1.10.4" />
+    <PackageReference Include="Azure.Bicep.Core" Version="0.25.53" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
     
