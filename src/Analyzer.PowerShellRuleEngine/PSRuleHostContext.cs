@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         /// <inheritdoc/>
         public override ActionPreference GetPreferenceVariable(string variableName)
         {
-            return variableName.Equals("VerbosePreference", System.StringComparison.OrdinalIgnoreCase) ? ActionPreference.Continue : base.GetPreferenceVariable(variableName);
+            return string.Equals(variableName, "VerbosePreference", System.StringComparison.OrdinalIgnoreCase) ? ActionPreference.Continue : base.GetPreferenceVariable(variableName);
         }
 
         /// <inheritdoc/>
