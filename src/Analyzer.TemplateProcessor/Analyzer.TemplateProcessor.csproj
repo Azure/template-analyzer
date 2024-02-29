@@ -7,10 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Deployments.Core" Version="1.0.1103" />
-    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1103" />
-    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.1103" />
+    <PackageReference Include="Azure.Deployments.Core" Version="1.0.1158" />
+    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1158" />
+    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.1158" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.PowerPlatform.ResourceStack" Version="6.0.0.1485" />
   </ItemGroup>
 
   <ItemGroup>

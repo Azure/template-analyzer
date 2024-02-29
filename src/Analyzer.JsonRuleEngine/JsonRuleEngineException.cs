@@ -37,10 +37,5 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine
             : base(message, innerException)
         {
         }
-
-        protected JsonRuleEngineException(SerializationInfo info, StreamingContext context) 
-            : base(info, context)
-        {
-        }
     }
 }

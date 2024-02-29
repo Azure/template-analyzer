@@ -6,9 +6,14 @@
       "apiVersion": "2019-08-01",
       "type": "Microsoft.Web/sites",
       "name": "usesUndefinedParameter",
-      "location": "[parameters('location')]",
       "properties": {
       }
     }
-  ]
+  ],
+  "outputs": {
+    "badOutput": {
+      "type": "string",
+      "value": "[parameters('ImAComputer')]"
+    }
+  }
 }

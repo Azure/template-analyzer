@@ -37,10 +37,5 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             : base(message, innerException)
         {
         }
-
-        protected TemplateAnalyzerException(SerializationInfo info, StreamingContext context) 
-            : base(info, context)
-        {
-        }
     }
 }
