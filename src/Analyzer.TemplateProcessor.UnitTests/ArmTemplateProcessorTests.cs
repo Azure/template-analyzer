@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
-            
+
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[1]" },
                 { "resources[1]", "resources[0]" },
@@ -500,7 +500,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
             }";
 
             ArmTemplateProcessor armTemplateProcessor = new ArmTemplateProcessor(templateJson);
-            
+
             Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
                 { "resources[0]", "resources[0]" },
                 { "resources[1]", "resources[0]" }
@@ -577,7 +577,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 if (internalResources[resourceNumber].Length == 0)
                 {
                     Assert.AreEqual(null, template.Resources[resourceNumber].Resources);
-                } 
+                }
                 else
                 {
                     for (int internalResourceNumber = 0; internalResourceNumber < internalResources[resourceNumber].Length; internalResourceNumber++)
@@ -606,7 +606,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                     ""parentResource""
                 ],
                 ""properties"": { }
-            }"; 
+            }";
             string parentTemplateResource1Json = @"{
                 ""type"": ""Microsoft.Network/networkSecurityGroups"",
                 ""apiVersion"": ""2019-02-01"",
@@ -908,8 +908,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ""properties"": { }
             }";
 
-            Dictionary<string, string> expectedMapping = new Dictionary<string, string> { 
-                { "resources[0]", "resources[0]" }, 
+            Dictionary<string, string> expectedMapping = new Dictionary<string, string> {
+                { "resources[0]", "resources[0]" },
                 { "resources[0].resources[0]", "resources[1]" },
                 { "resources[0].resources[0].resources[0]", "resources[2]" },
                 { "resources[1]", "resources[1]" },
@@ -1119,9 +1119,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
-        public void ProcessTemplate_ValidTemplateWithPartialParameterList_ProcessTemplateFunction(bool generateMissingParameters)
+        public void ProcessTemplate_ValidTemplateWithPartialParameterList_ProcessTemplateFunction()
         {
             string parametersJson = @"{
                 ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"",
@@ -1157,21 +1155,15 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor.UnitTests
                 ]
             }";
 
-            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
 
-            if (generateMissingParameters)
-            {
-                JToken template = armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters);
-                Assert.AreEqual(2, template["parameters"].Count());
-                Assert.IsNotNull(template["parameters"]["trafficRoutingMethod"]);
-                Assert.AreEqual("Priority", template["parameters"]["trafficRoutingMethod"]["value"]);
-                Assert.IsNotNull(template["parameters"]["location"]);
-            }
-            else
-            {
-                Assert.ThrowsException<TemplateValidationException>(
-                    () => armTemplateProcessor.ProcessTemplate(parametersJson, null, generateMissingParameters));
-            }
+            var armTemplateProcessor = new ArmTemplateProcessor(templateJson);
+            JToken template = armTemplateProcessor.ProcessTemplate(parametersJson, null);
+
+            Assert.AreEqual(2, template["parameters"].Count());
+            Assert.IsNotNull(template["parameters"]["trafficRoutingMethod"]);
+            Assert.AreEqual("Priority", template["parameters"]["trafficRoutingMethod"]["value"]);
+            Assert.IsNotNull(template["parameters"]["location"]);
+
         }
 
         private string GenerateTemplateWithOutputs(string outputValue)

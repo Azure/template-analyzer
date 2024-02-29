@@ -67,11 +67,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// Processes the ARM template with provided parameters and placeholder deployment metadata.
         /// </summary>
         /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
-        /// <param name="generateMissingParameters">Use given parameters and generate placeholders for missing parameters</param>
         /// <returns>The processed template as a <c>JSON</c> object.</returns>
-        public JToken ProcessTemplate(string parameters, bool generateMissingParameters = false)
+        public JToken ProcessTemplate(string parameters)
         {
-            return ProcessTemplate(parameters, null, generateMissingParameters);
+            return ProcessTemplate(parameters, null);
         }
 
         /// <summary>
@@ -79,11 +78,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// </summary>
         /// <param name="parameters">The template parameters and their values <c>JSON</c>. Must follow this schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#</param>
         /// <param name="metadata">The deployment metadata <c>JSON</c>.</param>
-        /// <param name="generateMissingParameters">Use given parameters and generate placeholders for missing parameters</param>
         /// <returns>The processed template as a <c>JSON</c> object.</returns>
-        public JToken ProcessTemplate(string parameters, string metadata, bool generateMissingParameters = false)
+        public JToken ProcessTemplate(string parameters, string metadata)
         {
-            string actualParams = string.IsNullOrEmpty(parameters) || generateMissingParameters
+            string actualParams = string.IsNullOrEmpty(parameters)
              ? PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate, parameters)
              : parameters;
 
@@ -103,17 +101,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <returns>The processed template as a Template object.</returns>
         internal Template ParseAndValidateTemplate(InsensitiveDictionary<JToken> parameters, InsensitiveDictionary<JToken> metadata)
         {
-            Dictionary<string, (string, int)> copyNameMap = new Dictionary<string, (string, int)>();
+            Dictionary<string, (string, int)> copyNameMap = [];
 
             Template template = TemplateEngine.ParseTemplate(armTemplate);
 
             TemplateEngine.ValidateTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
-
-            TemplateEngine.ParameterizeTemplate(
-                inputParameters: parameters,
-                template: template,
-                metadata: metadata,
-                diagnostics: null);
 
             SetOriginalResourceNames(template);
 
@@ -135,7 +127,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion, null);
+                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion, parameters, metadata, null);
             }
             catch (Exception ex)
             {

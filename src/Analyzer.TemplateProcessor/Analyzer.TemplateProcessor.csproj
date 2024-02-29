@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.TemplateProcessor</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.TemplateProcessor</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Deployments.Core" Version="1.0.1010" />
-    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1010" />
-    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.1010" />
+    <PackageReference Include="Azure.Deployments.Core" Version="1.0.1158" />
+    <PackageReference Include="Azure.Deployments.Expression" Version="1.0.1158" />
+    <PackageReference Include="Azure.Deployments.Templates" Version="1.0.1158" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.PowerPlatform.ResourceStack" Version="6.0.0.1485" />
   </ItemGroup>
 
   <ItemGroup>

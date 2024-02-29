@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Types</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.Types</RootNamespace>
   </PropertyGroup>

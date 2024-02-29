@@ -42,6 +42,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
         }
 
         /// <inheritdoc/>
+        public override ActionPreference GetPreferenceVariable(string variableName)
+        {
+            return string.Equals(variableName, "VerbosePreference", System.StringComparison.OrdinalIgnoreCase) ? ActionPreference.Continue : base.GetPreferenceVariable(variableName);
+        }
+
+        /// <inheritdoc/>
         public override bool ShouldProcess(string target, string action)
         {
             return true;
@@ -66,6 +72,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
             {
                 logger?.LogDebug(info.Message);
             }
+        }
+
+        /// <inheritdoc/>
+        public override void Verbose(string text)
+        {
+            logger?.LogDebug(text);
         }
 
         /// <inheritdoc/>

@@ -69,9 +69,6 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public bool AssertsEnabled => features.AssertsEnabled;
 
         /// <inheritdoc/>
-        public bool CompileTimeImportsEnabled => features.CompileTimeImportsEnabled;
-
-        /// <inheritdoc/>
         public bool MicrosoftGraphPreviewEnabled => features.MicrosoftGraphPreviewEnabled;
 
         /// <inheritdoc/>
@@ -82,5 +79,8 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
         /// <inheritdoc/>
         public bool OptionalModuleNamesEnabled => features.OptionalModuleNamesEnabled;
+
+        /// <inheritdoc/>
+        public bool ResourceDerivedTypesEnabled => features.ResourceDerivedTypesEnabled;
     }
 }

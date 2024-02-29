@@ -209,7 +209,7 @@ namespace Analyzer.Cli.FunctionalTests
                 expectedLogSummary += $"{Environment.NewLine}\tThe verbose mode (option -v or --verbose) can be used to obtain even more information about the execution.";
             }
 
-            var warningMessage = "An exception occurred when processing the template language expressions";
+            var warningMessage = "The parsing of the template output named badOutput failed";
             var errorMessage1 = $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "ReportsError.json")}";
             var errorMessage2 = $"An exception occurred while analyzing template {Path.Combine(directoryToAnalyze, "ReportsError2.json")}";
 
@@ -263,8 +263,7 @@ namespace Analyzer.Cli.FunctionalTests
                 {
                     errorLog += $"{Environment.NewLine}Exception details:" +
                         $"{Environment.NewLine}Microsoft.Azure.Templates.Analyzer.Core.TemplateAnalyzerException: Error while processing template.";
-                    warningLog += $"{Environment.NewLine}Exception details:" +
-                        $"{Environment.NewLine}Azure.Deployments.Templates.Exceptions.TemplateValidationException: The template parameter 'location' is not found.";
+                    // output parse warning does not trigger exception, only log
                 }
                 var outputBeforeSummary = cliConsoleOutput[..indexOfLogSummary];
                 Assert.IsTrue(outputBeforeSummary.IndexOf(errorLog) > 0);
