@@ -51,13 +51,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
+        /// <param name="customRulesJsonPath">An optional custom rules json file path.</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customRulesJsonPath = null)
         {
             string rules;
             try
             {
-                rules = LoadRules();
+                rules = LoadRules(customRulesJsonPath);
             }
             catch (Exception e)
             {
@@ -224,12 +225,16 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
         }
 
-        private static string LoadRules()
+        private static string LoadRules(FileInfo rulesFile)
         {
-            return File.ReadAllText(
-                Path.Combine(
+            rulesFile ??= new FileInfo(Path.Combine(
                     Path.GetDirectoryName(AppContext.BaseDirectory),
                     "Rules/BuiltInRules.json"));
+
+            using var fileStream = rulesFile.OpenRead();
+            using var streamReader = new StreamReader(fileStream);
+
+            return streamReader.ReadToEnd();
         }
 
         /// <summary>
