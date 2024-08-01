@@ -4,8 +4,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Templates.Analyzer.Cli;
+using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Types;
 using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,7 +39,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("Invalid.bicep", ExitCode.ErrorInvalidBicepTemplate, DisplayName = "Path exists, invalid Bicep template")]
         public void AnalyzeTemplate_ValidInputValues_ReturnExpectedExitCode(string relativeTemplatePath, ExitCode expectedExitCode, params string[] additionalCliOptions)
         {
-            var args = new string[] { "analyze-template" , GetFilePath(relativeTemplatePath)}; 
+            var args = new string[] { "analyze-template", GetFilePath(relativeTemplatePath) };
             args = args.Concat(additionalCliOptions).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
@@ -64,7 +66,7 @@ namespace Analyzer.Cli.FunctionalTests
         {
             var templatePath = GetFilePath(relativeTemplatePath);
             var configurationPath = GetFilePath("Configuration.json");
-            var args = new string[] { "analyze-template", templatePath, "--config-file-path", configurationPath};
+            var args = new string[] { "analyze-template", templatePath, "--config-file-path", configurationPath };
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.Violation, result.Result);
@@ -81,7 +83,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.Violation, result.Result);
-            
+
             File.Delete(outputFilePath);
         }
 
@@ -115,6 +117,35 @@ namespace Analyzer.Cli.FunctionalTests
 
             Assert.AreEqual((int)ExitCode.Success, result.Result);
             StringAssert.Contains(outputWriter.ToString(), "Parameters File: " + Path.Combine(Directory.GetCurrentDirectory(), "Tests", "ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.parameters.json"));
+        }
+
+        [TestMethod]
+        public void AnalyzeTemplate_ValidInputValues_AnalyzesUsingCustomJSONRulesPath()
+        {
+            var rulesDir = Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                "Rules");
+            var rulesFile = Path.Combine(rulesDir, "BuiltInRules.json");
+            var customJSONRulesPath = Path.Combine(rulesDir, "MovedRules.json");
+            var templatePath = GetFilePath(Path.Combine("ToTestSeparateParametersFile", "TemplateWithSeparateParametersFile.bicep"));
+
+            var args = new string[] {
+                "analyze-template", templatePath,
+                "--custom-json-rules-path", customJSONRulesPath
+            };
+
+            // Move rules file
+            File.Move(rulesFile, customJSONRulesPath, overwrite: true);
+
+            try
+            {
+                var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
+                Assert.AreEqual((int)ExitCode.Success, result.Result);
+            }
+            finally
+            {
+                File.Move(customJSONRulesPath, rulesFile, overwrite: true);
+            }
         }
 
         [TestMethod]
@@ -161,7 +192,7 @@ namespace Analyzer.Cli.FunctionalTests
 
             args = args.Concat(additionalCliOptions).ToArray();
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
-            
+
             Assert.AreEqual((int)expectedExitCode, result.Result);
         }
 
@@ -170,7 +201,7 @@ namespace Analyzer.Cli.FunctionalTests
         {
             var outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Output.sarif");
             var directoryToAnalyze = GetFilePath("ToTestSarifNotifications");
-            
+
             var args = new string[] { "analyze-directory", directoryToAnalyze, "--report-format", "Sarif", "--output-file-path", outputFilePath };
 
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
@@ -228,7 +259,7 @@ namespace Analyzer.Cli.FunctionalTests
                     $"{Environment.NewLine}\t\t1 instance of: {errorMessage1}" +
                     $"{Environment.NewLine}\t\t1 instance of: {errorMessage2}";
             }
-            
+
             expectedLogSummary += ($"{Environment.NewLine}{Environment.NewLine}\t1 Warning" +
                 $"{Environment.NewLine}\t{(multipleErrors ? "2 Errors" : "1 Error")}{Environment.NewLine}");
 
@@ -320,7 +351,7 @@ namespace Analyzer.Cli.FunctionalTests
                             }
                         })
                     .ToString());
-                
+
                 if (specifyInCommand)
                 {
                     args = args.Concat(new[] { "--config-file-path", configName }).ToArray();

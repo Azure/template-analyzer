@@ -227,6 +227,30 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
+        public void CustomRulesFileIsProvided_NoExceptionThrown()
+        {
+            var rulesDir = Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                "Rules");
+            var rulesFile = Path.Combine(rulesDir, "BuiltInRules.json");
+            var movedFile = Path.Combine(rulesDir, "MovedRules.json");
+
+            // Move rules file
+            File.Move(rulesFile, movedFile, overwrite: true);
+
+            var customRulesFile = new FileInfo(movedFile);
+
+            try
+            {
+                TemplateAnalyzer.Create(false, null, customRulesFile);
+            }
+            finally
+            {
+                File.Move(movedFile, rulesFile, overwrite: true);
+            }
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void FilterRules_ConfigurationNull_ExceptionThrown()
         {

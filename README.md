@@ -35,6 +35,7 @@ Argument | Description
 `-o` or `--output-file-path` | **(Required if `--report-format` is *Sarif*)**  File path to output SARIF results to.
 **(Optional)** `-v` or `--verbose` | Shows details about the analysis
 **(Optional)** `--include-non-security-rules` | Run all the rules against the templates, including non-security rules
+**(Optional)** `--custom-json-rules-path` | The [JSON rules file](docs/authoring-json-rules.md) to use against the templates.<br/>If not specified, will use the [default JSON rule set that is shipped with the tool](docs/built-in-rules.md#json-based-rules).
 
  Template Analyzer runs the [configured rules](#understanding-and-customizing-rules) against the provided template and its corresponding [template parameters](https://docs.microsoft.com/azure/azure-resource-manager/templates/parameter-files), if specified. If no template parameters are specified, then Template Analyzer will check if templates with the [general naming standards defined by Microsoft](https://learn.microsoft.com/azure/azure-resource-manager/templates/parameter-files#file-name) are present in the same folder, otherwise it generates the minimum number of placeholder parameters to properly evaluate [template functions](https://docs.microsoft.com/azure/azure-resource-manager/templates/template-functions) in the template.
 
