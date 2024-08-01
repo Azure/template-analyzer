@@ -135,7 +135,7 @@ namespace Analyzer.Cli.FunctionalTests
             };
 
             // Move rules file
-            File.Move(rulesFile, customJSONRulesPath, true);
+            File.Move(rulesFile, customJSONRulesPath, overwrite: true);
 
             try
             {

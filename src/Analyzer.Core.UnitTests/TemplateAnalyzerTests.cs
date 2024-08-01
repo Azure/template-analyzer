@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             var movedFile = Path.Combine(rulesDir, "MovedRules.json");
 
             // Move rules file
-            File.Move(rulesFile, movedFile);
+            File.Move(rulesFile, movedFile, overwrite: true);
 
             var customRulesFile = new FileInfo(movedFile);
 
