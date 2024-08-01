@@ -51,14 +51,14 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// </summary>
         /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
-        /// <param name="customRulesJsonPath">An optional custom rules json file path.</param>
+        /// <param name="customJsonRulesPath">An optional custom rules json file path.</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customRulesJsonPath = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customJsonRulesPath = null)
         {
             string rules;
             try
             {
-                rules = LoadRules(customRulesJsonPath);
+                rules = LoadRules(customJsonRulesPath);
             }
             catch (Exception e)
             {

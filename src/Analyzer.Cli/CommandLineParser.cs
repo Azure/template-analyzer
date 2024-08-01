@@ -146,8 +146,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                     "Run all the rules against the templates, including non-security rules"),
 
                 new Option<FileInfo>(
-                    "--custom-rules-json-path",
-                    "The rules JSON file to use against the templates. If not specified, will use the default rule set that is shipped with the tool.")
+                    "--custom-json-rules-path",
+                    "The JSON rules file to use against the templates. If not specified, will use the default rule set that is shipped with the tool.")
             };
 
             commands.ForEach(c => options.ForEach(c.AddOption));
@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo outputFilePath,
             bool includeNonSecurityRules,
             bool verbose,
-            FileInfo customRulesJsonPath)
+            FileInfo customJsonRulesPath)
         {
             // Check that template file paths exist
             if (!templateFilePath.Exists)
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, includeNonSecurityRules, verbose, customRulesJsonPath);
+            var setupResult = SetupAnalysis(configFilePath, directoryToAnalyze: null, reportFormat, outputFilePath, includeNonSecurityRules, verbose, customJsonRulesPath);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo outputFilePath,
             bool includeNonSecurityRules,
             bool verbose,
-            FileInfo customRulesJsonPath)
+            FileInfo customJsonRulesPath)
         {
             if (!directoryPath.Exists)
             {
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
                 return (int)ExitCode.ErrorInvalidPath;
             }
 
-            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, includeNonSecurityRules, verbose, customRulesJsonPath);
+            var setupResult = SetupAnalysis(configFilePath, directoryPath, reportFormat, outputFilePath, includeNonSecurityRules, verbose, customJsonRulesPath);
             if (setupResult != ExitCode.Success)
             {
                 return (int)setupResult;
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             FileInfo outputFilePath,
             bool includeNonSecurityRules,
             bool verbose,
-            FileInfo customRulesJsonPath)
+            FileInfo customJsonRulesPath)
         {
             // Output file path must be specified if SARIF was chosen as the report format
             if (reportFormat == ReportFormat.Sarif && outputFilePath == null)
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             this.reportWriter = GetReportWriter(reportFormat, outputFilePath, directoryToAnalyze?.FullName);
             CreateLoggers(verbose);
 
-            this.templateAnalyzer = TemplateAnalyzer.Create(includeNonSecurityRules, this.logger, customRulesJsonPath);
+            this.templateAnalyzer = TemplateAnalyzer.Create(includeNonSecurityRules, this.logger, customJsonRulesPath);
 
             if (!TryReadConfigurationFile(configurationFile, out var config))
             {
