@@ -394,7 +394,8 @@
           "path": "identity.type",
           "in": [
             "UserAssigned",
-            "SystemAssigned"
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
           ]
         }
       ]
