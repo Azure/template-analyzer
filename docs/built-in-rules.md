@@ -47,7 +47,7 @@ Cross-Origin Resource Sharing (CORS) should not allow all domains to access your
 ### TA-000007: Managed identity should be used in your API app
 For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.
 
-**Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
+**Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"`, `"UserAssigned"`, or `"SystemAssigned, UserAssigned"` and providing any necessary identifiers for the identity if required.
 #### Severity: 2
 
 ### TA-000008: Remote debugging should be turned off for function apps
@@ -120,7 +120,7 @@ Cross-Origin Resource Sharing (CORS) should not allow all domains to access your
 ### TA-000019: Managed identity should be used in your web app
 For enhanced authentication security, use a managed identity. On Azure, managed identities eliminate the need for developers to have to manage credentials by providing an identity for the Azure resource in Azure AD and using it to obtain Azure Active Directory (Azure AD) tokens.
 
-**Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"` or `"UserAssigned"` and providing any necessary identifiers for the identity if required.
+**Recommendation**: To [use Managed Identity](https://docs.microsoft.com/azure/app-service/overview-managed-identity?tabs=dotnet), in the [Microsoft.Web/sites resource managed identity property](https://docs.microsoft.com/azure/templates/microsoft.web/sites?tabs=json#ManagedServiceIdentity), add (or update) the *type* property, setting its value to `"SystemAssigned"`, `"UserAssigned"`, or `"SystemAssigned, UserAssigned"` and providing any necessary identifiers for the identity if required.
 #### Severity: 2
 
 ### TA-000020: Audit usage of custom RBAC roles
