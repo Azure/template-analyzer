@@ -392,11 +392,7 @@
       "allOf": [
         {
           "path": "identity.type",
-          "in": [
-            "UserAssigned",
-            "SystemAssigned",
-            "SystemAssigned, UserAssigned"
-          ]
+          "regex": "^(UserAssigned|SystemAssigned|SystemAssigned, *UserAssigned)$"
         }
       ]
     }

@@ -1,0 +1,11 @@
+[
+  {
+    "Template": "FunctionAppServices.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 27,
+        "Description": "Function app is missing an identity declaration"
+      }
+    ]
+  }
+]
