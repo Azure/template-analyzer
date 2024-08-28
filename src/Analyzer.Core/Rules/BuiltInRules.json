@@ -223,7 +223,8 @@
           "path": "identity.type",
           "in": [
             "UserAssigned",
-            "SystemAssigned"
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
           ]
         }
       ]
@@ -392,7 +393,11 @@
       "allOf": [
         {
           "path": "identity.type",
-          "regex": "^(UserAssigned|SystemAssigned|SystemAssigned, *UserAssigned)$"
+          "in": [
+            "UserAssigned",
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
+          ]
         }
       ]
     }
@@ -610,7 +615,8 @@
           "path": "identity.type",
           "in": [
             "UserAssigned",
-            "SystemAssigned"
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
           ]
         }
       ]

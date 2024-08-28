@@ -1,10 +1,10 @@
 [
   {
-    "Template": "AppServiceFunctionApps.json",
+    "Template": "AppServiceAPIApps.json",
     "ReportedFailures": [
       {
         "LineNumber": 20,
-        "Description": "Function app is missing an identity declaration."
+        "Description": "API app is missing an identity declaration."
       },
       {
         "LineNumber": 88,

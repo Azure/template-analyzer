@@ -1,0 +1,19 @@
+[
+  {
+    "Template": "AppServiceWebApps.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 20,
+        "Description": "Web app is missing an identity declaration."
+      },
+      {
+        "LineNumber": 88,
+        "Description": "Multiple identity types should be separated by a comma, followed by a space."
+      },
+      {
+        "LineNumber": 120,
+        "Description": "App resources missing the kind property should be treated as a web app, and any missing identities should be flagged."
+      }
+    ]
+  }
+]
