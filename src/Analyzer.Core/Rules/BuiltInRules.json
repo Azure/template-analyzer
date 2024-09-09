@@ -223,7 +223,8 @@
           "path": "identity.type",
           "in": [
             "UserAssigned",
-            "SystemAssigned"
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
           ]
         }
       ]
@@ -394,7 +395,8 @@
           "path": "identity.type",
           "in": [
             "UserAssigned",
-            "SystemAssigned"
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
           ]
         }
       ]
@@ -613,7 +615,8 @@
           "path": "identity.type",
           "in": [
             "UserAssigned",
-            "SystemAssigned"
+            "SystemAssigned",
+            "SystemAssigned, UserAssigned"
           ]
         }
       ]

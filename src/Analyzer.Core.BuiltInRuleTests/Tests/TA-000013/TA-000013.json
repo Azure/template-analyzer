@@ -1,0 +1,15 @@
+[
+  {
+    "Template": "AppServiceFunctionApps.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 20,
+        "Description": "Function app is missing an identity declaration."
+      },
+      {
+        "LineNumber": 88,
+        "Description": "Multiple identity types should be separated by a comma, followed by a space."
+      }
+    ]
+  }
+]
