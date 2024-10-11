@@ -38,7 +38,7 @@ jobs:
         dotnet-version: 8.x
     
     - name: Setup NuGet
-      uses: nuget/setup-nuget@v1
+      uses: nuget/setup-nuget@v2
         
     - name: Restore dependencies
       run: dotnet restore
@@ -67,6 +67,9 @@ jobs:
     - name: Pack Analyzer.TemplateProcessing
       run: nuget pack Analyzer.TemplateProcessing.NuGet/Analyzer.TemplateProcessing.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }}
       
+    - name: pack Analyzer.Reports
+      run: nuget pack Analyzer.Reports.NuGet/Analyzer.Reports.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties configuration=${{ env.Configuration }}
+
     - name: (dotnet) Publish CLI
       run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --runtime ${{ matrix.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
       
