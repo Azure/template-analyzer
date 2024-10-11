@@ -19,4 +19,8 @@
             </group>
         </dependencies>
     </metadata>
+
+    <files>
+        <file src="..\Analyzer.Reports\bin\$configuration$\net8.0\*.dll" target="lib\net8.0" />
+    </files>
 </package>
