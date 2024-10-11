@@ -1,5 +1,4 @@
-[![Build Status](https://dev.azure.com/azure/template-analyzer/_apis/build/status/BuildAndTest?branchName=main)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
-[![Code Coverage](https://shields.io/azure-devops/coverage/azure/template-analyzer/91)](https://dev.azure.com/azure/template-analyzer/_build/latest?definitionId=91&branchName=main)
+[![Build Status](https://github.com/Azure/template-analyzer/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Azure/template-analyzer/actions/workflows/dotnet.yml)
 
 # Template Analyzer
 
