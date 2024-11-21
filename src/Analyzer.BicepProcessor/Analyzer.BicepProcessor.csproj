@@ -1,18 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.BicepProcessor</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.BicepProcessor</RootNamespace>
   </PropertyGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.TemplateProcessor\Analyzer.TemplateProcessor.csproj" />
   </ItemGroup>
-  
   <ItemGroup>
-    <PackageReference Include="Azure.Bicep.Core" Version="0.25.53" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Azure.Bicep.Core" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.IO.Abstractions" VersionOverride="20.0.4" />
   </ItemGroup>
-    
 </Project>

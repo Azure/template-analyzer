@@ -1,16 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer</RootNamespace>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Core</AssemblyName>
     <Description>An ARM and Bicep template scanner for security misconfigurations and best practices</Description>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="System.IO.Abstractions" VersionOverride="20.0.4" />
+    <PackageReference Include="Sarif.Sdk" VersionOverride="2.4.16" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.JsonRuleEngine\Analyzer.JsonRuleEngine.csproj" />
     <ProjectReference Include="..\Analyzer.PowerShellRuleEngine\Analyzer.PowerShellRuleEngine.csproj" />
@@ -18,11 +17,9 @@
     <ProjectReference Include="..\Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj" />
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Rules\BuiltInRules.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>

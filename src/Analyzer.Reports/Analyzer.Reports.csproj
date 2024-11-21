@@ -1,19 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Reports</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.Reports</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Sarif.Sdk" Version="2.4.12" />
-    <PackageReference Include="System.IO.Abstractions" Version="19.1.5" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Sarif.Sdk" />
+    <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Types\Analyzer.Types.csproj" />
   </ItemGroup>
-
 </Project>
