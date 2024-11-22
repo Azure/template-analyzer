@@ -13,8 +13,8 @@
         <dependencies>
             <group targetFramework="net8.0">
                 <dependency id="Newtonsoft.json" version="13.0.3" />
-                <dependency id="Sarif.Sdk" version="2.4.12" />
-                <dependency id="System.IO.Abstractions" version="19.1.5" />
+                <dependency id="Sarif.Sdk" version="2.4.16" />
+                <dependency id="System.IO.Abstractions" version="20.0.4" />
                 <dependency id="Microsoft.Extensions.Logging.Abstractions" version="6.0.1" />
             </group>
         </dependencies>
