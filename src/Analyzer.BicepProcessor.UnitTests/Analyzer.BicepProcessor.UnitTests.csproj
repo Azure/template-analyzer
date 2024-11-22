@@ -9,8 +9,8 @@
     <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="System.IO.Abstractions" VersionOverride="20.0.4" />
-    <PackageReference Include="Sarif.Sdk" VersionOverride="2.4.16" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="Sarif.Sdk" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj" />
