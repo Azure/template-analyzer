@@ -24,7 +24,7 @@
   </metadata>
 
   <files>
-    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net8.0\*.dll" target="lib\net6.0\" />
+    <file src="..\Analyzer.BicepProcessor\bin\$configuration$\net8.0\*.dll" target="lib\net8.0\" />
   </files>
   
 </package>
