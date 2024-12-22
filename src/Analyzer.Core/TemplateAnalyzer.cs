@@ -159,7 +159,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
-                evaluations = evaluations.Concat(this.powerShellRuleEngine?.AnalyzeTemplate(templateContext));
+
+                if(this.powerShellRuleEngine is not null)
+                    evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
 
                 // Recursively handle nested templates 
                 var jsonTemplate = JObject.Parse(populatedTemplate);
