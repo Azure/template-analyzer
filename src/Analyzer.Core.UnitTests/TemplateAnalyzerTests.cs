@@ -227,6 +227,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
+        public void Create_NoPowershellRules_NoExceptionThrown()
+        {
+            TemplateAnalyzer.Create(false, includePowerShellRules: false);
+        }
+
+        [TestMethod]
         public void CustomRulesFileIsProvided_NoExceptionThrown()
         {
             var rulesDir = Path.Combine(

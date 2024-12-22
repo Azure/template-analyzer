@@ -52,8 +52,9 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <param name="customJsonRulesPath">An optional custom rules json file path.</param>
+        /// <param name="includePowerShellRules">Whether or not to run also powershell rules against the template.</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customJsonRulesPath = null, IRuleEngine powershellRuleEngine = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customJsonRulesPath = null, bool includePowerShellRules = true)
         {
             string rules;
             try
@@ -72,7 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
                     logger),
-                powershellRuleEngine ?? new PowerShellRuleEngine(includeNonSecurityRules, logger),
+                includePowerShellRules ? new PowerShellRuleEngine(includeNonSecurityRules, logger) : null,
                 logger);
         }
 
@@ -158,7 +159,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             try
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
-                evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
+                evaluations = evaluations.Concat(this.powerShellRuleEngine?.AnalyzeTemplate(templateContext));
 
                 // Recursively handle nested templates 
                 var jsonTemplate = JObject.Parse(populatedTemplate);
@@ -187,7 +188,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                             // Variables, parameters and functions inherited from parent template
                             string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path ?? "functions";
                             string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path ?? "variables";
-                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path ?? "parameters" ;
+                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path ?? "parameters";
 
                             populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
                             populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
