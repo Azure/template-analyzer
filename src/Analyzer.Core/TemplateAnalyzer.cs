@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <param name="customJsonRulesPath">An optional custom rules json file path.</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customJsonRulesPath = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, ILogger logger = null, FileInfo customJsonRulesPath = null, IRuleEngine powershellRuleEngine = null)
         {
             string rules;
             try
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
                     logger),
-                new PowerShellRuleEngine(includeNonSecurityRules, logger),
+                powershellRuleEngine ?? new PowerShellRuleEngine(includeNonSecurityRules, logger),
                 logger);
         }
 
