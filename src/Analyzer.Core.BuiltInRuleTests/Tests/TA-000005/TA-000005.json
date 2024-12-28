@@ -1,0 +1,23 @@
+[
+  {
+    "Template": "AppServicesMinTLS.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 51,
+        "Description": "Legacy TLS set"
+      },
+      {
+        "LineNumber": 63,
+        "Description": "Legacy TLS set in config"
+      },
+      {
+        "LineNumber": 79,
+        "Description": "TLS is not set"
+      },
+      {
+        "LineNumber": 89,
+        "Description": "TLS is not set in config"
+      }
+    ]
+  }
+]
