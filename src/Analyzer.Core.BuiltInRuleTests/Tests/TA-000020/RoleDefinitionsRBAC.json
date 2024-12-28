@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Authorization/roleDefinitions",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(subscription().id, 'Owner')]",
+      "properties": {
+        "roleName": "Owner",
+        "type": "BuiltInRole"
+      },
+      "metadata": {
+        "description": "Role Definition with built-in RBAC role (positive case)"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleDefinitions",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(subscription().id, 'CustomRole')]",
+      "properties": {
+        "roleName": "CustomRole",
+        "type": "CustomRole"
+      },
+      "metadata": {
+        "description": "Role Definition with custom RBAC role (negative case)"
+      }
+    }
+  ]
+}

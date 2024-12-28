@@ -1,0 +1,23 @@
+[
+  {
+    "Template": "AppServiceFunctionFTPS.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 66,
+        "Description": "Function App with FTP enabled"
+      },
+      {
+        "LineNumber": 78,
+        "Description": "Function App with FTP enabled in site config"
+      },
+      {
+        "LineNumber": 94,
+        "Description": "Function App with FTP state not defined"
+      },
+      {
+        "LineNumber": 104,
+        "Description": "Function App with FTP not defined in site config"
+      }
+    ]
+  }
+]
