@@ -73,8 +73,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
                     logger),
-                includePowerShellRules ? new PowerShellRuleEngine(includeNonSecurityRules, logger) : null,
-                logger);
+                    includePowerShellRules ? new PowerShellRuleEngine(includeNonSecurityRules, logger) : null,
+                    logger);
         }
 
         /// <summary>
@@ -160,8 +160,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             {
                 IEnumerable<IEvaluation> evaluations = this.jsonRuleEngine.AnalyzeTemplate(templateContext);
 
-                if(this.powerShellRuleEngine is not null)
+                if (this.powerShellRuleEngine is not null)
+                {
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
+                }
 
                 // Recursively handle nested templates 
                 var jsonTemplate = JObject.Parse(populatedTemplate);
