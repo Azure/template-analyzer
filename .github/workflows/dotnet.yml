@@ -22,7 +22,7 @@ jobs:
         - os: windows-latest
           osLabel: Windows
           runtimeId: win-x64
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           osLabel: Linux
           runtimeId: linux-x64
     
