@@ -236,7 +236,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
             };
             string template = GenerateTemplate(resourceProperties);
 
-            var noPowershellEvaluations = TemplateAnalyzer.Create(false, includePowerShellRules: false).AnalyzeTemplate(template, "aFilePath");
+            var noPowershellEvaluations = TemplateAnalyzer.Create(includeNonSecurityRules: true, includePowerShellRules: false).AnalyzeTemplate(template, "aFilePath");
             var allRules = templateAnalyzerAllRules.AnalyzeTemplate(template, "aFilePath");
 
             Assert.IsTrue(noPowershellEvaluations.Count() < allRules.Count());
