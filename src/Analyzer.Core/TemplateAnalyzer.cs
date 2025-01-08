@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -73,8 +73,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
                     logger),
-                    includePowerShellRules ? new PowerShellRuleEngine(includeNonSecurityRules, logger) : null,
-                    logger);
+                includePowerShellRules ? new PowerShellRuleEngine(includeNonSecurityRules, logger) : null,
+                logger);
         }
 
         /// <summary>
