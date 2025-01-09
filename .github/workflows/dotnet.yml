@@ -17,12 +17,12 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-22.04]
         include:
         - os: windows-latest
           osLabel: Windows
           runtimeId: win-x64
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           osLabel: Linux
           runtimeId: linux-x64
     
