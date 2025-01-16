@@ -227,6 +227,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Core.UnitTests
         }
 
         [TestMethod]
+        public void AnalyzeTemplate_NoPowershellRulesRunning_ReturnsLessEvaluations()
+        {
+            string[] resourceProperties = {
+                GenerateResource(
+                    @"{ ""azureActiveDirectory"": { ""tenantId"": ""tenantIdValue"" } }",
+                    "Microsoft.ServiceFabric/clusters", "resource1")
+            };
+            string template = GenerateTemplate(resourceProperties);
+
+            var noPowershellEvaluations = TemplateAnalyzer.Create(includeNonSecurityRules: true, includePowerShellRules: false).AnalyzeTemplate(template, "aFilePath");
+            var allRules = templateAnalyzerAllRules.AnalyzeTemplate(template, "aFilePath");
+
+            Assert.IsTrue(noPowershellEvaluations.Count() < allRules.Count());
+        }
+
+        [TestMethod]
         public void CustomRulesFileIsProvided_NoExceptionThrown()
         {
             var rulesDir = Path.Combine(
