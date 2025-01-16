@@ -1,0 +1,15 @@
+[
+  {
+    "Template": "AppServiceFunctionDebugging.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 51,
+        "Description": "Function App with remote debugging enabled"
+      },
+      {
+        "LineNumber": 63,
+        "Description": "Function App with remote debugging enabled in site config"
+      }
+    ]
+  }
+]
