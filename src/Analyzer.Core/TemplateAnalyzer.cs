@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
-            return Create(includeNonSecurityRules, rules, logger);
+            return Create(includeNonSecurityRules: includeNonSecurityRules, rules, logger, includePowerShellRules: includePowerShellRules);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <param name="rulesJsonAsString">The in-memory rules object represented as a string.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
-        public static TemplateAnalyzer Create(bool includeNonSecurityRules, string rulesJsonAsString, ILogger logger = null)
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, string rulesJsonAsString, ILogger logger = null, bool includePowerShellRules = true)
         {
             return new TemplateAnalyzer(
                 JsonRuleEngine.Create(
