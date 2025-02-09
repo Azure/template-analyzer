@@ -65,9 +65,21 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
+            return Create(includeNonSecurityRules, rules, logger);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="TemplateAnalyzer"/> instance with in-memory rules.
+        /// </summary>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
+        /// <param name="rulesJsonAsString">The in-memory rules object represented as a string.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
+        /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, string rulesJsonAsString, ILogger logger = null)
+        {
             return new TemplateAnalyzer(
                 JsonRuleEngine.Create(
-                    rules,
+                    rulesJsonAsString,
                     templateContext => templateContext.IsBicep
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
