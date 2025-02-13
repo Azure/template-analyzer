@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// Creates a new <see cref="TemplateAnalyzer"/> instance.
         /// </summary>
         /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
-        /// <param name="rulesJsonAsString">The in-memory rules object represented as a string.</param>
+        /// <param name="rulesJsonAsString">The rules to evaluate, in JSON string format.</param>
         /// <param name="logger">A logger to report errors and debug information</param>
         /// <param name="includePowerShellRules">Whether or not to run also powershell rules against the template.</param>
         /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
