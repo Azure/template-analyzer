@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         private ILogger logger;
 
         /// <summary>
-        /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
+        /// Private constructor to enforce using one of the TemplateAnalyzer.Create methods for creating new instances.
         /// </summary>
         /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
         /// <param name="powerShellRuleEngine">The <see cref="PowerShellRuleEngine"/> to use in analyzing templates.</param>
