@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         private ILogger logger;
 
         /// <summary>
-        /// Private constructor to enforce use of <see cref="TemplateAnalyzer.Create"/> for creating new instances.
+        /// Private constructor to enforce using one of the TemplateAnalyzer.Create methods for creating new instances.
         /// </summary>
         /// <param name="jsonRuleEngine">The <see cref="JsonRuleEngine"/> to use in analyzing templates.</param>
         /// <param name="powerShellRuleEngine">The <see cref="PowerShellRuleEngine"/> to use in analyzing templates.</param>
@@ -66,9 +66,22 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 throw new TemplateAnalyzerException("Failed to read rules.", e);
             }
 
+            return Create(includeNonSecurityRules: includeNonSecurityRules, includePowerShellRules: includePowerShellRules, rulesJsonAsString: rules, logger: logger);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="TemplateAnalyzer"/> instance.
+        /// </summary>
+        /// <param name="includeNonSecurityRules">Whether or not to run also non-security rules against the template.</param>
+        /// <param name="rulesJsonAsString">The rules to evaluate, in JSON string format.</param>
+        /// <param name="logger">A logger to report errors and debug information</param>
+        /// <param name="includePowerShellRules">Whether or not to run also powershell rules against the template.</param>
+        /// <returns>A new <see cref="TemplateAnalyzer"/> instance.</returns>
+        public static TemplateAnalyzer Create(bool includeNonSecurityRules, bool includePowerShellRules, string rulesJsonAsString, ILogger logger = null)
+        {
             return new TemplateAnalyzer(
                 JsonRuleEngine.Create(
-                    rules,
+                    rulesJsonAsString,
                     templateContext => templateContext.IsBicep
                         ? new BicepSourceLocationResolver(templateContext)
                         : new JsonSourceLocationResolver(templateContext),
