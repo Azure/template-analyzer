@@ -438,7 +438,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 parametersLookup: parametersLookup,
                 variablesLookup: variablesLookup,
                 validationContext: null,
-                diagnostics: null);
+                metricsRecorder: null);
 
             // Set reference lookup
             helper.OnGetTemplateReference = (TemplateReference templateReference) =>

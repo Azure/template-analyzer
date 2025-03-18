@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -15,14 +16,18 @@ using Bicep.Core.Emit;
 using Bicep.Core.Extensions;
 using Bicep.Core.Features;
 using Bicep.Core.FileSystem;
+using Bicep.Core.Navigation;
 using Bicep.Core.Registry;
 using Bicep.Core.Registry.Auth;
+using Bicep.Core.Registry.PublicRegistry;
 using Bicep.Core.Semantics.Namespaces;
 using Bicep.Core.Syntax;
 using Bicep.Core.Text;
 using Bicep.Core.TypeSystem.Providers;
 using Bicep.Core.Utils;
 using Bicep.Core.Workspaces;
+using Bicep.IO.Abstraction;
+using Bicep.IO.FileSystem;
 using Microsoft.Extensions.DependencyInjection;
 using BicepEnvironment = Bicep.Core.Utils.Environment;
 using IOFileSystem = System.IO.Abstractions.FileSystem;
@@ -41,14 +46,16 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// <param name="services"></param>
         /// <returns></returns>
         public static IServiceCollection AddBicepCore(this IServiceCollection services) => services
-            .AddSingleton<INamespaceProvider, DefaultNamespaceProvider>()
+            .AddSingleton<INamespaceProvider, NamespaceProvider>()
             .AddSingleton<IResourceTypeProviderFactory, ResourceTypeProviderFactory>()
             .AddSingleton<IContainerRegistryClientFactory, ContainerRegistryClientFactory>()
+            .AddSingleton<IPublicRegistryModuleMetadataProvider, PublicRegistryModuleMetadataProvider>()
             .AddSingleton<ITemplateSpecRepositoryFactory, TemplateSpecRepositoryFactory>()
             .AddSingleton<IModuleDispatcher, ModuleDispatcher>()
             .AddSingleton<IArtifactRegistryProvider, DefaultArtifactRegistryProvider>()
             .AddSingleton<ITokenCredentialFactory, TokenCredentialFactory>()
             .AddSingleton<IFileResolver, FileResolver>()
+            .AddSingleton<IFileExplorer, FileSystemFileExplorer>()
             .AddSingleton<IEnvironment, BicepEnvironment>()
             .AddSingleton<IFileSystem, IOFileSystem>()
             .AddSingleton<IConfigurationManager, ConfigurationManager>()
@@ -91,47 +98,42 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                 throw new Exception($"Bicep issues found:{SysEnvironment.NewLine}{string.Join(SysEnvironment.NewLine, bicepIssues)}");
             }
 
-            string GetPathRelativeToEntryPoint(string absolutePath) => Path.GetRelativePath(
-                Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.FileUri.AbsolutePath), absolutePath);
+            string entryPointDirectory = Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.Uri.AbsolutePath);
+
+            bool IsLocalModuleReference(KeyValuePair<IArtifactReferenceSyntax, ArtifactResolutionInfo> artifact) =>
+                artifact.Key is ModuleDeclarationSyntax moduleDeclaration &&
+                moduleDeclaration.Path is StringSyntax moduleDeclarationPath &&
+                !moduleDeclarationPath.SegmentValues.Any(IsModuleRegistryPathRegex.IsMatch) &&
+                artifact.Value.Result.IsSuccess();
 
             // Collect all needed module info from SourceFileGrouping metadata
-            var moduleInfo = compilation.SourceFileGrouping.FileUriResultByArtifactReference.Select(sourceFileAndMetadata =>
-            {
-                var bicepSourceFile = sourceFileAndMetadata.Key as BicepSourceFile;
-                var pathRelativeToEntryPoint = GetPathRelativeToEntryPoint(bicepSourceFile.FileUri.AbsolutePath);
-                var modules = sourceFileAndMetadata.Value
-                    .Select(artifactRefAndUriResult =>
+            var moduleInfo = compilation.SourceFileGrouping.ArtifactLookup
+                .Where(IsLocalModuleReference)
+                .GroupBy(artifact => artifact.Value.Origin)
+                .Select(grouping =>
+                {
+                    var bicepSourceFile = grouping.Key;
+                    var pathRelativeToEntryPoint = Path.GetRelativePath(
+                        Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.Uri.AbsolutePath), bicepSourceFile.Uri.AbsolutePath);
+
+                    var modules = grouping.Select(artifactRefAndUriResult =>
                     {
-                        // Do not include modules imported from public/private registries, as it is more useful for user to see line number
-                        // of the module declaration itself instead of line number in the module as the user does not control template in registry directly
-                        if (artifactRefAndUriResult.Key is not ModuleDeclarationSyntax moduleDeclaration
-                            || moduleDeclaration.Path is not StringSyntax moduleDeclarationPath
-                            || moduleDeclarationPath.SegmentValues.Any(v => IsModuleRegistryPathRegex.IsMatch(v)))
-                        {
-                            return null;
-                        }
-
-                        if (!artifactRefAndUriResult.Value.IsSuccess())
-                        {
-                            return null;
-                        }
-
-                        var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, moduleDeclaration.Span.Position).line;
-                        var modulePath = new FileInfo(artifactRefAndUriResult.Value.Unwrap().AbsolutePath).FullName; // converts path to current platform
+                        var module = artifactRefAndUriResult.Key as ModuleDeclarationSyntax;
+                        var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, module.Span.Position).line;
+                        var modulePath = new FileInfo(artifactRefAndUriResult.Value.Result.Unwrap().AbsolutePath).FullName; // converts path to current platform
 
                         // Use relative paths for bicep to match file paths used in bicep modules and source map
                         if (modulePath.EndsWith(".bicep"))
                         {
-                            modulePath = GetPathRelativeToEntryPoint(modulePath);
+                            modulePath = Path.GetRelativePath(entryPointDirectory, modulePath);
                         }
 
                         return new { moduleLine, modulePath };
                     })
-                    .WhereNotNull()
                     .ToDictionary(c => c.moduleLine, c => c.modulePath);
 
-                return new SourceFileModuleInfo(pathRelativeToEntryPoint, modules);
-            });
+                    return new SourceFileModuleInfo(pathRelativeToEntryPoint, modules);
+                });
 
             var bicepMetadata = new BicepMetadata()
             {
