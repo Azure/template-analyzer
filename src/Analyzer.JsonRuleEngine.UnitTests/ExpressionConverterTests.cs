@@ -313,7 +313,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [DataRow(null, DisplayName = "No operators")]
+        [DataRow(new object[] { }, DisplayName = "No operators")]
         [DataRow(["hasValue", true, "exists", true], DisplayName = "HasValue and Exists")]
         [ExpectedException(typeof(JsonSerializationException))]
         public void ReadJson_LeafWithInvalidOperatorCount_ThrowsParsingException(object[] operators)
