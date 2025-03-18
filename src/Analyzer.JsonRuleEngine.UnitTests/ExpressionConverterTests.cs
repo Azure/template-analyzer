@@ -214,9 +214,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(DisplayName = "Not Expression")]
-        [DataRow("not", typeof(NotExpressionDefinition), DisplayName = "Not Expression with Where condition")]
-        public void ReadJson_ValidNotExpression_ReturnsCorrectTypeAndValues(params object[] whereCondition)
+        [DataRow(new object[] { }, DisplayName = "Not Expression")]
+        [DataRow(new object[] { "not", typeof(NotExpressionDefinition) }, DisplayName = "Not Expression with Where condition")]
+        public void ReadJson_ValidNotExpression_ReturnsCorrectTypeAndValues(object[] whereCondition)
         {
             var expressionTemplate = $@"
                 {{
@@ -313,10 +313,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         }
 
         [TestMethod]
-        [DataRow(DisplayName = "No operators")]
-        [DataRow("hasValue", true, "exists", true, DisplayName = "HasValue and Exists")]
+        [DataRow(null, DisplayName = "No operators")]
+        [DataRow(["hasValue", true, "exists", true], DisplayName = "HasValue and Exists")]
         [ExpectedException(typeof(JsonSerializationException))]
-        public void ReadJson_LeafWithInvalidOperatorCount_ThrowsParsingException(params object[] operators)
+        public void ReadJson_LeafWithInvalidOperatorCount_ThrowsParsingException(object[] operators)
         {
             var leafDefinition = "{\"resourceType\": \"resource\", \"path\": \"path\"";
 

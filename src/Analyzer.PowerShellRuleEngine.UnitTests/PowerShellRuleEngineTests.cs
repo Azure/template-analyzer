@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
         [DataRow("template_and_resource_level_results.json", true, 14, new int[] { 1, 1, 1, 1, 8, 11, 14, 17, 1, 17, 17, 1, 17, 1 }, DisplayName = "Running all the rules against a template with errors reported in both analysis stages")]
         [DataRow("template_and_resource_level_results.json", false, 5, new int[] { 11, 17, 17, 17, 17 }, DisplayName = "Running only the security rules against a template with errors reported in both analysis stages")]
         // TODO add test case for error, warning (rule with severity level of warning?) and informational (also rule with that severity level?)
-        public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, dynamic expectedLineNumbers)
+        public void AnalyzeTemplate_ValidTemplate_ReturnsExpectedEvaluations(string templateFileName, bool runsAllRules, int expectedErrorCount, int[] expectedLineNumbers)
         {
             Assert.AreEqual(expectedErrorCount, expectedLineNumbers.Length);
 
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine.UnitTe
             Assert.AreEqual(expectedErrorCount, failedEvaluations.Count);
 
             // PSRule evaluations can change order depending on the OS:
-            foreach (var expectedLineNumber in expectedLineNumbers)
+            foreach (int expectedLineNumber in expectedLineNumbers)
             {
                 var matchingEvaluation = failedEvaluations.Find(evaluation => evaluation.Result.SourceLocation.LineNumber == expectedLineNumber);
                 failedEvaluations.Remove(matchingEvaluation);
