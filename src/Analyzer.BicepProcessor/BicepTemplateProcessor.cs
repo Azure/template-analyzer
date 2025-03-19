@@ -100,15 +100,19 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             string entryPointDirectory = Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.Uri.AbsolutePath);
 
-            bool IsLocalModuleReference(KeyValuePair<IArtifactReferenceSyntax, ArtifactResolutionInfo> artifact) =>
+            bool IsResolvedLocalModuleReference(KeyValuePair<IArtifactReferenceSyntax, ArtifactResolutionInfo> artifact) =>
+                // Only include local module references (not modules imported from public/private registries, i.e. those that match IsModuleRegistryPathRegex),
+                // as it is more useful for user to see line number of the module declaration itself,
+                // rather than the line number in the module (as the user does not control the template in the registry directly).
                 artifact.Key is ModuleDeclarationSyntax moduleDeclaration &&
                 moduleDeclaration.Path is StringSyntax moduleDeclarationPath &&
                 !moduleDeclarationPath.SegmentValues.Any(IsModuleRegistryPathRegex.IsMatch) &&
                 artifact.Value.Result.IsSuccess();
 
-            // Collect all needed module info from SourceFileGrouping metadata
+            // Create SourceFileModuleInfo collection by gathering all needed module info from SourceFileGrouping metadata.
+            // Group by the source file path to allow for easy construction of SourceFileModuleInfo.
             var moduleInfo = compilation.SourceFileGrouping.ArtifactLookup
-                .Where(IsLocalModuleReference)
+                .Where(IsResolvedLocalModuleReference)
                 .GroupBy(artifact => artifact.Value.Origin)
                 .Select(grouping =>
                 {
@@ -116,6 +120,9 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                     var pathRelativeToEntryPoint = Path.GetRelativePath(
                         Path.GetDirectoryName(compilation.SourceFileGrouping.EntryPoint.Uri.AbsolutePath), bicepSourceFile.Uri.AbsolutePath);
 
+                    // Use the grouping value (KeyValuePair<IArtifactReferenceSyntax,ArtifactResolutionInfo>) to create
+                    // a dictionary of module line numbers to file paths.
+                    // This represents the modules in the source file, and where (what lines) they are referenced.
                     var modules = grouping.Select(artifactRefAndUriResult =>
                     {
                         var module = artifactRefAndUriResult.Key as ModuleDeclarationSyntax;
