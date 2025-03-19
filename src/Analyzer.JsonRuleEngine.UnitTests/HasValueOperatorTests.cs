@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow(true, DisplayName = "Property value is a boolean")]
         [DataRow(1, DisplayName = "Property value is an integer")]
         [DataRow(0.1, DisplayName = "Property value is a float")]
-        [DataRow(new object[] { }, DisplayName = "Property value is an array")]
+        [DataRow((object)(new object[] { }), DisplayName = "Property value is an array")]
         public void EvaluateExpression_PropertyHasValue_HasValueIsTrue(object jTokenValue)
         {
             var jToken = TestUtilities.ToJToken(jTokenValue);

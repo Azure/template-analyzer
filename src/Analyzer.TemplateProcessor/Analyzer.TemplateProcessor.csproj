@@ -9,7 +9,6 @@
     <PackageReference Include="Azure.Deployments.Expression" />
     <PackageReference Include="Azure.Deployments.Templates" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Microsoft.PowerPlatform.ResourceStack" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />

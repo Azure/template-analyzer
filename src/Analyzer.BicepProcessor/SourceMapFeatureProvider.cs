@@ -1,6 +1,7 @@
 ﻿using System;
 using Azure.ResourceManager.Resources;
 using Bicep.Core.Features;
+using Bicep.IO.Abstraction;
 
 namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 {
@@ -39,7 +40,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public string AssemblyVersion => features.AssemblyVersion;
 
         /// <inheritdoc/>
-        public string CacheRootDirectory => features.CacheRootDirectory;
+        public IDirectoryHandle CacheRootDirectory => features.CacheRootDirectory;
 
         /// <inheritdoc/>
         public bool SymbolicNameCodegenEnabled => features.SymbolicNameCodegenEnabled;
@@ -54,33 +55,33 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public bool SourceMappingEnabled => true;
 
         /// <inheritdoc/>
-        public bool UserDefinedFunctionsEnabled => features.UserDefinedFunctionsEnabled;
-
-        /// <inheritdoc/>
-        public bool DynamicTypeLoadingEnabled => features.DynamicTypeLoadingEnabled;
-
-        /// <inheritdoc/>
-        public bool PrettyPrintingEnabled => features.PrettyPrintingEnabled;
-
-        /// <inheritdoc/>
         public bool TestFrameworkEnabled => features.TestFrameworkEnabled;
 
         /// <inheritdoc/>
         public bool AssertsEnabled => features.AssertsEnabled;
 
         /// <inheritdoc/>
-        public bool MicrosoftGraphPreviewEnabled => features.MicrosoftGraphPreviewEnabled;
-
-        /// <inheritdoc/>
-        public bool PublishSourceEnabled => features.PublishSourceEnabled;
-
-        /// <inheritdoc/>
-        public bool ProviderRegistryEnabled => features.ProviderRegistryEnabled;
-
-        /// <inheritdoc/>
         public bool OptionalModuleNamesEnabled => features.OptionalModuleNamesEnabled;
 
         /// <inheritdoc/>
         public bool ResourceDerivedTypesEnabled => features.ResourceDerivedTypesEnabled;
+
+        /// <inheritdoc/>
+        public bool LegacyFormatterEnabled => features.LegacyFormatterEnabled;
+
+        /// <inheritdoc/>
+        public bool LocalDeployEnabled => features.LocalDeployEnabled;
+
+        /// <inheritdoc/>
+        public bool ExtendableParamFilesEnabled => features.ExtendableParamFilesEnabled;
+
+        /// <inheritdoc/>
+        public bool SecureOutputsEnabled => features.SecureOutputsEnabled;
+
+        /// <inheritdoc/>
+        public bool ResourceInfoCodegenEnabled => features.ResourceInfoCodegenEnabled;
+
+        /// <inheritdoc/>
+        public bool ExtensibilityV2EmittingEnabled => features.ExtensibilityV2EmittingEnabled;
     }
 }
