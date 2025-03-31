@@ -1,0 +1,11 @@
+[
+  {
+    "Template": "RoleDefinitionsRBAC.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 23,
+        "Description": "CustomRole is set instead of BuiltIn"
+      }
+    ]
+  }
+]
