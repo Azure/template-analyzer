@@ -153,6 +153,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
             }
             catch (Exception e)
             {
+                // log populated template
+                this.logger?.LogDebug($"Populated template: {populatedTemplate}");
                 throw new TemplateAnalyzerException("Error while processing template.", e);
             }
 
@@ -188,6 +190,23 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                     if (currentProcessedResource.InsensitiveToken("type")?.ToString().Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase) ?? false)
                     {
+                        var resourceCondition = currentProcessedResource.InsensitiveToken("condition");
+
+                        if (resourceCondition != null)
+                        {
+                            bool skip = false;
+                            // Condition is simply false.
+                            if (resourceCondition.ToString().Equals("false", StringComparison.OrdinalIgnoreCase))
+                                skip = true;
+
+                            // TODO: evaluate expressions, e.g. {[not(empty(parameters('dashboardName')))]}
+                            if (skip)
+                            {
+                                this.logger?.LogInformation($"Conditions for template not met, skipping.");
+                                continue;
+                            }
+                        }
+
                         var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
                         if (nestedTemplate == null)
                         {

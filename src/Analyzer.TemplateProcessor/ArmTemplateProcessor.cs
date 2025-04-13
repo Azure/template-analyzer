@@ -8,6 +8,7 @@ using Azure.Deployments.Core.Configuration;
 using Azure.Deployments.Core.Definitions.Schema;
 using Azure.Deployments.Core.Resources;
 using Azure.Deployments.Expression.Engines;
+using Azure.Deployments.Expression.Extensions;
 using Azure.Deployments.Templates.Engines;
 using Azure.Deployments.Templates.Expressions;
 using Azure.Deployments.Templates.Extensions;
@@ -546,7 +547,15 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             foreach (var parameter in parametersObject.InsensitiveToken("parameters").Value<JObject>()?.Properties() ?? Enumerable.Empty<JProperty>())
             {
-                JToken parameterValueAsJToken = parameter.Value.ToObject<JObject>().Property("value")?.Value;
+                JToken parameterValueAsJToken;
+                if (parameter.Value.IsTextBasedJTokenType())
+                {
+                    parameterValueAsJToken = parameter.Value;
+                }
+                else
+                {
+                    parameterValueAsJToken = parameter.Value.ToObject<JObject>().Property("value")?.Value;
+                }
 
                 // See if "reference" was specified instead of "value"
                 bool isReference = false;
