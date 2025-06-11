@@ -1,0 +1,35 @@
+[
+  {
+    "Template": "AppServicesLatestTLS-Failures.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 6,
+        "Description": "properties.siteConfig.minTlsVersion set to 1.0 in webAppTls10"
+      },
+      {
+        "LineNumber": 15,
+        "Description": "properties.siteConfig.minTlsVersion missing in webAppNoTls"
+      },
+      {
+        "LineNumber": 20,
+        "Description": "properties.siteConfig.minTlsVersion missing in webAppSeparateConfigTls10"
+      },
+      {
+        "LineNumber": 29,
+        "Description": "properties.minTlsVersion set to 1.0 in webAppConfigTls10"
+      },
+      {
+        "LineNumber": 33,
+        "Description": "properties.siteConfig.minTlsVersion missing in webAppSeparateConfigNoTls"
+      },
+      {
+        "LineNumber": 41,
+        "Description": "properties.minTlsVersion missing in webAppConfigNoTls"
+      }
+    ]
+  },
+  {
+    "Template": "AppServicesLatestTLS-Passes.bicep",
+    "ReportedFailures": []
+  }
+]
