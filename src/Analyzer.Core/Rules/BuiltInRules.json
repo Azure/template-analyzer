@@ -332,11 +332,11 @@
         {
           "resourceType": "Microsoft.Web/sites/config",
           "path": "properties.minTlsVersion",
-          "greaterOrEquals": "1.2"
+          "in": ["1.2", "1.3"]
         },
         {
           "path": "properties.siteConfig.minTlsVersion",
-          "greaterOrEquals": "1.2"
+          "in": ["1.2", "1.3"]
         }
       ]
     }
@@ -536,11 +536,11 @@
         {
           "resourceType": "Microsoft.Web/sites/config",
           "path": "properties.minTlsVersion",
-          "greaterOrEquals": "1.2"
+          "in": ["1.2", "1.3"]
         },
         {
           "path": "properties.siteConfig.minTlsVersion",
-          "greaterOrEquals": "1.2"
+          "in": ["1.2", "1.3"]
         }
       ]
     }
