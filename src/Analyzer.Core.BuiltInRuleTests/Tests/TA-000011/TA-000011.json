@@ -1,0 +1,35 @@
+[
+  {
+    "Template": "FunctionAppLatestTLS-Failures.bicep",
+    "ReportedFailures": [
+      {
+        "LineNumber": 6,
+        "Description": "properties.siteConfig.minTlsVersion set to 1.0 in functionAppTls10"
+      },
+      {
+        "LineNumber": 15,
+        "Description": "properties.siteConfig.minTlsVersion missing in functionAppNoTls"
+      },
+      {
+        "LineNumber": 20,
+        "Description": "properties.siteConfig.minTlsVersion missing in functionAppSeparateConfigTls10"
+      },
+      {
+        "LineNumber": 29,
+        "Description": "properties.minTlsVersion set to 1.0 in functionAppConfigTls10"
+      },
+      {
+        "LineNumber": 33,
+        "Description": "properties.siteConfig.minTlsVersion missing in functionAppSeparateConfigNoTls"
+      },
+      {
+        "LineNumber": 41,
+        "Description": "properties.minTlsVersion missing in functionAppConfigNoTls"
+      }
+    ]
+  },
+  {
+    "Template": "FunctionAppLatestTLS-Passes.bicep",
+    "ReportedFailures": []
+  }
+]
