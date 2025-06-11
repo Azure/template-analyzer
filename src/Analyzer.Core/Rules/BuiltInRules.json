@@ -160,11 +160,11 @@
         {
           "resourceType": "Microsoft.Web/sites/config",
           "path": "properties.minTlsVersion",
-          "equals": "1.2"
+          "in": ["1.2", "1.3"]
         },
         {
           "path": "properties.siteConfig.minTlsVersion",
-          "equals": "1.2"
+          "in": ["1.2", "1.3"]
         }
       ]
     }
