@@ -1,5 +1,4 @@
 resource webAppTls10 'Microsoft.Web/sites@2022-09-01' = {
-  kind: 'app'
   name: 'webAppTls10'
   properties: {
     siteConfig: {
@@ -9,7 +8,6 @@ resource webAppTls10 'Microsoft.Web/sites@2022-09-01' = {
 }
 
 resource webAppNoTls 'Microsoft.Web/sites@2022-09-01' = {
-  kind: 'app'
   name: 'webAppTls'
   properties: {
     siteConfig: {
@@ -18,7 +16,6 @@ resource webAppNoTls 'Microsoft.Web/sites@2022-09-01' = {
 }
 
 resource webAppSeparateConfigTls10 'Microsoft.Web/sites@2022-09-01' = {
-  kind: 'app'
   name: 'webAppSeparateConfigTls10'
 }
 
@@ -31,7 +28,6 @@ resource webAppConfigTls10 'Microsoft.Web/sites/config@2022-09-01' = {
 }
 
 resource webAppSeparateConfigNoTls 'Microsoft.Web/sites@2022-09-01' = {
-  kind: 'app'
   name: 'webAppSeparateConfigNoTls'
 }
 
