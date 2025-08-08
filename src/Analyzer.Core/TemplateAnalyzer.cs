@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -136,20 +136,20 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
         /// <summary>
         /// Analyzes ARM templates, recursively going through the nested templates
         /// </summary>
-        /// <param name="populatedTemplate">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
+        /// <param name="template">The ARM Template JSON with inherited parameters, variables, and functions, if applicable</param>
         /// <param name="parameters">The parameters for the ARM Template JSON</param>
         /// <param name="templateFilePath">The ARM Template file path</param>
         /// <param name="parentContext">Template context for the immediate parent template</param>
         /// <param name="pathPrefix"> Prefix for resources' path used for line number mapping in nested templates</param>
         /// <returns>An enumerable of TemplateAnalyzer evaluations.</returns>
-        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string populatedTemplate, string parameters, string templateFilePath, TemplateContext parentContext, string pathPrefix)
+        private IEnumerable<IEvaluation> AnalyzeAllIncludedTemplates(string template, string parameters, string templateFilePath, TemplateContext parentContext, string pathPrefix)
         {
-            JToken templatejObject;
-            var armTemplateProcessor = new ArmTemplateProcessor(populatedTemplate, logger: this.logger);
+            JToken expandedTemplate;
+            var armTemplateProcessor = new ArmTemplateProcessor(template, logger: this.logger);
 
             try
             {
-                templatejObject = armTemplateProcessor.ProcessTemplate(parameters);
+                expandedTemplate = armTemplateProcessor.ProcessTemplate(parameters);
             }
             catch (Exception e)
             {
@@ -158,8 +158,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
             var templateContext = new TemplateContext
             {
-                OriginalTemplate = JObject.Parse(populatedTemplate),
-                ExpandedTemplate = templatejObject,
+                OriginalTemplate = JObject.Parse(template),
+                ExpandedTemplate = expandedTemplate,
                 IsMainTemplate = parentContext.OriginalTemplate == null, // Even the top level context will have a parent defined, but it won't represent a processed template
                 ResourceMappings = armTemplateProcessor.ResourceMappings,
                 TemplateIdentifier = templateFilePath,
@@ -179,62 +179,58 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                     evaluations = evaluations.Concat(this.powerShellRuleEngine.AnalyzeTemplate(templateContext));
                 }
 
-                // Recursively handle nested templates 
-                var jsonTemplate = JObject.Parse(populatedTemplate);
-                var processedTemplateResources = templatejObject.InsensitiveToken("resources");
+                var pathResolver = new JsonPathResolver(expandedTemplate, expandedTemplate.Path);
+                var deploymentResources = pathResolver.ResolveResourceType("Microsoft.Resources/deployments");
 
-                for (int i = 0; i < processedTemplateResources.Count(); i++)
+                // Recursively handle nested templates
+                foreach (var deploymentResource in deploymentResources)
                 {
-                    var currentProcessedResource = processedTemplateResources[i];
-
-                    if (currentProcessedResource.InsensitiveToken("type")?.ToString().Equals("Microsoft.Resources/deployments", StringComparison.OrdinalIgnoreCase) ?? false)
+                    var currentProcessedResource = deploymentResource.JToken;
+                    var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
+                    if (nestedTemplate == null)
                     {
-                        var nestedTemplate = currentProcessedResource.InsensitiveToken("properties.template");
-                        if (nestedTemplate == null)
-                        {
-                            this.logger?.LogWarning($"A linked template was found on: {templateFilePath}, linked templates are currently not supported");
+                        this.logger?.LogWarning($"A linked template was found on: {templateFilePath}, linked templates are currently not supported");
 
-                            continue;
-                        }
-                        var populatedNestedTemplate = nestedTemplate.DeepClone();
-
-                        // Check whether scope is set to inner or outer
-                        var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions.scope")?.ToString();
-
-                        if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
-                        {
-                            // Variables, parameters and functions inherited from parent template
-                            string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path ?? "functions";
-                            string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path ?? "variables";
-                            string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path ?? "parameters";
-
-                            populatedNestedTemplate[functionsKey] = jsonTemplate.InsensitiveToken("functions");
-                            populatedNestedTemplate[variablesKey] = jsonTemplate.InsensitiveToken("variables");
-                            populatedNestedTemplate[parametersKey] = jsonTemplate.InsensitiveToken("parameters");
-                        }
-                        else // scope is inner
-                        {
-                            // Pass variables and functions to child template
-                            (populatedNestedTemplate.InsensitiveToken("variables") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.variables"));
-                            (populatedNestedTemplate.InsensitiveToken("functions") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
-
-                            // Pass parameters to child template as the 'parameters' argument
-                            var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
-
-                            if (parametersToPass != null)
-                            {
-                                parametersToPass["parameters"] = parametersToPass;
-                                parametersToPass["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
-                                parametersToPass["contentVersion"] = "1.0.0.0";
-                                parameters = JsonConvert.SerializeObject(parametersToPass);
-                            }
-                        }
-
-                        string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
-
-                        IEnumerable<IEvaluation> result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nestedTemplate.Path);
-                        evaluations = evaluations.Concat(result);
+                        continue;
                     }
+                    var populatedNestedTemplate = nestedTemplate.DeepClone();
+
+                    // Check whether scope is set to inner or outer
+                    var scope = currentProcessedResource.InsensitiveToken("properties.expressionEvaluationOptions.scope")?.ToString();
+
+                    if (scope == null || scope.Equals("outer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Variables, parameters and functions inherited from parent template
+                        string functionsKey = populatedNestedTemplate.InsensitiveToken("functions")?.Parent.Path ?? "functions";
+                        string variablesKey = populatedNestedTemplate.InsensitiveToken("variables")?.Parent.Path ?? "variables";
+                        string parametersKey = populatedNestedTemplate.InsensitiveToken("parameters")?.Parent.Path ?? "parameters";
+
+                        populatedNestedTemplate[functionsKey] = templateContext.OriginalTemplate.InsensitiveToken("functions");
+                        populatedNestedTemplate[variablesKey] = templateContext.OriginalTemplate.InsensitiveToken("variables");
+                        populatedNestedTemplate[parametersKey] = templateContext.OriginalTemplate.InsensitiveToken("parameters");
+                    }
+                    else // scope is inner
+                    {
+                        // Pass variables and functions to child template
+                        (populatedNestedTemplate.InsensitiveToken("variables") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.variables"));
+                        (populatedNestedTemplate.InsensitiveToken("functions") as JObject)?.Merge(currentProcessedResource.InsensitiveToken("properties.functions)"));
+
+                        // Pass parameters to child template as the 'parameters' argument
+                        var parametersToPass = currentProcessedResource.InsensitiveToken("properties.parameters");
+
+                        if (parametersToPass != null)
+                        {
+                            parametersToPass["parameters"] = parametersToPass;
+                            parametersToPass["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+                            parametersToPass["contentVersion"] = "1.0.0.0";
+                            parameters = JsonConvert.SerializeObject(parametersToPass);
+                        }
+                    }
+
+                    string jsonPopulatedNestedTemplate = JsonConvert.SerializeObject(populatedNestedTemplate);
+
+                    IEnumerable<IEvaluation> result = AnalyzeAllIncludedTemplates(jsonPopulatedNestedTemplate, parameters, templateFilePath, templateContext, nestedTemplate.Path);
+                    evaluations = evaluations.Concat(result);
                 }
                 return evaluations;
             }
