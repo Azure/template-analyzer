@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using Bicep.Core;
 using Bicep.Core.Analyzers.Interfaces;
@@ -19,13 +20,14 @@ using Bicep.Core.FileSystem;
 using Bicep.Core.Navigation;
 using Bicep.Core.Registry;
 using Bicep.Core.Registry.Auth;
-using Bicep.Core.Registry.PublicRegistry;
+using Bicep.Core.Registry.Catalog;
+using Bicep.Core.Registry.Catalog.Implementation.PublicRegistries;
 using Bicep.Core.Semantics.Namespaces;
+using Bicep.Core.SourceGraph;
 using Bicep.Core.Syntax;
 using Bicep.Core.Text;
 using Bicep.Core.TypeSystem.Providers;
 using Bicep.Core.Utils;
-using Bicep.Core.Workspaces;
 using Bicep.IO.Abstraction;
 using Bicep.IO.FileSystem;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,18 +48,22 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// <param name="services"></param>
         /// <returns></returns>
         public static IServiceCollection AddBicepCore(this IServiceCollection services) => services
+            .AddSingleton<HttpClient>()
             .AddSingleton<INamespaceProvider, NamespaceProvider>()
             .AddSingleton<IResourceTypeProviderFactory, ResourceTypeProviderFactory>()
             .AddSingleton<IContainerRegistryClientFactory, ContainerRegistryClientFactory>()
-            .AddSingleton<IPublicRegistryModuleMetadataProvider, PublicRegistryModuleMetadataProvider>()
+            .AddSingleton<IPublicModuleMetadataProvider, PublicModuleMetadataProvider>()
+            .AddSingleton<IPublicModuleIndexHttpClient, PublicModuleMetadataHttpClient>()
             .AddSingleton<ITemplateSpecRepositoryFactory, TemplateSpecRepositoryFactory>()
             .AddSingleton<IModuleDispatcher, ModuleDispatcher>()
             .AddSingleton<IArtifactRegistryProvider, DefaultArtifactRegistryProvider>()
             .AddSingleton<ITokenCredentialFactory, TokenCredentialFactory>()
             .AddSingleton<IFileResolver, FileResolver>()
             .AddSingleton<IFileExplorer, FileSystemFileExplorer>()
+            .AddSingleton<IAuxiliaryFileCache, AuxiliaryFileCache>()
             .AddSingleton<IEnvironment, BicepEnvironment>()
             .AddSingleton<IFileSystem, IOFileSystem>()
+            .AddSingleton<ISourceFileFactory, SourceFileFactory>()
             .AddSingleton<IConfigurationManager, ConfigurationManager>()
             .AddSingleton<IBicepAnalyzer, LinterAnalyzer>()
             .AddSingleton<IFeatureProviderFactory, FeatureProviderFactory>()
@@ -74,6 +80,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         /// </summary>
         /// <param name="bicepPath">The Bicep template file path.</param>
         /// <returns>The compiled template as a <c>JSON</c> string and its source map.</returns>
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         public static (string, BicepMetadata) ConvertBicepToJson(string bicepPath)
         {
             if (BicepCompiler == null)
@@ -113,7 +120,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
             // Group by the source file path to allow for easy construction of SourceFileModuleInfo.
             var moduleInfo = compilation.SourceFileGrouping.ArtifactLookup
                 .Where(IsResolvedLocalModuleReference)
-                .GroupBy(artifact => artifact.Value.Origin)
+                .GroupBy(artifact => artifact.Value.ReferencingFile)
                 .Select(grouping =>
                 {
                     var bicepSourceFile = grouping.Key;
@@ -127,7 +134,7 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
                     {
                         var module = artifactRefAndUriResult.Key as ModuleDeclarationSyntax;
                         var moduleLine = TextCoordinateConverter.GetPosition(bicepSourceFile.LineStarts, module.Span.Position).line;
-                        var modulePath = new FileInfo(artifactRefAndUriResult.Value.Result.Unwrap().AbsolutePath).FullName; // converts path to current platform
+                        var modulePath = new FileInfo(artifactRefAndUriResult.Value.Result.Unwrap().Uri).FullName; // converts path to current platform
 
                         // Use relative paths for bicep to match file paths used in bicep modules and source map
                         if (modulePath.EndsWith(".bicep"))
@@ -150,5 +157,6 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
 
             return (stringWriter.ToString(), bicepMetadata);
         }
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
     }
 }

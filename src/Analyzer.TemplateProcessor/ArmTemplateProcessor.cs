@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 
             try
             {
-                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion, parameters, metadata, null);
+                TemplateEngine.ProcessTemplateLanguageExpressions(managementGroupName, subscriptionId, resourceGroupName, template, apiVersion, parameters, metadata, null, null);
             }
             catch (Exception ex)
             {
@@ -451,6 +451,8 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 functionsLookup: functionsLookup,
                 parametersLookup: parametersLookup,
                 variablesLookup: variablesLookup,
+                templateExtensionAliases: template.Extensions?.Keys,
+                extensionConfigLookup: null,
                 validationContext: null,
                 metricsRecorder: null);
 

@@ -46,9 +46,6 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public bool SymbolicNameCodegenEnabled => features.SymbolicNameCodegenEnabled;
 
         /// <inheritdoc/>
-        public bool ExtensibilityEnabled => features.ExtensibilityEnabled;
-
-        /// <inheritdoc/>
         public bool ResourceTypedParamsAndOutputsEnabled => features.ResourceTypedParamsAndOutputsEnabled;
 
         /// <inheritdoc/>
@@ -61,12 +58,6 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public bool AssertsEnabled => features.AssertsEnabled;
 
         /// <inheritdoc/>
-        public bool OptionalModuleNamesEnabled => features.OptionalModuleNamesEnabled;
-
-        /// <inheritdoc/>
-        public bool ResourceDerivedTypesEnabled => features.ResourceDerivedTypesEnabled;
-
-        /// <inheritdoc/>
         public bool LegacyFormatterEnabled => features.LegacyFormatterEnabled;
 
         /// <inheritdoc/>
@@ -76,12 +67,21 @@ namespace Microsoft.Azure.Templates.Analyzer.BicepProcessor
         public bool ExtendableParamFilesEnabled => features.ExtendableParamFilesEnabled;
 
         /// <inheritdoc/>
-        public bool SecureOutputsEnabled => features.SecureOutputsEnabled;
-
-        /// <inheritdoc/>
         public bool ResourceInfoCodegenEnabled => features.ResourceInfoCodegenEnabled;
 
         /// <inheritdoc/>
-        public bool ExtensibilityV2EmittingEnabled => features.ExtensibilityV2EmittingEnabled;
+        public bool WaitAndRetryEnabled => features.WaitAndRetryEnabled;
+
+        /// <inheritdoc/>
+        public bool OnlyIfNotExistsEnabled => features.OnlyIfNotExistsEnabled;
+
+        /// <inheritdoc/>
+        public bool ModuleExtensionConfigsEnabled => features.ModuleExtensionConfigsEnabled;
+
+        /// <inheritdoc/>
+        public bool DesiredStateConfigurationEnabled => features.DesiredStateConfigurationEnabled;
+
+        /// <inheritdoc/>
+        public bool ModuleIdentityEnabled => features.ModuleIdentityEnabled;
     }
 }
