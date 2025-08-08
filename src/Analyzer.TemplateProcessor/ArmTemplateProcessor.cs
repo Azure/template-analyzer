@@ -29,9 +29,9 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         private readonly string armTemplate;
         private readonly string apiVersion;
         private readonly ILogger logger;
-        private Dictionary<string, List<string>> originalToExpandedMapping = new Dictionary<string, List<string>>();
-        private Dictionary<string, string> expandedToOriginalMapping = new Dictionary<string, string>();
-        private Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new Dictionary<string, (TemplateResource, string)>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, List<string>> originalToExpandedMapping = [];
+        private readonly Dictionary<string, string> expandedToOriginalMapping = [];
+        private readonly Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Mapping between resources in the expanded template to their original resource in 
@@ -39,7 +39,16 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// The key is the path in the expanded template with value being the path
         /// in the original template.
         /// </summary>
-        public Dictionary<string, string> ResourceMappings = new Dictionary<string, string>();
+        public Dictionary<string, string> ResourceMappings { get; } = [];
+
+        /// <summary>
+        /// The language version of the ARM template processed.
+        /// This is used to determine the language features available in the template.
+        /// </summary>
+        /// <value>
+        /// <c>2</c> if <c>"languageVersion": "2.0"</c> is specified in the template processed; otherwise, <c>1</c>.
+        /// </value>
+        public int LanguageVersion { get; private set; } = 1;
 
         /// <summary>
         ///  Constructor for the ARM Template Processing library
@@ -104,6 +113,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             Dictionary<string, (string, int)> copyNameMap = [];
 
             Template template = TemplateEngine.ParseTemplate(armTemplate);
+
+            if (template.LanguageVersion?.Value == "2.0")
+            {
+                LanguageVersion = 2;
+            }
 
             TemplateEngine.ValidateTemplate(template, apiVersion, TemplateDeploymentScope.NotSpecified);
 

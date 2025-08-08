@@ -27,7 +27,12 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             new Regex(@"https?://schema\.management\.azure\.com/schemas/\d{4}-\d{2}-\d{2}/(subscription|tenant|managementGroup)?deploymentTemplate\.json\#?",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        /// <summary>
+        /// List of valid template properties that are checked for in the template.
+        /// Only referenced if the JSON schema property is not the first line of the template (rare).
+        /// </summary>
         private static readonly IReadOnlyList<string> validTemplateProperties = new List<string> {
+            // Standard properties
             "contentVersion",
             "apiProfile",
             "parameters",
@@ -35,6 +40,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
             "functions",
             "resources",
             "outputs",
+
+            // Added in language version 2.0
+            "languageVersion",
+            "definitions",
         }.AsReadOnly();
 
         /// <summary>

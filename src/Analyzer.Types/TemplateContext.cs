@@ -58,5 +58,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Types
         /// Template context for the immediate parent template
         /// </summary>
         public TemplateContext ParentContext { get; set; }
+
+        /// <summary>
+        /// The language version of the template
+        /// </summary>
+        public int LanguageVersion { get; set; } = 1;
     }
 }

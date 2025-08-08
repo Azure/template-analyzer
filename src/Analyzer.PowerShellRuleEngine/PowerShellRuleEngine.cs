@@ -128,7 +128,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.PowerShellEngine
                 // placeholder value for location is westus2
                 optionsForFileAnalysis.Configuration["AZURE_RESOURCE_ALLOWED_LOCATIONS"] = new[] { "westus2" };
 
-                var resources = templateContext.ExpandedTemplate.InsensitiveToken("resources").Values<JObject>();
+                string resourcesPath = templateContext.LanguageVersion == 2
+                    ? "resources.*"
+                    : "resources[*]";
+                var resources = templateContext.ExpandedTemplate.InsensitiveTokens(resourcesPath);
 
                 var builder = CommandLineBuilder.Invoke(modules, optionsForFileAnalysis, hostContext);
                 builder.InputPath(new string[] { tempTemplateFile });

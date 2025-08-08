@@ -166,7 +166,8 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
                 IsBicep = parentContext.IsBicep,
                 BicepMetadata = parentContext.BicepMetadata,
                 PathPrefix = pathPrefix,
-                ParentContext = parentContext
+                ParentContext = parentContext,
+                LanguageVersion = armTemplateProcessor.LanguageVersion,
             };
 
             try

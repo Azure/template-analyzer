@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
         /// <returns>The JToken(s) at the path. If the path does not exist, returns a JToken with a null value.</returns>
         public IEnumerable<IJsonPathResolver> Resolve(string jsonPath)
         {
-            string fullPath = string.IsNullOrEmpty(jsonPath) ? currentPath : string.Join('.', currentPath, jsonPath);
+            string fullPath = CombineJsonPaths(currentPath, jsonPath);
 
             if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
             {
@@ -69,16 +69,25 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
         /// <summary>
         /// Retrieves the JTokens for resources of the specified type
-        /// in a "resources" property array at the current scope.
+        /// in a "resources" property array or object at the current scope.
+        /// Supports both traditional array format and language version 2.0 object format (symbolic naming).
         /// </summary>
         /// <param name="resourceType">The type of resource to find.</param>
         /// <returns>An enumerable of resolvers with a scope of a resource of the specified type.</returns>
         public IEnumerable<IJsonPathResolver> ResolveResourceType(string resourceType)
         {
-            string fullPath = this.currentPath + ".resources[*]";
-            if (!resolvedPaths.TryGetValue(fullPath, out var resolvedTokens))
+            // Traditional ARM JSON templates use an array for resources,
+            // while language version 2.0 uses an object.
+            string arrayPath = "resources[*]";
+            string objectPath = "resources.*";
+
+            if (!resolvedPaths.TryGetValue(CombineJsonPaths(this.currentPath, arrayPath), out var resolvedTokens) &&
+                !resolvedPaths.TryGetValue(CombineJsonPaths(this.currentPath, objectPath), out resolvedTokens))
             {
-                var resources = this.currentScope.InsensitiveTokens("resources[*]");
+                string resourcesPath = this.currentScope.InsensitiveToken("resources") is JObject ? objectPath : arrayPath;
+                string fullPath = CombineJsonPaths(this.currentPath, resourcesPath);
+
+                var resources = this.currentScope.InsensitiveTokens(resourcesPath);
                 resolvedTokens = resources.Select(r => (FieldContent)r).ToList();
                 resolvedPaths[fullPath] = resolvedTokens;
             }
@@ -119,5 +128,10 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities
 
         /// <inheritdoc/>
         public string Path => this.currentPath;
+    
+        private string CombineJsonPaths(params string[] paths) =>
+            paths == null
+                ? string.Empty
+                : string.Join(".", paths.Where(p => !string.IsNullOrEmpty(p)));
     }
 }
