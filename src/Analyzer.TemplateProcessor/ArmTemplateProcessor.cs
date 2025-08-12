@@ -264,7 +264,10 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                 else
                 {
                     parentResourceName = parentResourceIds.Value;
-                    var matchingResources = this.flattenedResources.Where(k => k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var matchingResources = this.flattenedResources.Where(k =>
+                        k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(k.Value.resource.SymbolicName, parentResourceName, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
                     if (matchingResources.Count == 1)
                     {
                         parentResourceInfo = matchingResources.First().Value;
