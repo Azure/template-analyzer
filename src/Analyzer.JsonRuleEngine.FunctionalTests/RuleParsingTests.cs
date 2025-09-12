@@ -9,6 +9,7 @@ using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators;
 using Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTests
 {
@@ -29,6 +30,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
         [DataTestMethod]
         [DataRow("hasValue", false, typeof(HasValueOperator), DisplayName = "HasValue: false")]
         [DataRow("exists", true, typeof(ExistsOperator), DisplayName = "Exists: true")]
+        [DataRow("hasStableAKSVersion", true, typeof(HasStableAksVersionOperator), DisplayName = "HasStableAKSVersion: true")]
+        [DataRow("hasStableAKSVersion", false, typeof(HasStableAksVersionOperator), DisplayName = "HasStableAKSVersion: false")]
         [DataRow("greater", "2021-02-28", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28")] 
         [DataRow("greater", "2021-02-28T18:17:16Z", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28T18:17:16Z")]
         [DataRow("greater", "2021-02-28T18:17:16+00:00", typeof(InequalityOperator), DisplayName = "Greater: 2021-02-28T18:17:16+00:00")] 
@@ -105,6 +108,15 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             // Not checking the day and hour because converting to OADate loses localization information
             Assert.IsTrue(parsedDate.Minute == 0 || parsedDate.Minute == 17);
             Assert.IsTrue(parsedDate.Second == 0 || parsedDate.Second == 16);
+        }
+
+        [OperatorSpecificValidator(typeof(HasStableAksVersionOperator))]
+        private static void HasStableAksVersionValidation(HasStableAksVersionOperator hasStableAksVersionOperator, bool operatorValue)
+        {
+            var actualValue = hasStableAksVersionOperator.SpecifiedValue.ToObject<bool>();
+            Assert.AreEqual(operatorValue, actualValue);
+            Assert.IsFalse(hasStableAksVersionOperator.IsNegative);
+            Assert.AreEqual("HasStableAksVersion", hasStableAksVersionOperator.Name);
         }
 
         private const string TestResourceType = "Namespace/ResourceType";

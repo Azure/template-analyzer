@@ -79,6 +79,12 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
         public JToken GreaterOrEquals { get; set; }
 
         /// <summary>
+        /// Gets or sets the HasStableAKSVersion property
+        /// </summary>
+        [JsonProperty]
+        public bool? HasStableAKSVersion { get; set; }
+
+        /// <summary>
         /// Creates a <see cref=" LeafExpression"/> capable of evaluating JSON using the operator specified in the JSON rule.
         /// </summary>
         /// <param name="isNegative">Whether to negate the evaluation.</param>
@@ -90,6 +96,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Schemas
             if (this.Exists != null)
             {
                 leafOperator = new ExistsOperator(Exists.Value, isNegative);
+            }
+            else if (this.HasStableAKSVersion != null)
+            {
+                leafOperator = new HasStableAksVersionOperator(this.HasStableAKSVersion.Value, isNegative);
             }
             else if (this.HasValue != null)
             {
