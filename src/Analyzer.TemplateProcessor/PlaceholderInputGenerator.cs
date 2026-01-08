@@ -2,12 +2,13 @@
 // Licensed under the MIT License.
 
 using System;
-using Microsoft.Azure.Templates.Analyzer.Utilities;
+using System.IO;
+using System.Text.RegularExpressions;
 using Azure.Deployments.Core.Entities;
-using Newtonsoft.Json.Linq;
+using Microsoft.Azure.Templates.Analyzer.Utilities;
 using Microsoft.WindowsAzure.ResourceStack.Common.Collections;
 using Newtonsoft.Json;
-using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
 {
@@ -17,18 +18,25 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
     internal static class PlaceholderInputGenerator
     {
         /// <summary>
-        /// Generates placeholder parameters when no default value is specified in the ARM Template.
+        /// azd parameter replacement regex pattern, e.g. ${ENV_VARIABLE} or ${ENV_VARIABLE=defaultValue}
+        /// </summary>
+        private static readonly Regex AzdParameterReplacementRegex = new Regex(
+            @"^\$\{\s*[A-Za-z_][A-Za-z0-9_]*\s*(?:=\s*(?<value>[^}]*))?\s*\}$",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Generates placeholder parameters for those with no default value specified in the ARM Template and are not specified (or need further processing) in provided values.
         /// </summary>
         /// <param name="armTemplate">The ARM Template to generate parameters for <c>JSON</c>.</param>
-        /// <param name="definedParameters">Parameters with defined values to use</param>
+        /// <param name="providedParameterValues">Parameter values provided from parameters file.</param>
         /// <returns>The Json string of the placeholder parameter values.</returns>
-        internal static string GeneratePlaceholderParameters(string armTemplate, string definedParameters = null)
+        internal static string GeneratePlaceholderParameters(string armTemplate, string providedParameterValues = null)
         {
             JObject jsonParameters = new JObject();
 
-            if (definedParameters != null)
+            if (providedParameterValues != null)
             {
-                JObject definedParameterJson = JObject.Parse(definedParameters);
+                JObject definedParameterJson = JObject.Parse(providedParameterValues);
                 if (definedParameterJson.InsensitiveToken("parameters") is JObject paramsObject)
                 {
                     jsonParameters = paramsObject;
@@ -40,7 +48,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             }
 
             // parse only parameter data from the template to avoid additional overhead
-            JToken parameters = null;
+            JToken definedTemplateParameters = null;
 
             var reader = new JsonTextReader(new StringReader(armTemplate));
             while (reader.Read())
@@ -50,44 +58,75 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     if (string.Equals((string)reader.Value, "parameters", StringComparison.OrdinalIgnoreCase))
                     {
                         reader.Read(); // read StartObjectToken
-                        parameters = JToken.ReadFrom(reader);
+                        definedTemplateParameters = JToken.ReadFrom(reader);
                         break;
                     }
                 }
             }
 
-            if (parameters != null)
+            if (definedTemplateParameters != null)
             {
-                int count = 0;
+                int stringParamCount = 0;
 
-                foreach (JProperty parameter in parameters.Children<JProperty>())
+                foreach (JProperty templateParameterDefinition in definedTemplateParameters.Children<JProperty>())
                 {
-                    JToken parameterValue = parameter.Value;
-                    if (!jsonParameters.ContainsKey(parameter.Name) && parameterValue.InsensitiveToken("defaultValue") == null)
+                    JToken parameterProperties = templateParameterDefinition.Value;
+
+                    JToken parameterDefaultValue = parameterProperties.InsensitiveToken("defaultValue");
+                    bool parameterIsSpecified = jsonParameters.ContainsKey(templateParameterDefinition.Name);
+                    bool requiredParamIsMissing = parameterDefaultValue == null && !parameterIsSpecified;
+                    JToken parameterValue = parameterIsSpecified ? jsonParameters[templateParameterDefinition.Name]?.InsensitiveToken("value") : null;
+
+                    // Check if the parameter value is an azd CLI placeholder that needs substitution
+                    // See https://learn.microsoft.com/azure/developer/azure-developer-cli/manage-environment-variables#use-environment-variables-in-infrastructure-files
+                    bool parameterValueIsPlaceholder = false;
+                    string parameterSubstitution = null;
+                    if (parameterIsSpecified && parameterValue?.Type == JTokenType.String)
                     {
-                        JToken allowedValues = parameterValue.InsensitiveToken("allowedValues");
-                        if (allowedValues != null)
+                        var match = AzdParameterReplacementRegex.Match(parameterValue.Value<string>());
+                        if (match.Success)
                         {
-                            JToken firstAllowedValue = allowedValues.First;
-
-                            if (firstAllowedValue != null)
-                            {
-                                jsonParameters[parameter.Name] = new JObject(new JProperty("value", firstAllowedValue));
-                                continue;
-                            }
+                            parameterValueIsPlaceholder = true;
+                            parameterSubstitution = match.Groups.TryGetValue("value", out var group) && group.Success ? group.Value : null;
                         }
+                    }
 
-                        string parameterTypeString = parameterValue.InsensitiveToken("type")?.Value<string>();
+                    if (requiredParamIsMissing || parameterValueIsPlaceholder)
+                    {
+                        string parameterTypeString = parameterProperties.InsensitiveToken("type")?.Value<string>();
+                        JToken allowedValues = parameterProperties.InsensitiveToken("allowedValues");
+
                         if (Enum.TryParse<TemplateParameterType>(parameterTypeString, ignoreCase: true, out var parameterType))
                         {
+                            if (parameterSubstitution != null)
+                            {
+                                var valueToUse = ParseParameterValue(parameterType, parameterSubstitution);
+                                if (valueToUse != null)
+                                {
+                                    jsonParameters[templateParameterDefinition.Name] = new JObject(new JProperty("value", valueToUse));
+                                    continue;
+                                }
+                            }
+
+                            if (allowedValues != null)
+                            {
+                                JToken firstAllowedValue = allowedValues.First;
+
+                                if (firstAllowedValue != null)
+                                {
+                                    jsonParameters[templateParameterDefinition.Name] = new JObject(new JProperty("value", firstAllowedValue));
+                                    continue;
+                                }
+                            }
+
                             switch (parameterType)
                             {
                                 case TemplateParameterType.String:
                                 case TemplateParameterType.SecureString:
                                     string stringValue = "defaultString";
-                                    int countLength = count.ToString().Length;
-                                    int? minLength = parameterValue.InsensitiveToken("minLength")?.Value<int>();
-                                    int? maxLength = parameterValue.InsensitiveToken("maxLength")?.Value<int>();
+                                    int countLength = stringParamCount.ToString().Length;
+                                    int? minLength = parameterProperties.InsensitiveToken("minLength")?.Value<int>();
+                                    int? maxLength = parameterProperties.InsensitiveToken("maxLength")?.Value<int>();
                                     if (minLength.HasValue && stringValue.Length + countLength < minLength)
                                     {
                                         stringValue += new string('a', minLength.Value - stringValue.Length - countLength);
@@ -96,34 +135,44 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                                     {
                                         stringValue = stringValue[0..(maxLength.Value - countLength)];
                                     }
-                                    stringValue += count.ToString();
-                                    jsonParameters[parameter.Name] = new JObject(new JProperty("value", stringValue));
+                                    stringValue += (stringParamCount++).ToString();
+                                    jsonParameters[templateParameterDefinition.Name] = new JObject(new JProperty("value", stringValue));
                                     break;
                                 case TemplateParameterType.Int:
-                                    jsonParameters[parameter.Name] = new JObject(new JProperty("value", 1));
+                                    jsonParameters[templateParameterDefinition.Name] = new JObject(new JProperty("value", 1));
                                     break;
                                 case TemplateParameterType.Bool:
-                                    jsonParameters[parameter.Name] = new JObject(new JProperty("value", true));
+                                    jsonParameters[templateParameterDefinition.Name] = new JObject(new JProperty("value", true));
                                     break;
                                 case TemplateParameterType.Array:
-                                    jsonParameters[parameter.Name] = JObject.FromObject(new { value = new[] { "item1", "item2" } });
+                                    jsonParameters[templateParameterDefinition.Name] = JObject.FromObject(new { value = new[] { "item1", "item2" } });
                                     break;
                                 case TemplateParameterType.Object:
                                 case TemplateParameterType.SecureObject:
-                                    jsonParameters[parameter.Name] = JObject.FromObject(new { value = new { property1 = "value1" } });
+                                    jsonParameters[templateParameterDefinition.Name] = JObject.FromObject(new { value = new { property1 = "value1" } });
                                     break;
                                 default:
                                     break;
                             }
                         }
                     }
-
-                    count++;
                 }
             }
 
             return JObject.FromObject(new { parameters = jsonParameters }).ToString();
         }
+
+        private static JValue ParseParameterValue(TemplateParameterType type, string value) =>
+            type switch
+            {
+                TemplateParameterType.Bool =>
+                    new JValue(bool.TryParse(value, out bool parsed) ? parsed : false),
+                TemplateParameterType.Int =>
+                    new JValue(int.TryParse(value, out int parsed) ? parsed : 0),
+                TemplateParameterType.String or TemplateParameterType.SecureString =>
+                    new JValue(value),
+                _ => null
+            };
 
         /// <summary>
         /// Returns the deployment metadata with placeholder data. 

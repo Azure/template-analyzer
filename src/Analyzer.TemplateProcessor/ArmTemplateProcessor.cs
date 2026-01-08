@@ -90,9 +90,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// <returns>The processed template as a <c>JSON</c> object.</returns>
         public JToken ProcessTemplate(string parameters, string metadata)
         {
-            string actualParams = string.IsNullOrEmpty(parameters)
-             ? PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate, parameters)
-             : parameters;
+            string actualParams = PlaceholderInputGenerator.GeneratePlaceholderParameters(armTemplate, parameters);
 
             InsensitiveDictionary<JToken> parametersDictionary = PopulateParameters(actualParams);
             InsensitiveDictionary<JToken> metadataDictionary = string.IsNullOrEmpty(metadata) ? PlaceholderInputGenerator.GeneratePlaceholderDeploymentMetadata() : PopulateDeploymentMetadata(metadata);
@@ -567,12 +565,17 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             {
                 JToken parameterValueAsJToken = parameter.Value.ToObject<JObject>().Property("value")?.Value;
 
-                // See if "reference" was specified instead of "value"
+                // See if parameter is a "reference":
+                // - "reference" property was specified instead of "value"
+                // - "value" is a reference expression
                 bool isReference = false;
-                if (parameterValueAsJToken == null)
+                if (parameterValueAsJToken == null && parameter.Value.ToObject<JObject>().Property("reference")?.Value != null)
                 {
-                    parameterValueAsJToken = parameter.Value.ToObject<JObject>().Property("reference")?.Value;
-                    if (parameterValueAsJToken != null) isReference = true;
+                    isReference = true;
+                }
+                else if (parameterValueAsJToken.Type == JTokenType.String && parameterValueAsJToken.Value<string>().StartsWith("[reference("))
+                {
+                    isReference = true;
                 }
 
                 parametersDictionary.Add(parameter.Name, isReference ? $"REF_NOT_AVAIL_{parameter.Name}" : parameterValueAsJToken ?? string.Empty);

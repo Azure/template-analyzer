@@ -220,10 +220,13 @@ namespace Microsoft.Azure.Templates.Analyzer.Core
 
                         if (parametersToPass != null)
                         {
-                            parametersToPass["parameters"] = parametersToPass;
-                            parametersToPass["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
-                            parametersToPass["contentVersion"] = "1.0.0.0";
-                            parameters = JsonConvert.SerializeObject(parametersToPass);
+                            JObject nestedParameters = new()
+                            {
+                                ["parameters"] = parametersToPass,
+                                ["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+                                ["contentVersion"] = "1.0.0.0"
+                            };
+                            parameters = JsonConvert.SerializeObject(nestedParameters);
                         }
                     }
 
