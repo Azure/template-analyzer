@@ -2,7 +2,7 @@
 We welcome community contributions to Template Analyzer. Please note that by participating in this project, you agree to abide by the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/) and terms of the [CLA](#contributor-license-agreement-cla).
 
 ## Getting Started
-* If you haven't already, you will need to install the [.NET 6 SDK](https://dotnet.microsoft.com/download) to build and run this project.
+* If you haven't already, you will need to install the [.NET 10 SDK](https://dotnet.microsoft.com/download) specified in [global.json](./global.json) to build and run this project.
 * Fork this repo (see [this forking guide](https://guides.github.com/activities/forking/) for more information).
 * Checkout the repo locally with `git clone git@github.com:{your_username}/template-analyzer.git`.
 * The .NET solution can be built with the `dotnet build` command.
