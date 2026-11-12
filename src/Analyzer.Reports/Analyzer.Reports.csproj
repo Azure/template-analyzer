@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Microsoft.Azure.Templates.Analyzer.Reports</AssemblyName>
     <RootNamespace>Microsoft.Azure.Templates.Analyzer.Reports</RootNamespace>
   </PropertyGroup>
