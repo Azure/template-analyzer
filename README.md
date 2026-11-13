@@ -1,6 +1,6 @@
 [![Build Status](https://github.com/Azure/template-analyzer/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Azure/template-analyzer/actions/workflows/dotnet.yml)
 
-# Template Analyzer
+# Template Analyzer22
 
 ## What is Template Analyzer?
 Template Analyzer scans ARM ([Azure Resource Manager](https://docs.microsoft.com/azure/azure-resource-manager/templates/overview)) and [Bicep](https://docs.microsoft.com/azure/azure-resource-manager/bicep/) Infrastructure-as-Code (IaC) templates to ensure security and best practice checks are being followed before deployment of your Azure solutions.
