@@ -2,3 +2,4 @@
 # Unless a later match takes precedence, @Azure/armory-admin will be requested for
 # review when someone opens a pull request.
 *       @Azure/armory-admin
+*       @Azure/azrel-risk-sre
