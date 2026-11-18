@@ -259,6 +259,22 @@ Example:
 }
 ```
 
+#### **HasStableAKSVersion**
+*Type: boolean*
+
+The `HasStableAKSVersion` operator checks if an AKS cluster is using a stable Kubernetes version for its region. This operator fetches the list of stable AKS versions from the official AKS releases API. Checks if the cluster's `kubernetesVersion` is in the stable list for its `location`. Returns true if `hasStableAKSVersion: true` and the version is stable or if `hasStableAKSVersion: false` and the version is NOT stable.
+
+Example:
+```json
+{
+      "resourceType": "Microsoft.ContainerService/managedClusters",
+      "path": "properties",
+      "hasStableAKSVersion": true
+}
+```
+
+
+
 ### Structured Operators
 These operators build up a structure of child `Evaluation`s, and therefore contain additional operators inside them.  These operators are not required to include a `path`.  If `resourceType` or `path` are specified, that becomes the scope for all `Evaluation`s nested inside the operator.  More information on [Scopes](#scopes) can be found below.
 

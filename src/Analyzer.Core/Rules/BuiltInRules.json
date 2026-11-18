@@ -1096,5 +1096,19 @@
         }
       ]
     }
+  },
+  {
+    "id": "TA-000039",
+    "name": "AKS.UseStableKubernetesVersion", 
+    "shortDescription": "AKS clusters should use stable Kubernetes versions",
+    "fullDescription": "AKS clusters should use stable Kubernetes versions for their region to ensure security and support.",
+    "recommendation": "Use a stable Kubernetes version for your AKS cluster",
+    "helpUri": "https://eng.ms/docs/microsoft-security/digital-security-and-resilience/azure-security/security-health-analytics/sha-intelligence/threat-vulnerability-management/remediate/actions/upgradeaksclusterversion",
+    "severity": 2,
+    "evaluation": {
+      "resourceType": "Microsoft.ContainerService/managedClusters",
+      "path": "properties",
+      "hasStableAKSVersion": true
+    }
   }
 ]

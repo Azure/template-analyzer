@@ -1,0 +1,41 @@
+[
+  {
+    "Template": "AKSClusters.json",
+    "ReportedFailures": [
+      {
+        "LineNumber": 46,
+        "Description": "AKS cluster using unstable Kubernetes version"
+      },
+      {
+        "LineNumber": 70,
+        "Description": "AKS cluster using invalid location"
+      },
+      {
+        "LineNumber": 94,
+        "Description": "AKS cluster using very old Kubernetes version"
+      },
+      {
+        "LineNumber": 118,
+        "Description": "AKS cluster missing Kubernetes version"
+      },
+      {
+        "LineNumber": 134,
+        "Description": "AKS cluster missing Kubernetes version"
+      }
+    ],
+    "PassingSections": [
+      {
+        "ResourceName": "aks-cluster-good",
+        "Explanation": "AKS cluster using stable Kubernetes version 1.32.5 in supported region westeurope"
+      },
+      {
+        "ResourceName": "storagenotaks",
+        "Explanation": "Not an AKS resource, rule does not apply"
+      },
+      {
+        "ResourceName": "custom-resource", 
+        "Explanation": "Not an AKS resource, rule does not apply"
+      }
+    ]
+  }
+]
