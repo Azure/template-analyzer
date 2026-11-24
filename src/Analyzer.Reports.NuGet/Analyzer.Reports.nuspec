@@ -11,16 +11,16 @@
         <tags>arm bicep azure template analyzer scanner deployment security sarif report</tags>
 
         <dependencies>
-            <group targetFramework="net8.0">
-                <dependency id="Newtonsoft.json" version="13.0.3" />
+            <group targetFramework="net10.0">
+                <dependency id="Newtonsoft.json" version="13.0.4" />
                 <dependency id="Sarif.Sdk" version="2.4.16" />
                 <dependency id="System.IO.Abstractions" version="21.3.1" />
-                <dependency id="Microsoft.Extensions.Logging.Abstractions" version="9.0.3" />
+                <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.15" />
             </group>
         </dependencies>
     </metadata>
 
     <files>
-        <file src="..\Analyzer.Reports\bin\$configuration$\net8.0\*.dll" target="lib\net8.0" />
+        <file src="..\Analyzer.Reports\bin\$configuration$\net10.0\*.dll" target="lib\net10.0" />
     </files>
 </package>
