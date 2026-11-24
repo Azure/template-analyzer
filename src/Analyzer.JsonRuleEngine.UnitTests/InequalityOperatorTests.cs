@@ -17,10 +17,13 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             new InequalityOperator(null, true, true);
         }
 
-        [TestMethod]
-        public void Constructor_InvalidSpecifiedValueType_ThrowsException()
+        [DataTestMethod]
+        [DataRow("aNonDateString")]
+        [DataRow("2021-02-28T18:17:16.Z")]
+        [DataRow("20190305T175318")]
+        public void Constructor_InvalidDateString_ThrowsException(string value)
         {
-            var specifiedValueToken = TestUtilities.ToJToken("aNonDateString");
+            var specifiedValueToken = TestUtilities.ToJToken(value);
 
             ValidateInvalidOperationException(() => { new InequalityOperator(specifiedValueToken, true, true); }, "Cannot compare against a String using an InequalityOperator");
         }
@@ -119,6 +122,9 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("2021-02-28", "2021-02-28", false, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
         // Wrong types
         [DataRow("aString", 100, false, false, false, DisplayName = "Invalid token to evaluate")]
+        [DataRow("1.2", "2000-01-01", true, true, false, DisplayName = "A quoted TLS version is not a date")]
+        [DataRow("02/03/2021", "2021-01-01", true, true, false, DisplayName = "A locale-specific date is not an ISO date")]
+        [DataRow("2021-02-28 18:17:16.", "2021-02-28", true, true, false, DisplayName = "An empty fraction does not pass a date comparison")]
         [DataRow("2021-02-28", 100, false, false, false, DisplayName = "Comparing a date with a number")]
         [DataRow(100, "2021-02-28", false, false, false, DisplayName = "Comparing a number with a date")]
         // ! (date_format_a > date_format_b)
@@ -135,6 +141,10 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("2021-02-28", "2021-02-28T00:00+00:00", true, true, true, DisplayName = "A date written with format 4 is greater or equals to itself wrote with the classical format")]
         [DataRow("2021-02-28", "2021-02-28 00:00:00Z", true, true, true, DisplayName = "A date written with format 5 is greater or equals to itself wrote with the classical format")]
         [DataRow("2021-02-28", "2021-02-28 00:00:00+00:00", true, true, true, DisplayName = "A date written with format 6 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28T17:17:16.544Z", "2021-02-28T18:17:16.543+01:00", true, false, true, DisplayName = "Date ordering respects fractional seconds and offsets")]
+        [DataRow("2021-02-28 18:17:16.0000000", "2021-02-28T18:17:16.0Z", true, true, true, DisplayName = "One and seven fractional digits are both valid")]
+        [DataRow("20190305T175318Z", "2019-03-05T17:53:18Z", true, true, true, DisplayName = "A utcNow value compares against an extended UTC timestamp")]
+        [DataRow("2019-03-05T18:53:18+01:00", "20190305T175318Z", true, true, true, DisplayName = "A timestamp with an offset compares against a utcNow threshold")]
         public void EvaluateExpression_AnyTermType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
         {
             CompareObjects(leftValue, rightValue, greater, orEquals, evaluationResult);
