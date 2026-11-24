@@ -17,7 +17,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
             "yyyy-MM-dd",
             "yyyy-MM-dd'T'HH:mmK",
             "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK",
-            "yyyy-MM-dd HH:mm:ss.FFFFFFFK"
+            "yyyy-MM-dd HH:mm:ss.FFFFFFFK",
+            "yyyyMMdd'T'HHmmss'Z'"
         };
 
         /// <inheritdoc/>
@@ -91,8 +92,16 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             if (term.Type == JTokenType.String)
             {
+                var value = term.Value<string>().AsSpan();
+                var dot = value.IndexOf('.');
+                // TryParseExact's F specifier allows an empty fraction even when the decimal point is present.
+                if (dot >= 0 && (dot == value.Length - 1 || !char.IsAsciiDigit(value[dot + 1])))
+                {
+                    return null;
+                }
+
                 return DateTime.TryParseExact(
-                    term.Value<string>(), DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date)
+                    value, DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date)
                     ? date.ToOADate()
                     : (double?)null;
             }

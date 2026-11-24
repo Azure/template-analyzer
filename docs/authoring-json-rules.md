@@ -63,8 +63,9 @@ These operators evaluate a specific JSON property in the template.  All operator
 * `yyyy-MM-ddTHH:mm:ssK`
 * `yyyy-MM-ddTHH:mmK`
 * `yyyy-MM-dd HH:mm:ssK`
+* `yyyyMMddTHHmmssZ` (for example, `20190305T175318Z`, the default `utcNow()` output in [Bicep](https://learn.microsoft.com/azure/azure-resource-manager/bicep/bicep-functions-date#utcnow) and [ARM templates](https://learn.microsoft.com/azure/azure-resource-manager/templates/template-functions-date#utcnow))
 
-Seconds may include up to seven fractional digits, as in `2021-02-28T18:17:16.543Z`. The time zone (`K`) can be `Z`, an offset such as `+01:00`, or omitted (UTC is assumed). See the [date and time format identifiers](https://docs.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings) for details.
+In the formats with `ssK`, fractional seconds are optional. If a decimal point is present, it must be followed by one to seven digits, as in `2021-02-28T18:17:16.543Z`. The time zone (`K`) can be `Z`, an offset such as `+01:00`, or omitted (UTC is assumed). See the [date and time format identifiers](https://docs.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings) for details.
 
 For numeric comparisons, use a JSON number such as `1.2`. A quoted number such as `"1.2"` is not a valid inequality threshold and prevents the rule from loading. If a template supplies `"1.2"` where a date is expected, the comparison evaluates to `false`.
 
