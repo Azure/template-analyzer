@@ -48,5 +48,36 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
             public override IEnumerable<JsonRuleEvaluation> Evaluate(IJsonPathResolver jsonScope, ISourceLocationResolver lineNumberResolver)
                 => base.EvaluateInternal(jsonScope, EvaluationCallback);
         }
+
+        /// <summary>
+        /// Creates a JToken representing an AKS managed cluster resource.
+        /// </summary>
+        public static JToken CreateAksResource(string location, string kubernetesVersion)
+        {
+            var resource = new
+            {
+                type = "Microsoft.ContainerService/managedClusters",
+                apiVersion = "2025-06-02-preview",
+                name = "test-aks-cluster",
+                location = location,
+                properties = new
+                {
+                    kubernetesVersion = kubernetesVersion,
+                    linuxProfile = new
+                    {
+                        adminUsername = "azureuser",
+                        ssh = new
+                        {
+                            publicKeys = new[]
+                            {
+                                new { keyData = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ..." }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            return JObject.FromObject(resource);
+        }
     }
 }

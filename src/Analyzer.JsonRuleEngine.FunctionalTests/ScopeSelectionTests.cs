@@ -142,6 +142,43 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
           ]
         }
       }
+    },
+    {
+      ""apiVersion"": ""2023-05-01"",
+      ""type"": ""Microsoft.ContainerService/managedClusters"",
+      ""name"": ""myAKSCluster1"",
+      ""location"": ""[parameters('location')]"",
+      ""properties"": {
+        ""kubernetesVersion"": ""1.28.9"",
+        ""dnsPrefix"": ""myaks1"",
+        ""agentPoolProfiles"": [
+          {
+            ""name"": ""nodepool1"",
+            ""count"": 3,
+            ""vmSize"": ""Standard_DS2_v2""
+          }
+        ]
+      }
+    },
+    {
+      ""apiVersion"": ""2023-05-01"",
+      ""type"": ""Microsoft.ContainerService/managedClusters"",
+      ""name"": ""myAKSCluster2"",
+      ""location"": ""[parameters('location')]"",
+      ""properties"": {
+        ""kubernetesVersion"": ""1.29.4"",
+        ""dnsPrefix"": ""myaks2"",
+        ""agentPoolProfiles"": [
+          {
+            ""name"": ""nodepool1"",
+            ""count"": 1,
+            ""vmSize"": ""Standard_B2s""
+          }
+        ],
+        ""networkProfile"": {
+          ""networkPlugin"": ""azure""
+        }
+      }
     }
   ]
 }";
@@ -168,88 +205,106 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.FunctionalTe
             }
         }
 
-        [DataTestMethod]
-        [DataRow(null, "outputs",
-            null, // Unresolved static path returns null
-            DisplayName = "No resource type, path not resolved")]
-        [DataRow(null, "$schema",
-            "$schema",
-            DisplayName = "No resource type, path resolved")]
-        [DataRow(null, "params.*",
-            // No scopes expected evaluated (unresolved wildcard returns empty)
-            DisplayName = "No resource type, wildcard path does not resolve")]
-        [DataRow(null, "parameters.*",
-            "parameters.location",
-            DisplayName = "No resource type, wildcard path resolves single path")]
-        [DataRow(null, "resources[*]",
-            "resources[0]", "resources[1]", "resources[2]", "resources[3]", "resources[4]",
-            DisplayName = "No resource type, wildcard path resolves multiple paths")]
-        [DataRow("Microsoft.Storage/storageAccounts", null,
-            // No scopes expected evaluated (no resources to evaluate)
-            DisplayName = "Resource type matches none, no path")]
-        [DataRow("Microsoft.Network/virtualNetworks", null,
-            "resources[0]",
-            DisplayName = "Resource type matches 1, no path")]
-        [DataRow("Microsoft.Compute/virtualMachines", null,
-            "resources[3]", "resources[4]",
-            DisplayName = "Resource type matches multiple, no path")]
-        [DataRow("Microsoft.Storage/storageAccounts", "name",
-            // No scopes expected evaluated (no resources to evaluate)
-            DisplayName = "Resource type matches none, path not resolved")]
-        [DataRow("Microsoft.Network/virtualNetworks", "properties.addressSpace",
-            null, // Unresolved static path returns null
-            DisplayName = "Resource type matches 1, path not resolved")]
-        [DataRow("Microsoft.Network/virtualNetworks", "location",
-            "resources[0].location",
-            DisplayName = "Resource type matches 1, path resolved")]
-        [DataRow("Microsoft.Network/virtualNetworks", "dependsOn[*]",
-            // No scopes expected evaluated (unresolved wildcard returns empty)
-            DisplayName = "Resource type matches 1, wildcard path does not resolve")]
-        [DataRow("Microsoft.Network/virtualNetworks", "properties.subnets[*]",
-            "resources[0].properties.subnets[0]",
-            DisplayName = "Resource type matches 1, wildcard path resolves single path")]
-        [DataRow("Microsoft.Network/virtualNetworks", "properties.*",
-            "resources[0].properties.subnets[0]", "resources[0].properties.enableDdosProtection",
-            DisplayName = "Resource type matches 1, wildcard path resolves multiple paths")]
-        [DataRow("Microsoft.Network/networkInterfaces", "properties.dnsSettings",
-            null, null, // Unresolved static paths return null
-            DisplayName = "Resource type matches multiple, path not resolved")]
-        [DataRow("Microsoft.Network/networkInterfaces", "properties.networkSecurityGroup",
-            "resources[1].properties.networkSecurityGroup", null,
-            DisplayName = "Resource type matches multiple, path resolves in 1")]
-        [DataRow("Microsoft.Network/networkInterfaces", "properties.ipConfigurations[0]",
-            "resources[1].properties.ipConfigurations[0]", "resources[2].properties.ipConfigurations[0]",
-            DisplayName = "Resource type matches multiple, path resolves in all")]
-        [DataRow("Microsoft.Compute/virtualMachines", "properties.hardwareProfile.*",
-            // No scopes expected evaluated (unresolved wildcard returns empty)
-            DisplayName = "Resource type matches multiple, wildcard path does not resolve")]
-        [DataRow("Microsoft.Compute/virtualMachines", "properties.*.customData",
-            "resources[4].properties.osProfile.customData",
-            DisplayName = "Resource type matches multiple, wildcard path resolves single path in 1")]
-        [DataRow("Microsoft.Compute/virtualMachines", "properties.networkProfile.networkInterfaces[*]",
-            "resources[3].properties.networkProfile.networkInterfaces[0]", "resources[4].properties.networkProfile.networkInterfaces[0]",
-            DisplayName = "Resource type matches multiple, wildcard path resolves single path in all")]
-        [DataRow("Microsoft.Compute/virtualMachines", "tags.*",
-            "resources[3].tags.Tag1", "resources[3].tags.Tag2", "resources[4].tags.Tag1", "resources[4].tags.Tag2",
-            DisplayName = "Resource type matches multiple, wildcard path resolves multiple paths")]
+    [DataTestMethod]
+    [DataRow(null, "outputs",
+        null, // Unresolved static path returns null
+        DisplayName = "No resource type, path not resolved")]
+    [DataRow(null, "$schema",
+        "$schema",
+        DisplayName = "No resource type, path resolved")]
+    [DataRow(null, "params.*",
+        // No scopes expected evaluated (unresolved wildcard returns empty)
+        DisplayName = "No resource type, wildcard path does not resolve")]
+    [DataRow(null, "parameters.*",
+        "parameters.location",
+        DisplayName = "No resource type, wildcard path resolves single path")]
+    [DataRow(null, "resources[*]",
+        "resources[0]", "resources[1]", "resources[2]", "resources[3]", "resources[4]", "resources[5]", "resources[6]",
+        DisplayName = "No resource type, wildcard path resolves multiple paths")]
+    [DataRow("Microsoft.Storage/storageAccounts", null,
+        // No scopes expected evaluated (no resources to evaluate)
+        DisplayName = "Resource type matches none, no path")]
+    [DataRow("Microsoft.Network/virtualNetworks", null,
+        "resources[0]",
+        DisplayName = "Resource type matches 1, no path")]
+    [DataRow("Microsoft.Compute/virtualMachines", null,
+        "resources[3]", "resources[4]",
+        DisplayName = "Resource type matches multiple, no path")]
+    [DataRow("Microsoft.Storage/storageAccounts", "name",
+        // No scopes expected evaluated (no resources to evaluate)
+        DisplayName = "Resource type matches none, path not resolved")]
+    [DataRow("Microsoft.Network/virtualNetworks", "properties.addressSpace",
+        null, // Unresolved static path returns null
+        DisplayName = "Resource type matches 1, path not resolved")]
+    [DataRow("Microsoft.Network/virtualNetworks", "location",
+        "resources[0].location",
+        DisplayName = "Resource type matches 1, path resolved")]
+    [DataRow("Microsoft.Network/virtualNetworks", "dependsOn[*]",
+        // No scopes expected evaluated (unresolved wildcard returns empty)
+        DisplayName = "Resource type matches 1, wildcard path does not resolve")]
+    [DataRow("Microsoft.Network/virtualNetworks", "properties.subnets[*]",
+        "resources[0].properties.subnets[0]",
+        DisplayName = "Resource type matches 1, wildcard path resolves single path")]
+    [DataRow("Microsoft.Network/virtualNetworks", "properties.*",
+        "resources[0].properties.subnets[0]", "resources[0].properties.enableDdosProtection",
+        DisplayName = "Resource type matches 1, wildcard path resolves multiple paths")]
+    [DataRow("Microsoft.Network/networkInterfaces", "properties.dnsSettings",
+        null, null, // Unresolved static paths return null
+        DisplayName = "Resource type matches multiple, path not resolved")]
+    [DataRow("Microsoft.Network/networkInterfaces", "properties.networkSecurityGroup",
+        "resources[1].properties.networkSecurityGroup", null,
+        DisplayName = "Resource type matches multiple, path resolves in 1")]
+    [DataRow("Microsoft.Network/networkInterfaces", "properties.ipConfigurations[0]",
+        "resources[1].properties.ipConfigurations[0]", "resources[2].properties.ipConfigurations[0]",
+        DisplayName = "Resource type matches multiple, path resolves in all")]
+    [DataRow("Microsoft.Compute/virtualMachines", "properties.hardwareProfile.*",
+        // No scopes expected evaluated (unresolved wildcard returns empty)
+        DisplayName = "Resource type matches multiple, wildcard path does not resolve")]
+    [DataRow("Microsoft.Compute/virtualMachines", "properties.*.customData",
+        "resources[4].properties.osProfile.customData",
+        DisplayName = "Resource type matches multiple, wildcard path resolves single path in 1")]
+    [DataRow("Microsoft.Compute/virtualMachines", "properties.networkProfile.networkInterfaces[*]",
+        "resources[3].properties.networkProfile.networkInterfaces[0]", "resources[4].properties.networkProfile.networkInterfaces[0]",
+        DisplayName = "Resource type matches multiple, wildcard path resolves single path in all")]
+    [DataRow("Microsoft.Compute/virtualMachines", "tags.*",
+        "resources[3].tags.Tag1", "resources[3].tags.Tag2", "resources[4].tags.Tag1", "resources[4].tags.Tag2",
+        DisplayName = "Resource type matches multiple, wildcard path resolves multiple paths")]
+    [DataRow("Microsoft.ContainerService/managedClusters", null,
+        "resources[5]", "resources[6]",
+        DisplayName = "Resource type matches multiple AKS clusters, no path")]
+    [DataRow("Microsoft.ContainerService/managedClusters", "properties.kubernetesVersion",
+        "resources[5].properties.kubernetesVersion", "resources[6].properties.kubernetesVersion",
+        DisplayName = "Resource type matches multiple AKS clusters, path resolves in all")]
+    [DataRow("Microsoft.ContainerService/managedClusters", "properties.dnsPrefix",
+        "resources[5].properties.dnsPrefix", "resources[6].properties.dnsPrefix",
+        DisplayName = "Resource type matches multiple AKS clusters, path resolves in all")]
+    [DataRow("Microsoft.ContainerService/managedClusters", "properties.networkProfile.networkPlugin",
+        null, "resources[6].properties.networkProfile.networkPlugin",
+        DisplayName = "Resource type matches multiple AKS clusters, path resolves in 1")]
+    [DataRow("Microsoft.ContainerService/managedClusters", "properties.agentPoolProfiles[*]",
+        "resources[5].properties.agentPoolProfiles[0]", "resources[6].properties.agentPoolProfiles[0]",
+        DisplayName = "Resource type matches multiple AKS clusters, wildcard path resolves single path in all")]
+    [DataRow("Microsoft.ContainerService/managedClusters", "properties.invalidProperty",
+        null, null, // Unresolved static paths return null
+        DisplayName = "Resource type matches multiple AKS clusters, path not resolved")]
         public void EvaluateTemplate_ExpressionsWithVariousScopes_CorrectScopesAreEvaluated(string resourceType, string path, params string[] expectedPaths)
-        {
-            var scopesEvaluated = new List<IJsonPathResolver>();
-            var expression = new MockExpression(new ExpressionCommonProperties { ResourceType = resourceType, Path = path })
-            {
-                // Track what scopes were called to evaluate with
-                EvaluationCallback = scope => scopesEvaluated.Add(scope)
-            };
+    {
+      var scopesEvaluated = new List<IJsonPathResolver>();
+      var expression = new MockExpression(new ExpressionCommonProperties { ResourceType = resourceType, Path = path })
+      {
+        // Track what scopes were called to evaluate with
+        EvaluationCallback = scope => scopesEvaluated.Add(scope)
+      };
 
-            expression.Evaluate(new JsonPathResolver(JToken.Parse(mockTemplate), ""));
+      expression.Evaluate(new JsonPathResolver(JToken.Parse(mockTemplate), ""));
 
-            Assert.AreEqual(expectedPaths.Length, scopesEvaluated.Count);
+      Assert.AreEqual(expectedPaths.Length, scopesEvaluated.Count);
 
-            // Verify all scopes evaluated (if any) were the expected scopes
-            for (int i = 0; i < expectedPaths.Length; i++)
-            {
-                Assert.AreEqual(expectedPaths[i], scopesEvaluated[i].JToken?.Path, ignoreCase: true);
-            }
-        }
+      // Verify all scopes evaluated (if any) were the expected scopes
+      for (int i = 0; i < expectedPaths.Length; i++)
+      {
+        Assert.AreEqual(expectedPaths[i], scopesEvaluated[i].JToken?.Path, ignoreCase: true);
+      }
+    }
     }
 }
