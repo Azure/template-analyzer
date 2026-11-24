@@ -12,6 +12,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
     /// </summary>
     internal class InequalityOperator : LeafExpressionOperator
     {
+        private static readonly string[] DateFormats =
+        {
+            "yyyy-MM-dd",
+            "yyyy-MM-dd'T'HH:mmK",
+            "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK",
+            "yyyy-MM-dd HH:mm:ss.FFFFFFFK"
+        };
+
         /// <inheritdoc/>
         public override string Name =>
             Greater && OrEquals ? "GreaterOrEquals" :
@@ -83,7 +91,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.Operators
         {
             if (term.Type == JTokenType.String)
             {
-                return DateTime.TryParse(term.Value<string>(), provider: null, styles: DateTimeStyles.AssumeUniversal, out var date)
+                return DateTime.TryParseExact(
+                    term.Value<string>(), DateFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date)
                     ? date.ToOADate()
                     : (double?)null;
             }
