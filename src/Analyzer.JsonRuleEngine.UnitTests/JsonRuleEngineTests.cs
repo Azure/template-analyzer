@@ -270,6 +270,14 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
                     ""regex"": ""[""
                 }
             }]", DisplayName = "Invalid regex pattern")]
+        [DataRow(@"[{
+                ""id"": ""Invalid TLS threshold"",
+                ""evaluation"": {
+                    ""resourceType"": ""Microsoft.Web/sites/config"",
+                    ""path"": ""properties.minTlsVersion"",
+                    ""greaterOrEquals"": ""1.2""
+                }
+            }]", DisplayName = "A quoted TLS version is not a valid inequality threshold")]
         [ExpectedException(typeof(JsonRuleEngineException))]
         public void Create_InvalidRules_ExceptionIsThrown(string invalidRule)
         {

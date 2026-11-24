@@ -119,6 +119,8 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("2021-02-28", "2021-02-28", false, true, true, DisplayName = "A date is less or equal to another date because both are equal")]
         // Wrong types
         [DataRow("aString", 100, false, false, false, DisplayName = "Invalid token to evaluate")]
+        [DataRow("1.2", "2000-01-01", true, true, false, DisplayName = "A quoted TLS version is not a date")]
+        [DataRow("02/03/2021", "2021-01-01", true, true, false, DisplayName = "A locale-specific date is not an ISO date")]
         [DataRow("2021-02-28", 100, false, false, false, DisplayName = "Comparing a date with a number")]
         [DataRow(100, "2021-02-28", false, false, false, DisplayName = "Comparing a number with a date")]
         // ! (date_format_a > date_format_b)
@@ -135,6 +137,7 @@ namespace Microsoft.Azure.Templates.Analyzer.RuleEngines.JsonEngine.UnitTests
         [DataRow("2021-02-28", "2021-02-28T00:00+00:00", true, true, true, DisplayName = "A date written with format 4 is greater or equals to itself wrote with the classical format")]
         [DataRow("2021-02-28", "2021-02-28 00:00:00Z", true, true, true, DisplayName = "A date written with format 5 is greater or equals to itself wrote with the classical format")]
         [DataRow("2021-02-28", "2021-02-28 00:00:00+00:00", true, true, true, DisplayName = "A date written with format 6 is greater or equals to itself wrote with the classical format")]
+        [DataRow("2021-02-28T17:17:16.544Z", "2021-02-28T18:17:16.543+01:00", true, false, true, DisplayName = "Date ordering respects fractional seconds and offsets")]
         public void EvaluateExpression_AnyTermType_ReturnsExpectedEvaluationResult(object leftValue, object rightValue, bool greater, bool orEquals, bool evaluationResult)
         {
             CompareObjects(leftValue, rightValue, greater, orEquals, evaluationResult);
