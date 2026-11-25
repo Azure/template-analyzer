@@ -2,22 +2,30 @@
 <a name="note"></a>***Note**: All features that have yet to be implemented have been flagged with an asterisk [\*].*
 
 ## Overview
-Template Analyzer built-in rules are authored in JSON.  Each rule contains metadata about what's being evaluated (such as id, description, help information, severity), along with the specifics of the evaluation itself.  Files consisting of multiple rules should contain an array of rule objects.
+Template Analyzer's JSON rule file must contain an array of rule objects, even for a single rule. Each rule contains metadata and an `evaluation` with exactly one [operator](#operators). This is the format accepted by `--custom-json-rules-path`, not the format for native PSRule rules or the `-c` configuration file.
 
 ## Rule Object
-Here are the fields that make up a rule definition.
-```javascript
-{
-    "id": "Rule id",
-    "name": "A human-readable identifier"
-    "shortDescription": "Brief description of what the rule is evaluating",
-    "fullDescription": "Detailed description of what the rule is evaluating",
-    "recommendation": "Guidance describing what should be done to fix the issue if a template violates the rule",
-    "helpUri": "URI to find more detailed information about the rule and how to fix a template",
-    "severity" : "Integer value between 1 and 3, with 1 being high and 3 being low, designating the importance of the rule",
-    "evaluation": { … } // The evaluation logic of the rule. More details below.
-}
+Save this example as `storage-rules.json`. It reports a finding for each storage account whose `kind` is not `StorageV2`.
+
+```json
+[
+    {
+        "id": "ORG-000001",
+        "name": "StorageAccountKind",
+        "shortDescription": "Use StorageV2 for storage accounts.",
+        "fullDescription": "Storage accounts must use the StorageV2 account kind.",
+        "recommendation": "Set the storage account kind to StorageV2.",
+        "severity": 2,
+        "evaluation": {
+            "resourceType": "Microsoft.Storage/storageAccounts",
+            "path": "kind",
+            "equals": "StorageV2"
+        }
+    }
+]
 ```
+
+Run it with `TemplateAnalyzer.exe analyze-template template.json --custom-json-rules-path storage-rules.json`. The [bundled PSRule for Azure rules](./built-in-rules.md#powershell-based-rules) still run alongside this rule.
 
 ### Guidelines for rule metadata
 | Property Name | Description | Is required for contributing<br/>a built-in rule | Is required<br/>in schema | Default Value |
@@ -38,7 +46,7 @@ The `Evaluation` is comprised of the following basic properties.
     "resourceType": "(optional) The Azure resource type this evaluation applies to",
     "where": {
         // Evaluation Object
-    }
+    },
     "<operator>": // One of several kinds of operators, defined below
 }
 ```
@@ -70,6 +78,7 @@ The examples given with the operators below will be in the context of the follow
 ```javascript
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
     "parameters": { },
     "variables": { },
     "resources": [
@@ -88,14 +97,14 @@ The examples given with the operators below will be in the context of the follow
                 "osProfile": {
                     "computerName": "myVm",
                     "adminUsername": "myusername",
-                    "adminPassword": null,
+                    "adminPassword": null
                 }
             }
         }
     ],
     "outputs": {
          "numberOfResourcesDeployed": {
-            "type": "integer",
+            "type": "int",
             "value": 1
         },
         "customOutput": {
@@ -216,7 +225,7 @@ Example:
 {
     "resourceType": "Microsoft.Compute/virtualMachines",
     "path": "outputs.numberOfResourcesDeployed.value",
-    "greaterOrEquals": 2 // Evaluates to `false` because the value of the path "outputs.numberOfResourcesDeployed.value" (1) is not greater than or equal to 1.
+    "greaterOrEquals": 2 // Evaluates to `false` because the value at the path is 1, which is less than 2.
 }
 ```
 
@@ -274,7 +283,7 @@ Example:
         {
             "resourceType": "Microsoft.Compute/virtualMachines",
             "path": "properties.osProfile.adminPassword",
-            "hasValue": false // Evaluates to `false`
+            "hasValue": true // Evaluates to `false` because adminPassword is null
         },
         {
             "resourceType": "Microsoft.Compute/virtualMachines",
@@ -297,7 +306,7 @@ Example:
         {
             "resourceType": "Microsoft.Compute/virtualMachines",
             "path": "properties.osProfile.adminPassword",
-            "hasValue": false // Evaluates to `false`
+            "hasValue": true // Evaluates to `false` because adminPassword is null
         },
         {
             "resourceType": "Microsoft.Compute/virtualMachines",

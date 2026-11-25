@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.Templates.Analyzer.Core;
 using Microsoft.Azure.Templates.Analyzer.Reports;
@@ -27,7 +25,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
     {
         private const string DefaultConfigFileName = "configuration.json";
 
-        private RootCommand rootCommand;
+        private readonly RootCommand rootCommand;
         private TemplateAnalyzer templateAnalyzer;
 
         private IReportWriter reportWriter;
@@ -39,121 +37,46 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
         /// </summary>
         public CommandLineParser()
         {
-            SetupCommandLineAPI();
+            var templatePath = new Argument<FileInfo>("template-file-path") { Description = "The path of the template to analyze" };
+            var directoryPath = new Argument<DirectoryInfo>("directory-path") { Description = "The directory to find templates" };
+            var parameters = new Option<FileInfo>("--parameters-file-path", "-p") { Description = "The parameter file to use when parsing the specified template" };
+            var config = new Option<FileInfo>("--config-file-path", "-c") { Description = "The configuration file to use when parsing the specified template" };
+            var format = new Option<ReportFormat>("--report-format") { Description = "Format of report to be generated" };
+            var output = new Option<FileInfo>("--output-file-path", "-o") { Description = $"The report file path (required for --report-format {ReportFormat.Sarif})" };
+            var verbose = new Option<bool>("--verbose", "-v") { Arity = ArgumentArity.Zero, Description = "Shows details about the analysis" };
+            var allRules = new Option<bool>("--include-non-security-rules") { Arity = ArgumentArity.Zero, Description = "Run all the rules against the templates, including non-security rules" };
+            var customRules = new Option<FileInfo>("--custom-json-rules-path") { Description = "The JSON rules file to use against the templates. If not specified, will use the default rule set that is shipped with the tool." };
+
+            var template = new Command("analyze-template", "Analyze a single template")
+            {
+                templatePath, parameters, config, format, output, verbose, allRules, customRules
+            };
+            template.SetAction(result => AnalyzeTemplateCommandHandler(
+                result.GetRequiredValue(templatePath), result.GetValue(parameters), result.GetValue(config),
+                result.GetValue(format), result.GetValue(output), result.GetValue(allRules),
+                result.GetValue(verbose), result.GetValue(customRules)));
+
+            var directory = new Command("analyze-directory", "Analyze all templates within a directory")
+            {
+                directoryPath, config, format, output, verbose, allRules, customRules
+            };
+            directory.SetAction(result => AnalyzeDirectoryCommandHandler(
+                result.GetRequiredValue(directoryPath), result.GetValue(config), result.GetValue(format),
+                result.GetValue(output), result.GetValue(allRules), result.GetValue(verbose), result.GetValue(customRules)));
+
+            rootCommand = new RootCommand("Analyze Azure Resource Manager (ARM) and Bicep Templates for security and best practice issues.")
+            {
+                template, directory
+            };
         }
 
         /// <summary>
-        /// Invoke the command line API using the provided arguments. 
+        /// Invoke the command line API using the provided arguments.
         /// </summary>
         /// <param name="args">Arguments sent in via the command line</param>
         /// <returns>A Task that executes the command handler</returns>
-        public async Task<int> InvokeCommandLineAPIAsync(string[] args)
-        {
-            return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
-        }
+        public Task<int> InvokeCommandLineAPIAsync(string[] args) => rootCommand.Parse(args).InvokeAsync();
 
-        private void SetupCommandLineAPI()
-        {
-            // Command line API is setup using https://github.com/dotnet/command-line-api
-
-            rootCommand = new();
-            rootCommand.Description = "Analyze Azure Resource Manager (ARM) and Bicep Templates for security and best practice issues.";
-
-            // Setup analyze-template and analyze-directory commands
-            List<Command> allCommands = new()
-            {
-                SetupAnalyzeTemplateCommand(),
-                SetupAnalyzeDirectoryCommand()
-            };
-
-            // Add all commands to root command
-            allCommands.ForEach(rootCommand.AddCommand);
-
-            // Setup options that apply to all commands
-            SetupCommonOptionsForCommands(allCommands);
-        }
-
-        private Command SetupAnalyzeTemplateCommand()
-        {
-            Command analyzeTemplateCommand = new Command(
-                "analyze-template",
-                "Analyze a single template");
-
-            analyzeTemplateCommand.AddArgument(
-                new Argument<FileInfo>(
-                    "template-file-path",
-                    "The path of the template to analyze"));
-
-            analyzeTemplateCommand.AddOption(
-                new Option<FileInfo>(
-                    new[] { "-p", "--parameters-file-path" },
-                    "The parameter file to use when parsing the specified template")
-            );
-
-            // Assign handler method
-            analyzeTemplateCommand.Handler = CommandHandler.Create(
-                GetType().GetMethod(
-                    nameof(AnalyzeTemplateCommandHandler),
-                    BindingFlags.Instance | BindingFlags.NonPublic),
-                this);
-
-            return analyzeTemplateCommand;
-        }
-
-        private Command SetupAnalyzeDirectoryCommand()
-        {
-            Command analyzeDirectoryCommand = new Command(
-                "analyze-directory",
-                "Analyze all templates within a directory");
-
-            analyzeDirectoryCommand.AddArgument(
-                new Argument<DirectoryInfo>(
-                    "directory-path",
-                    "The directory to find templates"));
-
-            // Assign handler method
-            analyzeDirectoryCommand.Handler = CommandHandler.Create(
-                GetType().GetMethod(
-                    nameof(AnalyzeDirectoryCommandHandler),
-                    BindingFlags.Instance | BindingFlags.NonPublic),
-                this);
-
-            return analyzeDirectoryCommand;
-        }
-
-        private void SetupCommonOptionsForCommands(List<Command> commands)
-        {
-            List<Option> options = new()
-            {
-                new Option<FileInfo>(
-                    new[] { "-c", "--config-file-path" },
-                    "The configuration file to use when parsing the specified template"),
-
-                new Option<ReportFormat>(
-                    "--report-format",
-                    "Format of report to be generated"),
-
-                new Option<FileInfo>(
-                    new[] { "-o", "--output-file-path" },
-                    $"The report file path (required for --report-format {ReportFormat.Sarif})"),
-
-                new Option(
-                    new[] { "-v", "--verbose" },
-                    "Shows details about the analysis"),
-
-                new Option(
-                    "--include-non-security-rules",
-                    "Run all the rules against the templates, including non-security rules"),
-
-                new Option<FileInfo>(
-                    "--custom-json-rules-path",
-                    "The JSON rules file to use against the templates. If not specified, will use the default rule set that is shipped with the tool.")
-            };
-
-            commands.ForEach(c => options.ForEach(c.AddOption));
-        }
-
-        // Note: argument names must match command arguments/options (without "-" characters)
         private int AnalyzeTemplateCommandHandler(
             FileInfo templateFilePath,
             FileInfo parametersFilePath,
@@ -201,7 +124,6 @@ namespace Microsoft.Azure.Templates.Analyzer.Cli
             return (int)AnalyzeExitCodes(exitCodes);
         }
 
-        // Note: argument names must match command arguments/options (without "-" characters)
         private int AnalyzeDirectoryCommandHandler(
             DirectoryInfo directoryPath,
             FileInfo configFilePath,

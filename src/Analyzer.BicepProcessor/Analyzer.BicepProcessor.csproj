@@ -10,5 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Azure.Bicep.Core" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
 </Project>

@@ -72,6 +72,17 @@ jobs:
 
     - name: (dotnet) Publish CLI
       run: dotnet publish Analyzer.Cli/Analyzer.Cli.csproj --configuration ${{ env.Configuration }} --runtime ${{ matrix.runtimeId }} --self-contained /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:DebugType=None /p:DebugSymbols=false 
-      
+
+    - name: Scan with the published PowerShell rules
+      shell: pwsh
+      run: |
+        $cli = "./Analyzer.Cli/bin/$env:Configuration/net10.0/${{ matrix.runtimeId }}/publish/TemplateAnalyzer"
+        $report = Join-Path $env:RUNNER_TEMP 'published-scan.sarif'
+        & $cli analyze-template Analyzer.PowerShellRuleEngine.UnitTests/templates/template_and_resource_level_results.json --report-format sarif -o $report
+        if ($LASTEXITCODE -ne 20) { throw "Expected a rule violation, got exit code $LASTEXITCODE" }
+        $run = (Get-Content -Raw $report | ConvertFrom-Json).runs[0]
+        if ($run.results.ruleId -notcontains 'AZR-000196') { throw 'Expected the Azure Storage SecureTransfer finding' }
+        exit 0
+
     - name: Pack Analyzer.CLI
       run: nuget pack Analyzer.Cli.NuGet/Analyzer.Cli.nuspec -Version ${{ steps.get-version.outputs.result }} -Properties "configuration=${{ env.Configuration }};runtimeId=${{ matrix.runtimeId }}"
