@@ -27,9 +27,11 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
 * PowerShell Rule Engine (*[src\Analyzer.PowerShellRuleEngine](./src/Analyzer.PowerShellRuleEngine)*): Runs PowerShell-based rules using [PSRule for Azure](https://aka.ms/ps-rule-azure).
 
 ### NuGet Packages
-* There are two .nuspec files that define NuGet packages that can be created
+* The following `.nuspec` files define the published packages:
   * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer Core into package *Azure.Templates.Analyzer.Core*.
     * Requires building *[src\Analyzer.Core](./src/Analyzer.Core)* first.
+  * [Analyzer.TemplateProcessing.nuspec](./src/Analyzer.TemplateProcessing.NuGet/Analyzer.TemplateProcessing.nuspec) packages the Bicep and ARM template processors.
+  * [Analyzer.Reports.nuspec](./src/Analyzer.Reports.NuGet/Analyzer.Reports.nuspec) packages the report writers.
   * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
     * Requires publishing the CLI first - the `Publish` task in VS Code can be used for this (Terminal->Run Task...->Publish).  The platform is chosen when running the task.
 * These can be packed (after building/publishing) using the [nuget.exe CLI](https://www.nuget.org/downloads)
@@ -37,6 +39,8 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
   * Use `Debug` or `Release` depending on the Configuration the solution or projects were built with (`Debug` is the default)
   * Analyzer.Cli also needs the runtime specified (this is selected when running the `Publish` task in VS Code). The value for the `-Properties` argument should append `;runtimeId=<id-for-platform>`.
   * This is a great way to test NuGet consumption of local changes
+
+Package versions are managed in [Directory.Packages.props](./src/Directory.Packages.props). A bare version in a library `.nuspec` is a minimum, not an exact lock. If another dependency already requires that version or later, the minimum need not be repeated. When removing a security override, restore each packed library in a standalone project and use `dotnet list package --vulnerable --include-transitive` to check it. The CLI's PowerShell dependencies can otherwise mask an older version in a library.
  
 ### Code Structure
 1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer Core.

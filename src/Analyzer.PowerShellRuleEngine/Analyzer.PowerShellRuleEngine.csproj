@@ -8,8 +8,6 @@
     <PackageReference Include="Microsoft.PowerShell.SDK" />
     <PackageReference Include="Microsoft.PSRule.Rules.Azure" />
     <PackageReference Include="Microsoft.PSRule.SDK" />
-    <PackageReference Include="Sarif.Sdk" />
-    <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analyzer.BicepProcessor\Analyzer.BicepProcessor.csproj" />
