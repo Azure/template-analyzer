@@ -17,6 +17,8 @@
     <ProjectReference Include="..\Analyzer.Utilities\Analyzer.Utilities.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- PSRule loads the module's required assemblies by path relative to its manifest. -->
+    <Content Update="@(Content->WithMetadataValue('NuGetPackageId', 'Microsoft.PSRule.Rules.Azure'))" ExcludeFromSingleFile="true" />
     <None Update="baselines\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

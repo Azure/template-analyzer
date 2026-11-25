@@ -19,12 +19,17 @@ namespace Analyzer.Cli.FunctionalTests
     public class CommandLineParserTests
     {
         private CommandLineParser _commandLineParser;
+        private TextWriter _originalOutput;
 
         [TestInitialize]
         public void TestInit()
         {
+            _originalOutput = Console.Out;
             _commandLineParser = new CommandLineParser();
         }
+
+        [TestCleanup]
+        public void RestoreConsoleOutput() => Console.SetOut(_originalOutput);
 
         [DataTestMethod]
         [DataRow("TemplateWithModule.bicep", ExitCode.Violation, DisplayName = "Violations found in referenced template")]
@@ -32,6 +37,7 @@ namespace Analyzer.Cli.FunctionalTests
         [DataRow("Configuration.json", ExitCode.ErrorInvalidARMTemplate, DisplayName = "Path exists, not an ARM template.")]
         [DataRow("Configuration.json", ExitCode.ErrorMissingPath, "--report-format", "Sarif", DisplayName = "Path exists, Report-format flag set, --output-file-path flag not included.")]
         [DataRow("Configuration.json", ExitCode.ErrorCommand, "--parameters-file-path", DisplayName = "Path exists, Parameters-file-path flag included, but no value provided.")]
+        [DataRow("Configuration.json", ExitCode.ErrorCommand, "--verbose=false", DisplayName = "Verbose is a flag, not a value option")]
         [DataRow("AppServicesLogs-Failures.json", ExitCode.Violation, DisplayName = "Violations found in the template")]
         [DataRow("AppServicesLogs-Passes.json", ExitCode.Success, DisplayName = "Success")]
         [DataRow("AppServicesLogs-Failures.bicep", ExitCode.Violation, DisplayName = "Violations found in the Bicep template")]

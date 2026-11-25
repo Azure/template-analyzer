@@ -1,0 +1,10 @@
+<Project>
+  <!-- Core locates its rules, baselines, and PowerShell modules relative to the application. -->
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)..\..\lib\net10.0\**\*"
+             Exclude="$(MSBuildThisFileDirectory)..\..\lib\net10.0\*"
+             Link="%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+             ExcludeFromSingleFile="true" Pack="false" Visible="false" />
+  </ItemGroup>
+</Project>
