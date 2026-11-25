@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Templates.Analyzer.Utilities.UnitTests
         {
             var discoveredTemplates = TemplateDiscovery.DiscoverTemplatesAndParametersInDirectory(new DirectoryInfo(testTemplateDirectory));
 
-            Assert.AreEqual(18, discoveredTemplates.Count());
+            Assert.AreEqual(19, discoveredTemplates.Count());
 
             // Create list of templates expecting a match with parameters
             var subDirectory = "ToTestSeparateParametersFile";

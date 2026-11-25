@@ -159,7 +159,7 @@ namespace Analyzer.Cli.FunctionalTests
             var result = _commandLineParser.InvokeCommandLineAPIAsync(args);
 
             Assert.AreEqual((int)ExitCode.ErrorAndViolation, result.Result);
-            StringAssert.Contains(outputWriter.ToString(), "Analyzed 14 files");
+            StringAssert.Contains(outputWriter.ToString(), "Analyzed 15 files");
         }
 
         [TestMethod]
