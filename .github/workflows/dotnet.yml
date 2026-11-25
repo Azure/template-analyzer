@@ -30,7 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v6
@@ -38,7 +38,7 @@ jobs:
         global-json-file: global.json
     
     - name: Setup NuGet
-      uses: nuget/setup-nuget@v2
+      uses: nuget/setup-nuget@v3
         
     - name: Restore dependencies
       run: dotnet restore
@@ -56,7 +56,7 @@ jobs:
 
     - name: Get version
       id: get-version
-      uses: actions/github-script@v6
+      uses: actions/github-script@v8
       with:
         script: return /\<Version\>(.+)\<\/Version\>/.exec(require('fs').readFileSync('src/Directory.Build.props'))[1]
         result-encoding: string
