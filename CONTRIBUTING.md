@@ -5,7 +5,7 @@ We welcome community contributions to Template Analyzer. Please note that by par
 * If you haven't already, you will need to install the [.NET 10 SDK](https://dotnet.microsoft.com/download) specified in [global.json](./global.json) to build and run this project.
 * Fork this repo (see [this forking guide](https://guides.github.com/activities/forking/) for more information).
 * Checkout the repo locally with `git clone git@github.com:{your_username}/template-analyzer.git`.
-* The .NET solution can be built with the `dotnet build` command.
+* From the `src` directory, run `dotnet build` to build the solution.
  
 ## Developing
 
@@ -14,7 +14,7 @@ We welcome community contributions to Template Analyzer. Please note that by par
   * Start VS Code and open the root directory where the code is cloned locally (File->Open Folder...).
 * Run the `build` task (Terminal->Run Task...->build) in VS Code to build Template Analyzer.
 * Try analyzing a template: open a template file in VS Code and then run the `Launch CLI on Template` launch configuration (Run->Start Debugging).
-  * Alternatively, modify the configuration in [launch.json](./.vs/launch.json) and specify a path to a template file, and optionally specify a path to a parameters file to use.
+  * To use a different template or parameters file, edit the configuration in [launch.json](./.vscode/launch.json).
   * Additionally, the `Launch CLI on Directory` launch configuration analyzes the directory of the open file in VS Code. 
 
 ### Components
@@ -27,16 +27,23 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
 * PowerShell Rule Engine (*[src\Analyzer.PowerShellRuleEngine](./src/Analyzer.PowerShellRuleEngine)*): Runs PowerShell-based rules using [PSRule for Azure](https://aka.ms/ps-rule-azure).
 
 ### NuGet Packages
-* There are two .nuspec files that define NuGet packages that can be created
-  * [src\Analyzer.Core.NuGet\Analyzer.Core.nuspec](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) for packing Analyzer Core into package *Azure.Templates.Analyzer.Core*.
-    * Requires building *[src\Analyzer.Core](./src/Analyzer.Core)* first.
-  * [src\Analyzer.Cli.NuGet\Analyzer.Cli.nuspec](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) for packing Analyzer Cli into package *Azure.Templates.Analyzer.CommandLine.\<platform\>*.
-    * Requires publishing the CLI first - the `Publish` task in VS Code can be used for this (Terminal->Run Task...->Publish).  The platform is chosen when running the task.
-* These can be packed (after building/publishing) using the [nuget.exe CLI](https://www.nuget.org/downloads)
-  * Example: `nuget pack <nuspec-file> -Version <version> -Properties Configuration=<Debug|Release>`
-  * Use `Debug` or `Release` depending on the Configuration the solution or projects were built with (`Debug` is the default)
-  * Analyzer.Cli also needs the runtime specified (this is selected when running the `Publish` task in VS Code). The value for the `-Properties` argument should append `;runtimeId=<id-for-platform>`.
-  * This is a great way to test NuGet consumption of local changes
+
+| Package (linked to its `.nuspec` manifest) | What to build or publish first |
+| --- | --- |
+| [`Azure.Templates.Analyzer.Core`](./src/Analyzer.Core.NuGet/Analyzer.Core.nuspec) | Build `Analyzer.Core`. |
+| [`Azure.Templates.Analyzer.TemplateProcessing`](./src/Analyzer.TemplateProcessing.NuGet/Analyzer.TemplateProcessing.nuspec) | Build `Analyzer.BicepProcessor`; this package uses the DLLs from its output directory. |
+| [`Azure.Templates.Analyzer.Reports`](./src/Analyzer.Reports.NuGet/Analyzer.Reports.nuspec) | Build `Analyzer.Reports`. |
+| [`Azure.Templates.Analyzer.CommandLine.<runtimeId>`](./src/Analyzer.Cli.NuGet/Analyzer.Cli.nuspec) | Publish `Analyzer.Cli` for the target runtime using the VS Code [`publish` task](./.vscode/tasks.json) or the command in the [build workflow](./.github/workflows/dotnet.yml). |
+
+For example, run these PowerShell commands from `src` to build the solution and pack Core with the [NuGet CLI](https://www.nuget.org/downloads):
+
+```powershell
+dotnet build -c Release
+$version = ([xml](Get-Content -Raw Directory.Build.props)).Project.PropertyGroup.Version
+nuget pack Analyzer.Core.NuGet/Analyzer.Core.nuspec -Version $version -Properties "configuration=Release"
+```
+
+Use the same `configuration` for building and packing. For the CLI, also pass the runtime ID used when publishing, for example `-Properties "configuration=Release;runtimeId=win-x64"`.
  
 ### Code Structure
 1. Analyzer CLI (or another calling application) identifies JSON files (template and parameter files) and invokes Analyzer Core.
@@ -46,7 +53,7 @@ The Template Analyzer dotnet solution (*[src\TemplateAnalyzer.sln](./src/Templat
 5. PowerShell Rule Engine invokes PSRule to run Azure rules against the template.
  
 ### Running the Tests
-* Use the `dotnet test` command to run the full Template Analyzer test suite.
+* From the `src` directory, run `dotnet test` to run the full test suite.
 * If using VS Code, run the tests with the `test` task (Terminal->Run Task...->test).
 
 ### Coding Conventions
