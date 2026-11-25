@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2014-04-01",
+      "name": "sql"
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat('sql/', parameters('rules')[copyIndex()].name)]",
+      "copy": {
+        "name": "firewalls",
+        "count": "[length(parameters('rules'))]"
+      },
+      "properties": {
+        "startIpAddress": "192.0.2.1",
+        "endIpAddress": "192.0.2.1"
+      }
+    }
+  ],
+  "parameters": {
+    "rules": {
+      "type": "array"
+    }
+  }
+}

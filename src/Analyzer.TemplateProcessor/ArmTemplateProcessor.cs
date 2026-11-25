@@ -31,7 +31,11 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         private readonly ILogger logger;
         private readonly Dictionary<string, List<string>> originalToExpandedMapping = [];
         private readonly Dictionary<string, string> expandedToOriginalMapping = [];
-        private readonly Dictionary<string, (TemplateResource resource, string expandedPath)> flattenedResources = new(StringComparer.OrdinalIgnoreCase);
+        private readonly List<FlattenedResource> flattenedResources = [];
+        private readonly Dictionary<string, FlattenedResource> resolvedResources = new(StringComparer.OrdinalIgnoreCase);
+
+        private sealed record FlattenedResource(
+            TemplateResource Resource, string ExpandedPath, string Name, string Type, bool HasResolvedName);
 
         /// <summary>
         /// Mapping between resources in the expanded template to their original resource in 
@@ -177,18 +181,18 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             var evaluationHelper = GetTemplateFunctionEvaluationHelper(template);
             SaveFlattenedResources(template.Resources);
 
-            foreach ((var resourceNameAndType, var resourceInfo) in flattenedResources)
+            foreach (var resourceInfo in flattenedResources)
             {
-                ProcessTemplateResourceLanguageExpressions(resourceInfo.resource, evaluationHelper);
+                ProcessTemplateResourceLanguageExpressions(resourceInfo.Resource, evaluationHelper);
 
-                CopyResourceDependants(resourceInfo.resource);
+                CopyResourceDependants(resourceInfo.Resource);
 
-                if (!ResourceMappings.ContainsKey(resourceInfo.resource.Path))
+                if (!ResourceMappings.ContainsKey(resourceInfo.ExpandedPath))
                 {
-                    AddResourceMapping(resourceInfo.expandedPath, resourceInfo.resource.Path);
+                    AddResourceMapping(resourceInfo.ExpandedPath, resourceInfo.Resource.Path);
                 }
 
-                resourceInfo.resource.Type.Value = resourceNameAndType.Split(" ")[1];
+                resourceInfo.Resource.Type.Value = resourceInfo.Type;
             }
 
             if ((template.Outputs?.Count ?? 0) > 0)
@@ -231,7 +235,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
             foreach (var parentResourceIds in templateResource.DependsOn)
             {
                 string parentResourceName;
-                (TemplateResource resource, string expandedPath) parentResourceInfo = (null, null);
+                FlattenedResource parentResourceInfo = null;
                 // If the dependsOn references the resourceId
                 if (parentResourceIds.Value.StartsWith("/subscriptions"))
                 {
@@ -258,31 +262,31 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                         }
                     }
 
-                    this.flattenedResources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResourceInfo);
+                    this.resolvedResources.TryGetValue($"{parentResourceName} {parentResourceType}", out parentResourceInfo);
                 }
                 // If the dependsOn references the resource name
                 else
                 {
                     parentResourceName = parentResourceIds.Value;
                     var matchingResources = this.flattenedResources.Where(k =>
-                        k.Key.StartsWith($"{parentResourceName} ", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(k.Value.resource.SymbolicName, parentResourceName, StringComparison.OrdinalIgnoreCase))
+                        (k.HasResolvedName && string.Equals(k.Name, parentResourceName, StringComparison.OrdinalIgnoreCase)) ||
+                        string.Equals(k.Resource.SymbolicName, parentResourceName, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                     if (matchingResources.Count == 1)
                     {
-                        parentResourceInfo = matchingResources.First().Value;
+                        parentResourceInfo = matchingResources.First();
                     }
                 }
 
                 // Parent resouce is not in the template
-                if (parentResourceInfo == (null, null))
+                if (parentResourceInfo == null)
                 {
                     continue;
                 }
 
                 // Add this resource as a child of its parent resource
-                var parentResource = parentResourceInfo.resource;
-                var parentResourceExpandedPath = parentResourceInfo.expandedPath;
+                var parentResource = parentResourceInfo.Resource;
+                var parentResourceExpandedPath = parentResourceInfo.ExpandedPath;
                 if (parentResource.Resources == null)
                 {
                     parentResource.Resources = new TemplateResource[] { templateResource };
@@ -290,9 +294,7 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
                     AddResourceMapping($"{parentResourceExpandedPath}.resources[0]", templateResource.Path);
                 }
                 // check if resource is already a child of parent resource
-                else if (!parentResource.Resources.Any(res =>
-                    res.Name.Value == templateResource.Name.Value &&
-                    res.Type.Value == templateResource.Type.Value))
+                else if (!parentResource.Resources.Contains(templateResource))
                 {
                     var childResources = parentResource.Resources;
                     parentResource.Resources = childResources.ConcatArray(new TemplateResource[] { templateResource });
@@ -353,41 +355,51 @@ namespace Microsoft.Azure.Templates.Analyzer.TemplateProcessor
         /// Flattens resources that are defined inside other resources.
         /// </summary>
         /// <param name="resources">Resources in the template.</param>
-        /// <param name="parentName">Name of the parent resource. Used during recursive call.</param>
-        /// <param name="parentType">Type of the parent resource. Used during recursive call.</param>
-        /// <param name="parentExpandedPath">Path of the parent resource in the expanded template. Used during the recursive call.</param>
-        private void SaveFlattenedResources(TemplateResource[] resources, string parentName = null, string parentType = null, string parentExpandedPath = "")
+        /// <param name="parent">Identity and source paths of the containing resource.</param>
+        private void SaveFlattenedResources(TemplateResource[] resources, FlattenedResource parent = null)
         {
+            var siblingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < resources.Length; i++)
             {
-                string dictionaryKey;
                 var resource = resources[i];
-
-                if (parentName != null && parentType != null)
+                if (parent != null)
                 {
-                    resource.Path = $"{flattenedResources[$"{parentName} {parentType}"].resource.Path}.resources[{i}]";
+                    resource.Path = $"{parent.Resource.Path}.resources[{i}]";
+                }
+                else if (resource.Path == "")
+                {
+                    resource.Path = $"resources[{i}]";
+                }
 
-                    dictionaryKey = $"{parentName}/{resource.Name.Value} {parentType}/{resource.Type.Value}";
+                bool hasResolvedLocalName = !ExpressionsEngine.IsLanguageExpression(resource.Name.Value);
+                var resourceInfo = new FlattenedResource(
+                    resource,
+                    $"{(parent == null ? "" : parent.ExpandedPath + ".")}resources[{i}]",
+                    parent == null ? resource.Name.Value : $"{parent.Name}/{resource.Name.Value}",
+                    parent == null ? resource.Type.Value : $"{parent.Type}/{resource.Type.Value}",
+                    (parent?.HasResolvedName ?? true) && hasResolvedLocalName);
+
+                // A known local name still identifies duplicate siblings beneath an unresolved parent.
+                if (hasResolvedLocalName && !siblingNames.Add($"{resource.Name.Value} {resource.Type.Value}"))
+                {
+                    throw new ArgumentException($"Duplicate resource declaration: {resourceInfo.Name} {resourceInfo.Type}.");
+                }
+
+                // Unresolved expressions are not deployment identities. Keep every expanded
+                // instance, but only bind dependencies and detect duplicates using resolved names.
+                if (resourceInfo.HasResolvedName)
+                {
+                    resolvedResources.Add($"{resourceInfo.Name} {resourceInfo.Type}", resourceInfo);
                 }
                 else
                 {
-                    if (resource.Path == "")
-                    {
-                        resource.Path = $"resources[{i}]";
-                    }
-
-                    dictionaryKey = $"{resource.Name.Value} {resource.Type.Value}";
+                    logger?.LogWarning("The name of the resource at {resourcePath} could not be resolved. Name-based dependencies on this resource will not be inferred.", resourceInfo.ExpandedPath);
                 }
-
-                var resourceExpandedPath = $"{(parentExpandedPath != "" ? parentExpandedPath + "." : "")}resources[{i}]";
-                flattenedResources.Add(dictionaryKey, (resource, resourceExpandedPath));
+                flattenedResources.Add(resourceInfo);
 
                 if (resource.Resources != null)
                 {
-                    string resourceNamePrefix = parentName == null ? "" : $"{parentName}/";
-                    string resourceTypePrefix = parentType == null ? "" : $"{parentType}/";
-
-                    SaveFlattenedResources(resource.Resources, $"{resourceNamePrefix}{resource.Name.Value}", $"{resourceTypePrefix}{resource.Type.Value}", resourceExpandedPath);
+                    SaveFlattenedResources(resource.Resources, resourceInfo);
                 }
             }
         }

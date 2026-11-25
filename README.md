@@ -40,6 +40,8 @@ Argument | Description
 
 **Note**: Providing Template Analyzer with template parameter values will result in more accurate results as it will more accurately represent your deployments. The values provided to parameters may affect the evaluation of Template Analyzer rules, altering its results. That said, **DO NOT** save sensitive data (passwords, connection strings, etc.) in parameter files in your repositories. Instead, [retrieve these values from your template from Azure Key Vault](https://docs.microsoft.com/azure/azure-resource-manager/templates/key-vault-parameter?tabs=azure-cli#reference-secrets-with-static-id).
 
+If a resource name cannot be resolved from the available inputs (for example, an object member of an array parameter without a default), Template Analyzer retains each expanded resource and reports a warning. It can still report findings on determinate properties, but does not infer name-based dependencies on unresolved resources. This does not add defaults to the template or confirm that it can be deployed. Resources with duplicate resolved identities still produce a processing error.
+
 ### Output
 Results can be output in plain text to the console, or output to a file in SARIF format. Template Analyzer will exit with an error code if any errors or violations are found during a scan.
 

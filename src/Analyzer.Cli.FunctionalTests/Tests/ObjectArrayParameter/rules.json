@@ -1,0 +1,15 @@
+[
+  {
+    "id": "TA-REPRO-001",
+    "name": "SyntheticApiVersionCheck",
+    "shortDescription": "Synthetic exact API version check",
+    "fullDescription": "Reproduction rule selecting a literal API version.",
+    "recommendation": "This rule is only for reproducing analyzer behavior.",
+    "severity": 2,
+    "evaluation": {
+      "resourceType": "Microsoft.Sql/servers",
+      "path": "apiVersion",
+      "notEquals": "2014-04-01"
+    }
+  }
+]
