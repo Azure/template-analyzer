@@ -21,6 +21,8 @@ or
 
 `TemplateAnalyzer.exe analyze-directory <directory-path> [-c <config-path>] [--report-format <format>] [-o <output-path>] [-v]`
 
+Both commands take one positional path. If the path starts with `-`, put `--` before it to end option parsing: `TemplateAnalyzer.exe analyze-template -- "-example.json"`. Put any options before `--`. Unlike earlier versions, the CLI does not ignore trailing arguments: `analyze-template template.json -- extra` is an error.
+
 ### Input
 Template Analyzer accepts the following inputs:
 
@@ -50,7 +52,7 @@ For a template which deploys an API App that does not require HTTPS, running Tem
 ```
 >TemplateAnalyzer.exe analyze-template "C:\Templates\azuredeploy.json"
 
-File: C:\Templates\azuredeploy.json
+Template: C:\Templates\azuredeploy.json
 
         TA-000004: API app should only be accessible over HTTPS
                 Severity: Medium
@@ -67,6 +69,7 @@ Execution summary:
 
 #### SARIF
 Results are written to the file specified (with the `-o` or `--output-file-path` argument) in [SARIF](https://sarifweb.azurewebsites.net) format.
+To compare findings across runs, compare rule IDs, severity levels, and source locations. Invocation timestamps and tool build metadata can differ even when the findings match.
 
 #### Exit codes
 | Scenario      | Exit Code |
@@ -83,7 +86,9 @@ Results are written to the file specified (with the `-o` or `--output-file-path`
 | Violation + Error: Scan encountered both violations in template(s) and errors trying to analyze template(s) | 22 |
 
 ### Understanding and customizing rules
-The analysis rules used by Template Analyzer are written in JSON, located in *Rules/BuiltInRules.json* (starting from the directory *TemplateAnalyzer.exe* is in). This file can be added to and/or modified to change the rules that are run. See the [documentation for more information about how to author Template Analyzer JSON rules](./docs/authoring-json-rules.md).
+Template Analyzer loads its JSON rules from `Rules/BuiltInRules.json` next to the executable. Use `--custom-json-rules-path` to run your own [Template Analyzer JSON rules](./docs/authoring-json-rules.md) **instead of** the built-in JSON rules. Use `-c` to [filter JSON rules or override their severity](./docs/customizing-evaluation-outputs.md) without replacing their definitions.
+
+The bundled [PSRule for Azure rules](./docs/built-in-rules.md#powershell-based-rules) run separately. Supplying custom JSON rules does not disable them. The CLI uses its security baseline by default; `--include-non-security-rules` selects the broader PSRule baseline.
 
 ## Contributing
 This project welcomes contributions and suggestions. Please see the [Contribution Guide](./CONTRIBUTING.md) for more details about how to contribute to Template Analyzer. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com.
